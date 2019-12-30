@@ -19,6 +19,7 @@ namespace FiveKnights
         public static FightController Instance;
         private GameObject _whiteD;
         private GameObject _isma;
+        private GameObject _dryya;
         private GameObject _zemer;
 
         private IEnumerator Start()
@@ -67,6 +68,13 @@ namespace FiveKnights
             GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
             FiveKnights.preloadedGO["pillar"] = pillar;
             Log("Done creating Isma");
+        }
+        
+        public void CreateDryya()
+        {
+            _dryya = Instantiate(new GameObject("Dryya"), new Vector2(74, 8.5f), Quaternion.identity);
+            _dryya.SetActive(true);
+            _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
         }
 
         public void CreateZemer()

@@ -63,8 +63,34 @@ namespace FiveKnights
                 sprites[spr.name] = spr;
             }
             materials["flash"] = ab.LoadAsset<Material>("Material");
+            
+            LoadDryyaAssets();
         }
 
+        public static AssetBundle DryyaAssetBundle;
+        private void LoadDryyaAssets()
+        {
+            string dryyaAssetsPath;
+            switch (SystemInfo.operatingSystemFamily)
+            {
+                case OperatingSystemFamily.Windows:
+                    dryyaAssetsPath = "dryyaassets";
+                    break;
+                case OperatingSystemFamily.Linux:
+                    dryyaAssetsPath = "dryyaassets";
+                    break;
+                case OperatingSystemFamily.MacOSX:
+                    dryyaAssetsPath = "dryyaassets";
+                    break;
+                default:
+                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
+                    return;
+            }
+            
+            DryyaAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
+            
+        }
+        
         private void SceneChanged(Scene arg0, Scene arg1)
         {
             if (arg0.name == "Dream_04_White_Defender")

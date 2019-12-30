@@ -95,6 +95,7 @@
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
+    <Compile Include="DryyaController.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />
