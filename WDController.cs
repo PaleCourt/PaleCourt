@@ -30,7 +30,7 @@ namespace FiveKnights
             _hm.hp = 601; //Set to 1000 normally
             Log("set");
             yield return new WaitWhile(() => _hm.hp > 600);
-            _fsm.GetAction<Wait>("Rage Roar", 9).time = 5f;
+            _fsm.GetAction<Wait>("Rage Roar", 9).time = 4f;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Rage Roar"));
             FightController.Instance.CreateIsma();
         }

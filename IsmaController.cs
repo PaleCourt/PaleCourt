@@ -55,22 +55,20 @@ namespace FiveKnights
             _sr.enabled = false;
             StartCoroutine(SmashBall());
         }
-
+        float rotate = 0f;
         private IEnumerator SmashBall()
         {
             while (true)
             {
                 if (Input.GetKeyUp(KeyCode.R))
                 {
-                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.transform.GetPositionX() > 16f))
+                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionX() > 16f))
                     {
-                        float dir = FaceHero();
-                        Log("DOO " + dir);
                         Vector2 pos = go.transform.position;
                         Destroy(go);
                         _sr.enabled = true;
-                        //gameObject.transform.localScale = new Vector3(1f, 1f, 1f);
                         gameObject.transform.position = new Vector2(pos.x + 1.77f, pos.y - 0.38f);
+                        float dir = FaceHero();
                         GameObject squish = gameObject.transform.Find("Squish").gameObject;
                         GameObject ball = Instantiate(gameObject.transform.Find("Ball").gameObject);
                         squish.SetActive(true);
@@ -81,11 +79,13 @@ namespace FiveKnights
                         squish.SetActive(false);
                         ball.SetActive(true);
                         ball.transform.position = gameObject.transform.Find("Ball").position;
-                        Vector2 diff = ball.transform.position - _target.transform.position;
-                        float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg;
-                        Log(rot);//ball.transform.GetRotation2D();//ball.transform.rotation.eulerAngles.z;
-                        //ball.transform.SetRotation2D(rot);
                         ballFx.transform.parent = null;
+                        Vector2 diff = ball.transform.position - _target.transform.position;
+                        float rot = Mathf.Atan(diff.y / diff.x);
+                        Log(rot * Mathf.Rad2Deg);
+                        rot += dir > 0 ? 0f : Mathf.PI;
+                        Log(rot * Mathf.Rad2Deg);
+                        ball.transform.SetRotation2D(rot * Mathf.Rad2Deg + 90f);
                         Vector2 vel = new Vector2(20f * Mathf.Cos(rot), 20f * Mathf.Sin(rot));
                         ball.GetComponent<Rigidbody2D>().velocity = vel;
                         yield return new WaitForSeconds(0.1f);
@@ -95,7 +95,7 @@ namespace FiveKnights
                         yield return new WaitWhile(() => _anim.IsPlaying());
                         _anim.Play("Idle");
                         _sr.enabled = false;
-                        Log("DOO2");
+                        Log("--------------------------");
                         break;
                     }
                 }
