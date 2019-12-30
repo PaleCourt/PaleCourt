@@ -5,6 +5,10 @@ using System.Text;
 using UnityEngine;
 using Modding;
 using System.Collections;
+using HutongGames.PlayMaker.Actions;
+using ModCommon.Util;
+using ModCommon;
+using HutongGames.PlayMaker;
 using Object = UnityEngine.Object;
 using System.Reflection;
 
@@ -49,7 +53,11 @@ namespace FiveKnights
 
             //var _sr = _isma.GetComponent<SpriteRenderer>();
             //_sr.material = ArenaFinder.materials["flash"];
-            _isma.AddComponent<IsmaController>().dd = _whiteD;
+            IsmaController ic = _isma.AddComponent<IsmaController>();
+            ic.dd = _whiteD;
+            PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");
+            GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
+            FiveKnights.preloadedGO["pillar"] = pillar;
         }
 
         private void OnDestroy()

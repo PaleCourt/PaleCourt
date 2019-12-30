@@ -41,7 +41,6 @@ namespace FiveKnights
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             _hm.hp = 600;
             gameObject.layer = 11;
-            //gameObject.transform.localScale *= 1.2f;
             _target = HeroController.instance.gameObject;
             PositionIsma();
             FaceHero();
@@ -55,7 +54,7 @@ namespace FiveKnights
             _sr.enabled = false;
             StartCoroutine(SmashBall());
         }
-        float rotate = 0f;
+        
         private IEnumerator SmashBall()
         {
             while (true)
@@ -71,7 +70,11 @@ namespace FiveKnights
                         float dir = FaceHero();
                         GameObject squish = gameObject.transform.Find("Squish").gameObject;
                         GameObject ball = Instantiate(gameObject.transform.Find("Ball").gameObject);
+                        ball.transform.localScale *= 1.4f;
                         squish.SetActive(true);
+                        ball.layer = 11;
+                        ball.AddComponent<DamageHero>().damageDealt = 1;
+                        ball.AddComponent<DungBall>();
                         _anim.Play("BallStrike");
                         yield return new WaitForSeconds(0.05f);
                         yield return new WaitWhile(() => _anim.GetCurrentFrame() <= 2);
@@ -82,11 +85,9 @@ namespace FiveKnights
                         ballFx.transform.parent = null;
                         Vector2 diff = ball.transform.position - _target.transform.position;
                         float rot = Mathf.Atan(diff.y / diff.x);
-                        Log(rot * Mathf.Rad2Deg);
                         rot += dir > 0 ? 0f : Mathf.PI;
-                        Log(rot * Mathf.Rad2Deg);
                         ball.transform.SetRotation2D(rot * Mathf.Rad2Deg + 90f);
-                        Vector2 vel = new Vector2(20f * Mathf.Cos(rot), 20f * Mathf.Sin(rot));
+                        Vector2 vel = new Vector2(30f * Mathf.Cos(rot), 30f * Mathf.Sin(rot));
                         ball.GetComponent<Rigidbody2D>().velocity = vel;
                         yield return new WaitForSeconds(0.1f);
                         ballFx.GetComponent<Animator>().Play("FxEnd");
@@ -95,7 +96,6 @@ namespace FiveKnights
                         yield return new WaitWhile(() => _anim.IsPlaying());
                         _anim.Play("Idle");
                         _sr.enabled = false;
-                        Log("--------------------------");
                         break;
                     }
                 }
