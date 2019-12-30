@@ -34,23 +34,19 @@ namespace FiveKnights
             _isma.SetActive(true);
             var _hm = _isma.AddComponent<HealthManager>();
             HealthManager hornHP = _whiteD.GetComponent<HealthManager>();
-
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic).Where(x => x.Name.Contains("Prefab")))
             {
                 fi.SetValue(_hm, fi.GetValue(hornHP));
             }
-
-            foreach (GameObject i in FiveKnights.preloadedGO.Values)
+            foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream")))
             {
                 if (i.name.Contains("Isma")) continue;
                 i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
-
-            foreach(SpriteRenderer i in _isma.GetComponentsInChildren<SpriteRenderer>(true))
+            foreach (SpriteRenderer i in _isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
             }
-
             //var _sr = _isma.GetComponent<SpriteRenderer>();
             //_sr.material = ArenaFinder.materials["flash"];
             IsmaController ic = _isma.AddComponent<IsmaController>();

@@ -96,9 +96,13 @@
     <Compile Include="DungPillar.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
+    <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WDController.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\WHegemol_full_2.png" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

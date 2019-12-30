@@ -5,6 +5,9 @@ using System.Text;
 using UnityEngine;
 using Modding;
 using System.Collections;
+using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
+using ModCommon.Util;
 using ModCommon;
 using Object = UnityEngine.Object;
 
@@ -31,7 +34,6 @@ namespace FiveKnights
 
         private IEnumerator Start()
         {
-            Log("Oh boi");
             SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
             sil.sprite = ArenaFinder.sprites["isma_sil_0"];
             sil.transform.localScale *= 1.15f;
@@ -54,7 +56,7 @@ namespace FiveKnights
             _sr.enabled = false;
             StartCoroutine(SmashBall());
         }
-        
+
         private IEnumerator SmashBall()
         {
             while (true)

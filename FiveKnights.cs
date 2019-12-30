@@ -18,6 +18,7 @@ namespace FiveKnights
     public class FiveKnights : Mod, ITogglableMod
     {
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
+        public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
 
         public override string GetVersion()
@@ -29,13 +30,14 @@ namespace FiveKnights
         {
             return new List<(string, string)>
             {
-                ("",""),
+                ("GG_Failed_Champion","False Knight Dream"),
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Storing GOs");
+            preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
             Instance = this;
             Log("Initalizing.");
 
@@ -43,6 +45,33 @@ namespace FiveKnights
             ModHooks.Instance.AfterSavegameLoadHook += AfterSaveGameLoad;
             ModHooks.Instance.NewGameHook += AddComponent;
             ModHooks.Instance.LanguageGetHook += LangGet;
+
+            int ind = 0;
+            Assembly asm = Assembly.GetExecutingAssembly();
+            foreach (string res in asm.GetManifestResourceNames())
+            {
+                if (!res.EndsWith(".png"))
+                {
+                    continue;
+                }
+
+                using (Stream s = asm.GetManifestResourceStream(res))
+                {
+                    if (s == null) continue;
+
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    s.Dispose();
+
+                    // Create texture from bytes
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(buffer, true);
+                    // Create sprite from texture
+                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
+
+                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                }
+            }
         }
 
         private string LangGet(string key, string sheettitle)
