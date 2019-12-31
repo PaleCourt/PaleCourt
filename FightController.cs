@@ -72,7 +72,7 @@ namespace FiveKnights
         
         public void CreateDryya()
         {
-            _dryya = Instantiate(new GameObject("Dryya"), new Vector2(74, 8.5f), Quaternion.identity);
+            _dryya = Instantiate(new GameObject("Dryya"), new Vector2(74, 10), Quaternion.identity);
             _dryya.SetActive(true);
             _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
         }

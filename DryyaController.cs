@@ -1,18 +1,23 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Random = System.Random;
 using System.Reflection;
 using ModCommon;
+using ModCommon.Util;
 using UnityEngine;
 
 namespace FiveKnights
 {
     public class DryyaController : MonoBehaviour
     {
+        private const float GroundY = 7.4f;
+        private const float LeftY = 61.0f;
+        private const float RightY = 91.0f;
+
         private int _hp = 1000;
         public Dictionary<string, List<Sprite>> animations = new Dictionary<string, List<Sprite>>();
-        private Sprite[] _dryyaIntroSprites;
         private Shader _flashShader;
         private Random _random;
 
@@ -27,12 +32,18 @@ namespace FiveKnights
             "DRYYA_DIALOG_5",
         };
         
+        private Sprite[] _dryyaIntroSprites;
+        private Sprite[] _dryyaWalkSprites;
         private void Awake()
         {
             gameObject.layer = 11;
             _dryyaIntroSprites = ArenaFinder.DryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Intro");
+            _dryyaWalkSprites = ArenaFinder.DryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Walk");
             _flashShader = ArenaFinder.DryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
             _random = new Random();
+
+            On.HealthManager.TakeDamage += OnTakeDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
         }
 
         private IEnumerator Start()
@@ -46,6 +57,29 @@ namespace FiveKnights
             DryyaIntro();
         }
 
+        private void FixedUpdate()
+        {
+            Log("Is Grounded: " + IsGrounded());
+        }
+        
+        private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
+        {
+            if (self.name.Contains("Dryya"))
+            {
+                FlashWhite(0.25f);
+            }
+            
+            orig(self, hitInstance);
+        }
+
+        private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction dreamNailReaction)
+        {
+            FlashWhite(1.0f);
+            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[_random.Next(_dreamNailDialogue.Length)]);
+
+            orig(dreamNailReaction);
+        }
+        
         private BoxCollider2D _collider;
         private DamageHero _damageHero;
         private EnemyDreamnailReaction _dreamNailReaction;
@@ -93,7 +127,7 @@ namespace FiveKnights
             }
 
             EnemyHitEffectsUninfected ogrimHitEffects = ogrim.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.OptionalParamBinding | BindingFlags.PutDispProperty | BindingFlags.SuppressChangeType | BindingFlags.PutRefDispProperty))
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
@@ -101,9 +135,12 @@ namespace FiveKnights
 
         private void AddAnimations()
         {
-            List<Sprite> introLandSprites = new List<Sprite>
+            List<Sprite> introDashInSprites = new List<Sprite>
             {
                 FindSprite(_dryyaIntroSprites, "Dryya_Intro_0"),
+            };
+            List<Sprite> introLandSprites = new List<Sprite>
+            {
                 FindSprite(_dryyaIntroSprites, "Dryya_Intro_1"),
                 FindSprite(_dryyaIntroSprites, "Dryya_Intro_2"),
                 FindSprite(_dryyaIntroSprites, "Dryya_Intro_3"),
@@ -121,15 +158,51 @@ namespace FiveKnights
                 FindSprite(_dryyaIntroSprites, "Dryya_Intro_11"),
             };
             
+            List<Sprite> introToWalkSprites = new List<Sprite>
+            {
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_0"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_1"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_2"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_3"),
+            };
+
+            List<Sprite> walkingSprites = new List<Sprite>
+            {
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_4"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_5"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_6"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_7"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_8"),
+                FindSprite(_dryyaWalkSprites, "Dryya_Walk_9"),
+            };
+
+            animations.Add("Intro Dash In", introDashInSprites);
             animations.Add("Intro Land", introLandSprites);
             animations.Add("Intro Flourish", introFlourishSprites);
+            animations.Add("Intro to Walk", introToWalkSprites);
+            animations.Add("Walking", walkingSprites);
         }
 
         private void DryyaIntro()
         {
+            IEnumerator IntroDashIn()
+            {
+                PlayAnimation("Intro Dash In");
+                float dashInSpeed = 3.0f;
+                _rb.velocity = new Vector2(-1, -1) * dashInSpeed;
+                while (!IsGrounded())
+                {
+                    yield return null;
+                }
+
+                StartCoroutine(IntroLand());
+            }
+            
             IEnumerator IntroLand()
             {
+                SnapToGround();
                 PlayAnimation("Intro Land");
+                _rb.velocity = Vector2.zero;
                 yield return new WaitForSeconds(GetAnimDuration("Intro Land"));
 
                 StartCoroutine(IntroFlourish());
@@ -138,12 +211,28 @@ namespace FiveKnights
             IEnumerator IntroFlourish()
             {
                 PlayAnimation("Intro Flourish");
-                _rb.velocity = new Vector2(0.5f, 0);
+                _rb.velocity = new Vector2(1.5f, 0);
                 yield return new WaitForSeconds(GetAnimDuration("Intro Flourish"));
                 _rb.velocity = Vector2.zero;
+
+                StartCoroutine(IntroToWalk());
             }
 
-            StartCoroutine(IntroLand());
+            IEnumerator IntroToWalk()
+            {
+                PlayAnimation("Intro to Walk");
+                yield return new WaitForSeconds(GetAnimDuration("Intro to Walk"));
+
+                StartCoroutine(Walking());
+            }
+
+            IEnumerator Walking()
+            {
+                PlayAnimation("Walking", true);
+                yield return null;
+            }
+
+            StartCoroutine(IntroDashIn());
         }
         
         public static Sprite FindSprite(Sprite[] spriteList, string spriteName)
@@ -184,26 +273,6 @@ namespace FiveKnights
             if (_animRoutine != null) StopCoroutine(_animRoutine);
             _animRoutine = StartCoroutine(Play());
         }
-
-        private List<string> validColliders = new List<string>
-        {
-            "Slash", "AltSlash", "DownSlash", "UpSlash", "Hit L", "Hit R", "Hit U", "Hit D", "Great Slash",
-            "Dash Slash", "Q Fall Damage", "Fireball2 Spiral(Clone)", "Enemy Damager", "Shield", 
-            "Grubberfly BeamL(Clone)", "Grubberfly BeamR(Clone)", "Grubberfly BeamU(Clone)", "Grubberfly BeamD(Clone)", 
-            "Damager", "Sharp Shadow", "Knight Dung Trail(Clone)", "Dung Explosion(Clone)", "Knight Spore Cloud(Clone)",
-        };
-        private void OnTriggerEnter2D(Collider2D collider)
-        {
-            if (validColliders.Any(@string => collider.name.Contains(@string)))
-            {
-                FlashWhite(0.25f);
-            }
-            else if (collider.name == "Hitbox")
-            {
-                _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[_random.Next(_dreamNailDialogue.Length)]);
-                FlashWhite(1.0f);
-            }
-        }
         
         private Coroutine _flashRoutine;
         public void FlashWhite(float time)
@@ -223,6 +292,24 @@ namespace FiveKnights
             
             if (_flashRoutine != null) StopCoroutine(_flashRoutine);
             _flashRoutine = StartCoroutine(Flash());
+        }
+
+        private void SnapToGround()
+        {
+            transform.position.SetY(GroundY);
+        }
+        
+        private const float Extension = 0.01f;
+        private const int CollisionMask = 1 << 8;
+        private bool IsGrounded()
+        {
+            float rayLength = _sr.bounds.extents.y + Extension;
+            return Physics2D.Raycast(transform.position, Vector2.down, rayLength, CollisionMask);
+        }
+
+        private void OnDestroy()
+        {
+            On.HealthManager.TakeDamage -= OnTakeDamage;
         }
         
         private void Log(object message) => Modding.Logger.Log("[Dryya] " + message);
