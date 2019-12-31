@@ -32,23 +32,44 @@ namespace FiveKnights
         {
             _isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
             _isma.SetActive(true);
-            var _hm = _isma.AddComponent<HealthManager>();
+
+            HealthManager hm = _isma.AddComponent<HealthManager>();
             HealthManager hornHP = _whiteD.GetComponent<HealthManager>();
-            foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic).Where(x => x.Name.Contains("Prefab")))
+            foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(x => x.Name.Contains("Prefab")))
             {
-                fi.SetValue(_hm, fi.GetValue(hornHP));
+                fi.SetValue(hm, fi.GetValue(hornHP));
             }
+
+            EnemyHitEffectsUninfected hitEff = _isma.AddComponent<EnemyHitEffectsUninfected>();
+            hitEff.enabled = true;
+            EnemyHitEffectsUninfected hornetHitEffects = _whiteD.GetComponent<EnemyHitEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.OptionalParamBinding | BindingFlags.PutDispProperty | BindingFlags.SuppressChangeType | BindingFlags.PutRefDispProperty))
+            {
+                fi.SetValue(hitEff, fi.GetValue(hornetHitEffects));
+            }
+
+            EnemyDeathEffectsUninfected deathEff = _isma.AddComponent<EnemyDeathEffectsUninfected>();
+            deathEff.enabled = true;
+            EnemyDeathEffectsUninfected hornetDeathEffects = _whiteD.GetComponent<EnemyDeathEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected).GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Default | BindingFlags.Static | BindingFlags.DeclaredOnly))
+            {
+                fi.SetValue(deathEff, fi.GetValue(hornetDeathEffects));
+            }
+
             foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream")))
             {
                 if (i.name.Contains("Isma")) continue;
                 i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
+
             foreach (SpriteRenderer i in _isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
             }
-            //var _sr = _isma.GetComponent<SpriteRenderer>();
-            //_sr.material = ArenaFinder.materials["flash"];
+
+            SpriteRenderer _sr = _isma.GetComponent<SpriteRenderer>();
+            _sr.material = ArenaFinder.materials["flash"];
             IsmaController ic = _isma.AddComponent<IsmaController>();
             ic.dd = _whiteD;
             PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");

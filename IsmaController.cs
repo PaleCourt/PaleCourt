@@ -17,10 +17,14 @@ namespace FiveKnights
     {
         private bool flashing;
         private HealthManager _hm;
+        private BoxCollider2D _bc;
+        private HealthManager _hmDD;
         private SpriteRenderer _sr;
         private GameObject _target;
         public GameObject dd;
         private Animator _anim;
+        private int _healthPool;
+        private bool _attacking;
         private const float LEFT_X = 60.3f;
         private const float RIGHT_X = 90.6f;
         private const float GROUND_Y = 5.9f;
@@ -30,10 +34,14 @@ namespace FiveKnights
             _hm = gameObject.GetComponent<HealthManager>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _anim = gameObject.GetComponent<Animator>();
+            _bc = gameObject.GetComponent<BoxCollider2D>();
+            _healthPool = 600;
         }
 
         private IEnumerator Start()
         {
+            yield return new WaitWhile(() => !dd);
+            _hmDD = dd.GetComponent<HealthManager>();
             SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
             sil.sprite = ArenaFinder.sprites["isma_sil_0"];
             sil.transform.localScale *= 1.15f;
@@ -44,6 +52,7 @@ namespace FiveKnights
             _hm.hp = 600;
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
+            gameObject.transform.localScale *= 1.4f;
             PositionIsma();
             FaceHero();
             _anim.Play("Bow");
@@ -53,21 +62,40 @@ namespace FiveKnights
             _anim.Play("EndBow");
             yield return new WaitForSeconds(0.1f);
             yield return new WaitWhile(() => _anim.IsPlaying());
-            _sr.enabled = false;
             StartCoroutine(SmashBall());
+            ToggleIsma(false);
+        }
+
+        private void Update()
+        {
+            if (_healthPool <= 0)
+            {
+                Log("Victory");
+                _hm.Die(new float?(0f), AttackTypes.Nail, true);
+                _hmDD.Die(new float?(0f), AttackTypes.Nail, true);
+                Destroy(this);
+            }
+        }
+
+        private IEnumerator AttackChoice()
+        {
+            while (true)
+            {
+                yield return new WaitForEndOfFrame();
+            }
         }
 
         private IEnumerator SmashBall()
         {
             while (true)
             {
-                if (Input.GetKeyUp(KeyCode.R))
+                if (!_attacking)
                 {
-                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionX() > 16f))
+                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionY() > 16f))
                     {
                         Vector2 pos = go.transform.position;
                         Destroy(go);
-                        _sr.enabled = true;
+                        ToggleIsma(true);
                         gameObject.transform.position = new Vector2(pos.x + 1.77f, pos.y - 0.38f);
                         float dir = FaceHero();
                         GameObject squish = gameObject.transform.Find("Squish").gameObject;
@@ -96,8 +124,8 @@ namespace FiveKnights
                         yield return new WaitForSeconds(0.1f);
                         Destroy(ballFx);
                         yield return new WaitWhile(() => _anim.IsPlaying());
-                        _anim.Play("Idle");
-                        _sr.enabled = false;
+                        ToggleIsma(false);
+                        yield return new WaitForSeconds(1.5f);
                         break;
                     }
                 }
@@ -115,6 +143,7 @@ namespace FiveKnights
                     StartCoroutine(FlashWhite());
                 }
             }
+            _healthPool -= hitInstance.DamageDealt;
             orig(self, hitInstance);
         }
 
@@ -138,6 +167,14 @@ namespace FiveKnights
             Vector3 pScale = gameObject.transform.localScale;
             gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * heroSignX, pScale.y, 1f);
             return heroSignX;
+        }
+
+        private void ToggleIsma(bool visible)
+        {
+            _anim.Play("Idle");
+            _attacking = visible;
+            _sr.enabled = visible;
+            _bc.enabled = visible;
         }
 
         private void PositionIsma()

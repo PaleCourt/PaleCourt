@@ -15,11 +15,6 @@ namespace FiveKnights
     internal class DungBall : MonoBehaviour
     {
         private bool _hit;
-        
-        private void Start()
-        {
-
-        }
 
         private void FixedUpdate()
         {
@@ -40,7 +35,7 @@ namespace FiveKnights
         private IEnumerator SpawnDungPillar(Vector2 pos)
         {
             pos.y = 7.4f;
-            GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             for (int i = 0; i < 3; i++)
             {
                 var DungPill1 = Instantiate(FiveKnights.preloadedGO["pillar"]);
