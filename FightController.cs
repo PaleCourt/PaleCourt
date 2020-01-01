@@ -46,7 +46,7 @@ namespace FiveKnights
 
             foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream") && x.GetComponent<SpriteRenderer>() != null))
             {
-                if (i.name.Contains("Isma")) continue;
+                if (i.name.Contains("Isma") || i.name.Contains("Dryya")) continue;
                 i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
 
@@ -72,8 +72,7 @@ namespace FiveKnights
         
         public void CreateDryya()
         {
-            _dryya = Instantiate(new GameObject("Dryya"), new Vector2(74, 10), Quaternion.identity);
-            _dryya.SetActive(true);
+            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(74, 15), Quaternion.identity);
             _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
         }
 
