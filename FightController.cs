@@ -11,6 +11,7 @@ using ModCommon;
 using HutongGames.PlayMaker;
 using Object = UnityEngine.Object;
 using System.Reflection;
+using ModCommon;
 
 namespace FiveKnights
 {
@@ -72,7 +73,7 @@ namespace FiveKnights
         
         public void CreateDryya()
         {
-            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(74, 15), Quaternion.identity);
+            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(90, 15), Quaternion.identity);
             _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
         }
 

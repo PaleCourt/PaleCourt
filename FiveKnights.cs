@@ -38,6 +38,7 @@ namespace FiveKnights
         {
             Log("Storing GOs");
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
+            
             Instance = this;
             Log("Initalizing.");
 
