@@ -30,6 +30,7 @@ namespace FiveKnights
 
         public void CreateIsma()
         {
+            Log("Creating Isma");
             _isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
             _isma.SetActive(true);
 
@@ -66,6 +67,12 @@ namespace FiveKnights
             foreach (SpriteRenderer i in _isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
+                if (i.gameObject.GetComponent<PolygonCollider2D>())
+                {
+                    Log(i.name);
+                    i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                    i.gameObject.layer = 11;
+                }
             }
 
             SpriteRenderer _sr = _isma.GetComponent<SpriteRenderer>();
@@ -75,6 +82,7 @@ namespace FiveKnights
             PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");
             GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
             FiveKnights.preloadedGO["pillar"] = pillar;
+            Log("Done creating Isma");
         }
 
         private void OnDestroy()
