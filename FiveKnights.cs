@@ -30,6 +30,8 @@ namespace FiveKnights
         {
             return new List<(string, string)>
             {
+                ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
                 ("GG_Failed_Champion","False Knight Dream"),
             };
         }
@@ -37,6 +39,8 @@ namespace FiveKnights
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Storing GOs");
+            preloadedGO.Add("Slash", preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"]);
+            preloadedGO.Add("PV", preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"]);
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
             
             Instance = this;
