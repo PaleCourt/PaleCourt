@@ -80,6 +80,9 @@ namespace FiveKnights
             {
                 case "FK_NAME": return "The Great Five Knights";
                 case "FK_DESC": return "Forgotten champion gods of a dead kingdom.";
+                case "ISMA_DREAM_1_1": return "Something about Sacrifice";
+                case "ISMA_DREAM_2_1": return "Something about Grove";
+                case "ISMA_DREAM_3_1": return "Something about Ogrim";
                 default: return Language.Language.GetInternal(key, sheettitle);
             }
         }

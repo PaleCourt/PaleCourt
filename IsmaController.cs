@@ -10,24 +10,38 @@ using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
 using ModCommon;
 using Object = UnityEngine.Object;
+using System.Reflection;
 
 namespace FiveKnights
 {
     public class IsmaController : MonoBehaviour
     {
+        //Note: Dreamnail code was taken from Jngo's code :)
+
         private bool flashing;
         private HealthManager _hm;
         private BoxCollider2D _bc;
         private HealthManager _hmDD;
+        private AudioSource _aud;
+        private EnemyHitEffectsUninfected _hitEff;
+        private EnemyDreamnailReaction _dnailReac;
+        private GameObject _dnailEff;
         private SpriteRenderer _sr;
         private GameObject _target;
         public GameObject dd;
         private Animator _anim;
+        private System.Random _rand;
         private int _healthPool;
         private bool _attacking;
         private const float LEFT_X = 60.3f;
         private const float RIGHT_X = 90.6f;
         private const float GROUND_Y = 5.9f;
+        private string[] _dnailDial =
+        {
+            "ISMA_DREAM_1",
+            "ISMA_DREAM_2",
+            "ISMA_DREAM_3"
+        };
 
         private void Awake()
         {
@@ -35,6 +49,13 @@ namespace FiveKnights
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _anim = gameObject.GetComponent<Animator>();
             _bc = gameObject.GetComponent<BoxCollider2D>();
+            _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
+            _hitEff = gameObject.AddComponent<EnemyHitEffectsUninfected>();
+            _aud = gameObject.AddComponent<AudioSource>();
+            _dnailReac.enabled = true;
+            _hitEff.enabled = true;
+            _rand = new System.Random();
+            _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
             _healthPool = 600;
         }
 
@@ -43,6 +64,7 @@ namespace FiveKnights
             Log("Begin Isma");
             yield return new WaitWhile(() => !dd);
             _hmDD = dd.GetComponent<HealthManager>();
+            _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
             sil.sprite = ArenaFinder.sprites["isma_sil_0"];
             sil.transform.localScale *= 1.15f;
@@ -50,9 +72,11 @@ namespace FiveKnights
             sil.gameObject.SetActive(false);
             yield return new WaitForSeconds(1f);
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             _hm.hp = 600;
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
+            AssignFields();
             PositionIsma();
             FaceHero();
             _anim.Play("Apear"); //Yes I know it's "appear," I don't feel like changing the assetbundle buddo
@@ -70,8 +94,8 @@ namespace FiveKnights
             whip.AddComponent<DamageHero>().damageDealt = 1;
             whip.layer = 11;
             //StartCoroutine(SmashBall());
-            StartCoroutine(AttackChoice());
-            ToggleIsma(false);
+            //StartCoroutine(AttackChoice());
+            //ToggleIsma(false);
             Log("Isma Attack");
         }
 
@@ -86,6 +110,25 @@ namespace FiveKnights
             }
         }
 
+        private void AssignFields()
+        {
+            EnemyHitEffectsUninfected ogrimHitEffects = dd.GetComponent<EnemyHitEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                fi.SetValue(_hitEff, fi.GetValue(ogrimHitEffects));
+            }
+        }
+        
+        private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
+        {
+            if (self.name.Contains("Isma"))
+            {
+                FlashWhite();
+                Instantiate(_dnailEff, transform.position, Quaternion.identity);
+                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
+            }
+            orig(self);
+        }
         private IEnumerator AttackChoice()
         {
             while (true)
@@ -315,6 +358,7 @@ namespace FiveKnights
         private void OnDestroy()
         {
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
         }
 
         private void Log(object o)

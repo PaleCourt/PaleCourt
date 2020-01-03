@@ -42,22 +42,6 @@ namespace FiveKnights
                 fi.SetValue(hm, fi.GetValue(hornHP));
             }
 
-            EnemyHitEffectsUninfected hitEff = _isma.AddComponent<EnemyHitEffectsUninfected>();
-            hitEff.enabled = true;
-            EnemyHitEffectsUninfected hornetHitEffects = _whiteD.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.OptionalParamBinding | BindingFlags.PutDispProperty | BindingFlags.SuppressChangeType | BindingFlags.PutRefDispProperty))
-            {
-                fi.SetValue(hitEff, fi.GetValue(hornetHitEffects));
-            }
-
-            EnemyDeathEffectsUninfected deathEff = _isma.AddComponent<EnemyDeathEffectsUninfected>();
-            deathEff.enabled = true;
-            EnemyDeathEffectsUninfected hornetDeathEffects = _whiteD.GetComponent<EnemyDeathEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected).GetFields(BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Default | BindingFlags.Static | BindingFlags.DeclaredOnly))
-            {
-                fi.SetValue(deathEff, fi.GetValue(hornetDeathEffects));
-            }
-
             foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream")))
             {
                 if (i.name.Contains("Isma")) continue;
@@ -69,7 +53,6 @@ namespace FiveKnights
                 i.material = new Material(Shader.Find("Sprites/Default"));
                 if (i.gameObject.GetComponent<PolygonCollider2D>())
                 {
-                    Log(i.name);
                     i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                     i.gameObject.layer = 11;
                 }
