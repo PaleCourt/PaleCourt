@@ -85,10 +85,10 @@ namespace FiveKnights
             {
                 case "FK_NAME": return "The Great Five Knights";
                 case "FK_DESC": return "Forgotten champion gods of a dead kingdom.";
-                case "DRYYA_DIALOG_1_1": return "It is my duty to protect the king.";
-                case "DRYYA_DIALOG_2_1": return "Dryya Dialogue 2";
-                case "DRYYA_DIALOG_3_1": return "Dryya Dialogue 3";
-                case "DRYYA_DIALOG_4_1": return "Dryya Dialogue 4";
+                case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
+                case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
+                case "DRYYA_DIALOG_3_1": return "Protect...";
+                case "DRYYA_DIALOG_4_1": return "Kin...seeks to find her?";
                 case "DRYYA_DIALOG_5_1": return "Dryya Dialogue 5";
                 case "ISMA_DREAM_1_1": return "Something about Sacrifice";
                 case "ISMA_DREAM_2_1": return "Something about Grove";

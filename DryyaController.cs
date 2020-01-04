@@ -16,13 +16,10 @@ namespace FiveKnights
         private const float GroundY = 8.5f;
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
-        private const float SlashSpeed = 40.0f;
-        private const float WalkSpeed = 20.0f;
+        private const float SlashSpeed = 50.0f;
+        private const float WalkSpeed = 15.0f;
         private const float AnimFPS = 1.0f / 12;
 
-        private List<Action> _moves;
-        private Dictionary<Action, int> _repeats;
-        
         private int _hp = 1000;
         private int _direction = -1;
         public Dictionary<string, List<Sprite>> animations = new Dictionary<string, List<Sprite>>();
@@ -57,8 +54,6 @@ namespace FiveKnights
 
             GetComponents();
             AddComponents();
-            
-            FiveKnights.preloadedGO["PV"].PrintSceneHierarchyTree();
 
             On.HealthManager.TakeDamage += OnTakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -68,7 +63,7 @@ namespace FiveKnights
         {
             while (HeroController.instance == null) yield return null;
             
-            _dreamNailEffect = ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<GameObject>("dreamImpactPrefab");
+            _dreamNailEffect = ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
 
             _moves = new List<Action>
             {
@@ -186,7 +181,10 @@ namespace FiveKnights
             _audio.time = 0.0f;
         }
 
-        
+        private Action _previousMove;
+        private Action _nextMove;
+        private List<Action> _moves;
+        private Dictionary<Action, int> _repeats;
         private IEnumerator IdleAndChooseNextAttack()
         {
             _anim.Play("Idle");
@@ -198,9 +196,10 @@ namespace FiveKnights
             
             yield return new WaitForSeconds(waitTime);*/
             yield return null;
-
+            
+            if (_nextMove != null) _previousMove = _nextMove;
             int index = _random.Next(_moves.Count);
-            Action nextMove = _moves[index];
+            _nextMove = _moves[index];
             
             // Make sure moves don't occur more than twice in a row
             /*while (_repeats[nextMove] >= 2)
@@ -212,7 +211,7 @@ namespace FiveKnights
 
             foreach (Action move in _moves)
             {
-                if (move == nextMove)
+                if (move == _nextMove)
                 {
                     _repeats[move]++;
                 }
@@ -243,14 +242,20 @@ namespace FiveKnights
                 }
             }
 
+            float walkThreshold = 10.0f;
+            if (Mathf.Abs(heroPos.x - pos.x) > walkThreshold)
+            {
+                _nextMove = DryyaWalk;
+            }
+            
             if (heroPos.x - pos.x < 0 && _direction == 1 ||
                 heroPos.x - pos.x > 0 && _direction == -1)
             {
-                nextMove = DryyaTurn;
+                _nextMove = DryyaTurn;
             }
 
-            Log("Next Move: " + nextMove.Method.Name);
-            nextMove.Invoke();
+            Log("Next Move: " + _nextMove.Method.Name);
+            _nextMove.Invoke();
         }
 
         private void DryyaIntro()
@@ -340,14 +345,14 @@ namespace FiveKnights
                 Log("Walking");
                 _anim.Play("Walking");
                 _rb.velocity = new Vector2(_direction * WalkSpeed, 0);
-                Vector2 heroPos = HeroController.instance.transform.position;
-                Vector2 pos = transform.position;
-                float distance = (float) Math.Sqrt(Math.Pow(heroPos.x - pos.x, 2) + Math.Pow(heroPos.y - pos.y, 2));
-                while (distance >= 5.0f)
+                float heroX = HeroController.instance.transform.position.x;
+                float posX = transform.position.x;
+                float dx = Mathf.Abs(heroX - posX); 
+                while (dx >= 5.0f)
                 {
-                    heroPos = HeroController.instance.transform.position;
-                    pos = transform.position;                    
-                    distance = (float)Math.Sqrt(Math.Pow(heroPos.x - pos.x, 2) + Math.Pow(heroPos.y - pos.y, 2));
+                    heroX = HeroController.instance.transform.position.x;
+                    posX = transform.position.x;
+                    dx = Mathf.Abs(heroX - posX);
                     yield return null;
                 }
 
@@ -362,9 +367,14 @@ namespace FiveKnights
             IEnumerator SlashAntic()
             {
                 Log("Slash Antic");
-                _anim.Play("Slash Antic");
+                if (_previousMove != DryyaWalk)
+                {
+                    _anim.Play("Intro To Walk");
+                    yield return new WaitForSeconds(4 * AnimFPS);
+                }
                 _rb.velocity = Vector2.zero;
-                yield return new WaitForSeconds(0.5f);
+                _anim.Play("Slash Antic");
+                yield return new WaitForSeconds(3 * AnimFPS);
 
                 StartCoroutine(Slash1());
             }
@@ -414,6 +424,7 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(AnimFPS);
                 Destroy(slash2);
+                yield return new WaitForSeconds(AnimFPS);
 
                 StartCoroutine(Slash2());
             }
@@ -462,6 +473,7 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(AnimFPS);
                 Destroy(slash2);
+                yield return new WaitForSeconds(AnimFPS);
 
                 StartCoroutine(Slash3());
             }
@@ -510,6 +522,7 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(AnimFPS);
                 Destroy(slash2);
+                yield return new WaitForSeconds(4 * AnimFPS);
 
                 StartCoroutine(IdleAndChooseNextAttack());
             }
@@ -544,16 +557,7 @@ namespace FiveKnights
         {
             transform.position.SetY(GroundY);
         }
-        
-        private float FaceHero(bool opposite = false)
-        {
-            float heroSignX = Mathf.Sign(HeroController.instance.transform.position.x - gameObject.transform.position.x);
-            heroSignX = opposite ? -heroSignX : heroSignX;
-            Vector3 pScale = gameObject.transform.localScale;
-            gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * heroSignX, pScale.y, 1f);
-            return heroSignX;
-        }
-        
+
         private const float Extension = 0.01f;
         private const int CollisionMask = 1 << 8;
         private bool IsGrounded()
