@@ -32,7 +32,7 @@ namespace FiveKnights
             yield return new WaitWhile(() => _hm.hp > 600);
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 3.5f;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Rage Roar"));
-            //FightController.Instance.CreateIsma();
+            FightController.Instance.CreateIsma();
             FightController.Instance.CreateDryya();
             FightController.Instance.CreateIsma();
             FightController.Instance.CreateZemer();
