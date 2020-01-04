@@ -19,6 +19,8 @@ namespace FiveKnights
         //Note: Dreamnail code was taken from Jngo's code :)
 
         private bool flashing;
+        private bool _attacking;
+        private bool _plantpillar;
         private HealthManager _hm;
         private BoxCollider2D _bc;
         private HealthManager _hmDD;
@@ -29,10 +31,10 @@ namespace FiveKnights
         private SpriteRenderer _sr;
         private GameObject _target;
         public GameObject dd;
+        private PlayMakerFSM _ddFsm;
         private Animator _anim;
         private System.Random _rand;
         private int _healthPool;
-        private bool _attacking;
         private const float LEFT_X = 60.3f;
         private const float RIGHT_X = 90.6f;
         private const float GROUND_Y = 5.9f;
@@ -64,6 +66,7 @@ namespace FiveKnights
             Log("Begin Isma");
             yield return new WaitWhile(() => !dd);
             _hmDD = dd.GetComponent<HealthManager>();
+            _ddFsm = dd.LocateMyFSM("Dung Defender");
             _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
             sil.sprite = ArenaFinder.sprites["isma_sil_0"];
@@ -93,9 +96,10 @@ namespace FiveKnights
             GameObject whip = transform.Find("Whip").gameObject;
             whip.AddComponent<DamageHero>().damageDealt = 1;
             whip.layer = 11;
-            //StartCoroutine(SmashBall());
-            //StartCoroutine(AttackChoice());
-            //ToggleIsma(false);
+            PlantPillar();
+            StartCoroutine(SmashBall());
+            StartCoroutine(AttackChoice());
+            ToggleIsma(false);
             Log("Isma Attack");
         }
 
@@ -110,25 +114,6 @@ namespace FiveKnights
             }
         }
 
-        private void AssignFields()
-        {
-            EnemyHitEffectsUninfected ogrimHitEffects = dd.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-                fi.SetValue(_hitEff, fi.GetValue(ogrimHitEffects));
-            }
-        }
-        
-        private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
-        {
-            if (self.name.Contains("Isma"))
-            {
-                FlashWhite();
-                Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
-            }
-            orig(self);
-        }
         private IEnumerator AttackChoice()
         {
             while (true)
@@ -139,6 +124,41 @@ namespace FiveKnights
                     StartCoroutine(AirFist());
                 }
             }
+        }
+
+        private void PlantPillar()
+        {
+            List<float> PlantX = new List<float>();
+            IEnumerator PlantChecker()
+            {
+                while (true)
+                {
+                    if (_ddFsm.ActiveStateName == "RJ Antic")
+                    {
+                        Coroutine c = StartCoroutine(PlantPillar());
+                        yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Idle");
+                        StopCoroutine(c);
+                    }
+                    yield return new WaitForEndOfFrame();
+                }
+            }
+
+            IEnumerator PlantPillar()
+            {
+                while (true)
+                {
+                    float posX = _target.transform.GetPositionX();
+                    bool skip = false;
+                    foreach (float i in PlantX.Where(x => FastApproximately(x, posX, 4f))) skip = true;
+                    if (skip) continue;
+                    PlantX.Add(posX);
+                    GameObject plant = Instantiate(FiveKnights.preloadedGO["Plant"]);
+                    plant.transform.position = new Vector2(posX, GROUND_Y);
+                    plant.AddComponent<PlantCtrl>().PlantX = PlantX;
+                    yield return new WaitForSeconds(UnityEngine.Random.Range(2, 3));
+                }
+            }
+            StartCoroutine(PlantChecker());
         }
 
         private IEnumerator AirFist()
@@ -155,7 +175,9 @@ namespace FiveKnights
             SpriteRenderer armSpr = arm.GetComponent<SpriteRenderer>();
             GameObject spike = transform.Find("SpikeArm").gameObject;
             arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
-            GameObject rstrip = arm.transform.Find("Strip").gameObject;
+            GameObject stripStr = arm.transform.Find("StripStart").gameObject;
+            stripStr.SetActive(false);
+            GameObject rstrip = arm.transform.Find("StripEnd").gameObject;
             GameObject rfist = arm.transform.Find("SpikeFistB").gameObject;
             GameObject strip = Instantiate(rstrip, rstrip.transform.position, rstrip.transform.rotation);
             GameObject fist = Instantiate(rfist, rfist.transform.position, rfist.transform.rotation);
@@ -163,11 +185,11 @@ namespace FiveKnights
             SpriteRenderer stpSR = strip.GetComponent<SpriteRenderer>();
             strip.SetActive(false);
             fist.SetActive(false);
+            AirFistCollision afc = fist.AddComponent<AirFistCollision>();
             Vector3 strSC = strip.transform.localScale;
             Vector3 fstSc = fist.transform.localScale;
-            strip.transform.localScale = new Vector3(dir * strSC.x, strSC.y, strSC.z) * 1.3f;
+            strip.transform.localScale = new Vector3(dir * strSC.x, strSC.y, strSC.z) * 1.6f;
             fist.transform.localScale = new Vector3(dir * fstSc.x, fstSc.y, fstSc.z) * 1.4f;
-
             _anim.Play("AFistAntic");
             yield return new WaitForSeconds(0.05f);
             yield return new WaitWhile(() => _anim.IsPlaying());
@@ -176,28 +198,28 @@ namespace FiveKnights
             spike.SetActive(false);
             arm.SetActive(true);
             armSpr.enabled = true;
+            stripStr.SetActive(true);
             strip.SetActive(true);
             fist.SetActive(true);
             _anim.Play("AFist");
             fstRB.velocity = new Vector2(dir * 60f * Mathf.Cos(rot), dir * 60f * Mathf.Sin(rot));
-            float time = 0.45f;
             int i = 0;
-            while (time > 0f)
+            while (!afc.isHit)
             {
-                stpSR.size = new Vector2(stpSR.size.x + 0.75f, 0.11f);
-                time -= 0.03f;
+                stpSR.size = new Vector2(stpSR.size.x + 0.68f, 0.42f);
                 i++;
                 yield return new WaitForSeconds(0.01f);
             }
             fstRB.velocity = new Vector2(dir * -60f * Mathf.Cos(rot), dir * -60f * Mathf.Sin(rot));
             while (i > 0)
             {
-                stpSR.size = new Vector2(stpSR.size.x - 0.75f, 0.11f);
+                stpSR.size = new Vector2(stpSR.size.x - 0.68f, 0.42f);
                 i--;
                 yield return new WaitForSeconds(0.01f);
             }
             fstRB.velocity = Vector2.zero;
             armSpr.enabled = false;
+            stripStr.SetActive(false);
             Destroy(strip);
             Destroy(fist);
             spike.SetActive(true);
@@ -251,22 +273,25 @@ namespace FiveKnights
             {
                 if (!_attacking)
                 {
-                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionY() > 16f))
+                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionY() > 15f
+                            && x.transform.GetPositionY() < 18f && x.GetComponent<Rigidbody2D>().velocity.y > 0f))
                     {
                         Vector2 pos = go.transform.position;
-                        Destroy(go);
                         ToggleIsma(true);
-                        gameObject.transform.position = new Vector2(pos.x + 1.77f, pos.y - 0.38f);
+                        float side = go.GetComponent<Rigidbody2D>().velocity.x > 0f ? 1f : -1f;
+                        gameObject.transform.position = new Vector2(pos.x + side * 1.77f, pos.y + 0.38f);
                         float dir = FaceHero();
                         GameObject squish = gameObject.transform.Find("Squish").gameObject;
                         GameObject ball = Instantiate(gameObject.transform.Find("Ball").gameObject);
                         ball.transform.localScale *= 1.4f;
-                        squish.SetActive(true);
                         ball.layer = 11;
                         ball.AddComponent<DamageHero>().damageDealt = 1;
                         ball.AddComponent<DungBall>();
                         _anim.Play("BallStrike");
                         yield return new WaitForSeconds(0.05f);
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                        Destroy(go);
+                        squish.SetActive(true);
                         yield return new WaitWhile(() => _anim.GetCurrentFrame() <= 2);
                         GameObject ballFx = ball.transform.Find("BallFx").gameObject;
                         squish.SetActive(false);
@@ -291,6 +316,26 @@ namespace FiveKnights
                 }
                 yield return new WaitForEndOfFrame();
             }
+        }
+
+        private void AssignFields()
+        {
+            EnemyHitEffectsUninfected ogrimHitEffects = dd.GetComponent<EnemyHitEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                fi.SetValue(_hitEff, fi.GetValue(ogrimHitEffects));
+            }
+        }
+
+        private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
+        {
+            if (self.name.Contains("Isma"))
+            {
+                FlashWhite();
+                Instantiate(_dnailEff, transform.position, Quaternion.identity);
+                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
+            }
+            orig(self);
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)

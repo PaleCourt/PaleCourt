@@ -90,16 +90,20 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AirFistCollision.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
+    <Compile Include="Flash.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
+    <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WDController.cs" />
+    <Compile Include="ZemerController.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />

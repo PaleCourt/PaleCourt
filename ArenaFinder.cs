@@ -19,9 +19,7 @@ namespace FiveKnights
     {
         public static Dictionary<string, AudioClip> audioClips;
         public static Dictionary<string, Material> materials;
-        public static Dictionary<string, RuntimeAnimatorController> animators;
         public static Dictionary<string, Sprite> sprites;
-        public static Shader flashShader;
         private bool correctedTP;
         private int defeats;
         private FightController fightCtrl;
@@ -30,12 +28,15 @@ namespace FiveKnights
         {
             Unload();
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
-
+            USceneManager.activeSceneChanged += SceneChanged;
             audioClips = new Dictionary<string, AudioClip>();
             materials = new Dictionary<string, Material>();
-            animators = new Dictionary<string, RuntimeAnimatorController>();
             sprites = new Dictionary<string, Sprite>();
-            
+            LoadIsmaBundle();
+        }
+
+        private void LoadIsmaBundle()
+        {
             string path = "";
             switch (SystemInfo.operatingSystemFamily)
             {
@@ -52,17 +53,11 @@ namespace FiveKnights
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
                     return;
             }
-            USceneManager.activeSceneChanged += SceneChanged;
             AssetBundle ab = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
-            FiveKnights.preloadedGO["Ball"] = ab.LoadAsset<GameObject>("Ball");
             FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
-            animators["Isma"] = ab.LoadAsset<RuntimeAnimatorController>("IsmaCtrl");
-            animators["Ball"] = ab.LoadAsset<RuntimeAnimatorController>("BallCtrl");
-            animators["Plant"] = ab.LoadAsset<RuntimeAnimatorController>("PlantCtrl");
-            animators["fx"] = ab.LoadAsset<RuntimeAnimatorController>("FxCtrl");
-            flashShader = ab.LoadAsset<Shader>("Diffuse Flash");
+            FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
             foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
             {
                 sprites[spr.name] = spr;

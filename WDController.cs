@@ -23,6 +23,7 @@ namespace FiveKnights
         {
             _hm = gameObject.GetComponent<HealthManager>();
             _fsm = gameObject.LocateMyFSM("Dung Defender");
+            FiveKnights.preloadedGO["WD"] = gameObject;
         }
 
         private IEnumerator Start()
@@ -32,6 +33,7 @@ namespace FiveKnights
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 3.5f;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Rage Roar"));
             FightController.Instance.CreateIsma();
+            FightController.Instance.CreateZemer();
         }
 
         private void Log(object o)

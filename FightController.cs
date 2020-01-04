@@ -19,6 +19,7 @@ namespace FiveKnights
         public static FightController Instance;
         private GameObject _whiteD;
         private GameObject _isma;
+        private GameObject _zemer;
 
         private IEnumerator Start()
         {
@@ -42,7 +43,7 @@ namespace FiveKnights
                 fi.SetValue(hm, fi.GetValue(hornHP));
             }
 
-            foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream")))
+            foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream") && x.GetComponent<SpriteRenderer>() != null))
             {
                 if (i.name.Contains("Isma")) continue;
                 i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
@@ -66,6 +67,25 @@ namespace FiveKnights
             GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
             FiveKnights.preloadedGO["pillar"] = pillar;
             Log("Done creating Isma");
+        }
+
+        public void CreateZemer()
+        {
+            Log("Creating Zemer");
+            _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
+            _zemer.SetActive(true);
+
+            HealthManager hm = _zemer.AddComponent<HealthManager>();
+            HealthManager hornHP = _whiteD.GetComponent<HealthManager>();
+            foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                .Where(x => x.Name.Contains("Prefab")))
+            {
+                fi.SetValue(hm, fi.GetValue(hornHP));
+            }
+
+            SpriteRenderer _sr = _zemer.GetComponent<SpriteRenderer>();
+            ZemerController zc = _zemer.AddComponent<ZemerController>();
+            Log("Done creating Zemer");
         }
 
         private void OnDestroy()
