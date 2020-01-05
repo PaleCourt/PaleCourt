@@ -11,6 +11,7 @@ using ModCommon;
 using HutongGames.PlayMaker;
 using Object = UnityEngine.Object;
 using System.Reflection;
+using ModCommon;
 
 namespace FiveKnights
 {
@@ -19,6 +20,7 @@ namespace FiveKnights
         public static FightController Instance;
         private GameObject _whiteD;
         private GameObject _isma;
+        private GameObject _dryya;
         private GameObject _zemer;
 
         private IEnumerator Start()
@@ -45,7 +47,7 @@ namespace FiveKnights
 
             foreach (GameObject i in FiveKnights.preloadedGO.Values.Where(x => !x.name.Contains("Dream") && x.GetComponent<SpriteRenderer>() != null))
             {
-                if (i.name.Contains("Isma")) continue;
+                if (i.name.Contains("Isma") || i.name.Contains("Dryya")) continue;
                 i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
 
@@ -67,6 +69,12 @@ namespace FiveKnights
             GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
             FiveKnights.preloadedGO["pillar"] = pillar;
             Log("Done creating Isma");
+        }
+        
+        public void CreateDryya()
+        {
+            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(90, 15), Quaternion.identity);
+            _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
         }
 
         public void CreateZemer()

@@ -30,6 +30,9 @@ namespace FiveKnights
         {
             return new List<(string, string)>
             {
+                ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
                 ("GG_Failed_Champion","False Knight Dream"),
             };
         }
@@ -37,7 +40,11 @@ namespace FiveKnights
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Storing GOs");
+            preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
+            preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
+            preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
+
             Instance = this;
             Log("Initalizing.");
 
@@ -80,6 +87,11 @@ namespace FiveKnights
             {
                 case "FK_NAME": return "The Great Five Knights";
                 case "FK_DESC": return "Forgotten champion gods of a dead kingdom.";
+                case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
+                case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
+                case "DRYYA_DIALOG_3_1": return "Protect...";
+                case "DRYYA_DIALOG_4_1": return "Kin...seeks to find her?";
+                case "DRYYA_DIALOG_5_1": return "Dryya Dialogue 5";
                 case "ISMA_DREAM_1_1": return "Something about Sacrifice";
                 case "ISMA_DREAM_2_1": return "Something about Grove";
                 case "ISMA_DREAM_3_1": return "Something about Ogrim";

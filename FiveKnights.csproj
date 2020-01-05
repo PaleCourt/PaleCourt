@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -95,6 +96,7 @@
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
+    <Compile Include="DryyaController.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />
