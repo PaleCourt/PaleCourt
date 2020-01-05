@@ -40,11 +40,12 @@ namespace FiveKnights
 
             _control = gameObject.LocateMyFSM("FalseyControl");
             _hm = GetComponent<HealthManager>();
-            Destroy(gameObject.FindGameObjectInChildren("Hitter"));
+
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
 
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
+            On.HealthManager.TakeDamage += OnTakeDamage;
         }
 
         private IEnumerator Start()
@@ -84,19 +85,6 @@ namespace FiveKnights
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
         {
-            // Manually add soul when striking Hegemol
-            if (PlayerData.instance.equippedCharm_20)
-            {
-                HeroController.instance.AddMPCharge(14);
-            }
-            else if (PlayerData.instance.equippedCharm_21)
-            {
-                HeroController.instance.AddMPCharge(19);
-            }
-            else
-            {
-                HeroController.instance.AddMPCharge(11);
-            }
             self.GetAttr<EnemyHitEffectsArmoured, SpriteFlash>("spriteFlash").flashFocusHeal();
             FSMUtility.SendEventToGameObject(gameObject, "DAMAGE FLASH", true);
             EnemyHitEffectsUninfected hitEffects = _pv.GetComponent<EnemyHitEffectsUninfected>();
@@ -221,6 +209,32 @@ namespace FiveKnights
                 break;
             }
         }
+
+        private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
+        {
+            if (self.name.Contains("False Knight Dream"))
+            {
+                if (hitInstance.AttackType == AttackTypes.Nail)
+                {
+                    int soulGain;
+                    if (PlayerData.instance.MPCharge >= 99)
+                    {
+                        soulGain = 6;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 2;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 4;
+                    }
+                    else
+                    {
+                        soulGain = 11;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 3;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 8;
+                    }
+                    HeroController.instance.AddMPCharge(soulGain);
+                }
+            }
+
+            orig(self, hitInstance);
+        }
         
         private void AssignFields()
         {
@@ -267,6 +281,7 @@ namespace FiveKnights
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
+            On.HealthManager.TakeDamage -= OnTakeDamage;
         }
 
         private void Log(object o)
