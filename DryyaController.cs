@@ -147,7 +147,7 @@ namespace FiveKnights
             _rb = GetComponent<Rigidbody2D>();
             _sr = GetComponent<SpriteRenderer>();
 
-            _sr.material = new Material(ArenaFinder.flashShader);
+            _sr.material = new Material(ArenaFinder.FlashShader);
         }
 
         private AudioSource _audio;

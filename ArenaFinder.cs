@@ -66,7 +66,8 @@ namespace FiveKnights
             
             LoadDryyaAssets();
         }
-        
+
+        public static Shader FlashShader;
         private void LoadDryyaAssets()
         {
             string dryyaAssetsPath;
@@ -88,10 +89,7 @@ namespace FiveKnights
             
             AssetBundle dryyaAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
             FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
-            animators["Dryya"] = dryyaAssetBundle.LoadAsset<RuntimeAnimatorController>("DryyaController");
             FiveKnights.preloadedGO["Dryya Silhouette"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya Silhouette");
-            animators["Dryya Silhouette"] =
-                dryyaAssetBundle.LoadAsset<RuntimeAnimatorController>("DryyaSilhouetteController");
             Log("Getting Sprites");
             foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
             {
@@ -99,7 +97,7 @@ namespace FiveKnights
                 sprites[sprite.name] = sprite;
             }
 
-            flashShader = dryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
+            FlashShader = dryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
 
 
         }
