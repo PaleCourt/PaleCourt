@@ -70,6 +70,17 @@ namespace FiveKnights
             return _dryya.GetComponent<DryyaController>();
         }
 
+        private GameObject _hegemol;
+        public void CreateHegemol()
+        {
+            Log("Creating Hegemol");
+            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"],
+                new Vector2(HeroController.instance.transform.position.x, 23), Quaternion.identity);
+            _hegemol.SetActive(true);
+            Log("Adding HegemolController component");
+            _hegemol.AddComponent<HegemolController>().ogrim = _whiteD;
+        }
+        
         public void CreateZemer()
         {
             Log("Creating Zemer");
