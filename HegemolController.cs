@@ -33,7 +33,7 @@ namespace FiveKnights
         {
             Log("Hegemol Awake");;
 
-            _pv = Instantiate(FiveKnights.preloadedGO["PV"], new Vector2(13, 10), Quaternion.identity);
+            _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
             PlayMakerFSM control = _pv.LocateMyFSM("Control");
             control.RemoveTransition("Pause", "Set Phase HP");
@@ -257,8 +257,8 @@ namespace FiveKnights
             Transform trans = transform;
             Vector2 pos = trans.position;
             float scaleX = trans.localScale.x;
-            float xLeft = pos.x + 2 * scaleX - 2;
-            float xRight = pos.x + 2 * scaleX + 2;
+            float xLeft = pos.x + 5 * scaleX - 2;
+            float xRight = pos.x + 5 * scaleX + 2;
             while (xLeft >= LeftX || xRight <= RightX)
             {
                 GameObject dungPillarR = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(xRight, 12.0f), Quaternion.identity);
