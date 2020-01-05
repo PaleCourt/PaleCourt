@@ -62,17 +62,25 @@ namespace FiveKnights
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
-            
+
             _dreamNailEffect = ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
 
             _moves = new List<Action>
             {
+                DryyaCounter,
                 DryyaTripleSlash,
             };
 
             _repeats = new Dictionary<Action, int>
             {
+                [DryyaCounter] = 0,
                 [DryyaTripleSlash] = 0,
+            };
+            
+            _maxRepeats = new Dictionary<Action, int>
+            {
+                [DryyaCounter] = 1,
+                [DryyaTripleSlash] = 2,
             };
             
             AssignFields();
@@ -108,6 +116,26 @@ namespace FiveKnights
             orig(self);
         }
 
+        // Put OnBlockedHit outside of DryyaCounter so that the event handler can be unhooked in OnDestroy if the scene changes mid-counter
+        private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
+        {
+            if (self.name.Contains("Dryya"))
+            {
+                StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                // Prevent code block from running every frame
+                if (!_blockedHit)
+                {
+                    _blockedHit = true;
+                    Log("Blocked Hit");
+                    StopCoroutine(_counterRoutine);
+
+                    StartCoroutine(Countered());
+                }
+            }
+
+            orig(self, hitInstance);
+        }
+        
         private Animator _anim;
         private Rigidbody2D _rb;
         private SpriteRenderer _sr;
@@ -168,6 +196,9 @@ namespace FiveKnights
             {
                 switch (clipName)
                 {
+                    case "Counter":
+                        return (AudioClip) _pvControl.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip
+                            .Value;
                     case "Slash":
                         return (AudioClip) _pvControl.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     default:
@@ -185,6 +216,7 @@ namespace FiveKnights
         private Action _nextMove;
         private List<Action> _moves;
         private Dictionary<Action, int> _repeats;
+        private Dictionary<Action, int> _maxRepeats;
         private IEnumerator IdleAndChooseNextAttack()
         {
             _anim.Play("Idle");
@@ -201,29 +233,17 @@ namespace FiveKnights
             int index = _random.Next(_moves.Count);
             _nextMove = _moves[index];
             
-            // Make sure moves don't occur more than twice in a row
-            /*while (_repeats[nextMove] >= 2)
+            // Make sure moves don't occur more than its respective max number of repeats in a row
+            while (_repeats[_nextMove] >= _maxRepeats[_nextMove])
             {
                 index = _random.Next(_moves.Count);
-                Log("Index: " + index);
-                nextMove = _moves[index];
-            }*/
-
-            foreach (Action move in _moves)
-            {
-                if (move == _nextMove)
-                {
-                    _repeats[move]++;
-                }
-                else
-                {
-                    _repeats[move] = 0;
-                }
+                _nextMove = _moves[index];
             }
 
             Vector2 pos = transform.position;
             Vector2 heroPos = HeroController.instance.transform.position;
-            if (Mathf.Sqrt(Mathf.Pow(pos.x - heroPos.x, 2) + Mathf.Pow(pos.y - heroPos.y, 2)) < 4.0f)
+            float evadeRange = 4.0f;
+            if (Mathf.Sqrt(Mathf.Pow(pos.x - heroPos.x, 2) + Mathf.Pow(pos.y - heroPos.y, 2)) < evadeRange)
             {
                 int randNum = _random.Next(100);
                 int threshold = 70;
@@ -242,16 +262,33 @@ namespace FiveKnights
                 }
             }
 
-            float walkThreshold = 10.0f;
-            if (Mathf.Abs(heroPos.x - pos.x) > walkThreshold)
+            // Walk if Knight is out of walk range
+            float walkRange = 10.0f;
+            if (Mathf.Abs(heroPos.x - pos.x) > walkRange)
             {
                 _nextMove = DryyaWalk;
             }
             
-            if (heroPos.x - pos.x < 0 && _direction == 1 ||
-                heroPos.x - pos.x > 0 && _direction == -1)
+            // Turn if facing opposite of direction to Knight
+            if (heroPos.x - pos.x < 0 && _direction == 1 || heroPos.x - pos.x > 0 && _direction == -1)
             {
                 _nextMove = DryyaTurn;
+            }
+
+            // Increment or reset move repeats dictionary
+            if (_moves.Contains(_nextMove))
+            {
+                foreach (Action move in _moves)
+                {
+                    if (move == _nextMove)
+                    {
+                        _repeats[move]++;
+                    }
+                    else
+                    {
+                        _repeats[move] = 0;
+                    }
+                }
             }
 
             Log("Next Move: " + _nextMove.Method.Name);
@@ -317,6 +354,7 @@ namespace FiveKnights
         {
             IEnumerator Turn()
             {
+                Log("Turn");
                 _anim.Play("Turn");
                 yield return new WaitForSeconds(AnimFPS);
                 _direction = -_direction;
@@ -333,9 +371,12 @@ namespace FiveKnights
             IEnumerator IdleToWalk()
             {
                 Log("Idle to Walk");
-                _anim.Play("Intro To Walk");
-                _rb.velocity = Vector2.zero;
-                yield return new WaitForSeconds(4 * AnimFPS);
+                _anim.Play("Idle to Walk");
+                for (float i = 0; i < 4; i++)
+                {
+                    _rb.velocity = new Vector2(_direction * WalkSpeed * (i / 4), 0);
+                    yield return new WaitForSeconds(AnimFPS);   
+                }
 
                 StartCoroutine(Walking());
             }
@@ -362,19 +403,129 @@ namespace FiveKnights
             StartCoroutine(IdleToWalk());
         }
 
+        private Coroutine _counterRoutine;
+        private bool _blockedHit;
+        private void DryyaCounter()
+        {
+
+            IEnumerator CounterAntic()
+            {
+                _anim.Play("Counter Antic");
+                _rb.velocity = Vector2.zero;
+                yield return new WaitForSeconds(4 * AnimFPS);
+
+                _counterRoutine = StartCoroutine(Countering());
+            }
+
+            IEnumerator Countering()
+            {
+                Log("Countering");
+                _hm.IsInvincible = true;
+                _anim.Play("Countering");
+                
+                _blockedHit = false;
+                On.HealthManager.Hit += OnBlockedHit;
+                PlayAudioClip("Counter");
+                FlashWhite(0.01f, 0.35f);
+
+                Vector2 fxPos = transform.position + Vector3.right * 1.9f * _direction + Vector3.up * 0.8f;
+                Quaternion fxRot = Quaternion.Euler(0, 0, _direction * -60);
+                GameObject counterFX = Instantiate(FiveKnights.preloadedGO["CounterFX"], fxPos, fxRot);
+                counterFX.SetActive(true);
+
+
+                yield return new WaitForSeconds(0.75f);
+
+                _counterRoutine = StartCoroutine(CounterEnd());
+            }
+
+            IEnumerator CounterEnd()
+            {
+                _anim.Play("Counter End");
+                _hm.IsInvincible = false;
+                
+                On.HealthManager.Hit -= OnBlockedHit;
+                
+                yield return new WaitForSeconds(AnimFPS);
+                
+                StartCoroutine(IdleAndChooseNextAttack());
+            }
+
+            _counterRoutine = StartCoroutine(CounterAntic());
+        }
+        
+        // Put these IEnumerators outside so that they can be started in OnBlockedHit
+        private IEnumerator Countered()
+        {
+            _anim.Play("Countered");
+            On.HealthManager.Hit -= OnBlockedHit;
+            
+            yield return new WaitForSeconds(AnimFPS);
+
+            StartCoroutine(CounterAttack());
+        }
+
+        private IEnumerator CounterAttack()
+        {
+            _hm.IsInvincible = false;
+            Log("Counter Attack");
+            _anim.Play("Slash Antic");
+            yield return new WaitForSeconds(3 * AnimFPS);
+            _anim.Play("Slash 1");
+            PlayAudioClip("Slash", 0.85f, 1.15f);
+            _rb.velocity = new Vector2(_direction * SlashSpeed, 0);
+            GameObject slash1 = Instantiate(FiveKnights.preloadedGO["Slash"], transform);
+            slash1.SetActive(true);
+            slash1.layer = 22;
+            slash1.AddComponent<DamageHero>();
+            PolygonCollider2D slashCollider = slash1.GetComponent<PolygonCollider2D>();
+            Vector2[] points1 =
+            {
+                new Vector2(-4.71f, -.31f),
+                new Vector2(-3.09f, -1.51f),
+                new Vector2(-1.05f, -1.12f),
+                new Vector2(1.84f, 0),
+                new Vector2(-1.44f, 1),
+            };
+            slashCollider.points = points1;
+            slashCollider.SetPath(0, points1);
+
+            yield return new WaitForSeconds(AnimFPS);
+            _rb.velocity = Vector2.zero;
+            Destroy(slash1);
+
+            GameObject slash2 = Instantiate(FiveKnights.preloadedGO["Slash"], transform);
+            slash2.SetActive(true);
+            slash2.layer = 22;
+            slash2.AddComponent<DamageHero>();
+            slashCollider = slash2.GetComponent<PolygonCollider2D>();
+            Vector2[] points2 =
+            {
+                new Vector2(3.73f, 1),
+                new Vector2(5, -.65f),
+                new Vector2(4.61f, -1.72f),
+                new Vector2(1.87f, -.2f),
+                new Vector2(3.77f, -.08f),
+                new Vector2(1.84f, 1.72f),
+            };
+            slashCollider.points = points2;
+            slashCollider.SetPath(0, points2);
+
+            yield return new WaitForSeconds(AnimFPS);
+            Destroy(slash2);
+            yield return new WaitForSeconds(AnimFPS);
+            
+            StartCoroutine(IdleAndChooseNextAttack());
+        }
+        
         private void DryyaTripleSlash()
         {
             IEnumerator SlashAntic()
             {
                 Log("Slash Antic");
-                if (_previousMove != DryyaWalk)
-                {
-                    _anim.Play("Intro To Walk");
-                    yield return new WaitForSeconds(4 * AnimFPS);
-                }
                 _rb.velocity = Vector2.zero;
                 _anim.Play("Slash Antic");
-                yield return new WaitForSeconds(3 * AnimFPS);
+                yield return new WaitForSeconds(6 * AnimFPS);
 
                 StartCoroutine(Slash1());
             }
@@ -583,6 +734,7 @@ namespace FiveKnights
         private void OnDestroy()
         {
             On.HealthManager.TakeDamage -= OnTakeDamage;
+            On.HealthManager.Hit -= OnBlockedHit;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
         }
         

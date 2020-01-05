@@ -32,7 +32,15 @@ namespace FiveKnights
             yield return new WaitWhile(() => _hm.hp > 600);
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 3.5f;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Rage Roar"));
-            FightController.Instance.CreateIsma();
+            //FightController.Instance.CreateIsma();
+            
+            GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+            dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_1"];
+            yield return new WaitForSeconds(0.125f);
+            dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_2"];
+            yield return new WaitForSeconds(0.125f);
+            Destroy(dryyaSilhouette);
+            yield return new WaitForSeconds(0.5f);
             FightController.Instance.CreateDryya();
             FightController.Instance.CreateIsma();
             FightController.Instance.CreateZemer();
