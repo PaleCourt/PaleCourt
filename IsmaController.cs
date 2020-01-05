@@ -54,6 +54,7 @@ namespace FiveKnights
             _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
             _hitEff = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _aud = gameObject.AddComponent<AudioSource>();
+            gameObject.AddComponent<Flash>();
             _dnailReac.enabled = true;
             _hitEff.enabled = true;
             _rand = new System.Random();
@@ -68,12 +69,8 @@ namespace FiveKnights
             _hmDD = dd.GetComponent<HealthManager>();
             _ddFsm = dd.LocateMyFSM("Dung Defender");
             _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
-            SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
-            sil.sprite = ArenaFinder.sprites["isma_sil_0"];
-            sil.transform.localScale *= 1.15f;
+            StartCoroutine(SilLeave());
             yield return new WaitForSeconds(0.15f);
-            sil.gameObject.SetActive(false);
-            yield return new WaitForSeconds(1f);
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             _hm.hp = 600;
@@ -150,7 +147,11 @@ namespace FiveKnights
                     float posX = _target.transform.GetPositionX();
                     bool skip = false;
                     foreach (float i in PlantX.Where(x => FastApproximately(x, posX, 4f))) skip = true;
-                    if (skip) continue;
+                    if (skip)
+                    {
+                        yield return new WaitForEndOfFrame();
+                        continue;
+                    }
                     PlantX.Add(posX);
                     GameObject plant = Instantiate(FiveKnights.preloadedGO["Plant"]);
                     plant.transform.position = new Vector2(posX, GROUND_Y);
@@ -340,15 +341,8 @@ namespace FiveKnights
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("Isma"))
-            {
-                if (!flashing)
-                {
-                    flashing = true;
-                    StartCoroutine(FlashWhite());
-                }
-            }
-            _healthPool -= hitInstance.DamageDealt;
+            if (self.name.Contains("Isma") || self.name.Contains("White Defender"))
+                _healthPool -= hitInstance.DamageDealt;
             orig(self, hitInstance);
         }
 
@@ -372,6 +366,21 @@ namespace FiveKnights
             Vector3 pScale = gameObject.transform.localScale;
             gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * heroSignX, pScale.y, 1f);
             return heroSignX;
+        }
+
+        private IEnumerator SilLeave()
+        {
+            SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
+            sil.transform.localScale *= 1.15f;
+            sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 30f);
+            sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
+            sil.sprite = ArenaFinder.sprites["Sil_Isma_1"];
+            yield return new WaitForSeconds(0.05f);
+            sil.sprite = ArenaFinder.sprites["Sil_Isma_2"];
+            yield return new WaitForSeconds(0.05f);
+            sil.sprite = ArenaFinder.sprites["Sil_Isma_3"];
+            yield return new WaitForSeconds(0.05f);
+            sil.gameObject.SetActive(false);
         }
 
         private void ToggleIsma(bool visible)
