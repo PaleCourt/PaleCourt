@@ -13,6 +13,7 @@ using HutongGames.Utility;
 using JetBrains.Annotations;
 using ModCommon.Util;
 using Object = UnityEngine.Object;
+using Random = System.Random;
 
 namespace FiveKnights
 {
@@ -22,12 +23,14 @@ namespace FiveKnights
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
 
-        public GameObject ogrim;
+        private GameObject _ogrim;
         private GameObject _pv;
-        
+
+        private AudioSource _audio;
         private HealthManager _hm;
-        private EnemyHitEffectsUninfected _hitEffects;
         private PlayMakerFSM _control;
+        private PlayMakerFSM _dungDefender;
+        private Random _random;
 
         private void Awake()
         {
@@ -38,11 +41,14 @@ namespace FiveKnights
             PlayMakerFSM control = _pv.LocateMyFSM("Control");
             control.RemoveTransition("Pause", "Set Phase HP");
 
-            _control = gameObject.LocateMyFSM("FalseyControl");
-            _hm = GetComponent<HealthManager>();
+            _ogrim = FiveKnights.preloadedGO["WD"];
+            _dungDefender = _ogrim.LocateMyFSM("Dung Defender");
 
-            _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
-            _hitEffects.enabled = true;
+            _random = new Random();
+            
+            _control = gameObject.LocateMyFSM("FalseyControl");
+            _audio = GetComponent<AudioSource>();
+            _hm = GetComponent<HealthManager>();
 
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -50,12 +56,16 @@ namespace FiveKnights
 
         private IEnumerator Start()
         {
+            while (HeroController.instance == null) yield return null;
+            
             _hm.hp = 1600;
 
             AssignFields();
 
             //Stuff for getting hegemol to work
             GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = FiveKnights.SPRITES[0].texture;
+
+            _control.Fsm.GetFsmFloat("Run Speed").Value = 15.0f;
             
             _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
@@ -216,6 +226,7 @@ namespace FiveKnights
             {
                 if (hitInstance.AttackType == AttackTypes.Nail)
                 {
+                    // Manually gain soul when striking Hegemol
                     int soulGain;
                     if (PlayerData.instance.MPCharge >= 99)
                     {
@@ -238,17 +249,11 @@ namespace FiveKnights
         
         private void AssignFields()
         {
-            HealthManager ogrimHealth = ogrim.GetComponent<HealthManager>();
+            HealthManager ogrimHealth = _ogrim.GetComponent<HealthManager>();
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(x => x.Name.Contains("Prefab")))
             {
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
-            }
-
-            EnemyHitEffectsUninfected ogrimHitEffects = ogrim.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-                fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
         }
         
@@ -261,6 +266,8 @@ namespace FiveKnights
             float xRight = pos.x + 5 * scaleX + 2;
             while (xLeft >= LeftX || xRight <= RightX)
             {
+                PlayAudioClip("Dung Pillar", 0.9f, 1.1f);
+                
                 GameObject dungPillarR = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(xRight, 12.0f), Quaternion.identity);
                 dungPillarR.SetActive(true);
                 dungPillarR.AddComponent<DungPillar>();
@@ -278,6 +285,25 @@ namespace FiveKnights
             }
         }
 
+        public void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
+        {
+            AudioClip GetAudioClip()
+            {
+                switch (clipName)
+                {
+                    case "Dung Pillar":
+                        return (AudioClip) _dungDefender.GetAction<AudioPlayerOneShotSingle>("Pillar", 0).audioClip
+                            .Value;
+                    default:
+                        return null;
+                }
+            }
+
+            _audio.pitch = (float) (_random.NextDouble() * pitchMax) + pitchMin;
+            _audio.time = time; 
+            _audio.PlayOneShot(GetAudioClip());
+        }
+        
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;

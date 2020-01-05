@@ -78,7 +78,7 @@ namespace FiveKnights
                 new Vector2(HeroController.instance.transform.position.x, 23), Quaternion.identity);
             _hegemol.SetActive(true);
             Log("Adding HegemolController component");
-            _hegemol.AddComponent<HegemolController>().ogrim = _whiteD;
+            _hegemol.AddComponent<HegemolController>();
         }
         
         public void CreateZemer()
