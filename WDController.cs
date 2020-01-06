@@ -42,7 +42,7 @@ namespace FiveKnights
             Destroy(dryyaSilhouette);
             yield return new WaitForSeconds(0.5f);
             FightController.Instance.CreateDryya();
-            FightController.Instance.CreateIsma();
+            //FightController.Instance.CreateIsma();
         }
 
         private void Log(object o)

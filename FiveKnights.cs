@@ -30,10 +30,12 @@ namespace FiveKnights
         {
             return new List<(string, string)>
             {
+                ("GG_Failed_Champion","False Knight Dream"),
                 ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
-                ("GG_Failed_Champion","False Knight Dream"),
+                ("GG_Lost_Kin", "Lost Kin"),
+                ("GG_Soul_Tyrant", "Dream Mage Lord"),
             };
         }
 
@@ -43,6 +45,8 @@ namespace FiveKnights
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
+            preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
+            preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
 
             Instance = this;

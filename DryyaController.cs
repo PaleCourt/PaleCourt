@@ -7,6 +7,7 @@ using System.Reflection;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
 using ModCommon.Util;
+using Modding;
 using UnityEngine;
 
 namespace FiveKnights
@@ -16,6 +17,10 @@ namespace FiveKnights
         private const float GroundY = 8.5f;
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
+        private const float DashSpeed = 90.0f;
+        private const float DiveJumpSpeed = 50.0f;
+        private const float DiveSpeed = 60.0f;
+        private const float EvadeSpeed = 40.0f;
         private const float SlashSpeed = 50.0f;
         private const float WalkSpeed = 15.0f;
         private const float AnimFPS = 1.0f / 12;
@@ -26,6 +31,8 @@ namespace FiveKnights
         private Random _random;
 
         private PlayMakerFSM _pvControl;
+        private PlayMakerFSM _kinControl;
+        private PlayMakerFSM _mageLord;
 
         public GameObject ogrim;
         
@@ -46,6 +53,8 @@ namespace FiveKnights
             _random = new Random();
 
             _pvControl = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
+            _kinControl = FiveKnights.preloadedGO["Kin"].LocateMyFSM("IK Control");
+            _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
 
             foreach(SpriteRenderer sr in gameObject.GetComponentsInChildren<SpriteRenderer>(true))
             {
@@ -68,18 +77,24 @@ namespace FiveKnights
             _moves = new List<Action>
             {
                 DryyaCounter,
+                DryyaDash,
+                DryyaDive,
                 DryyaTripleSlash,
             };
 
             _repeats = new Dictionary<Action, int>
             {
                 [DryyaCounter] = 0,
+                [DryyaDash] = 0,
+                [DryyaDive] = 0,
                 [DryyaTripleSlash] = 0,
             };
             
             _maxRepeats = new Dictionary<Action, int>
             {
                 [DryyaCounter] = 1,
+                [DryyaDash] = 2,
+                [DryyaDive] = 1,
                 [DryyaTripleSlash] = 2,
             };
             
@@ -199,6 +214,12 @@ namespace FiveKnights
                     case "Counter":
                         return (AudioClip) _pvControl.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip
                             .Value;
+                    case "Dash":
+                        return (AudioClip) _pvControl.GetAction<AudioPlayerOneShotSingle>("Dash", 1).audioClip.Value;
+                    case "Dive":
+                        return (AudioClip) _kinControl.GetAction<AudioPlaySimple>("Dstab Fall", 0).oneShotClip.Value;
+                    case "Dive Land":
+                        return (AudioClip) _kinControl.GetAction<AudioPlaySimple>("Dstab Land", 0).oneShotClip.Value;
                     case "Slash":
                         return (AudioClip) _pvControl.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     default:
@@ -249,7 +270,7 @@ namespace FiveKnights
                 int threshold = 70;
                 if (randNum < threshold)
                 {
-                    // Evade
+                    _nextMove = DryyaEvade;
                 }
             }
             else if (Mathf.Abs(pos.x - heroPos.x) <= 2.0f && heroPos.y - pos.y > 2.0f)
@@ -517,6 +538,176 @@ namespace FiveKnights
             
             StartCoroutine(IdleAndChooseNextAttack());
         }
+
+        private GameObject _diveEffect;
+        private void DryyaDash()
+        {
+            IEnumerator DashAntic()
+            {
+                Log("Dash Antic");
+                _rb.velocity = Vector2.zero;
+                _anim.Play("Dash Antic");
+                
+                yield return new WaitForSeconds(6 * AnimFPS);
+
+                StartCoroutine(Dashing(0.15f));
+            }
+
+            IEnumerator Dashing(float dashTime)
+            {
+                Log("Dashing");
+                _anim.Play("Dashing");
+                Vector2 position = transform.position + Vector3.up * 0.1f;
+                Quaternion rotation = Quaternion.Euler(0, 0, _direction * 180);
+                GameObject stabEffect = Instantiate(FiveKnights.preloadedGO["Stab Effect"], position, rotation);
+                stabEffect.SetActive(true);
+                stabEffect.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+                stabEffect.GetComponent<Animator>().Play("Stab Effect");
+                Destroy(stabEffect, 3 * AnimFPS);
+
+                PlayAudioClip("Dash");
+                _rb.velocity = Vector2.right * _direction * DashSpeed;
+                
+                yield return new WaitForSeconds(dashTime);
+
+                StartCoroutine(DashRecover());
+            }
+
+            IEnumerator DashRecover()
+            {
+                Log("Dash Recover");
+                _anim.Play("Dash Recover");
+                _rb.velocity = Vector2.zero;
+
+                yield return new WaitForSeconds(3 * AnimFPS);
+
+                StartCoroutine(IdleAndChooseNextAttack());
+            }
+
+            StartCoroutine(DashAntic());
+        }
+
+        private void DryyaDive()
+        {
+            IEnumerator DiveJumpAntic()
+            {
+                Log("Dive Jump Antic");
+                _anim.Play("Dive Jump Antic");
+                _rb.velocity = Vector2.zero;
+                yield return new WaitForSeconds(3 * AnimFPS);
+
+                StartCoroutine(DiveJump());
+            }
+            IEnumerator DiveJump()
+            {
+                Log("Dive Jump");
+                _anim.Play("Dive Jump");
+                float heroX = HeroController.instance.transform.position.x;
+                float posX = transform.position.x;
+                _rb.velocity = new Vector2((heroX - posX) / (2 * AnimFPS), DiveJumpSpeed);
+                
+                yield return new WaitForSeconds(2 * AnimFPS);
+                
+                StartCoroutine(DiveAntic());
+            }
+
+            IEnumerator DiveAntic()
+            {
+                Log("Dive Antic");
+                _anim.Play("Dive Antic");
+                _rb.velocity = Vector2.zero;
+
+                yield return new WaitForSeconds(2 * AnimFPS);
+
+                StartCoroutine(Diving());
+            }
+            
+            IEnumerator Diving()
+            {
+                Log("Diving");
+                _anim.Play("Diving");
+                _rb.velocity = Vector2.down * DiveSpeed;
+                Vector2 position = new Vector2(transform.position.x, GroundY - 2.0f);
+                _diveEffect = Instantiate(FiveKnights.preloadedGO["Dive Effect"], position, Quaternion.identity);
+                _diveEffect.SetActive(true);
+                _diveEffect.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+                _diveEffect.GetComponent<Animator>().Play("Dive Slam Diving");
+
+                PlayAudioClip("Dive");
+                
+                while (!IsGrounded())
+                {
+                    yield return null;
+                }
+
+                yield return null;
+
+                StartCoroutine(DiveRecover());
+            }
+
+            IEnumerator DiveRecover()
+            {
+                Log("Dive Recover");
+                _anim.Play("Dive Recover");
+                _rb.velocity = Vector2.zero;
+
+                PlayAudioClip("Dive Land", 1, 1, 0.25f);
+                SnapToGround();
+                SpawnShockwaves(1, 50, 1);
+                _diveEffect.layer = 22;
+                _diveEffect.GetComponent<Animator>().Play("Dive Slam Effect");
+                _diveEffect.AddComponent<DebugColliders>();
+                _diveEffect.AddComponent<DamageHero>();
+                Destroy(_diveEffect, 3 * AnimFPS);
+                
+                yield return new WaitForSeconds(4 * AnimFPS);
+
+                StartCoroutine(IdleAndChooseNextAttack());
+            }
+
+            StartCoroutine(DiveJumpAntic());
+        }
+
+        private void DryyaEvade()
+        {
+            IEnumerator EvadeAntic()
+            {
+                Log("Evade Antic");
+                _anim.Play("Evade Antic");
+                _rb.velocity = Vector2.zero;
+                
+                float heroX = HeroController.instance.transform.position.x;
+                float tisoX = transform.position.x;
+                float distX = heroX - tisoX;
+                if (distX < 0 && _direction == 1)
+                {
+                    _sr.flipX = false;
+                    _direction = -1;
+                }
+                else if (distX > 0 && _direction == -1)
+                {
+                    _sr.flipX = true;
+                    _direction = 1;
+                }
+
+                yield return new WaitForSeconds(2 * AnimFPS);
+
+                StartCoroutine(Evading(0.25f));
+            }
+
+            IEnumerator Evading(float evadeTime)
+            {
+                Log("Evading");
+                _anim.Play("Evading");
+                _rb.velocity = new Vector2(_direction * -EvadeSpeed, 0);
+
+                yield return new WaitForSeconds(evadeTime);
+
+                StartCoroutine(IdleAndChooseNextAttack());
+            }
+
+            StartCoroutine(EvadeAntic());
+        }
         
         private void DryyaTripleSlash()
         {
@@ -681,6 +872,26 @@ namespace FiveKnights
             StartCoroutine(SlashAntic());
         }
 
+        private void SpawnShockwaves(float vertScale, float speed, int damage)
+        {
+            bool[] facingRightBools = {false, true};
+            Vector2 pos = transform.position;
+            foreach (bool facingRight in facingRightBools)
+            {
+                Log("Instantiating Shockwave");
+                GameObject shockwave =
+                    Instantiate(_mageLord.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value); ;
+                PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
+                shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
+                shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
+                shockwave.AddComponent<DamageHero>().damageDealt = damage;
+                shockwave.SetActive(true);
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 7.2f));
+                shockwave.transform.SetScaleY(vertScale);
+            }
+
+        }
+        
         private Coroutine _flashRoutine;
         public void FlashWhite(float stayTime, float timeDown)
         {
@@ -706,7 +917,8 @@ namespace FiveKnights
 
         private void SnapToGround()
         {
-            transform.position.SetY(GroundY);
+            Transform trans = transform;
+            trans.position = new Vector2(trans.position.x, GroundY);
         }
 
         private const float Extension = 0.01f;
