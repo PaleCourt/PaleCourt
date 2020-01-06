@@ -48,6 +48,9 @@ namespace FiveKnights
                 ("Fungus1_19", "Plant Trap"),
                 ("White_Palace_01","WhiteBench"),
                 ("GG_Workshop","GG_Statue_ElderHu"),
+                ("GG_Lost_Kin", "Lost Kin"),
+                ("GG_Soul_Tyrant", "Dream Mage Lord"),
+                ("GG_Workshop","GG_Statue_ElderHu"),
                 ("GG_Workshop","GG_Statue_TraitorLord"),
                 ("White_Palace_03_hub","doorWarp"),
                 ("White_Palace_03_hub","dream_beam_animation"),
@@ -67,6 +70,8 @@ namespace FiveKnights
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
+            preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
+            preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
             preloadedGO["lift"] = preloadedObjects["White_Palace_09"]["White Palace Lift"];
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
