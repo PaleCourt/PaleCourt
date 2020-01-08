@@ -15,17 +15,17 @@ namespace FiveKnights
     public class DryyaController : MonoBehaviour
     {
         private const float GroundY = 8.5f;
-        private const float LeftY = 61.0f;
-        private const float RightY = 91.0f;
+        private const float LeftX = 61.0f;
+        private const float RightX = 91.0f;
         private const float DashSpeed = 90.0f;
         private const float DiveJumpSpeed = 50.0f;
-        private const float DiveSpeed = 60.0f;
+        private const float DiveSpeed = 80.0f;
         private const float EvadeSpeed = 40.0f;
         private const float SlashSpeed = 50.0f;
         private const float WalkSpeed = 15.0f;
         private const float AnimFPS = 1.0f / 12;
 
-        private int _hp = 1000;
+        private int _hp = 1650;
         private int _direction = -1;
         public Dictionary<string, List<Sprite>> animations = new Dictionary<string, List<Sprite>>();
         private Random _random;
@@ -167,13 +167,17 @@ namespace FiveKnights
 
         private AudioSource _audio;
         private DamageHero _damageHero;
+        private EnemyDeathEffectsUninfected _deathEffects;
         private EnemyDreamnailReaction _dreamNailReaction;
         private EnemyHitEffectsUninfected _hitEffects;
         private HealthManager _hm;
         private void AddComponents()
         {
             _audio = gameObject.AddComponent<AudioSource>();
-            
+
+            _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathEffects.enabled = true;
+
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
             _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[_random.Next(_dreamNailDialogue.Length)]);
@@ -191,17 +195,23 @@ namespace FiveKnights
 
         private void AssignFields()
         {
+            EnemyDeathEffectsUninfected ogrimDeathEffects = ogrim.GetComponent<EnemyDeathEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                fi.SetValue(_deathEffects, fi.GetValue(ogrimDeathEffects));
+            }
+            
+            EnemyHitEffectsUninfected ogrimHitEffects = ogrim.GetComponent<EnemyHitEffectsUninfected>();
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
+            {
+                fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
+            }
+            
             HealthManager ogrimHealth = ogrim.GetComponent<HealthManager>();
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Where(x => x.Name.Contains("Prefab")))
             {
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
-            }
-
-            EnemyHitEffectsUninfected ogrimHitEffects = ogrim.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
-            {
-                fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
         }
 
@@ -270,7 +280,10 @@ namespace FiveKnights
                 int threshold = 70;
                 if (randNum < threshold)
                 {
-                    _nextMove = DryyaEvade;
+                    if (_direction == 1 && pos.x - LeftX > 4.0f || (_direction == -1 && RightX - pos.x > 4.0f))
+                    {
+                        if (_previousMove != DryyaWalk) _nextMove = DryyaEvade;
+                    }
                 }
             }
             else if (Mathf.Abs(pos.x - heroPos.x) <= 2.0f && heroPos.y - pos.y > 2.0f)
@@ -632,6 +645,7 @@ namespace FiveKnights
                 _diveEffect.SetActive(true);
                 _diveEffect.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
                 _diveEffect.GetComponent<Animator>().Play("Dive Slam Diving");
+                _diveEffect.layer = 22;
 
                 PlayAudioClip("Dive");
                 
@@ -654,9 +668,7 @@ namespace FiveKnights
                 PlayAudioClip("Dive Land", 1, 1, 0.25f);
                 SnapToGround();
                 SpawnShockwaves(1, 50, 1);
-                _diveEffect.layer = 22;
                 _diveEffect.GetComponent<Animator>().Play("Dive Slam Effect");
-                _diveEffect.AddComponent<DebugColliders>();
                 _diveEffect.AddComponent<DamageHero>();
                 Destroy(_diveEffect, 3 * AnimFPS);
                 
@@ -677,8 +689,8 @@ namespace FiveKnights
                 _rb.velocity = Vector2.zero;
                 
                 float heroX = HeroController.instance.transform.position.x;
-                float tisoX = transform.position.x;
-                float distX = heroX - tisoX;
+                float posX = transform.position.x;
+                float distX = heroX - posX;
                 if (distX < 0 && _direction == 1)
                 {
                     _sr.flipX = false;
@@ -817,7 +829,16 @@ namespace FiveKnights
                 Destroy(slash2);
                 yield return new WaitForSeconds(AnimFPS);
 
-                StartCoroutine(Slash3());
+                int num = _random.Next(0, 10);
+                if (num > 3)
+                {
+                    StartCoroutine(Slash3());    
+                }
+                else
+                {
+                    StartCoroutine(IdleAndChooseNextAttack());
+                }
+                
             }
 
             IEnumerator Slash3()
@@ -886,7 +907,7 @@ namespace FiveKnights
                 shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
                 shockwave.AddComponent<DamageHero>().damageDealt = damage;
                 shockwave.SetActive(true);
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 7.2f));
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6.3f));
                 shockwave.transform.SetScaleY(vertScale);
             }
 
