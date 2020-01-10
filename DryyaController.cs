@@ -667,7 +667,8 @@ namespace FiveKnights
 
                 PlayAudioClip("Dive Land", 1, 1, 0.25f);
                 SnapToGround();
-                SpawnShockwaves(1, 50, 1);
+                
+                SpawnShockwaves(2, 50, 1);
                 _diveEffect.GetComponent<Animator>().Play("Dive Slam Effect");
                 _diveEffect.AddComponent<DamageHero>();
                 Destroy(_diveEffect, 3 * AnimFPS);
@@ -908,7 +909,7 @@ namespace FiveKnights
                 shockwave.AddComponent<DamageHero>().damageDealt = damage;
                 shockwave.SetActive(true);
                 shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6.3f));
-                shockwave.transform.SetScaleY(vertScale);
+                shockwave.transform.SetScaleX(vertScale);
             }
 
         }
