@@ -256,13 +256,17 @@ namespace FiveKnights
             _anim.Play("Idle");
             _rb.velocity = Vector2.zero;
 
-            /*float minWait = 0.25f;
-            float maxWait = 0.5f;
-            float waitTime = (float) (_random.NextDouble() * maxWait) + minWait;
+            if (_previousMove != DryyaTurn && _previousMove != DryyaWalk && _previousMove != DryyaEvade)
+            {
+                float minWait = 0.25f;
+                float maxWait = 0.35f;
+                float waitTime = (float) (_random.NextDouble() * maxWait) + minWait;
             
-            yield return new WaitForSeconds(waitTime);*/
+                yield return new WaitForSeconds(waitTime);    
+            }
+
             yield return null;
-            
+
             if (_nextMove != null) _previousMove = _nextMove;
             int index = _random.Next(_moves.Count);
             _nextMove = _moves[index];
