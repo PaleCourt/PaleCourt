@@ -650,6 +650,7 @@ namespace FiveKnights
                 _diveEffect.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
                 _diveEffect.GetComponent<Animator>().Play("Dive Slam Diving");
                 _diveEffect.layer = 22;
+                _diveEffect.GetComponent<SpriteRenderer>().sortingOrder = 10;
 
                 PlayAudioClip("Dive");
                 
@@ -912,7 +913,7 @@ namespace FiveKnights
                 shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
                 shockwave.AddComponent<DamageHero>().damageDealt = damage;
                 shockwave.SetActive(true);
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6.3f));
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6f));
                 shockwave.transform.SetScaleX(vertScale);
             }
 
