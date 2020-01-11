@@ -19,6 +19,7 @@ namespace FiveKnights
 {
     public class HegemolController : MonoBehaviour
     {
+        private const int Health = 2400;
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
@@ -58,7 +59,7 @@ namespace FiveKnights
         {
             while (HeroController.instance == null) yield return null;
             
-            _hm.hp = 1600;
+            _hm.hp = Health;
 
             AssignFields();
 
@@ -99,7 +100,7 @@ namespace FiveKnights
             FSMUtility.SendEventToGameObject(gameObject, "DAMAGE FLASH", true);
             EnemyHitEffectsUninfected hitEffects = _pv.GetComponent<EnemyHitEffectsUninfected>();
             AudioSource audioPlayerPrefab = hitEffects.GetAttr<EnemyHitEffectsUninfected, AudioSource>("audioPlayerPrefab");
-            AudioEvent enemyDamage = hitEffects.GetAttr<EnemyHitEffectsUninfected, AudioEvent>("enemyDamage");
+            AudioEvent enemyDamage = GetComponent<EnemyHitEffectsArmoured>().GetAttr<EnemyHitEffectsArmoured, AudioEvent>("enemyDamage");
             enemyDamage.SpawnAndPlayOneShot(audioPlayerPrefab, self.transform.position);
             self.SetAttr("didFireThisFrame", true);
             GameObject slashEffectGhost1 = hitEffects.GetAttr<EnemyHitEffectsUninfected, GameObject>("slashEffectGhost1");
@@ -245,6 +246,17 @@ namespace FiveKnights
             }
 
             orig(self, hitInstance);
+
+            if (_hm.hp <= 0)
+            {
+                HegemolDeath();
+            }
+        }
+
+        private void HegemolDeath()
+        {
+            Log("Hegemol Death");
+            Destroy(gameObject);
         }
         
         private void AssignFields()
