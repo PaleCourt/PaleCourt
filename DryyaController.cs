@@ -2,8 +2,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 using System.Reflection;
+using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
 using ModCommon.Util;
@@ -28,7 +29,6 @@ namespace FiveKnights
         private int _hp = 1650;
         private int _direction = -1;
         public Dictionary<string, List<Sprite>> animations = new Dictionary<string, List<Sprite>>();
-        private Random _random;
 
         private PlayMakerFSM _pvControl;
         private PlayMakerFSM _kinControl;
@@ -50,7 +50,6 @@ namespace FiveKnights
             GameObject go = gameObject;
             go.SetActive(true);
             go.layer = 11;
-            _random = new Random();
 
             _pvControl = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
             _kinControl = FiveKnights.preloadedGO["Kin"].LocateMyFSM("IK Control");
@@ -79,6 +78,7 @@ namespace FiveKnights
                 DryyaCounter,
                 DryyaDash,
                 DryyaDive,
+                DryyaElegy,
                 DryyaTripleSlash,
             };
 
@@ -87,6 +87,7 @@ namespace FiveKnights
                 [DryyaCounter] = 0,
                 [DryyaDash] = 0,
                 [DryyaDive] = 0,
+                [DryyaElegy] = 0,
                 [DryyaTripleSlash] = 0,
             };
             
@@ -95,6 +96,7 @@ namespace FiveKnights
                 [DryyaCounter] = 1,
                 [DryyaDash] = 2,
                 [DryyaDive] = 1,
+                [DryyaElegy] = 2,
                 [DryyaTripleSlash] = 2,
             };
             
@@ -125,7 +127,7 @@ namespace FiveKnights
             {
                 FlashWhite(0.25f, 0.75f);
                 Instantiate(_dreamNailEffect, transform.position, Quaternion.identity);
-                _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[_random.Next(_dreamNailDialogue.Length)]);
+                _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
             }
 
             orig(self);
@@ -135,20 +137,21 @@ namespace FiveKnights
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.name.Contains("Dryya"))
-            {
-                StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
-                // Prevent code block from running every frame
-                if (!_blockedHit)
+            { 
+                if (hitInstance.Direction == 0 && _direction == -1 || hitInstance.Direction == 180 && _direction == 1)
                 {
-                    _blockedHit = true;
-                    Log("Blocked Hit");
-                    StopCoroutine(_counterRoutine);
-
-                    StartCoroutine(Countered());
+                    StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                    // Prevent code block from running every frame
+                    if (!_blockedHit)
+                    {
+                        _blockedHit = true;
+                        Log("Blocked Hit");
+                        StopCoroutine(_counterRoutine);
+                        StartCoroutine(Countered());
+                    }    
                 }
+                orig(self, hitInstance);
             }
-
-            orig(self, hitInstance);
         }
         
         private Animator _anim;
@@ -180,7 +183,7 @@ namespace FiveKnights
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
-            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[_random.Next(_dreamNailDialogue.Length)]);
+            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
             
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
@@ -237,7 +240,7 @@ namespace FiveKnights
                 }
             }
 
-            _audio.pitch = (float) (_random.NextDouble() * pitchMax) + pitchMin;
+            _audio.pitch = Random.Range(pitchMin, pitchMax);
             _audio.time = time; 
             _audio.PlayOneShot(GetAudioClip());
             _audio.time = 0.0f;
@@ -255,9 +258,9 @@ namespace FiveKnights
 
             if (_previousMove != DryyaTurn && _previousMove != DryyaWalk && _previousMove != DryyaEvade)
             {
-                float minWait = 0.25f;
-                float maxWait = 0.35f;
-                float waitTime = (float) (_random.NextDouble() * maxWait) + minWait;
+                float waitMin = 0.01f;
+                float waitMax = 0.15f;
+                float waitTime = Random.Range(waitMin, waitMax);
             
                 yield return new WaitForSeconds(waitTime);    
             }
@@ -265,13 +268,13 @@ namespace FiveKnights
             yield return null;
 
             if (_nextMove != null) _previousMove = _nextMove;
-            int index = _random.Next(_moves.Count);
+            int index = Random.Range(0, _moves.Count);
             _nextMove = _moves[index];
             
             // Make sure moves don't occur more than its respective max number of repeats in a row
             while (_repeats[_nextMove] >= _maxRepeats[_nextMove])
             {
-                index = _random.Next(_moves.Count);
+                index = Random.Range(0, _moves.Count);
                 _nextMove = _moves[index];
             }
 
@@ -280,8 +283,8 @@ namespace FiveKnights
             float evadeRange = 4.0f;
             if (Mathf.Sqrt(Mathf.Pow(pos.x - heroPos.x, 2) + Mathf.Pow(pos.y - heroPos.y, 2)) < evadeRange)
             {
-                int randNum = _random.Next(100);
-                int threshold = 70;
+                int randNum = Random.Range(0, 10);
+                int threshold = 7;
                 if (randNum < threshold)
                 {
                     if (_direction == 1 && pos.x - LeftX > 4.0f || (_direction == -1 && RightX - pos.x > 4.0f))
@@ -292,8 +295,8 @@ namespace FiveKnights
             }
             else if (Mathf.Abs(pos.x - heroPos.x) <= 2.0f && heroPos.y - pos.y > 2.0f)
             {
-                int randNum = _random.Next(100);
-                int threshold = 50;
+                int randNum = Random.Range(0, 10);
+                int threshold = 5;
                 if (randNum < threshold)
                 {
                     // Pogo Punishment
@@ -304,7 +307,7 @@ namespace FiveKnights
             float walkRange = 10.0f;
             if (Mathf.Abs(heroPos.x - pos.x) > walkRange)
             {
-                _nextMove = DryyaWalk;
+                if (_nextMove != DryyaDive) _nextMove = DryyaWalk;
             }
             
             // Turn if facing opposite of direction to Knight
@@ -458,9 +461,19 @@ namespace FiveKnights
             IEnumerator Countering()
             {
                 Log("Countering");
+                // Yeeted from Pure Vessel's Control FSM
                 _hm.IsInvincible = true;
-                _anim.Play("Countering");
+                if (_direction == -1)
+                {
+                    _hm.InvincibleFromDirection = 8;
+                }
+                else if (_direction == 1)
+                {
+                    _hm.InvincibleFromDirection = 9;
+                }
                 
+                _anim.Play("Countering");
+
                 _blockedHit = false;
                 On.HealthManager.Hit += OnBlockedHit;
                 PlayAudioClip("Counter");
@@ -496,6 +509,7 @@ namespace FiveKnights
         private IEnumerator Countered()
         {
             _anim.Play("Countered");
+            PlayAudioClip("Counter", 0.85f, 0.85f);
             On.HealthManager.Hit -= OnBlockedHit;
             
             yield return new WaitForSeconds(AnimFPS);
@@ -505,8 +519,9 @@ namespace FiveKnights
 
         private IEnumerator CounterAttack()
         {
-            _hm.IsInvincible = false;
             Log("Counter Attack");
+            _hm.IsInvincible = false;
+            InstantlyFaceHero();
             _anim.Play("Slash Antic");
             yield return new WaitForSeconds(3 * AnimFPS);
             _anim.Play("Slash 1");
@@ -618,7 +633,7 @@ namespace FiveKnights
             IEnumerator DiveJump()
             {
                 Log("Dive Jump");
-                _anim.Play("Dive Jump");
+                _anim.Play("Spinning");
                 float heroX = HeroController.instance.transform.position.x;
                 float posX = transform.position.x;
                 _rb.velocity = new Vector2((heroX - posX) / (2 * AnimFPS), DiveJumpSpeed);
@@ -686,6 +701,52 @@ namespace FiveKnights
             StartCoroutine(DiveJumpAntic());
         }
 
+        private void DryyaElegy()
+        {
+            IEnumerator ElegyAntic()
+            {
+                Log("Elegy Antic");
+                _anim.Play("Elegy Antic");
+                _rb.velocity = Vector2.zero;
+
+                yield return new WaitForSeconds(0.5f);
+
+                StartCoroutine(ElegySlash1());
+            }
+
+            IEnumerator ElegySlash1()
+            {
+                Log("Elegy Slash 1");
+                _anim.Play("Elegy Slash 1");
+
+                yield return new WaitForSeconds(2 * AnimFPS);
+
+                StartCoroutine(ElegySlash2());
+            }
+
+            IEnumerator ElegySlash2()
+            {
+                Log("Elegy Slash 2");
+                _anim.Play("Elegy Slash 2");
+
+                yield return new WaitForSeconds(2 * AnimFPS);
+
+                StartCoroutine(ElegyRecover());
+            }
+
+            IEnumerator ElegyRecover()
+            {
+                Log("Elegy Recover");
+                _anim.Play("Elegy Recover");
+
+                yield return new WaitForSeconds(AnimFPS);
+
+                StartCoroutine(IdleAndChooseNextAttack());
+            }
+
+            StartCoroutine(ElegyAntic());
+        }
+        
         private void DryyaEvade()
         {
             IEnumerator EvadeAntic()
@@ -694,20 +755,7 @@ namespace FiveKnights
                 _anim.Play("Evade Antic");
                 _rb.velocity = Vector2.zero;
                 
-                float heroX = HeroController.instance.transform.position.x;
-                float posX = transform.position.x;
-                float distX = heroX - posX;
-                if (distX < 0 && _direction == 1)
-                {
-                    _sr.flipX = false;
-                    _direction = -1;
-                }
-                else if (distX > 0 && _direction == -1)
-                {
-                    _sr.flipX = true;
-                    _direction = 1;
-                }
-
+                InstantlyFaceHero();
                 yield return new WaitForSeconds(2 * AnimFPS);
 
                 StartCoroutine(Evading(0.25f));
@@ -835,7 +883,7 @@ namespace FiveKnights
                 Destroy(slash2);
                 yield return new WaitForSeconds(AnimFPS);
 
-                int num = _random.Next(0, 10);
+                int num = Random.Range(0, 10);
                 if (num > 3)
                 {
                     StartCoroutine(Slash3());    
@@ -899,6 +947,16 @@ namespace FiveKnights
             StartCoroutine(SlashAntic());
         }
 
+        private void InstantlyFaceHero()
+        {
+            float heroX = HeroController.instance.transform.position.x;
+            float posX = transform.position.x;
+            float distX = heroX - posX;
+            int multiplier = Math.Sign(_direction * distX);
+            _direction *= multiplier;
+            _sr.flipX = multiplier < 0 ? !_sr.flipX : _sr.flipX;
+        }
+        
         private void SpawnShockwaves(float vertScale, float speed, int damage)
         {
             bool[] facingRightBools = {false, true};
@@ -916,7 +974,6 @@ namespace FiveKnights
                 shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6f));
                 shockwave.transform.SetScaleX(vertScale);
             }
-
         }
         
         private Coroutine _flashRoutine;
