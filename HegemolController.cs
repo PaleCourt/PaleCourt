@@ -38,7 +38,8 @@ namespace FiveKnights
             fsm.SendEvent("BATTLE START");
             while (true)
             {
-                if (fsm.ActiveStateName == "JA Check Hero Pos")
+                Log("hhh");
+                if (fsm.ActiveStateName.Contains("Hero Pos"))//JA Check Hero Pos
                 {
                     float diff = HeroController.instance.transform.position.x - fk.transform.position.x;
                     if (diff > 0) fsm.SendEvent("RIGHT");

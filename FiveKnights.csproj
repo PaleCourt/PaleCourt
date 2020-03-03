@@ -80,6 +80,10 @@
     <Reference Include="UnityEngine.SpriteMaskModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.SpriteMaskModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.UI">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.UI.dll</HintPath>
     </Reference>
@@ -91,17 +95,21 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AirFistCollision.cs" />
+    <Compile Include="AudioController.cs" />
+    <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
+    <Compile Include="CustomWP.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="DryyaController.cs" />
+    <Compile Include="EnemyPlantSpawn.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
+    <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WDController.cs" />
@@ -109,6 +117,10 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />
+    <EmbeddedResource Include="assets\black.png" />
+    <EmbeddedResource Include="assets\Isma.png" />
+    <EmbeddedResource Include="assets\Dryya.png" />
+    <EmbeddedResource Include="assets\Zemer.png" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

@@ -34,6 +34,10 @@ namespace FiveKnights
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
                 ("GG_Failed_Champion","False Knight Dream"),
+                ("White_Palace_09","White Palace Lift"),
+                ("White_Palace_09","White King Corpse/Throne Sit"),
+                ("Fungus1_12","Plant Turret"),
+                ("Fungus1_19", "Plant Trap")
             };
         }
 
@@ -44,6 +48,11 @@ namespace FiveKnights
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
+            preloadedGO["lift"] = preloadedObjects["White_Palace_09"]["White Palace Lift"];
+            preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
+            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
+            preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
+            preloadedGO["isma_stat"] = null;
 
             Instance = this;
             Log("Initalizing.");
@@ -85,8 +94,8 @@ namespace FiveKnights
         {
             switch (key)
             {
-                case "FK_NAME": return "The Great Five Knights";
-                case "FK_DESC": return "Forgotten champion gods of a dead kingdom.";
+                case "ISMA_NAME": return "Kindly Isma";
+                case "ISMA_DESC": return "Gentle god of moss and grove.";
                 case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
                 case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
                 case "DRYYA_DIALOG_3_1": return "Protect...";
@@ -95,6 +104,7 @@ namespace FiveKnights
                 case "ISMA_DREAM_1_1": return "Something about Sacrifice";
                 case "ISMA_DREAM_2_1": return "Something about Grove";
                 case "ISMA_DREAM_3_1": return "Something about Ogrim";
+                case "YN_THRONE": return "Answer the Champions' Call?";
                 default: return Language.Language.GetInternal(key, sheettitle);
             }
         }

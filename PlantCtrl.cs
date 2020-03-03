@@ -11,46 +11,51 @@ namespace FiveKnights
     public class PlantCtrl : MonoBehaviour
     {
         private Animator _anim;
+        private BoxCollider2D _bc;
         private HealthManager _hm;
         private SpriteRenderer _sr;
         public List<float> PlantX;
+        public bool onlyIsma;
 
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
-            _hm = gameObject.AddComponent<HealthManager>();
+            _bc = gameObject.GetComponent<BoxCollider2D>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
         }
 
         private IEnumerator Start()
         {
-            SetupHM();
-            gameObject.AddComponent<Flash>();
-            _hm.hp = 150;
+            yield return null;
+            if (onlyIsma)
+            {
+                _hm = gameObject.AddComponent<HealthManager>();
+                SetupHM();
+                gameObject.AddComponent<Flash>();
+                _hm.hp = 75;
+            }
             DamageHero dh = gameObject.AddComponent<DamageHero>();
             dh.damageDealt = 1;
             dh.enabled = false;
             gameObject.layer = 11;
             gameObject.SetActive(true);
+            _anim.enabled = true;
             _anim.Play("PlantGrow");
-            yield return new WaitForSeconds(0.05f);
+            yield return null;
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.9f);
+            _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
             dh.enabled = true;
-        }
-
-        private void Update()
-        {
-            if (_hm.hp <= 0)
-            {
-                _hm.Die(new float?(0f), AttackTypes.Nail, true);
-                StartCoroutine(Death());
-            }
+            yield return new WaitForSeconds(1f);
+            if (!onlyIsma) StartCoroutine(Death());
         }
 
         private IEnumerator Death()
         {
             _anim.Play("PlantDie");
-            yield return new WaitForSeconds(0.05f);
+            yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
             PlantX.Remove(gameObject.transform.GetPositionX());
             Destroy(gameObject);
@@ -65,6 +70,7 @@ namespace FiveKnights
             {
                 fi.SetValue(hm2, fi.GetValue(wdHM));
             }
+            Modding.Logger.Log("HM SZTUFFF2");
         }
     }
 }
