@@ -4,17 +4,21 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Collections;
+using Object = System.Object;
 
 namespace FiveKnights
 {
     public class CustomWP : MonoBehaviour
     {
         private bool correctedTP;
+        private bool didSetting;
 
-        private void Start()
+        private IEnumerator Start()
         {
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
+            yield return new WaitWhile(()=>!HeroController.instance);
+            //if (!didSetting) StartCoroutine(HubSet(null));
         }
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
@@ -62,14 +66,17 @@ namespace FiveKnights
 
         IEnumerator HubSet(GameObject black)
         {
+            Log("HI1");
             SpriteRenderer sr = black.GetComponent<SpriteRenderer>();
             yield return new WaitWhile(() => !HeroController.instance);
             HeroController.instance.transform.position = new Vector2(12.5f, 94.5f);
+            Log("HI2");
             foreach (var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
+            Log("HI3");
             foreach (var i in FindObjectsOfType<SpriteRenderer>().Where(x => x.enabled && !x.name.Contains("white") && !x.name.Contains("wp") && !x.name.Contains("black")))
             {
                 bool skip = false;
-                foreach (SpriteRenderer j in FiveKnights.preloadedGO["isma_stat"].GetComponentsInChildren<SpriteRenderer>())
+                foreach (SpriteRenderer j in FiveKnights.preloadedGO["Statue"].GetComponentsInChildren<SpriteRenderer>())
                 {
                     if (j.name == i.name)
                     {
@@ -77,9 +84,10 @@ namespace FiveKnights
                         break;
                     }
                 }
-                if (skip || FiveKnights.preloadedGO["isma_stat"].name == i.name) continue;
+                if (skip || FiveKnights.preloadedGO["Statue"].name == i.name) continue;
                 i.enabled = false;
             }
+            Log("HI4");
             foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("abyss") || x.name.Contains("Abyss"))) Destroy(i);
             GameObject lift = Instantiate(FiveKnights.preloadedGO["lift"]);
             lift.transform.position = new Vector2(14f, 91.8f);
@@ -100,10 +108,10 @@ namespace FiveKnights
             go.SetActive(true);
             go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
             PlayMakerFSM fsm = go.LocateMyFSM("Sit");
-            FiveKnights.preloadedGO["isma_stat"].transform.position = new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
+            FiveKnights.preloadedGO["Statue"].transform.position = new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
             for (int i = 0; i < 3; i++)
             {
-                GameObject s = Instantiate(FiveKnights.preloadedGO["isma_stat"]);
+                GameObject s = Instantiate(FiveKnights.preloadedGO["Statue"]);
                 float y = s.transform.position.y;
                 s.transform.position = new Vector3(50.2f + i * 5f, y, HeroController.instance.transform.GetPositionZ());
             }
@@ -168,6 +176,11 @@ namespace FiveKnights
         {
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.GameManager.BeginSceneTransition -= GameManager_BeginSceneTransition;
+        }
+        
+        public static void Log(object o)
+        {
+            Modding.Logger.Log("[WP] " + o);
         }
     }
 }

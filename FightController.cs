@@ -36,13 +36,6 @@ namespace FiveKnights
             _isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
             FiveKnights.preloadedGO["Isma2"] = _isma;
             _isma.SetActive(true);
-            HealthManager hm = _isma.AddComponent<HealthManager>();
-            HealthManager hornHP = _whiteD.GetComponent<HealthManager>();
-            foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => x.Name.Contains("Prefab")))
-            {
-                fi.SetValue(hm, fi.GetValue(hornHP));
-            }
             foreach (SpriteRenderer i in _isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));

@@ -37,13 +37,17 @@ namespace FiveKnights
                 ("White_Palace_09","White Palace Lift"),
                 ("White_Palace_09","White King Corpse/Throne Sit"),
                 ("Fungus1_12","Plant Turret"),
-                ("Fungus1_19", "Plant Trap")
+                ("Fungus1_19", "Plant Trap"),
+                ("White_Palace_01","WhiteBench"),
+                ("GG_Workshop","GG_Statue_ElderHu")
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Storing GOs");
+            preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
+            preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];

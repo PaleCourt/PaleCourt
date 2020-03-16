@@ -90,7 +90,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 Destroy(this);
             }
-            GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+            /*GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
             dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_1"];
             yield return new WaitForSeconds(0.125f);
             dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_2"];
@@ -98,7 +98,7 @@ namespace FiveKnights
             Destroy(dryyaSilhouette);
             yield return new WaitForSeconds(0.5f);
             FightController.Instance.CreateDryya();
-            FightController.Instance.CreateIsma();
+            FightController.Instance.CreateIsma();*/
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)

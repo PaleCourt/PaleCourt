@@ -119,6 +119,7 @@ namespace FiveKnights
             fsm.SendEvent("SEE HERO");
             turret.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
             turret.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
+            StartCoroutine(WallKill(turret.GetComponent<HealthManager>()));
         }
 
         private IEnumerator SpawnGulka()
@@ -200,7 +201,10 @@ namespace FiveKnights
 
         private void EnemyPlantSpawn_OnDeath()
         {
-            if (isSpecialTurret) StartCoroutine(Phase2Spawn());
+            if (isSpecialTurret)
+            {
+                if (!IsmaController.eliminateMinions) StartCoroutine(Phase2Spawn());
+            }
             else if (plant.name.Contains("Trap")) PlantF.Remove(plant);
             else if (plant.name.Contains("Turret")) PlantG.Remove(plant);
             else if (plant.name.Contains("Plant"))

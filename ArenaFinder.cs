@@ -72,9 +72,27 @@ namespace FiveKnights
             if (arg1.name == "GG_Workshop")
             {
                 SetStatue();
+                MakeBench(arg1.name, "WhiteBench(Clone)(Clone)",new Vector3(18.0f, 12.4f, 0.1f));
+            }
+            
+            if (arg1.name == "White_Palace_09")
+            {
+                GameManager.instance.gameObject.AddComponent<CustomWP>(); //110.6,94.4
+                MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(28f,94.4f,1));
             }
         }
 
+        private void MakeBench(string scene, string name, Vector3 pos)
+        {
+            GameObject go = Instantiate(FiveKnights.preloadedGO["Bench"]);
+            go.transform.position = pos;
+            go.SetActive(true);
+            var fsm = go.LocateMyFSM("Bench Control");
+            fsm.FsmVariables.FindFsmString("Scene Name").Value = scene;
+            fsm.FsmVariables.FindFsmString("Spawn Name").Value = name;
+            Log("FSM VEC " + fsm.FsmVariables.FindFsmVector3("Sit Vector").Value);
+        }
+        
         private void SetStatue()
         {
             //Used 56's pale prince code here
@@ -292,7 +310,7 @@ namespace FiveKnights
             pm.SendEvent("FADE OUT");
             Destroy(go);
             yield return new WaitForSeconds(0.5f);
-            GameManager.instance.gameObject.AddComponent<CustomWP>();
+            //GameManager.instance.gameObject.AddComponent<CustomWP>();
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
                 SceneName = "White_Palace_09",

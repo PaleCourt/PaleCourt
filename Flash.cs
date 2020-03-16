@@ -16,7 +16,7 @@ namespace FiveKnights
         private void Start()
         {
             _sr = gameObject.GetComponent<SpriteRenderer>();
-            _sr.material = new Material(Shader.Find("Unlit/Transparent"));//ArenaFinder.materials["flash"];
+            _sr.material = ArenaFinder.materials["flash"];
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
         }
 
