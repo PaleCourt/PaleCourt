@@ -40,7 +40,7 @@ namespace FiveKnights
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
-        {
+        {F
             Log("Storing GOs");
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
@@ -70,7 +70,7 @@ namespace FiveKnights
                 {
                     if (s == null) continue;
 
-                    byte[] buffer = new byte[s.Length];
+                    byte[] buffer = new byte[s.Length];    
                     s.Read(buffer, 0, buffer.Length);
                     s.Dispose();
 

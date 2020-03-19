@@ -63,8 +63,10 @@ namespace FiveKnights
             GetComponents();
             AddComponents();
 
+            _hm.OnDeath += DeathHandler;
             On.HealthManager.TakeDamage += OnTakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
+            On.EnemyDeathEffectsUninfected.EmitEffects += OnEmitEffects;
         }
         
         private IEnumerator Start()
@@ -109,6 +111,68 @@ namespace FiveKnights
         {
             TestWallCollisions();
         }
+
+        private void DeathHandler()
+        {
+            InstantlyFaceHero();
+            _sr.material.SetFloat("_FlashAmount", 0.0f);
+            gameObject.layer = 26;
+            Destroy(GetComponent<DamageHero>());
+            gameObject.AddComponent<NonBouncer>().enabled = true;
+            StopAllCoroutines();
+
+            const float gravity = 3.84f;
+            IEnumerator DryyaDeath()
+            {
+                Log("Defeated");
+                _anim.Play("Defeated");
+                _rb.velocity = new Vector2(-_direction * 10, 20);
+
+                while (_rb.velocity.y > 0 || !IsGrounded())
+                {
+                    _rb.velocity += Vector2.down * gravity;
+                    yield return new WaitForSeconds(0.1f);
+                }
+                
+                SnapToGround();
+
+                Log("Defeat Land");
+                _anim.Play("Defeat Land");
+                _rb.velocity = new Vector2(_rb.velocity.x, 0);
+
+                while (Math.Abs(_rb.velocity.x) > 0)
+                {
+                    _rb.velocity += Vector2.right * _direction;
+                    yield return new WaitForSeconds(0.05f);
+                }
+
+                yield return new WaitForSeconds(1.0f);
+                
+                Log("Defeat Leave");
+                _anim.Play("Defeat Leave");
+                yield return new WaitForSeconds(AnimFPS);
+                _rb.velocity = new Vector2(_direction * 30, 30);
+
+                yield return new WaitForSeconds(AnimFPS);
+            
+                Destroy(gameObject);
+            }
+            
+            StartCoroutine(DryyaDeath());
+
+            /*Log("Dryya Death");
+            InstantlyFaceHero();
+            Log("Instantiating Dryya Corpse");
+            GameObject dryyaCorpse = Instantiate(FiveKnights.preloadedGO["Dryya Corpse"], transform);
+            Log("Dryya Corpse Pos: " + dryyaCorpse.transform.position);
+            dryyaCorpse.SetActive(true);
+            Log("Adding DryyaCorpse");
+            DryyaCorpse corpseComponent = dryyaCorpse.AddComponent<DryyaCorpse>();
+            corpseComponent.enabled = true;
+            corpseComponent.direction = _direction;
+            Log("Destroying Dryya");
+            Destroy(gameObject);*/
+        }
         
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
@@ -133,6 +197,11 @@ namespace FiveKnights
             orig(self);
         }
 
+        private void OnEmitEffects(On.EnemyDeathEffectsUninfected.orig_EmitEffects orig, EnemyDeathEffectsUninfected self)
+        {
+            Log("Emit Effects");
+        }
+        
         // Put OnBlockedHit outside of DryyaCounter so that the event handler can be unhooked in OnDestroy if the scene changes mid-counter
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
@@ -178,8 +247,8 @@ namespace FiveKnights
         {
             _audio = gameObject.AddComponent<AudioSource>();
 
-            _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEffects.enabled = true;
+            //_deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            //_deathEffects.enabled = true;
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
@@ -198,11 +267,11 @@ namespace FiveKnights
 
         private void AssignFields()
         {
-            EnemyDeathEffectsUninfected ogrimDeathEffects = ogrim.GetComponent<EnemyDeathEffectsUninfected>();
+            /*EnemyDeathEffectsUninfected ogrimDeathEffects = ogrim.GetComponent<EnemyDeathEffectsUninfected>();
             foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
                 fi.SetValue(_deathEffects, fi.GetValue(ogrimDeathEffects));
-            }
+            }*/
             
             EnemyHitEffectsUninfected ogrimHitEffects = ogrim.GetComponent<EnemyHitEffectsUninfected>();
             foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
@@ -304,10 +373,10 @@ namespace FiveKnights
             }
 
             // Walk if Knight is out of walk range
-            float walkRange = 10.0f;
+            float walkRange = 15.0f;
             if (Mathf.Abs(heroPos.x - pos.x) > walkRange)
             {
-                if (_nextMove != DryyaDive) _nextMove = DryyaWalk;
+                if (_nextMove != DryyaDive && _nextMove != DryyaElegy) _nextMove = DryyaWalk;
             }
             
             // Turn if facing opposite of direction to Knight
@@ -324,7 +393,7 @@ namespace FiveKnights
                     if (move == _nextMove)
                     {
                         _repeats[move]++;
-                    }
+                    }        
                     else
                     {
                         _repeats[move] = 0;
@@ -701,6 +770,8 @@ namespace FiveKnights
             StartCoroutine(DiveJumpAntic());
         }
 
+        private GameObject _elegyBeam1;
+        private GameObject _elegyBeam2;
         private void DryyaElegy()
         {
             IEnumerator ElegyAntic()
@@ -719,6 +790,11 @@ namespace FiveKnights
                 Log("Elegy Slash 1");
                 _anim.Play("Elegy Slash 1");
 
+                Vector2 beamPos = new Vector2(HeroController.instance.transform.position.x, 10);
+                Quaternion randomRot = Quaternion.Euler(0, 0, Random.Range(60, 120));
+                _elegyBeam1 = Instantiate(FiveKnights.preloadedGO["Elegy Beam"], beamPos, randomRot);
+                _elegyBeam1.AddComponent<ElegyBeam>();
+                
                 yield return new WaitForSeconds(2 * AnimFPS);
 
                 StartCoroutine(ElegySlash2());
@@ -729,6 +805,13 @@ namespace FiveKnights
                 Log("Elegy Slash 2");
                 _anim.Play("Elegy Slash 2");
 
+                Vector2 beamPos = new Vector2(HeroController.instance.transform.position.x, 10);
+                Quaternion randomRot = Quaternion.Euler(0, 0, Random.Range(60, 120));
+                _elegyBeam2 = Instantiate(FiveKnights.preloadedGO["Elegy Beam"], beamPos, randomRot);
+                _elegyBeam2.GetComponent<Animator>().Play("Beam");
+                _elegyBeam2.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+                _elegyBeam2.AddComponent<ElegyBeam>();
+                
                 yield return new WaitForSeconds(2 * AnimFPS);
 
                 StartCoroutine(ElegyRecover());
@@ -1005,17 +1088,18 @@ namespace FiveKnights
             trans.position = new Vector2(trans.position.x, GroundY);
         }
 
-        private const float Extension = 0.01f;
+        private const float GroundExtension = 0.01f;
         private const int CollisionMask = 1 << 8;
         private bool IsGrounded()
         {
-            float rayLength = _collider.bounds.extents.y + Extension;
+            float rayLength = _collider.bounds.extents.y + GroundExtension;
             return Physics2D.Raycast(transform.position, Vector2.down, rayLength, CollisionMask);
         }
 
+        private const float WallExtension = 0.5f;
         private bool TestWallCollisions()
         {
-            float rayLength = _collider.bounds.extents.x + Extension;
+            float rayLength = _collider.bounds.extents.x + WallExtension;
             RaycastHit2D hitLeftWall = Physics2D.Raycast(transform.position, Vector2.left, rayLength, CollisionMask);
             RaycastHit2D hitRightWall = Physics2D.Raycast(transform.position, Vector2.right, rayLength, CollisionMask);
 
@@ -1025,10 +1109,11 @@ namespace FiveKnights
             }
 
             return hitLeftWall || hitRightWall;
-        }
         
+        }
         private void OnDestroy()
         {
+            _hm.OnDeath += DeathHandler;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Hit -= OnBlockedHit;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;

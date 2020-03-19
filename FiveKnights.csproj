@@ -94,9 +94,11 @@
     <Compile Include="AirFistCollision.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
+    <Compile Include="DryyaCorpse.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="DryyaController.cs" />
+    <Compile Include="ElegyBeam.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />

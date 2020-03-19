@@ -91,6 +91,7 @@ namespace FiveKnights
             FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
             FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
+            FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
             Log("Getting Sprites");
             foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
             {
@@ -98,7 +99,7 @@ namespace FiveKnights
                 sprites[sprite.name] = sprite;
             }
 
-            FlashShader = dryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
+            FlashShader = dryyaAssetBundle.LoadAsset<Shader>("flash");
 
 
         }
