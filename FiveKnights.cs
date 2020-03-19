@@ -59,7 +59,7 @@ namespace FiveKnights
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
-        {
+        {F
             Log("Storing GOs");
             preloadedGO["Warp"] = preloadedObjects["White_Palace_03_hub"]["doorWarp"];
             preloadedGO["WarpAnim"] = preloadedObjects["White_Palace_03_hub"]["dream_beam_animation"];
@@ -103,7 +103,7 @@ namespace FiveKnights
                 {
                     if (s == null) continue;
 
-                    byte[] buffer = new byte[s.Length];
+                    byte[] buffer = new byte[s.Length];    
                     s.Read(buffer, 0, buffer.Length);
                     s.Dispose();
 

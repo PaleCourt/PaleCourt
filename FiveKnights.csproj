@@ -99,10 +99,12 @@
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
+    <Compile Include="DryyaCorpse.cs" />
     <Compile Include="CustomWP.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="DryyaController.cs" />
+    <Compile Include="ElegyBeam.cs" />
     <Compile Include="EnemyPlantSpawn.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
