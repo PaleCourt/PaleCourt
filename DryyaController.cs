@@ -52,6 +52,9 @@ namespace FiveKnights
                 sr.material = new Material(Shader.Find("Sprites/Default"));
             }
 
+            GameObject.Find("Burrow Effect").SetActive(false);
+            GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+
             GetComponents();
             AddComponents();
 

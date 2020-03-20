@@ -24,9 +24,10 @@ namespace FiveKnights
         public static Dictionary<string, Sprite> sprites;
         public static Dictionary<string, AudioClip> clips;
         public static int defeats;
+        public static bool returnToWP;
         private FightController fightCtrl;
 
-        private IEnumerator Start()
+        private void Start()
         {
             USceneManager.activeSceneChanged += SceneChanged;
             audioClips = new Dictionary<string, AudioClip>();
@@ -34,31 +35,31 @@ namespace FiveKnights
             sprites = new Dictionary<string, Sprite>();
             clips = new Dictionary<string, AudioClip>();
             LoadIsmaBundle();
-            StartCoroutine(Arena());
-
-            yield return new WaitWhile(() => !GameObject.Find("GG_Statue_ElderHu"));
-            FiveKnights.preloadedGO["isma_stat"] = Instantiate(GameObject.Find("GG_Statue_ElderHu"));
-            DontDestroyOnLoad(FiveKnights.preloadedGO["isma_stat"]);
-            FiveKnights.preloadedGO["isma_stat"].SetActive(false);
         }
 
         private void SceneChanged(Scene arg0, Scene arg1)
         {
-            if (arg0.name == "GG_Workshop" && arg1.name == "GG_White_Defender") //DO arg0.name == "White_Palace_09"
+            if (arg1.name == "GG_Workshop")
+            {
+                StartCoroutine(CameraFixer());
+                StartCoroutine(Arena());
+            }
+
+            if (arg0.name == "White_Palace_09" && arg1.name == "GG_White_Defender") //DO arg0.name == "White_Palace_09"
             {
                 StartCoroutine(AddComponent());
+            }
+
+            if (arg1.name == "White_Palace_09" && arg0.name == "GG_White_Defender") //REMOVE THIS ONCE DONE
+            {
+                GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
+                Destroy(fightCtrl);
+                PlayerData.instance.isInvincible = false;
             }
 
             if (arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender")
             {
                 StartCoroutine(AddComponent());
-            }
-
-            if (arg1.name == "GG_Workshop" && arg0.name == "GG_White_Defender") //REMOVE THIS ONCE DONE
-            {
-                GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-                Destroy(fightCtrl);
-                PlayerData.instance.isInvincible = false;
             }
 
             if (arg1.name == "White_Palace_09" && arg0.name == "Dream_04_White_Defender") //DO arg1.name == "White_Palace_09" EVENTUALLY
@@ -68,17 +69,23 @@ namespace FiveKnights
                 Destroy(fightCtrl);
                 PlayerData.instance.isInvincible = false;
             }
-
-            if (arg1.name == "GG_Workshop")
-            {
-                SetStatue();
-                MakeBench(arg1.name, "WhiteBench(Clone)(Clone)",new Vector3(18.0f, 12.4f, 0.1f));
-            }
             
             if (arg1.name == "White_Palace_09")
             {
                 GameManager.instance.gameObject.AddComponent<CustomWP>(); //110.6,94.4
-                MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(28f,94.4f,1));
+                StartCoroutine(CameraFixer());
+                MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
+            }
+        }
+
+        private IEnumerator CameraFixer()
+        {
+            yield return new WaitWhile(() => GameManager.instance.gameState != GlobalEnums.GameState.PLAYING);
+            yield return new WaitForSeconds(1f);
+            while(GameCameras.instance.cameraFadeFSM.ActiveStateName != "Normal")
+            {
+                GameCameras.instance.cameraFadeFSM.SetState("FadeIn");
+                yield return new WaitForSeconds(0.5f);
             }
         }
 
@@ -90,44 +97,9 @@ namespace FiveKnights
             var fsm = go.LocateMyFSM("Bench Control");
             fsm.FsmVariables.FindFsmString("Scene Name").Value = scene;
             fsm.FsmVariables.FindFsmString("Spawn Name").Value = name;
-            Log("FSM VEC " + fsm.FsmVariables.FindFsmVector3("Sit Vector").Value);
+            fsm.FsmVariables.FindFsmVector3("Sit Vector").Value = new Vector3(0f,0.5f,0f);
         }
-        
-        private void SetStatue()
-        {
-            //Used 56's pale prince code here
-            GameObject statue = Instantiate(GameObject.Find("GG_Statue_ElderHu"));
-            statue.transform.SetPosition3D(25.4f, statue.transform.GetPositionY(), statue.transform.GetPositionZ());
-            var scene = ScriptableObject.CreateInstance<BossScene>();
-            scene.sceneName = "GG_White_Defender";
-            var bs = statue.GetComponent<BossStatue>();
-            bs.bossScene = scene;
-            bs.statueStatePD = "FennelArena";
-            var gg = new BossStatue.Completion
-            {
-                completedTier1 = true,
-                seenTier3Unlock = true,
-                completedTier2 = true,
-                completedTier3 = true,
-                isUnlocked = true,
-                hasBeenSeen = true,
-                usingAltVersion = false,
-            };
-            bs.StatueState = gg;
-            var details = new BossStatue.BossUIDetails();
-            details.nameKey = details.nameSheet = "ISMA_NAME";
-            details.descriptionKey = details.descriptionSheet = "ISMA_DESC";
-            bs.bossDetails = details;
-            foreach (var i in bs.statueDisplay.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.sprite = FiveKnights.SPRITES[2];
-                var scaleX = i.transform.GetScaleX();
-                var scaleY = i.transform.GetScaleY();
-                i.transform.SetScaleX(scaleX * 1.5f);
-                i.transform.SetScaleY(scaleY * 1.5f);
-                i.transform.SetPosition3D(i.transform.GetPositionX() - 0.1f, i.transform.GetPositionY() + 0.1f, i.transform.GetPositionZ());
-            }
-        }
+       
 
         private IEnumerator AddComponent()
         {
@@ -310,7 +282,6 @@ namespace FiveKnights
             pm.SendEvent("FADE OUT");
             Destroy(go);
             yield return new WaitForSeconds(0.5f);
-            //GameManager.instance.gameObject.AddComponent<CustomWP>();
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
                 SceneName = "White_Palace_09",

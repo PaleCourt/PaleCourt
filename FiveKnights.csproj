@@ -112,6 +112,7 @@
     <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveSettings.cs" />
     <Compile Include="WDController.cs" />
     <Compile Include="ZemerController.cs" />
   </ItemGroup>

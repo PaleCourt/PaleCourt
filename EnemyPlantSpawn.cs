@@ -80,6 +80,7 @@ namespace FiveKnights
             pillar.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
             pillar.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
             plant = pillar;
+            StartCoroutine(WallKill(pillar.GetComponent<HealthManager>()));
         }
 
         private IEnumerator Phase2Spawn()

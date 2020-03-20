@@ -38,11 +38,9 @@ namespace FiveKnights
         {
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.MusicCue.GetChannelInfo += MusicCue_GetChannelInfo;
-            /*yield return null;
-            gameObject.SetActive(false);
-            FightController.Instance.CreateZemer();
-            ZemerController ic = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();*/
-            if (gameObject.scene.name == "GG_White_Defender")
+            PlayerData.instance.dreamReturnScene = "White_Palace_09";
+            Log("COUNT " + CustomWP.boss);
+            if (CustomWP.boss == CustomWP.Boss.ISMA)
             {
                 yield return null;
                 gameObject.SetActive(false);
@@ -58,7 +56,20 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 Destroy(this);
             }
-            else
+            else if (CustomWP.boss == CustomWP.Boss.DRYYA)
+            {
+                yield return null;
+                gameObject.SetActive(false);
+                FightController.Instance.CreateDryya();
+            }
+            else if (CustomWP.boss == CustomWP.Boss.ZEMER)
+            {
+                yield return null;
+                gameObject.SetActive(false);
+                FightController.Instance.CreateZemer();
+                ZemerController ic = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();
+            }
+            else if (CustomWP.boss == CustomWP.Boss.ALL)
             {
                 alone = false;
                 _hm.hp = 950;
@@ -90,15 +101,17 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 Destroy(this);
             }
-            /*GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
-            dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_1"];
-            yield return new WaitForSeconds(0.125f);
-            dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_2"];
-            yield return new WaitForSeconds(0.125f);
-            Destroy(dryyaSilhouette);
-            yield return new WaitForSeconds(0.5f);
-            FightController.Instance.CreateDryya();
-            FightController.Instance.CreateIsma();*/
+            /*
+             GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+                dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_1"];
+                yield return new WaitForSeconds(0.125f);
+                dryyaSilhouette.GetComponent<SpriteRenderer>().sprite = ArenaFinder.sprites["Dryya_Silhouette_2"];
+                yield return new WaitForSeconds(0.125f);
+                Destroy(dryyaSilhouette);
+                yield return new WaitForSeconds(0.5f);
+                FightController.Instance.CreateDryya();
+                FightController.Instance.CreateIsma();
+                */
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
