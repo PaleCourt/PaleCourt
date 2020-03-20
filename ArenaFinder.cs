@@ -127,7 +127,7 @@ namespace FiveKnights
                     return;
             }
             AssetBundle ab = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            AssetBundle ab2 = AssetBundle.LoadFromFile(System.IO.Path.Combine(Application.streamingAssetsPath, "ismabg"));
+            AssetBundle ab2 = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "ismabg"));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
             FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
@@ -136,6 +136,7 @@ namespace FiveKnights
             FiveKnights.preloadedGO["Wall"] = ab.LoadAsset<GameObject>("Wall");
             FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
             clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
+            Log("Isma Music null? " + (clips["IsmaMusic"] == null));
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.GetComponent<SpriteRenderer>() == null)
