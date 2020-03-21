@@ -156,21 +156,20 @@ namespace FiveKnights
             Log("Finished Loading Isma Bundle");
             LoadDryyaAssets();
         }
-
-        public static Shader FlashShader;
+        
         private void LoadDryyaAssets()
         {
             string dryyaAssetsPath;
             switch (SystemInfo.operatingSystemFamily)
             {
                 case OperatingSystemFamily.Windows:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyawin";
                     break;
                 case OperatingSystemFamily.Linux:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyalin";
                     break;
                 case OperatingSystemFamily.MacOSX:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyamc";
                     break;
                 default:
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
@@ -188,8 +187,7 @@ namespace FiveKnights
                 Log("Sprite Name: " + sprite.name);
                 sprites[sprite.name] = sprite;
             }
-
-            FlashShader = dryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
+            
             Log("Finished Loading Dryya Bundle");
             LoadZemerBundle();
         }
@@ -285,6 +283,7 @@ namespace FiveKnights
             pm.SendEvent("FADE OUT");
             Destroy(go);
             yield return new WaitForSeconds(0.5f);
+            Log("Begin Transitioning Scenes");
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
                 SceneName = "White_Palace_09",
@@ -292,6 +291,7 @@ namespace FiveKnights
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
             });
+            Log("Transitioned Scene");
         }
 
         private void OnDestroy()

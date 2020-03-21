@@ -75,7 +75,7 @@ namespace FiveKnights
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
-
+            
             _dreamNailEffect = ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
 
             _moves = new List<Action>
@@ -104,7 +104,7 @@ namespace FiveKnights
                 [DryyaElegy] = 2,
                 [DryyaTripleSlash] = 2,
             };
-            
+
             AssignFields();
 
             DryyaIntro();
@@ -155,26 +155,15 @@ namespace FiveKnights
                 _anim.Play("Defeat Leave");
                 yield return new WaitForSeconds(AnimFPS);
                 _rb.velocity = new Vector2(_direction * 30, 30);
-
+                
                 yield return new WaitForSeconds(AnimFPS);
-            
+
+                GameObject dryyaDeath = new GameObject("Dryya Death", typeof(DryyaDeath));
+                
                 Destroy(gameObject);
             }
             
             StartCoroutine(DryyaDeath());
-
-            /*Log("Dryya Death");
-            InstantlyFaceHero();
-            Log("Instantiating Dryya Corpse");
-            GameObject dryyaCorpse = Instantiate(FiveKnights.preloadedGO["Dryya Corpse"], transform);
-            Log("Dryya Corpse Pos: " + dryyaCorpse.transform.position);
-            dryyaCorpse.SetActive(true);
-            Log("Adding DryyaCorpse");
-            DryyaCorpse corpseComponent = dryyaCorpse.AddComponent<DryyaCorpse>();
-            corpseComponent.enabled = true;
-            corpseComponent.direction = _direction;
-            Log("Destroying Dryya");
-            Destroy(gameObject);*/
         }
         
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
@@ -237,7 +226,7 @@ namespace FiveKnights
             _rb = GetComponent<Rigidbody2D>();
             _sr = GetComponent<SpriteRenderer>();
 
-            _sr.material = new Material(ArenaFinder.FlashShader);
+            _sr.material = new Material(ArenaFinder.materials["flash"]);
         }
 
         private AudioSource _audio;

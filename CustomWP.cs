@@ -201,12 +201,16 @@ namespace FiveKnights
             //48f 98.75f Hegemol Top Left
             //39.4 94.75 Dryya Bottom Left
             //81.6 94.75 Isma Bottom Right
+            
             GameObject stat = SetStatue(new Vector2(81.6f, 94.75f), new Vector2(-0.1f, 0.1f), FiveKnights.preloadedGO["Statue"],
                                         "GG_White_Defender", FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
+            
             GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.69f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
+            
             GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
+            
             StartCoroutine(StatCheck(stat.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI"), 
                                     stat2.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI"), 
                                     stat3.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI")));
@@ -277,13 +281,6 @@ namespace FiveKnights
             var bs = statue.GetComponent<BossStatue>();
             bs.bossScene = scene;
             bs.statueStatePD = state;
-            
-
-            if (state == "statueStateIsma")
-            {
-                bs.dreamBossScene.sceneName = "Dream_04_White_Defender";
-            }
-
 
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
@@ -314,9 +311,11 @@ namespace FiveKnights
                     x.gameObject.SetActive(true);
                 }
             });
+            
             statue.SetActive(true);
             var tmp = statue.transform.Find("Inspect").Find("Prompt Marker").position;
             statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x, tmp.y + 1f, tmp.z);
+            
             return statue;
         }
 
