@@ -136,7 +136,7 @@ namespace FiveKnights
             FiveKnights.preloadedGO["Wall"] = ab.LoadAsset<GameObject>("Wall");
             FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
             clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
-            Log("Isma Music null? " + (clips["IsmaMusic"] == null));
+            Log("Isma Music  " + (clips["IsmaMusic"] == null));
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.GetComponent<SpriteRenderer>() == null)

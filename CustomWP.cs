@@ -281,7 +281,7 @@ namespace FiveKnights
 
             if (state == "statueStateIsma")
             {
-                bs.dreamBossScene = "Dream_04_White_Defender";
+                bs.dreamBossScene.sceneName = "Dream_04_White_Defender";
             }
 
 
