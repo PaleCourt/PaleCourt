@@ -35,6 +35,7 @@ namespace FiveKnights
         private GameObject dd;
         private PlayMakerFSM _ddFsm;
         private Animator _anim;
+        private List<AudioClip> _randAud;
         private System.Random _rand;
         private int _healthPool;
         private const float LEFT_X = 60.3f;
@@ -75,6 +76,7 @@ namespace FiveKnights
             gameObject.AddComponent<Flash>();
             _dnailReac.enabled = true;
             _rand = new System.Random();
+            _randAud = new List<AudioClip>();
             _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
             _healthPool = MAX_HP;
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
@@ -115,6 +117,7 @@ namespace FiveKnights
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y + 8f);
             _rb.velocity = new Vector2(0f, -40f);
             yield return new WaitWhile(() => gameObject.transform.GetPositionY() > GROUND_Y);
+            _aud.PlayOneShot(ArenaFinder.audioClips["IsmaAud5"]);
             GameCameras.instance.cameraShakeFSM.SendEvent("SmallShake");
             _rb.velocity = new Vector2(0f, 0f);
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
@@ -278,6 +281,7 @@ namespace FiveKnights
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb");
+                _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0, 0f);
@@ -390,6 +394,7 @@ namespace FiveKnights
             ToggleIsma(true);
             float dir = FaceHero();
             _anim.Play("AFistAntic");
+            _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
             _rb.velocity = new Vector2(dir * -20f, 0f);
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
             _rb.velocity = new Vector2(0f, 0f);
@@ -481,6 +486,7 @@ namespace FiveKnights
             ToggleIsma(true);
             _rb.velocity = new Vector2(dir * -20f, 0f);
             _anim.Play("GFistAntic");
+            _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _rb.velocity = Vector2.zero;
@@ -545,6 +551,7 @@ namespace FiveKnights
                     {
                         Vector2 pos = go.transform.position;
                         ToggleIsma(true);
+                        _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
                         _attacking = true;
                         float side = go.GetComponent<Rigidbody2D>().velocity.x > 0f ? 1f : -1f;
                         gameObject.transform.position = new Vector2(pos.x + side * 1.77f, pos.y + 0.38f);
@@ -633,8 +640,9 @@ namespace FiveKnights
 
                 Animator tAnim = thorn.transform.Find("T1").gameObject.GetComponent<Animator>();
                 _anim.Play("AgonyLoopIntro");
-                yield return new WaitForSeconds(0.05f);
+                yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                _aud.PlayOneShot(ArenaFinder.audioClips["IsmaAud6"]);
                 _anim.Play("AgonyLoop");
                 int j = onlyIsma ? 5 : 3;
                 _anim.speed = 1.7f;
@@ -726,6 +734,7 @@ namespace FiveKnights
             _anim.speed = 1.6f;
             while (true)
             {
+                _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
                 Vector2 diff = tAnim.transform.position - _target.transform.position;
@@ -1189,6 +1198,11 @@ namespace FiveKnights
                 fi.SetValue(hitEff, fi.GetValue(ogrimHitEffects));
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
+
+            foreach (AudioClip i in ArenaFinder.audioClips.Values.Where(x=> x.name != "IsmaAud5" && x.name != "IsmaAud6"))
+            {
+                _randAud.Add(i);
+            }
         }
 
         private bool FastApproximately(float a, float b, float threshold)

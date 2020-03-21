@@ -31,7 +31,25 @@ namespace FiveKnights
         {
             if (info.SceneName == "White_Palace_09")
             {
-                info.EntryGateName = "door_dreamReturnGG_GG_Statue_ElderHu_GG_Statue_ElderHu(Clone)_GG_Statue_ElderHu(Clone)(Clone)";
+                Log("BOSS: " + boss);
+                switch (boss)
+                {
+                    case Boss.ISMA:
+                        info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
+                        break;
+                    case Boss.DRYYA:
+                        info.EntryGateName = "door_dreamReturnGGstatueStateDryya_GG_Statue_TraitorLord(Clone)(Clone)";
+                        break;
+                    case Boss.ZEMER:
+                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
+                        break;
+                    case Boss.HEGEMOL:
+                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
+                        break;
+                    case Boss.ALL:
+                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
+                        break;
+                }
             }
 
             if (self.sceneName == "GG_Workshop") isFromGodhome = true;
@@ -201,6 +219,7 @@ namespace FiveKnights
             //48f 98.75f Hegemol Top Left
             //39.4 94.75 Dryya Bottom Left
             //81.6 94.75 Isma Bottom Right
+            //door_dreamReturnGG_GG_Statue_ElderHu_GG_Statue_ElderHu(Clone)_GG_Statue_ElderHu(Clone)(Clone)
             GameObject stat = SetStatue(new Vector2(81.6f, 94.75f), new Vector2(-0.1f, 0.1f), FiveKnights.preloadedGO["Statue"],
                                         "GG_White_Defender", FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.69f), FiveKnights.preloadedGO["StatueMed"],
@@ -279,17 +298,23 @@ namespace FiveKnights
             bs.statueStatePD = state;
             
 
-            if (state == "statueStateIsma")
+            /*if (state == "statueStateIsma")
             {
                 bs.dreamBossScene = "Dream_04_White_Defender";
-            }
-
+            }*/
 
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
             details.nameKey = details.nameSheet = name;
             details.descriptionKey = details.descriptionSheet = desc;
             bs.bossDetails = details;
+            foreach (Transform i in statue.transform)
+            {
+                if (i.name.Contains("door"))
+                {
+                    i.name = "door_dreamReturnGG" + state;
+                }
+            }
             foreach (var i in bs.statueDisplay.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.enabled = true;
@@ -317,6 +342,7 @@ namespace FiveKnights
             statue.SetActive(true);
             var tmp = statue.transform.Find("Inspect").Find("Prompt Marker").position;
             statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x, tmp.y + 1f, tmp.z);
+            statue.PrintSceneHierarchyTree();
             return statue;
         }
 

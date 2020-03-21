@@ -13,7 +13,7 @@ namespace FiveKnights
 {
     public class DryyaController : MonoBehaviour
     {
-        private const float GroundY = 8.5f;
+        private const float GroundY = 9.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
         private const float SlashSpeed = 50.0f;
@@ -47,7 +47,7 @@ namespace FiveKnights
 
             _pvControl = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
 
-            foreach(SpriteRenderer sr in gameObject.GetComponentsInChildren<SpriteRenderer>(true))
+            foreach (SpriteRenderer sr in gameObject.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 sr.material = new Material(Shader.Find("Sprites/Default"));
             }
