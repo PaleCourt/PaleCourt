@@ -238,10 +238,7 @@ namespace FiveKnights
         private void AddComponents()
         {
             _audio = gameObject.AddComponent<AudioSource>();
-
-            //_deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            //_deathEffects.enabled = true;
-
+            
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
             _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
