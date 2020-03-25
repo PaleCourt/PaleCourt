@@ -19,57 +19,108 @@ namespace FiveKnights
     {
         private HealthManager _hm;
         private PlayMakerFSM _fsm;
+        public GameObject dd;
         public static GameObject _mus;
         private tk2dSpriteAnimator _tk;
         public static bool alone;
         private bool HIT_FLAG;
 
-        private void Awake()
-        {
-            _hm = gameObject.GetComponent<HealthManager>();
-            _fsm = gameObject.LocateMyFSM("Dung Defender");
-            _tk = gameObject.GetComponent<tk2dSpriteAnimator>();
-            _mus = new GameObject("IsmaMusHolder");
-            FiveKnights.preloadedGO["WD"] = gameObject;
-            alone = true;
-        }
-
         private IEnumerator Start()
         {
+            _hm = dd.GetComponent<HealthManager>();
+            _fsm = dd.LocateMyFSM("Dung Defender");
+            _tk = dd.GetComponent<tk2dSpriteAnimator>();
+            _mus = new GameObject("IsmaMusHolder");
+            FiveKnights.preloadedGO["WD"] = dd;
+            alone = true;
+
+
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.MusicCue.GetChannelInfo += MusicCue_GetChannelInfo;
             PlayerData.instance.dreamReturnScene = "White_Palace_09";
-            Log("COUNT " + CustomWP.boss);
-            if (CustomWP.boss == CustomWP.Boss.ISMA)
+
+            //Be sure to do CustomWP.Instance.wonLastFight = true; on win
+            if (CustomWP.boss == CustomWP.Boss.Isma)
             {
                 yield return null;
-                gameObject.SetActive(false);
-                PlayerData.instance.isInvincible = true;
-                HeroController.instance.RelinquishControl();
-                GameManager.instance.playerData.disablePause = true;
+                dd.SetActive(false);
                 FightController.Instance.CreateIsma();
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
-                yield return new WaitWhile(() => !ic.introDone);
-                PlayerData.instance.isInvincible = false;
-                GameManager.instance.playerData.disablePause = false;
                 yield return new WaitWhile(() => ic != null);
+                var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
+                endCtrl.SendEvent("DREAM RETURN");
                 Destroy(this);
             }
-            else if (CustomWP.boss == CustomWP.Boss.DRYYA)
+            else if (CustomWP.boss == CustomWP.Boss.Ogrim)
+            {
+                alone = false;
+                _hm.hp = 950;
+                _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
+                _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
+                yield return new WaitForSeconds(1f);
+                GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
+                yield return new WaitWhile(() => _hm.hp > 600);
+                HIT_FLAG = false;
+                yield return new WaitWhile(() => !HIT_FLAG);
+                PlayerData.instance.isInvincible = true;
+                HeroController.instance.RelinquishControl();
+                GameManager.instance.playerData.disablePause = true;
+                _fsm.SetState("Stun Set");
+                yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
+                _fsm.enabled = false;
+                FightController.Instance.CreateIsma();
+                IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+                yield return new WaitWhile(() => !ic.introDone);
+                _fsm.enabled = true;
+                _fsm.SetState("Stun Recover");
+                yield return null;
+                yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
+                _mus.SetActive(true);
+                _mus.GetComponent<AudioSource>().volume = 1f;
+                _fsm.SetState("Rage Roar");
+                PlayerData.instance.isInvincible = false;
+                GameManager.instance.playerData.disablePause = false;
+
+                yield return new WaitWhile(() => ic != null);
+
+                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+                pm.SendEvent("FADE OUT INSTANT");
+                PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
+                fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
+                fsm2.SendEvent("FADE IN");
+                yield return null;
+                HeroController.instance.MaxHealth();
+                yield return null;
+                GameCameras.instance.cameraFadeFSM.FsmVariables.FindFsmBool("No Fade").Value = true;
+                yield return null;
+                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+                {
+                    SceneName = "White_Palace_09",
+                    EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)",
+                    Visualization = GameManager.SceneLoadVisualizations.GodsAndGlory,
+                    WaitForSceneTransitionCameraFade = false,
+                    PreventCameraFadeOut = true,
+                    EntryDelay = 0
+
+                });
+
+                Destroy(this);
+            }
+            else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
                 yield return null;
-                gameObject.SetActive(false);
+                dd.SetActive(false);
                 FightController.Instance.CreateDryya();
             }
-            else if (CustomWP.boss == CustomWP.Boss.ZEMER)
+            else if (CustomWP.boss == CustomWP.Boss.Zemer)
             {
                 yield return null;
-                gameObject.SetActive(false);
+                dd.SetActive(false);
                 FightController.Instance.CreateZemer();
                 ZemerController ic = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();
             }
-            else if (CustomWP.boss == CustomWP.Boss.ALL)
+            else if (CustomWP.boss == CustomWP.Boss.All)
             {
                 alone = false;
                 _hm.hp = 950;
@@ -128,7 +179,6 @@ namespace FiveKnights
             if (!_tk.IsPlaying("Roll")) return;
             if (c.gameObject.layer == 8 && c.gameObject.name.Contains("Front"))
             {
-                Log("HIT WALL");
                 _fsm.SetState("RJ Wall");
             }
         }

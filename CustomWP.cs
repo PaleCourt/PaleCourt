@@ -4,12 +4,14 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using Modding;
+using System.Reflection;
 using ModCommon.Util;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using System.Collections;
 using ModCommon;
 using Object = System.Object;
+using UnityEngine.UI;
 
 namespace FiveKnights
 {
@@ -18,37 +20,44 @@ namespace FiveKnights
         private bool correctedTP;
         private bool isFromGodhome;
         public static Boss boss;
-        public enum Boss { DRYYA, ISMA, HEGEMOL, ALL, NONE, ZEMER };
+        public static CustomWP Instance;
+        public bool wonLastFight;
+        public int lev;
+        public enum Boss { Ogrim, Dryya, Isma, Hegemol, All, None, Zemer };
 
-        private void Start()
+        private IEnumerator Start()
         {
+            Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
-            boss = Boss.NONE;
+            On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
+            ModHooks.Instance.TakeHealthHook += Instance_TakeHealthHook;
+            boss = Boss.None;
+
+            while (true)
+            {
+                yield return new WaitWhile(() => !Input.GetKeyUp(KeyCode.R));
+                Log("PDATA " + PlayerData.instance.currentBossStatueCompletionKey);
+                yield return null;
+            }
+        }
+
+        private int Instance_TakeHealthHook(int damage)
+        {
+            return damage;
         }
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
             if (info.SceneName == "White_Palace_09")
             {
-                Log("BOSS: " + boss);
-                switch (boss)
+                if (boss == Boss.Isma || boss == Boss.Ogrim)
                 {
-                    case Boss.ISMA:
-                        info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
-                        break;
-                    case Boss.DRYYA:
-                        info.EntryGateName = "door_dreamReturnGGstatueStateDryya_GG_Statue_TraitorLord(Clone)(Clone)";
-                        break;
-                    case Boss.ZEMER:
-                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
-                        break;
-                    case Boss.HEGEMOL:
-                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
-                        break;
-                    case Boss.ALL:
-                        info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
-                        break;
+                    info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
+                }
+                else
+                {
+                    info.EntryGateName = "door_dreamReturnGGstatueState" + boss + "_GG_Statue_TraitorLord(Clone)(Clone)";
                 }
             }
 
@@ -109,7 +118,7 @@ namespace FiveKnights
                 go.SetActive(true);
                 go2.SetActive(true);
                 go3.SetActive(true);
-                go.transform.position = new Vector3(24.5f,94.4f) - new Vector3(0f, 0.65f, 0f);
+                go.transform.position = new Vector3(24.5f,94.4f) - new Vector3(0f, 0.7f, 0f);
                 go3.transform.position = go2.transform.position = new Vector3(go.transform.position.x + 0.1f, go.transform.position.y - 0.4f, -0.5f);
                 var fsm = go.LocateMyFSM("Door Control");
                 fsm.GetAction<BeginSceneTransition>("Change Scene", 3).sceneName = "GG_Workshop";
@@ -144,7 +153,7 @@ namespace FiveKnights
                     PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
                     pm.SendEvent("FADE OUT");
                     yield return new WaitForSeconds(0.5f);
-                    boss = Boss.ALL;
+                    boss = Boss.All;
                     GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
                     {
                         SceneName = "Dream_04_White_Defender",
@@ -215,43 +224,28 @@ namespace FiveKnights
 
         private void CreateStatues()
         {
-            //73.3 98.75f Zemer Top Right
             //48f 98.75f Hegemol Top Left
-            //39.4 94.75 Dryya Bottom Left
-            //81.6 94.75 Isma Bottom Right
-            //door_dreamReturnGG_GG_Statue_ElderHu_GG_Statue_ElderHu(Clone)_GG_Statue_ElderHu(Clone)(Clone)
-            GameObject stat = SetStatue(new Vector2(81.6f, 94.75f), new Vector2(-0.1f, 0.1f), FiveKnights.preloadedGO["Statue"],
+            GameObject stat = SetStatue(new Vector2(81.75f, 94.75f), new Vector2(-0.1f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         "GG_White_Defender", FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
-            GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.69f), FiveKnights.preloadedGO["StatueMed"],
+            GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.69f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
-            GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), FiveKnights.preloadedGO["StatueMed"],
+            GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
-            StartCoroutine(StatCheck(stat.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI"), 
-                                    stat2.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI"), 
-                                    stat3.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI")));
         }
 
-        private IEnumerator StatCheck(PlayMakerFSM isma, PlayMakerFSM dryya, PlayMakerFSM zemer)
+        private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
         {
-            while (true)
+            string name = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
+            foreach (Boss b in Enum.GetValues(typeof(Boss)))
             {
-                if (isma.ActiveStateName == "Challenge")
+                if (name.Contains(b.ToString()))
                 {
-                    boss = Boss.ISMA;
-                    yield break;
+                    boss = b;
+                    if (b != Boss.Isma) break;
                 }
-                if (dryya.ActiveStateName == "Challenge")
-                {
-                    boss = Boss.DRYYA;
-                    yield break;
-                }
-                if (zemer.ActiveStateName == "Challenge")
-                {
-                    boss = Boss.ZEMER;
-                    yield break;
-                }
-                yield return null;
             }
+            lev = level;
+            orig(self, level, doHideAnim);
         }
 
         private void HubRemove()
@@ -286,7 +280,9 @@ namespace FiveKnights
             lift.LocateMyFSM("Control").enabled = false;
         }
 
-        private GameObject SetStatue(Vector2 pos, Vector2 offset, GameObject go, string sceneName, Sprite spr, string name, string desc, string state)
+        private GameObject SetStatue(Vector2 pos, Vector2 offset, Vector2 nameOffset,
+                                    GameObject go, string sceneName, Sprite spr, 
+                                    string name, string desc, string state)
         {
             //Used 56's pale prince code here
             GameObject statue = Instantiate(go);
@@ -297,12 +293,6 @@ namespace FiveKnights
             bs.bossScene = scene;
             bs.statueStatePD = state;
             
-
-            /*if (state == "statueStateIsma")
-            {
-                bs.dreamBossScene = "Dream_04_White_Defender";
-            }*/
-
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
             details.nameKey = details.nameSheet = name;
@@ -315,41 +305,127 @@ namespace FiveKnights
                     i.name = "door_dreamReturnGG" + state;
                 }
             }
-            foreach (var i in bs.statueDisplay.GetComponentsInChildren<SpriteRenderer>(true))
+            GameObject appearance = statue.transform.Find("Base").Find("Statue").gameObject;
+            appearance.SetActive(true);
+            SpriteRenderer sr = appearance.transform.Find("GG_statues_0006_5").GetComponent<SpriteRenderer>();
+            sr.enabled = true;
+            sr.sprite = spr;
+            var scaleX = sr.transform.GetScaleX();
+            var scaleY = sr.transform.GetScaleY();
+            sr.transform.SetScaleX(scaleX * 1.4f);
+            sr.transform.SetScaleY(scaleY * 1.4f);
+            sr.transform.SetPosition3D(sr.transform.GetPositionX() + offset.x, sr.transform.GetPositionY() + offset.y, 2f);
+            
+            if (state.Contains("Isma"))
             {
-                i.enabled = true;
-                i.sprite = spr;
-                var scaleX = i.transform.GetScaleX();
-                var scaleY = i.transform.GetScaleY();
-                i.transform.SetScaleX(scaleX * 1.4f);
-                i.transform.SetScaleY(scaleY * 1.4f);
-                i.transform.SetPosition3D(i.transform.GetPositionX() + offset.x, i.transform.GetPositionY() + offset.y, 2f);
-                if (bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen)
-                {
-                    GameObject fakeStat = new GameObject("FakeStat");
-                    fakeStat.AddComponent<SpriteRenderer>().sprite = spr;
-                    fakeStat.transform.localScale = i.transform.localScale;
-                    fakeStat.transform.position = i.transform.position;
-                }
+                SetStatue2(statue, "GG_White_Defender", "statueStateIsma2");
+                bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.BoolValues["AltStatueIsma"], false, false);
             }
-            GetChildren(statue.transform, x =>
+            if (bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen)
             {
-                if (!x.name.Contains("alt_lever") && !x.name.Contains("dream_version_switch"))
-                {
-                    x.gameObject.SetActive(true);
-                }
-            });
-            statue.SetActive(true);
+
+                statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
+                
+            }
             var tmp = statue.transform.Find("Inspect").Find("Prompt Marker").position;
-            statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x, tmp.y + 1f, tmp.z);
-            statue.PrintSceneHierarchyTree();
+            statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x + nameOffset.x, tmp.y + nameOffset.y, tmp.z);
+            statue.transform.Find("Inspect").gameObject.SetActive(true);
+            statue.transform.Find("Spotlight").gameObject.SetActive(true);
+            statue.SetActive(true);
+            
+            if (wonLastFight && state.Contains("Isma") && (boss == Boss.Isma || boss == Boss.Ogrim))
+            {
+                Log("IN2");
+                BossStatue.Completion temp = (boss == Boss.Isma) ? bs.StatueState : bs.DreamStatueState;
+                if (lev == 0) temp.completedTier1 = true;
+                else if (lev == 1) temp.completedTier2 = true;
+                else if (lev == 2) temp.completedTier3 = true;
+                if (temp.completedTier1 && temp.completedTier2 && !temp.seenTier3Unlock) temp.seenTier3Unlock = true;
+                if (boss == Boss.Isma)
+                {
+                    PlayerData.instance.currentBossStatueCompletionKey = bs.statueStatePD;
+                    bs.StatueState = temp;
+                    bs.SetPlaqueState(bs.StatueState, bs.altPlaqueL, bs.statueStatePD);
+                }
+                else
+                {
+                    PlayerData.instance.currentBossStatueCompletionKey = bs.dreamStatueStatePD;
+                    bs.DreamStatueState = temp;
+                    bs.SetPlaqueState(bs.DreamStatueState, bs.altPlaqueR, bs.dreamStatueStatePD);
+                }
+                wonLastFight = false;
+            }
+            if (wonLastFight && state.Contains(boss.ToString()))
+            {
+                Log("IN");
+                BossStatue.Completion temp = bs.StatueState;
+                if (lev == 0) temp.completedTier1 = true;
+                else if (lev == 1) temp.completedTier2 = true;
+                else if (lev == 2) temp.completedTier3 = true;
+                if (temp.completedTier1 && temp.completedTier2 && !temp.seenTier3Unlock) temp.seenTier3Unlock = true;
+                bs.StatueState = temp;
+                PlayerData.instance.currentBossStatueCompletionKey = bs.statueStatePD;
+                bs.SetPlaqueState(temp, bs.regularPlaque, bs.statueStatePD);
+                wonLastFight = false;
+            }
+
             return statue;
+        }
+
+        private void SetStatue2(GameObject statue, string sceneN, string stateN)
+        {
+            BossScene scene = ScriptableObject.CreateInstance<BossScene>();
+            scene.sceneName = sceneN;
+
+            BossStatue bs = statue.GetComponent<BossStatue>();
+            bs.dreamBossScene = scene;
+            bs.dreamStatueStatePD = stateN;
+
+            /* 56's code { */
+
+            //bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen || bs.isAlwaysUnlocked);
+
+            Destroy(statue.FindGameObjectInChildren("StatueAlt"));
+
+            GameObject displayStatue = bs.statueDisplay;
+
+            GameObject alt = Instantiate
+            (
+                displayStatue,
+                displayStatue.transform.parent,
+                true
+            );
+            alt.SetActive(bs.UsingDreamVersion);
+            alt.GetComponentInChildren<SpriteRenderer>(true).flipX = true;
+            alt.name = "StatueAlt";
+            bs.statueDisplayAlt = alt;
+
+            /* } 56's code */
+
+            BossStatue.BossUIDetails details = new BossStatue.BossUIDetails();
+            details.nameKey = details.nameSheet = "DD_ISMA_NAME";
+            details.descriptionKey = details.descriptionSheet = "DD_ISMA_DESC";
+            bs.dreamBossDetails = details;
+
+            GameObject altLever = statue.FindGameObjectInChildren("alt_lever");
+            altLever.SetActive(true);
+            GameObject switchBracket = altLever.FindGameObjectInChildren("GG_statue_switch_bracket");
+            switchBracket.SetActive(true);
+
+            GameObject switchLever = altLever.FindGameObjectInChildren("GG_statue_switch_lever");
+            switchLever.SetActive(true);
+
+            BossStatueLever toggle = statue.GetComponentInChildren<BossStatueLever>();
+            toggle.SetOwner(bs);
+            toggle.SetState(true);
         }
 
         private void OnDestroy()
         {
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.GameManager.BeginSceneTransition -= GameManager_BeginSceneTransition;
+            On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
+            ModHooks.Instance.TakeHealthHook -= Instance_TakeHealthHook;
         }
         
         public static void Log(object o)

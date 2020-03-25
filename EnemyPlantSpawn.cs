@@ -4,7 +4,10 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Collections;
+using ModCommon.Util;
+using HutongGames.PlayMaker;
 using ModCommon;
+using HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
@@ -18,6 +21,10 @@ namespace FiveKnights
         public bool isSpecialTurret;
         private GameObject plant;
         private Vector2 pos;
+        private const int MAX_GULKA = 5;
+        private const int MAX_TRAP = 5;
+        private const int MAX_PILLAR = 6;
+        private const float TIME_INC = 0.32f;
 
         private IEnumerator Start()
         {
@@ -44,19 +51,40 @@ namespace FiveKnights
             if (!isPhase2 && (pos.x > gulkaB2.x || pos.x < gulkaB1.x) && pos.y > gulkaB1.y && pos.y < gulkaB2.y)
             {
                 foreach (GameObject i in PlantG.Where(x => Vector2.Distance(x.transform.position, pos) < 3f)) skip = true;
-                if (skip)
+                Log("PLANTG C " + PlantG.Count);
+                if (skip || PlantG.Count > MAX_GULKA) //A
                 {
                     Destroy(gameObject);
                     yield break;
                 }
+                IsmaController.offsetTime += TIME_INC;
                 _sr.enabled = false;
                 StartCoroutine(SpawnGulka());
             }
             else if ((pos.x < foolB2.x && pos.x > foolB1.x) && pos.y < foolB2.y)
             {
+                Log("PLANTF C " + PlantF.Count);
+                if (PlantF.Count > MAX_TRAP) //B
+                {
+                    Destroy(gameObject);
+                    yield break;
+                }
                 _sr.enabled = false;
-                if (isPhase2) StartCoroutine(PlantPillar());
-                else StartCoroutine(SpawnFool()); 
+                if (isPhase2)
+                {
+                    Log("PLANT P " + PlantP.Count);
+                    if (PlantP.Count > MAX_PILLAR)
+                    {
+                        Destroy(gameObject);
+                        yield break;
+                    }
+                    StartCoroutine(PlantPillar());
+                }
+                else
+                {
+                    IsmaController.offsetTime += TIME_INC;
+                    StartCoroutine(SpawnFool());
+                }
             }
             else
             {
@@ -166,7 +194,7 @@ namespace FiveKnights
         {
             GameObject fool = Instantiate(FiveKnights.preloadedGO["Fool"]);
             Animator anim = fool.GetComponent<Animator>();
-            fool.transform.SetPosition2D(pos.x, 6.2f);
+            fool.transform.SetPosition2D(pos.x, 6.05f); //6.2
             fool.transform.localScale *= 1.4f;
             anim.Play("SpawnFool");
             yield return null;
@@ -179,7 +207,7 @@ namespace FiveKnights
             }
             plant = trap;
             PlantF.Add(trap);
-            trap.transform.SetPosition2D(pos.x, 8.8f);
+            trap.transform.SetPosition2D(pos.x, 8.65f); //8.8
             tk2dSpriteAnimator tk = trap.GetComponent<tk2dSpriteAnimator>();
             PlayMakerFSM fsm = trap.LocateMyFSM("Plant Trap Control");
             fsm.enabled = false;
@@ -188,6 +216,9 @@ namespace FiveKnights
             yield return new WaitWhile(() => tk.IsPlaying("Retract"));
             fsm.enabled = true;
             fsm.SetState("Init");
+            fsm.GetAction<Wait>("Ready", 2).time = 0.4f;
+            //fsm.RemoveTransition("", "");
+
             trap.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
             trap.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
             StartCoroutine(WallKill(trap.GetComponent<HealthManager>()));
@@ -206,8 +237,16 @@ namespace FiveKnights
             {
                 if (!IsmaController.eliminateMinions) StartCoroutine(Phase2Spawn());
             }
-            else if (plant.name.Contains("Trap")) PlantF.Remove(plant);
-            else if (plant.name.Contains("Turret")) PlantG.Remove(plant);
+            else if (plant.name.Contains("Trap"))
+            {
+                IsmaController.offsetTime -= TIME_INC;
+                PlantF.Remove(plant);
+            }
+            else if (plant.name.Contains("Turret"))
+            {
+                IsmaController.offsetTime -= TIME_INC;
+                PlantG.Remove(plant);
+            }
             else if (plant.name.Contains("Plant"))
             {
                 StartCoroutine(PillarDeath());

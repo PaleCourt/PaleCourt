@@ -27,7 +27,8 @@ namespace FiveKnights
             Instance = this;
             yield return new WaitWhile(() => !GameObject.Find("White Defender"));
             _whiteD = GameObject.Find("White Defender");
-            _whiteD.AddComponent<WDController>();
+            //_whiteD.AddComponent<WDController>();
+            GameManager.instance.gameObject.AddComponent<WDController>().dd = _whiteD;
         }
 
         public void CreateIsma()

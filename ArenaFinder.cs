@@ -26,15 +26,56 @@ namespace FiveKnights
         public static int defeats;
         public static bool returnToWP;
         private FightController fightCtrl;
+        private static bool hasSummonElevator;
 
         private void Start()
         {
             USceneManager.activeSceneChanged += SceneChanged;
+            On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             audioClips = new Dictionary<string, AudioClip>();
             materials = new Dictionary<string, Material>();
             sprites = new Dictionary<string, Sprite>();
             clips = new Dictionary<string, AudioClip>();
             LoadIsmaBundle();
+        }
+
+        private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+        {
+            //52.6 62.2
+            Vector2 pos = HeroController.instance.transform.position;
+            if (pos.x > 49f && pos.x < 62.2f && collision.tag == "Nail Attack")
+            {
+                self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
+                GameManager.instance.FreezeMoment(1);
+                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+                if (self.strikeNailPrefab && self.hitOrigin)
+                {
+                    self.strikeNailPrefab.Spawn(self.hitOrigin.transform.position);
+                }
+                if (self.leverAnimator)
+                {
+                    self.leverAnimator.Play("Hit",-1,0f);
+                }
+                hasSummonElevator = true;
+                return;
+            }
+            orig(self, collision);
+        }
+
+        private void CreateLever()
+        {
+            GameObject altLever = Instantiate(FiveKnights.preloadedGO["StatueMed"].FindGameObjectInChildren("alt_lever"));
+            Vector3 alt = altLever.transform.localScale;
+            altLever.transform.localScale = new Vector3(alt.x*-1f, alt.y, alt.z);
+            altLever.SetActive(true);
+            GameObject switchBracket = altLever.FindGameObjectInChildren("GG_statue_switch_bracket");
+            switchBracket.SetActive(true);
+
+            GameObject switchLever = altLever.FindGameObjectInChildren("GG_statue_switch_lever");
+            switchLever.SetActive(true);
+            BossStatueLever toggle = switchLever.GetComponent<BossStatueLever>();
+            toggle.SetState(true);
+            altLever.transform.position = new Vector2(57.4f,37.5f);
         }
 
         private void SceneChanged(Scene arg0, Scene arg1)
@@ -72,7 +113,10 @@ namespace FiveKnights
             
             if (arg1.name == "White_Palace_09")
             {
-                GameManager.instance.gameObject.AddComponent<CustomWP>(); //110.6,94.4
+                if (CustomWP.Instance == null)
+                {
+                    GameManager.instance.gameObject.AddComponent<CustomWP>();
+                }
                 StartCoroutine(CameraFixer());
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
@@ -262,42 +306,58 @@ namespace FiveKnights
         IEnumerator Arena()
         {
             yield return new WaitWhile(() => !HeroController.instance);
-            yield return new WaitWhile(() => HeroController.instance.transform.GetPositionX() < 53f);
-            GameObject go = Instantiate(FiveKnights.preloadedGO["lift"]);
-            go.transform.position = new Vector2(53.2f, 20f);
-            go.SetActive(true);
-            PlayMakerFSM fsm = go.LocateMyFSM("Control");
-            fsm.RemoveAction("Rise Antic", 2);
-            fsm.enabled = true;
-            fsm.FsmVariables.FindFsmFloat("Top Y").Value = 36.4f;
-            fsm.SetState("Init");
-            yield return null;
-            yield return new WaitWhile(() => !Input.GetKeyUp(KeyCode.R));
-            fsm.SetState("Antic Pause");
-            yield return null;
-            yield return new WaitWhile(() => fsm.ActiveStateName != "Hit Top");
-            fsm.FsmVariables.FindFsmFloat("Top Y").Value = 91f;
-            fsm.SetState("Bot");
-            yield return new WaitWhile(() => go.transform.GetPositionY() < 90f);
-            HeroController.instance.RelinquishControl();
-            HeroController.instance.StopAnimationControl();
-            GameManager.instance.playerData.disablePause = true;
-            PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-            pm.SendEvent("FADE OUT");
-            Destroy(go);
-            yield return new WaitForSeconds(0.5f);
-            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+            yield return new WaitWhile(() =>HeroController.instance.transform.GetPositionX() < 35f);
+            CreateLever();
+            while (true)
             {
-                SceneName = "White_Palace_09",
-                EntryGateName = "left test2",
-                Visualization = GameManager.SceneLoadVisualizations.Default,
-                WaitForSceneTransitionCameraFade = false,
-            });
+                yield return new WaitWhile(() => HeroController.instance.transform.GetPositionX() < 53f);
+                GameObject go = Instantiate(FiveKnights.preloadedGO["lift"]);
+                go.transform.position = new Vector2(53.2f, 20f);
+                go.SetActive(true);
+                PlayMakerFSM fsm = go.LocateMyFSM("Control");
+                fsm.RemoveAction("Rise Antic", 2);
+                fsm.enabled = true;
+                fsm.FsmVariables.FindFsmFloat("Top Y").Value = 36.4f;
+                fsm.SetState("Init");
+                yield return null;
+
+                yield return new WaitWhile(() => !hasSummonElevator);
+                //yield return new WaitWhile(() => !Input.GetKeyUp(KeyCode.R));
+
+                fsm.SetState("Antic Pause");
+                yield return null;
+                yield return new WaitWhile(() => fsm.ActiveStateName != "Hit Top");
+                fsm.FsmVariables.FindFsmFloat("Top Y").Value = 91f;
+                fsm.SetState("Bot");
+                yield return new WaitWhile(() => go.transform.GetPositionY() < 90f);
+                if (HeroController.instance.transform.GetPositionY() < 85f)
+                {
+                    yield return null;
+                    hasSummonElevator = false;
+                    continue;
+                }
+                HeroController.instance.RelinquishControl();
+                HeroController.instance.StopAnimationControl();
+                GameManager.instance.playerData.disablePause = true;
+                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+                pm.SendEvent("FADE OUT");
+                Destroy(go);
+                yield return new WaitForSeconds(0.5f);
+                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+                {
+                    SceneName = "White_Palace_09",
+                    EntryGateName = "left test2",
+                    Visualization = GameManager.SceneLoadVisualizations.Default,
+                    WaitForSceneTransitionCameraFade = false,
+                });
+                yield break;
+            }
         }
 
         private void OnDestroy()
         {
             USceneManager.activeSceneChanged -= SceneChanged;
+            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
         }
 
         public static void Log(object o)

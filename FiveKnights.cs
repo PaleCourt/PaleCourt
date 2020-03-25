@@ -121,6 +121,8 @@ namespace FiveKnights
                 _settings.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
                 _settings.CompletionZemer = (BossStatue.Completion)obj;
+            else if (key == "statueStateIsma2")
+                _settings.CompletionIsma2 = (BossStatue.Completion)obj;
             return obj;
         }
 
@@ -132,6 +134,8 @@ namespace FiveKnights
                 return _settings.CompletionDryya;
             else if (key == "statueStateZemer")
                 return _settings.CompletionZemer;
+            else if (key == "statueStateIsma2")
+                return _settings.CompletionIsma2;
             return orig;
         }
 
@@ -141,6 +145,8 @@ namespace FiveKnights
             {
                 case "ISMA_NAME": return "Kindly Isma";
                 case "ISMA_DESC": return "Gentle god of moss and grove.";
+                case "DD_ISMA_NAME": return "Loyal Ogrim & Kind Isma";
+                case "DD_ISMA_DESC": return "Some dungo description.";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
                 case "ZEM_NAME": return "Mysterious Zemer";
