@@ -158,20 +158,20 @@ namespace FiveKnights
             switch (SystemInfo.operatingSystemFamily)
             {
                 case OperatingSystemFamily.Windows:
-                    path = "ismawin";
-                    break;
+            path = "ismawin";
+            break;
                 case OperatingSystemFamily.Linux:
                     path = "ismalin";
                     break;
                 case OperatingSystemFamily.MacOSX:
-                    path = "ismamc";
+            path = "ismamc";
                     break;
                 default:
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
                     return;
             }
             AssetBundle ab = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            AssetBundle ab2 = AssetBundle.LoadFromFile(System.IO.Path.Combine(Application.streamingAssetsPath, "ismabg"));
+            AssetBundle ab2 = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "ismabg"));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
             FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
@@ -203,21 +203,20 @@ namespace FiveKnights
             Log("Finished Loading Isma Bundle");
             LoadDryyaAssets();
         }
-
-        public static Shader FlashShader;
+        
         private void LoadDryyaAssets()
         {
             string dryyaAssetsPath;
             switch (SystemInfo.operatingSystemFamily)
             {
                 case OperatingSystemFamily.Windows:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyawin";
                     break;
                 case OperatingSystemFamily.Linux:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyalin";
                     break;
                 case OperatingSystemFamily.MacOSX:
-                    dryyaAssetsPath = "dryyaassets";
+                    dryyaAssetsPath = "dryyamc";
                     break;
                 default:
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
@@ -226,15 +225,16 @@ namespace FiveKnights
 
             AssetBundle dryyaAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
             FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
-            FiveKnights.preloadedGO["Dryya Silhouette"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya Silhouette");
+            FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
+            FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
+            FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
             Log("Getting Sprites");
             foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
             {
                 Log("Sprite Name: " + sprite.name);
                 sprites[sprite.name] = sprite;
             }
-
-            FlashShader = dryyaAssetBundle.LoadAsset<Shader>("Flash Shader");
+            
             Log("Finished Loading Dryya Bundle");
             LoadZemerBundle();
         }

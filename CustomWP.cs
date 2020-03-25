@@ -292,7 +292,6 @@ namespace FiveKnights
             var bs = statue.GetComponent<BossStatue>();
             bs.bossScene = scene;
             bs.statueStatePD = state;
-            
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
             details.nameKey = details.nameSheet = name;
