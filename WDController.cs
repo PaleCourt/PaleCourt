@@ -48,8 +48,15 @@ namespace FiveKnights
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
                 yield return new WaitWhile(() => ic != null);
-                var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
-                endCtrl.SendEvent("DREAM RETURN");
+                //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
+                //endCtrl.SendEvent("DREAM RETURN");
+                var bossSceneController = GameObject.Find("Boss Scene Controller");
+                var bsc = bossSceneController.GetComponent<BossSceneController>();
+                GameObject transition = Instantiate(bsc.transitionPrefab);
+                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                transitionsFSM.SetState("Out Statue");
+                yield return new WaitForSeconds(1.0f);
+                bsc.DoDreamReturn();
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
@@ -111,14 +118,37 @@ namespace FiveKnights
             {
                 yield return null;
                 dd.SetActive(false);
-                FightController.Instance.CreateDryya();
+                DryyaController dc = FightController.Instance.CreateDryya();
+
+                yield return new WaitWhile(() => dc != null);
+
+                var bossSceneController = GameObject.Find("Boss Scene Controller");
+                var bsc = bossSceneController.GetComponent<BossSceneController>();
+                GameObject transition = Instantiate(bsc.transitionPrefab);
+                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                transitionsFSM.SetState("Out Statue");
+                yield return new WaitForSeconds(1.0f);
+                bsc.DoDreamReturn();
+                Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Zemer)
             {
                 yield return null;
                 dd.SetActive(false);
                 FightController.Instance.CreateZemer();
-                ZemerController ic = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();
+                ZemerController zm = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();
+                yield return new WaitWhile(() => zm != null);
+                //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
+                //endCtrl.SendEvent("DREAM RETURN");
+                var bossSceneController = GameObject.Find("Boss Scene Controller");
+                var bsc = bossSceneController.GetComponent<BossSceneController>();
+                GameObject transition = Instantiate(bsc.transitionPrefab);
+                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                transitionsFSM.SetState("Out Statue");
+                yield return new WaitForSeconds(1.0f);
+                bsc.DoDreamReturn();
+
+                Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.All)
             {

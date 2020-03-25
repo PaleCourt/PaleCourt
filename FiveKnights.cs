@@ -151,7 +151,7 @@ namespace FiveKnights
                 case "ISMA_NAME": return "Kindly Isma";
                 case "ISMA_DESC": return "Gentle god of moss and grove.";
                 case "DD_ISMA_NAME": return "Loyal Ogrim & Kind Isma";
-                case "DD_ISMA_DESC": return "Some dungo description.";
+                case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
                 case "ZEM_NAME": return "Mysterious Zemer";

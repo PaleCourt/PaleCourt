@@ -15,7 +15,7 @@ namespace FiveKnights
 {
     public class DryyaController : MonoBehaviour
     {
-        private const float GroundY = 9.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
+        private const float GroundY = 8.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
         private const float LeftX = 61.0f;
@@ -160,8 +160,8 @@ namespace FiveKnights
                 
                 yield return new WaitForSeconds(AnimFPS);
 
-                GameObject dryyaDeath = new GameObject("Dryya Death", typeof(DryyaDeath));
-                
+                //GameObject dryyaDeath = new GameObject("Dryya Death", typeof(DryyaDeath));
+                CustomWP.Instance.wonLastFight = true;
                 Destroy(gameObject);
             }
             

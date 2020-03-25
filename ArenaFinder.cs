@@ -158,13 +158,13 @@ namespace FiveKnights
             switch (SystemInfo.operatingSystemFamily)
             {
                 case OperatingSystemFamily.Windows:
-            path = "ismawin";
-            break;
+                    path = "ismawin";
+                    break;
                 case OperatingSystemFamily.Linux:
                     path = "ismalin";
                     break;
                 case OperatingSystemFamily.MacOSX:
-            path = "ismamc";
+                    path = "ismamc";
                     break;
                 default:
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
