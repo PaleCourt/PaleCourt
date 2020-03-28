@@ -13,7 +13,7 @@ using HutongGames.Utility;
 using JetBrains.Annotations;
 using ModCommon.Util;
 using Object = UnityEngine.Object;
-using Random = System.Random;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
@@ -23,6 +23,7 @@ namespace FiveKnights
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
+        private const float DigInWalkSpeed = 8.0f;
 
         private GameObject _ogrim;
         private GameObject _pv;
@@ -30,12 +31,13 @@ namespace FiveKnights
         private AudioSource _audio;
         private HealthManager _hm;
         private PlayMakerFSM _control;
-        private PlayMakerFSM _dungDefender;
-        private Random _random;
+        private Rigidbody2D _rb;
+        private tk2dSprite _sprite;
+        private tk2dSpriteAnimator _anim;
 
         private void Awake()
         {
-            Log("Hegemol Awake");;
+            Log("Hegemol Awake");
 
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
@@ -43,13 +45,13 @@ namespace FiveKnights
             control.RemoveTransition("Pause", "Set Phase HP");
 
             _ogrim = FiveKnights.preloadedGO["WD"];
-            _dungDefender = _ogrim.LocateMyFSM("Dung Defender");
 
-            _random = new Random();
-            
             _control = gameObject.LocateMyFSM("FalseyControl");
+            _anim = GetComponent<tk2dSpriteAnimator>();
+            _sprite = GetComponent<tk2dSprite>();
             _audio = GetComponent<AudioSource>();
             _hm = GetComponent<HealthManager>();
+            _rb = GetComponent<Rigidbody2D>();
 
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -58,13 +60,41 @@ namespace FiveKnights
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
-            
+
             _hm.hp = Health;
+            
+            tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
+            List<tk2dSpriteDefinition> fcSpriteDefs = fcCollectionData.spriteDefinitions.ToList();
+            
+            GameObject collectionPrefab = FiveKnights.preloadedGO["Hegemol Collection Prefab"];
+            tk2dSpriteCollection collection = collectionPrefab.GetComponent<tk2dSpriteCollection>();
+            
+
+            foreach (tk2dSpriteDefinition def in collection.spriteCollection.spriteDefinitions)
+            {
+                def.material.shader = fcSpriteDefs[0].material.shader;
+                fcSpriteDefs.Add(def);
+            }
+
+            fcCollectionData.spriteDefinitions = fcSpriteDefs.ToArray();
+            
+            List<tk2dSpriteAnimationClip> clips = _anim.Library.clips.ToList();
+
+            GameObject animationPrefab = FiveKnights.preloadedGO["Hegemol Animation"];
+            tk2dSpriteAnimation animation = animationPrefab.GetComponent<tk2dSpriteAnimation>();
+            
+            
+            foreach (tk2dSpriteAnimationClip clip in animation.clips)
+            {
+                clips.Add(clip);
+            }
+            
+            _anim.Library.clips = clips.ToArray();
 
             AssignFields();
 
             //Stuff for getting hegemol to work
-            GetComponent<tk2dSprite>().GetCurrentSpriteDef().material.mainTexture = FiveKnights.SPRITES[0].texture;
+            _sprite.GetCurrentSpriteDef().material.mainTexture = FiveKnights.SPRITES[0].texture;
 
             _control.Fsm.GetFsmFloat("Run Speed").Value = 15.0f;
             
@@ -72,13 +102,22 @@ namespace FiveKnights
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
+            _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
+
+            AddDig();
+            
+            yield return new WaitForSeconds(1.0f);
+            
+            Log("Intro Enter");
+            //_anim.Play("Intro Enter", animation, collection.spriteCollection);
+
+            yield return new WaitForSeconds(1.0f);
             
             _control.SetState("Init");
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
             _control.SendEvent("BATTLE START");
             while (true)
             {
-                Log("hhh");
                 if (_control.ActiveStateName.Contains("Hero Pos"))//JA Check Hero Pos
                 {
                     float diff = HeroController.instance.transform.position.x - transform.position.x;
@@ -89,9 +128,118 @@ namespace FiveKnights
             }
         }
 
-        private void FixedUpdate()
+        private void AddDig()
         {
+            string[] states =
+            {
+                "Dig Antic",
+                "Dig In",
+                "Dig Out",
+            };
+
+            _control.CreateStates(states, "Idle");
+
+            IEnumerator DigAntic()
+            {
+                Log("Dig Antic");
+                _anim.Play("Dig Antic");
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Dig Antic"));
+            }
+
+            _control.InsertCoroutine("Dig Antic", 0, DigAntic);
+
+            IEnumerator DigIn()
+            {
+                Log("Dig In");
+                _anim.Play("Dig In");
+                _audio.Play("Mace Slam");
+                _rb.velocity = Vector2.right * transform.localScale.x * DigInWalkSpeed;
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Dig In"));
+            }
+
+            _control.InsertCoroutine("Dig In", 0, DigIn);
+
+            IEnumerator DigOut()
+            {
+                Log("Dig Out");
+                _anim.Play("Dig Out");
+                _audio.Play("Mace Swing");
+                _rb.velocity = Vector2.zero;
+
+                Vector2 pos = transform.position + transform.localScale.x * Vector3.right * 5.0f + Vector3.down * 5.0f;
+                float valMin = 15.0f;
+                float valMax = 40.0f;
+
+                GameObject dungBall1 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                dungBall1.SetActive(true);
+                dungBall1.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+
+                GameObject dungBall2 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                dungBall2.SetActive(true);
+                dungBall2.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+                
+                GameObject dungBall3 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                dungBall3.SetActive(true);
+                dungBall3.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+
+                GameObject hitter = Instantiate(new GameObject("Hitter"), transform);
+                hitter.SetActive(true);
+                hitter.layer = 17;
+                PolygonCollider2D hitterPoly = hitter.AddComponent<PolygonCollider2D>();
+                hitterPoly.isTrigger = true;
+                hitterPoly.points = new []
+                {
+                    new Vector2(3.66f, -1.23f),
+                    new Vector2(0.3f, 2.39f),
+                    new Vector2(0.1f, -4.27f),
+                    new Vector2(4.51f, -3.91f),
+                    new Vector2(6.13f, -2.88f),
+                    new Vector2(5.26f, -1.39f),
+                    new Vector2(4.52f, -1.13f),
+                };
+
+                hitter.AddComponent<DamageHero>().damageDealt = 2;
+                hitter.AddComponent<DebugColliders>();
+                
+                GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+
+                yield return new WaitForSeconds(1.0f / 12);
+
+                hitterPoly.points = new[]
+                {
+                    new Vector2(1.76f, 1.96f),
+                    new Vector2(2.48f, -1.69f),
+                    new Vector2(-3.35f, 1.49f),
+                    new Vector2(-4.19f, 0.95f),
+                    new Vector2(-5.07f, 1.19f),
+                    new Vector2(-5.59f, 2.44f),
+                    new Vector2(-3.63f, 3.76f),
+                    new Vector2(-1.33f, 3.95f),
+                    new Vector2(1.03f, 3.14f),
+                };
+
+                yield return new WaitForSeconds(1.0f / 12);
+
+                hitterPoly.points = new[]
+                {
+                    new Vector2(-6.33f, 1.33f),
+                    new Vector2(-4.91f, 1.56f),
+                    new Vector2(2.17f, -0.96f),
+                    new Vector2(2.12f, -1.21f),
+                    new Vector2(-4.28f, -0.73f),
+                    new Vector2(-4.77f, -1.91f),
+                    new Vector2(-6.21f, -1.57f),
+                    new Vector2(-6.63f, -0.8f),
+                };
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Dig Out"));
+
+                Destroy(hitter);
+            }
             
+            _control.InsertCoroutine("Dig Out", 0, DigOut);
         }
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
@@ -276,9 +424,10 @@ namespace FiveKnights
             float scaleX = trans.localScale.x;
             float xLeft = pos.x + 5 * scaleX - 2;
             float xRight = pos.x + 5 * scaleX + 2;
+            float pillarSpacing = 2;
             while (xLeft >= LeftX || xRight <= RightX)
             {
-                PlayAudioClip("Dung Pillar", 0.9f, 1.1f);
+                _audio.Play("Dung Pillar", 0.9f, 1.1f);
                 
                 GameObject dungPillarR = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(xRight, 12.0f), Quaternion.identity);
                 dungPillarR.SetActive(true);
@@ -290,30 +439,11 @@ namespace FiveKnights
                 dungPillarL.transform.localScale = new Vector3(-pillarRScale.x, pillarRScale.y, pillarRScale.z);
                 dungPillarL.AddComponent<DungPillar>();
 
-                xLeft -= 2;
-                xRight += 2;
+                xLeft -= pillarSpacing;
+                xRight += pillarSpacing;
                 
                 yield return new WaitForSeconds(0.1f);
             }
-        }
-
-        public void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
-        {
-            AudioClip GetAudioClip()
-            {
-                switch (clipName)
-                {
-                    case "Dung Pillar":
-                        return (AudioClip) _dungDefender.GetAction<AudioPlayerOneShotSingle>("Pillar", 0).audioClip
-                            .Value;
-                    default:
-                        return null;
-                }
-            }
-
-            _audio.pitch = (float) (_random.NextDouble() * pitchMax) + pitchMin;
-            _audio.time = time; 
-            _audio.PlayOneShot(GetAudioClip());
         }
         
         private void OnDestroy()
@@ -324,7 +454,7 @@ namespace FiveKnights
 
         private void Log(object o)
         {
-            Modding.Logger.Log("[Hegemol] " + o);
+            Modding.Logger.Log("[Hegemol Controller] " + o);
         }
     }
 }

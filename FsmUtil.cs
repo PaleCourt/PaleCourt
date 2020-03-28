@@ -157,6 +157,30 @@ namespace FiveKnights
             return @new;
         }
 
+        public static void AddToSendRandomEvent
+        (
+            this SendRandomEvent sre,
+            string toState,
+            float weight,
+            [CanBeNull] string eventName = null
+        )
+        {
+            var fsm = sre.Fsm.Owner as PlayMakerFSM;
+            string state = sre.State.Name;
+            eventName = eventName ?? toState.Split(' ').First();
+
+            List<FsmEvent> events = sre.events.ToList();
+            List<FsmFloat> weights = sre.weights.ToList();
+
+            fsm.AddTransition(state, eventName, toState);
+
+            events.Add(fsm.GetState(state).Transitions.Single(x => x.FsmEvent.Name == eventName).FsmEvent);
+            weights.Add(weight);
+
+            sre.events = events.ToArray();
+            sre.weights = weights.ToArray();
+        }
+        
         public static void AddToSendRandomEventV2
         (
             this SendRandomEventV2 sre,
@@ -201,14 +225,14 @@ namespace FiveKnights
         }
 
         /* Helper method specifically for creating a series of states leading to a final "Idle" state */
-        public static void CreateStates(this PlayMakerFSM fsm, string[] stateNames)
+        public static void CreateStates(this PlayMakerFSM fsm, string[] stateNames, string finalState)
         {
             for (int i = 0; i < stateNames.Length; i++)
             {
                 string state = stateNames[i];
                 fsm.CreateState(state);
                 fsm.AddTransition(state, FsmEvent.Finished,
-                    i + 1 < stateNames.Length ? stateNames[i + 1] : "Idle");
+                    i + 1 < stateNames.Length ? stateNames[i + 1] : finalState);
             }
         }
         
