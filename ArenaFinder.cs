@@ -21,8 +21,13 @@ namespace FiveKnights
     {
         public static Dictionary<string, AudioClip> audioClips;
         public static Dictionary<string, Material> materials;
+        public static Dictionary<string, Shader> shaders;
         public static Dictionary<string, Sprite> sprites;
+        public static Dictionary<string, Texture> textures;
         public static Dictionary<string, AudioClip> clips;
+        public static Dictionary<string, tk2dSpriteAnimation> spriteAnimations;
+        public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
+        public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
         public static int defeats;
         public static bool returnToWP;
         private FightController fightCtrl;
@@ -34,8 +39,12 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             audioClips = new Dictionary<string, AudioClip>();
             materials = new Dictionary<string, Material>();
+            shaders = new Dictionary<string, Shader>();
             sprites = new Dictionary<string, Sprite>();
             clips = new Dictionary<string, AudioClip>();
+            spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
+            spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
+            collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             LoadIsmaBundle();
         }
 
@@ -236,9 +245,46 @@ namespace FiveKnights
             }
             
             Log("Finished Loading Dryya Bundle");
-            LoadZemerBundle();
+            LoadHegemolBundle();
         }
 
+        private void LoadHegemolBundle()
+        {
+            string hegemolBundlePath;
+            switch (SystemInfo.operatingSystemFamily)
+            {
+                case OperatingSystemFamily.Windows:
+                    hegemolBundlePath = "hegemolwin";
+                    break;
+                case OperatingSystemFamily.Linux:
+                    hegemolBundlePath = "hegemollin";
+                    break;
+                case OperatingSystemFamily.MacOSX:
+                    hegemolBundlePath = "hegemolmc";
+                    break;
+                default:
+                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
+                    return;
+            }
+
+            Log("Getting Hegemol Bundle");
+            AssetBundle hegemolBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
+
+            UnityEngine.Object[] objects = hegemolBundle.LoadAllAssets();
+            foreach (UnityEngine.Object obj in objects)
+            {
+                Log("Object Name: " + obj.name);
+            }
+            
+            Log("Getting SpriteCollections");
+            
+            FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
+            FiveKnights.preloadedGO["Hegemol Animation"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+
+            Log("Finished Loading Hegemol Bundle");
+            LoadZemerBundle();
+        }
+        
         private void LoadZemerBundle()
         {
             Log("Loading Zemer Bundle");

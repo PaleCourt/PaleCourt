@@ -96,6 +96,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioController.cs" />
+    <Compile Include="AudioExtensions.cs" />
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
@@ -109,6 +110,7 @@
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />
+    <Compile Include="FsmUtil.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
     <Compile Include="Parryable.cs" />
