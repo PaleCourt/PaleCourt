@@ -12,6 +12,7 @@ using HutongGames.PlayMaker.Actions;
 using HutongGames.Utility;
 using JetBrains.Annotations;
 using ModCommon.Util;
+using Bounds = UnityEngine.Bounds;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
@@ -29,8 +30,10 @@ namespace FiveKnights
         private GameObject _pv;
 
         private AudioSource _audio;
+        private BoxCollider2D _collider;
         private HealthManager _hm;
         private PlayMakerFSM _control;
+        private PlayMakerFSM _dd;
         private Rigidbody2D _rb;
         private tk2dSprite _sprite;
         private tk2dSpriteAnimator _anim;
@@ -45,9 +48,11 @@ namespace FiveKnights
             control.RemoveTransition("Pause", "Set Phase HP");
 
             _ogrim = FiveKnights.preloadedGO["WD"];
+            _dd = _ogrim.LocateMyFSM("Dung Defender");
 
             _control = gameObject.LocateMyFSM("FalseyControl");
             _anim = GetComponent<tk2dSpriteAnimator>();
+            _collider = GetComponent<BoxCollider2D>();
             _sprite = GetComponent<tk2dSprite>();
             _audio = GetComponent<AudioSource>();
             _hm = GetComponent<HealthManager>();
@@ -57,6 +62,11 @@ namespace FiveKnights
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
 
+        void Update()
+        {
+            Log("Current State: " + _control.ActiveStateName);
+        }
+        
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
@@ -69,7 +79,6 @@ namespace FiveKnights
             GameObject collectionPrefab = FiveKnights.preloadedGO["Hegemol Collection Prefab"];
             tk2dSpriteCollection collection = collectionPrefab.GetComponent<tk2dSpriteCollection>();
             
-
             foreach (tk2dSpriteDefinition def in collection.spriteCollection.spriteDefinitions)
             {
                 def.material.shader = fcSpriteDefs[0].material.shader;
@@ -103,18 +112,22 @@ namespace FiveKnights
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
+            _control.GetAction<SetGravity2dScale>("Start Fall", 12).gravityScale.Value = 3.0f;
+            _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Enter"));
+            _control.GetAction<Tk2dPlayAnimation>("State 1").clipName.Value = "Intro Land";
+            _control.CreateState("Intro Greet");
+            _control.InsertCoroutine("Intro Greet", 0, IntroGreet);
+            _control.ChangeTransition("State 1", "FINISHED", "Intro Greet");
+            // NOTE: Transition from Intro Greet does not actually work
+            _control.AddTransition("Intro Greet", "FINISHED", "Idle");
 
             AddDig();
             
-            yield return new WaitForSeconds(1.0f);
-            
-            Log("Intro Enter");
-            //_anim.Play("Intro Enter", animation, collection.spriteCollection);
+            yield return new WaitForSeconds(2.0f);
 
-            yield return new WaitForSeconds(1.0f);
-            
             _control.SetState("Init");
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
+            
             _control.SendEvent("BATTLE START");
             while (true)
             {
@@ -128,6 +141,44 @@ namespace FiveKnights
             }
         }
 
+        private IEnumerator IntroGreet()
+        {
+            float roarTime = 3.0f;
+
+            _anim.Play("Intro Greet");
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Intro Greet"));
+
+            Log("Getting Roar Emitter");
+            PlayMakerFSM dd = FiveKnights.preloadedGO["WD"].LocateMyFSM("Dung Defender");
+            GameObject roarEmitterObj = dd.GetAction<CreateObject>("Roar?", 10).gameObject.Value;
+            Log("Spawning Roar Emitter");
+            GameObject roarEmitter = Instantiate(roarEmitterObj, transform.position, Quaternion.identity);
+            roarEmitter.SetActive(true);
+            PlayMakerFSM emitter = roarEmitter.LocateMyFSM("emitter");
+            emitter.SetState("Init");
+            roarEmitter.GetComponent<DisableAfterTime>().waitTime = roarTime;
+            roarEmitter.PrintSceneHierarchyTree();
+
+            //Log("Sending Camera Shake");
+            //GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
+
+            Log("Getting Roar Lock");
+            PlayMakerFSM roarLock = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+            Log("Setting Roar Lock GO");
+            roarLock.Fsm.GetFsmGameObject("Roar Object").Value = gameObject;
+            Log("Sending ROAR ENTER");
+            roarLock.SendEvent("ROAR ENTER");
+
+            yield return new WaitForSeconds(roarTime);
+
+            Log("Destroying Roar Emitter");
+            Destroy(roarEmitter);
+            roarLock.SendEvent("ROAR EXIT");
+
+            _control.SetState("Check");
+        }
+        
         private void AddDig()
         {
             string[] states =
@@ -444,6 +495,22 @@ namespace FiveKnights
                 
                 yield return new WaitForSeconds(0.1f);
             }
+        }
+        
+        private bool TouchingGround()
+        {
+            Bounds bounds = _collider.bounds;
+            Vector3 min = new Vector2(bounds.min.x, bounds.center.y);
+            Vector3 center = bounds.center;
+            Vector3 max = new Vector2(bounds.max.x, bounds.center.y);
+
+            float distance = bounds.extents.y + 0.16f;
+
+            RaycastHit2D minRay = Physics2D.Raycast(min, Vector2.down, distance, 256);
+            RaycastHit2D centerRay = Physics2D.Raycast(center, Vector2.down, distance, 256);
+            RaycastHit2D maxRay = Physics2D.Raycast(max, Vector2.down, distance, 256);
+
+            return minRay.collider != null || centerRay.collider != null || maxRay.collider != null;
         }
         
         private void OnDestroy()
