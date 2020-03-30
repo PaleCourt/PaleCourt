@@ -164,6 +164,9 @@ namespace FiveKnights
                 case "ISMA_DREAM_1_1": return "Something about Sacrifice";
                 case "ISMA_DREAM_2_1": return "Something about Grove";
                 case "ISMA_DREAM_3_1": return "Something about Ogrim";
+                case "FALSE_KNIGHT_D_1": return "Show me what you're made of!";
+                case "FALSE_KNIGHT_D_2": return "Is that all you got?";
+                case "FALSE_KNIGHT_D_3": return "Prove to me you're a champion!";
                 case "ZEM_DREAM_1_1": return "Something about Sacrifice";
                 case "ZEM_DREAM_2_1": return "Something about Grove";
                 case "ZEM_DREAM_3_1": return "Something about Ogrim";

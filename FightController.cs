@@ -21,6 +21,7 @@ namespace FiveKnights
         private GameObject _isma;
         private GameObject _dryya;
         private GameObject _zemer;
+        private GameObject _hegemol;
 
         private IEnumerator Start()
         {
@@ -29,6 +30,13 @@ namespace FiveKnights
             _whiteD = GameObject.Find("White Defender");
             //_whiteD.AddComponent<WDController>();
             GameManager.instance.gameObject.AddComponent<WDController>().dd = _whiteD;
+            
+            PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");
+            GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
+            FiveKnights.preloadedGO["pillar"] = pillar;
+
+            GameObject dungBall = fsm.GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
+            FiveKnights.preloadedGO["ball"] = dungBall;
         }
 
         public void CreateIsma()
@@ -57,9 +65,6 @@ namespace FiveKnights
             SpriteRenderer _sr = _isma.GetComponent<SpriteRenderer>();
             _sr.material = ArenaFinder.materials["flash"];
             _isma.AddComponent<IsmaController>();
-            PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");
-            GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
-            FiveKnights.preloadedGO["pillar"] = pillar;
             Log("Done creating Isma");
         }
         
@@ -70,6 +75,16 @@ namespace FiveKnights
             return _dryya.GetComponent<DryyaController>();
         }
 
+        public HegemolController CreateHegemol()
+        {
+            Log("Creating Hegemol");
+            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"],
+                new Vector2(HeroController.instance.transform.position.x, 23), Quaternion.identity);
+            _hegemol.SetActive(true);
+            Log("Adding HegemolController component");
+            return _hegemol.AddComponent<HegemolController>();
+        }
+        
         public ZemerController CreateZemer()
         {
             Log("Creating Zemer");

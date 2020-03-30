@@ -118,9 +118,29 @@ namespace FiveKnights
             {
                 yield return null;
                 dd.SetActive(false);
-                DryyaController dc = FightController.Instance.CreateDryya();
+
+                FightController.Instance.CreateHegemol();
+
+                /*DryyaController dc = FightController.Instance.CreateDryya();
 
                 yield return new WaitWhile(() => dc != null);
+
+                var bossSceneController = GameObject.Find("Boss Scene Controller");
+                var bsc = bossSceneController.GetComponent<BossSceneController>();
+                GameObject transition = Instantiate(bsc.transitionPrefab);
+                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                transitionsFSM.SetState("Out Statue");
+                yield return new WaitForSeconds(1.0f);
+                bsc.DoDreamReturn();
+                Destroy(this);*/
+            }
+            else if (CustomWP.boss == CustomWP.Boss.Hegemol)
+            {
+                yield return null;
+                dd.SetActive(false);
+                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+                
+                yield return new WaitWhile(() => hegemolCtrl != null);
 
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
                 var bsc = bossSceneController.GetComponent<BossSceneController>();
