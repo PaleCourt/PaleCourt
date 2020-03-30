@@ -70,7 +70,7 @@ namespace FiveKnights
             return _dryya.GetComponent<DryyaController>();
         }
 
-        public void CreateZemer()
+        public ZemerController CreateZemer()
         {
             Log("Creating Zemer");
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
@@ -90,14 +90,6 @@ namespace FiveKnights
                     break;
                 }
             }
-            
-            HealthManager hm = _zemer.AddComponent<HealthManager>();
-            HealthManager hornHP = _whiteD.GetComponent<HealthManager>();
-            foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => x.Name.Contains("Prefab")))
-            {
-                fi.SetValue(hm, fi.GetValue(hornHP));
-            }
 
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             {
@@ -109,6 +101,7 @@ namespace FiveKnights
             SpriteRenderer _sr = _zemer.GetComponent<SpriteRenderer>();
             ZemerController zc = _zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");
+            return zc;
         }
 
         private void OnDestroy()

@@ -135,9 +135,8 @@ namespace FiveKnights
             {
                 yield return null;
                 dd.SetActive(false);
-                FightController.Instance.CreateZemer();
-                ZemerController zm = FiveKnights.preloadedGO["Zemer"].GetComponent<ZemerController>();
-                yield return new WaitWhile(() => zm != null);
+                ZemerController zc = FightController.Instance.CreateZemer();
+                yield return new WaitWhile(() => zc != null);
                 //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
                 //endCtrl.SendEvent("DREAM RETURN");
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
