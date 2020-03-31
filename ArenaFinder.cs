@@ -19,7 +19,7 @@ namespace FiveKnights
 {
     internal class ArenaFinder : MonoBehaviour
     {
-        public static Dictionary<string, AudioClip> audioClips;
+        public static Dictionary<string, AudioClip> ismaAudioClips;
         public static Dictionary<string, Material> materials;
         public static Dictionary<string, Shader> shaders;
         public static Dictionary<string, Sprite> sprites;
@@ -37,7 +37,7 @@ namespace FiveKnights
         {
             USceneManager.activeSceneChanged += SceneChanged;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
-            audioClips = new Dictionary<string, AudioClip>();
+            ismaAudioClips = new Dictionary<string, AudioClip>();
             materials = new Dictionary<string, Material>();
             shaders = new Dictionary<string, Shader>();
             sprites = new Dictionary<string, Sprite>();
@@ -179,8 +179,8 @@ namespace FiveKnights
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
                     return;
             }
-            AssetBundle ab = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            AssetBundle ab2 = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "ismabg"));
+            AssetBundle ab = FiveKnights.assetbundles[path];//AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
+            AssetBundle ab2 = FiveKnights.assetbundles["ismabg"]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "ismabg"));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
             FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
@@ -191,7 +191,7 @@ namespace FiveKnights
             clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
             foreach (AudioClip i in ab.LoadAllAssets<AudioClip>().Where(x=>x.name.Contains("IsmaAud")))
             {
-                audioClips[i.name] = i;
+                ismaAudioClips[i.name] = i;
             }
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
@@ -232,7 +232,7 @@ namespace FiveKnights
                     return;
             }
 
-            AssetBundle dryyaAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
+            AssetBundle dryyaAssetBundle = FiveKnights.assetbundles[dryyaAssetsPath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
             FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
             FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
@@ -268,7 +268,7 @@ namespace FiveKnights
             }
 
             Log("Getting Hegemol Bundle");
-            AssetBundle hegemolBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
+            AssetBundle hegemolBundle = FiveKnights.assetbundles[hegemolBundlePath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
 
             UnityEngine.Object[] objects = hegemolBundle.LoadAllAssets();
             foreach (UnityEngine.Object obj in objects)
@@ -304,7 +304,7 @@ namespace FiveKnights
                     Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
                     return;
             }
-            AssetBundle ab = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
+            AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())

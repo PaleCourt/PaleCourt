@@ -9,19 +9,28 @@ namespace FiveKnights
     {
         public BossStatue.Completion CompletionIsma = new BossStatue.Completion
         {
-            isUnlocked = true
+            isUnlocked = true,
+            hasBeenSeen = true
         };
         public BossStatue.Completion CompletionIsma2 = new BossStatue.Completion
         {
-            isUnlocked = true
+            isUnlocked = true,
+            hasBeenSeen = true
         };
         public BossStatue.Completion CompletionZemer = new BossStatue.Completion
         {
-            isUnlocked = true
+            isUnlocked = true,
+            hasBeenSeen = true
         };
         public BossStatue.Completion CompletionDryya = new BossStatue.Completion
         {
-            isUnlocked = true
+            isUnlocked = true,
+            hasBeenSeen = true
+        };
+        public BossStatue.Completion CompletionHegemol = new BossStatue.Completion
+        {
+            isUnlocked = true,
+            hasBeenSeen = true
         };
 
         public bool AltStatueIsma
@@ -36,6 +45,7 @@ namespace FiveKnights
             StringValues["CompletionIsma2"] = JsonUtility.ToJson(CompletionIsma2);
             StringValues["CompletionZemer"] = JsonUtility.ToJson(CompletionZemer);
             StringValues["CompletionDryya"] = JsonUtility.ToJson(CompletionDryya);
+            StringValues["CompletionHegemol"] = JsonUtility.ToJson(CompletionHegemol);
         }
 
         public void OnAfterDeserialize()
@@ -55,6 +65,10 @@ namespace FiveKnights
             StringValues.TryGetValue("CompletionDryya", out string @out3);
             if (string.IsNullOrEmpty(@out3)) return;
             CompletionDryya = JsonUtility.FromJson<BossStatue.Completion>(@out3);
+
+            StringValues.TryGetValue("CompletionHegemol", out string @out5);
+            if (string.IsNullOrEmpty(@out5)) return;
+            CompletionHegemol = JsonUtility.FromJson<BossStatue.Completion>(@out5);
         }
     }
 }

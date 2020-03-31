@@ -36,7 +36,7 @@ namespace FiveKnights
         private const float LeftX = 62.5f;
         private const float RightX = 90.6f;
         private const int MaxHP = 1000;
-        private const int Phase2HP = 950;
+        private const int Phase2HP = 100;
         private PlayMakerFSM _pvFsm;
         private Coroutine _counterRoutine;
         private bool _blockedHit;
@@ -82,6 +82,11 @@ namespace FiveKnights
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 yield return new WaitForSeconds(1.75f);
+
+                //TEMP
+                Destroy(this);
+
+
                 StartCoroutine(Recover());
             }
 
@@ -131,6 +136,7 @@ namespace FiveKnights
             GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             _hm.hp = MaxHP;
+            _bc.enabled = false;
             gameObject.transform.localScale *= 0.9f;
             gameObject.layer = 11;
             yield return new WaitWhile(()=> !(_target = HeroController.instance.gameObject));
@@ -168,11 +174,10 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.Play("ZWalk");
             _rb.velocity = new Vector2(7f, 0f);
-            _bc.enabled = true;
             yield return new WaitWhile(() => transform.GetPositionX() < RightX - 5f);
             _rb.velocity = Vector2.zero;
             _anim.Play("ZIdle");
-
+            _bc.enabled = true;
             _moves = new List<Action>
             {
                 ZemerCounter,
@@ -362,8 +367,10 @@ namespace FiveKnights
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge");
+                _rb.velocity = new Vector2(-xVel * 40f,0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                _rb.velocity = new Vector2(0f, 0f);
                 _attacking = false;
             }
 

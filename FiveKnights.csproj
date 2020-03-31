@@ -127,6 +127,14 @@
     <EmbeddedResource Include="assets\Isma.png" />
     <EmbeddedResource Include="assets\Dryya.png" />
     <EmbeddedResource Include="assets\Zemer.png" />
+    <EmbeddedResource Include="assets\Hegemol.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="StreamingAssets\ismawin" />
+    <EmbeddedResource Include="StreamingAssets\dryyawin" />
+	<EmbeddedResource Include="StreamingAssets\zemerwin" />
+	<EmbeddedResource Include="StreamingAssets\hegemolwin" />
+	<EmbeddedResource Include="StreamingAssets\ismabg" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

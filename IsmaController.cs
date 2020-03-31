@@ -122,7 +122,6 @@ namespace FiveKnights
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y + 8f);
             _rb.velocity = new Vector2(0f, -40f);
             yield return new WaitWhile(() => gameObject.transform.GetPositionY() > GROUND_Y);
-            _aud.PlayOneShot(ArenaFinder.audioClips["IsmaAud5"]);
             GameCameras.instance.cameraShakeFSM.SendEvent("SmallShake");
             _rb.velocity = new Vector2(0f, 0f);
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
@@ -722,7 +721,7 @@ namespace FiveKnights
                 _anim.Play("AgonyLoopIntro");
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _aud.PlayOneShot(ArenaFinder.audioClips["IsmaAud6"]);
+                _aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
                 _anim.Play("AgonyLoop");
                 int j = onlyIsma ? 5 : 3;
                 _anim.speed = 1.7f;
@@ -1009,8 +1008,6 @@ namespace FiveKnights
             yield return new WaitForSeconds(1f);
             CustomWP.Instance.wonLastFight = true;
             Destroy(this);
-            //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
-            //endCtrl.SendEvent("DREAM RETURN");
         }
         
         private IEnumerator IsmaDeath()
@@ -1279,11 +1276,6 @@ namespace FiveKnights
             }
             yield return null;
             GameObject go = Instantiate(FiveKnights.preloadedGO["ismaBG"]);
-            //Vines
-            //acid_plant_0020_root1
-            //acid_plant_0000_root9 (2)
-            //GND
-            //Contains: acid_root_floor
             foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.gameObject.SetActive(true);
@@ -1308,6 +1300,10 @@ namespace FiveKnights
             eff1.transform.position = eff2.transform.position = go.transform.position;
             _deathEff.EmitSound();
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+            if (go.name.Contains("Isma"))
+            {
+                _aud.PlayOneShot(ArenaFinder.ismaAudioClips["IsmaAudDeath"]);
+            }
         }
         
         private void AssignFields(GameObject go)
@@ -1333,7 +1329,7 @@ namespace FiveKnights
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
-            foreach (AudioClip i in ArenaFinder.audioClips.Values.Where(x=> x.name != "IsmaAud5" && x.name != "IsmaAud6"))
+            foreach (AudioClip i in ArenaFinder.ismaAudioClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
             }

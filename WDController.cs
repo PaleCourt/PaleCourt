@@ -118,10 +118,7 @@ namespace FiveKnights
             {
                 yield return null;
                 dd.SetActive(false);
-
-                FightController.Instance.CreateHegemol();
-
-                /*DryyaController dc = FightController.Instance.CreateDryya();
+                DryyaController dc = FightController.Instance.CreateDryya();
 
                 yield return new WaitWhile(() => dc != null);
 
@@ -132,16 +129,16 @@ namespace FiveKnights
                 transitionsFSM.SetState("Out Statue");
                 yield return new WaitForSeconds(1.0f);
                 bsc.DoDreamReturn();
-                Destroy(this);*/
+                Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Hegemol)
             {
                 yield return null;
                 dd.SetActive(false);
                 HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
-                
+                GameObject.Find("Burrow Effect").SetActive(false);
+                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitWhile(() => hegemolCtrl != null);
-
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
                 var bsc = bossSceneController.GetComponent<BossSceneController>();
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -157,8 +154,6 @@ namespace FiveKnights
                 dd.SetActive(false);
                 ZemerController zc = FightController.Instance.CreateZemer();
                 yield return new WaitWhile(() => zc != null);
-                //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
-                //endCtrl.SendEvent("DREAM RETURN");
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
                 var bsc = bossSceneController.GetComponent<BossSceneController>();
                 GameObject transition = Instantiate(bsc.transitionPrefab);

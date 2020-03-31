@@ -18,6 +18,7 @@ namespace FiveKnights
     public class FiveKnights : Mod, ITogglableMod
     {
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
+        public static Dictionary<string, AssetBundle> assetbundles = new Dictionary<string, AssetBundle>();
         public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
 
@@ -94,26 +95,29 @@ namespace FiveKnights
             Assembly asm = Assembly.GetExecutingAssembly();
             foreach (string res in asm.GetManifestResourceNames())
             {
-                if (!res.EndsWith(".png"))
-                {
-                    continue;
-                }
-
                 using (Stream s = asm.GetManifestResourceStream(res))
                 {
                     if (s == null) continue;
+                    if (res.EndsWith(".png"))
+                    {
+                        byte[] buffer = new byte[s.Length];
+                        s.Read(buffer, 0, buffer.Length);
+                        s.Dispose();
 
-                    byte[] buffer = new byte[s.Length];    
-                    s.Read(buffer, 0, buffer.Length);
-                    s.Dispose();
+                        // Create texture from bytes
+                        var tex = new Texture2D(1, 1);
+                        tex.LoadImage(buffer, true);
+                        // Create sprite from texture
+                        SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 
-                    // Create texture from bytes
-                    var tex = new Texture2D(1, 1);
-                    tex.LoadImage(buffer, true);
-                    // Create sprite from texture
-                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
-                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                        Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                    }
+                    else
+                    {
+                        string bundleName = Path.GetExtension(res).Substring(1);
+                        Log("Loading bundle " + bundleName);
+                        assetbundles[bundleName] = AssetBundle.LoadFromStream(s);
+                    }
                 }
             }
         }
@@ -128,6 +132,8 @@ namespace FiveKnights
                 _settings.CompletionZemer = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
                 _settings.CompletionIsma2 = (BossStatue.Completion)obj;
+            else if (key == "statueStateHegemol")
+                _settings.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
@@ -141,6 +147,8 @@ namespace FiveKnights
                 return _settings.CompletionZemer;
             else if (key == "statueStateIsma2")
                 return _settings.CompletionIsma2;
+            else if (key == "statueStateHegemol")
+                return _settings.CompletionHegemol;
             return orig;
         }
 
@@ -152,6 +160,8 @@ namespace FiveKnights
                 case "ISMA_DESC": return "Gentle god of moss and grove.";
                 case "DD_ISMA_NAME": return "Loyal Ogrim & Kind Isma";
                 case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
+                case "HEG_NAME": return "Mighty Hegemol";
+                case "HEG_DESC": return "Something something...";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
                 case "ZEM_NAME": return "Mysterious Zemer";

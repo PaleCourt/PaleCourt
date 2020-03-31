@@ -231,6 +231,8 @@ namespace FiveKnights
                                         "GG_White_Defender", FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
             GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
+            GameObject stat4 = SetStatue(new Vector2(48f, 98.75f), new Vector2(-2f, 0.5f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+                                        "GG_White_Defender", FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
@@ -311,10 +313,9 @@ namespace FiveKnights
             sr.sprite = spr;
             var scaleX = sr.transform.GetScaleX();
             var scaleY = sr.transform.GetScaleY();
-            sr.transform.SetScaleX(scaleX * 1.4f);
-            sr.transform.SetScaleY(scaleY * 1.4f);
+            float scaler = state.Contains("Hegemol") ? 2f : 1.4f;
+            sr.transform.localScale *= scaler;
             sr.transform.SetPosition3D(sr.transform.GetPositionX() + offset.x, sr.transform.GetPositionY() + offset.y, 2f);
-            
             if (state.Contains("Isma"))
             {
                 SetStatue2(statue, "GG_White_Defender", "statueStateIsma2");
