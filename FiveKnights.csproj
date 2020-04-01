@@ -132,9 +132,9 @@
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\ismawin" />
     <EmbeddedResource Include="StreamingAssets\dryyawin" />
-	<EmbeddedResource Include="StreamingAssets\zemerwin" />
-	<EmbeddedResource Include="StreamingAssets\hegemolwin" />
-	<EmbeddedResource Include="StreamingAssets\ismabg" />
+    <EmbeddedResource Include="StreamingAssets\zemerwin" />
+    <EmbeddedResource Include="StreamingAssets\hegemolwin" />
+    <EmbeddedResource Include="StreamingAssets\ismabg" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

@@ -71,8 +71,7 @@ namespace FiveKnights
         public DryyaController CreateDryya()
         {
             _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(90, 15), Quaternion.identity);
-            _dryya.AddComponent<DryyaController>().ogrim = _whiteD;
-            return _dryya.GetComponent<DryyaController>();
+            return _dryya.AddComponent<DryyaController>();
         }
 
         public HegemolController CreateHegemol()
