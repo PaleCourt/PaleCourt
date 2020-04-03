@@ -37,6 +37,21 @@ namespace FiveKnights
 
             GameObject dungBall = fsm.GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
             FiveKnights.preloadedGO["ball"] = dungBall;
+            
+            foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (i.PrintSceneHierarchyPath() == "Hollow Shade\\Slash")
+                {
+                    FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
+                    AudioClip aud = i.LocateMyFSM("nail_clash_tink").GetAction<AudioPlayerOneShot>("Blocked Hit", 5).audioClips[0];
+                    GameObject clashSndObj = new GameObject();
+                    AudioSource clashSnd = clashSndObj.AddComponent<AudioSource>();
+                    clashSnd.clip = aud;
+                    clashSnd.pitch = UnityEngine.Random.Range(0.85f, 1.15f);
+                    FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
+                    break;
+                }
+            }
         }
 
         public void CreateIsma()
@@ -68,10 +83,10 @@ namespace FiveKnights
             Log("Done creating Isma");
         }
         
-        public DryyaController CreateDryya()
+        public DryyaSetup CreateDryya()
         {
-            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(90, 15), Quaternion.identity);
-            return _dryya.AddComponent<DryyaController>();
+            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], new Vector2(90, 25), Quaternion.identity);
+            return _dryya.AddComponent<DryyaSetup>();
         }
 
         public HegemolController CreateHegemol()
@@ -90,21 +105,6 @@ namespace FiveKnights
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             _zemer.SetActive(true);
 
-            foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
-            {
-                if (i.PrintSceneHierarchyPath() == "Hollow Shade\\Slash")
-                {
-                    FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
-                    AudioClip aud = i.LocateMyFSM("nail_clash_tink").GetAction<AudioPlayerOneShot>("Blocked Hit", 5).audioClips[0];
-                    GameObject clashSndObj = new GameObject();
-                    AudioSource clashSnd = clashSndObj.AddComponent<AudioSource>();
-                    clashSnd.clip = aud;
-                    clashSnd.pitch = UnityEngine.Random.Range(0.85f, 1.15f);
-                    FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
-                    break;
-                }
-            }
-
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             {
                 i.isTrigger = true;
@@ -121,7 +121,7 @@ namespace FiveKnights
         private void OnDestroy()
         {
             Destroy(_whiteD);
-            Destroy(_isma);
+            Destroy(_isma);    
             Destroy(_zemer);
         }
 

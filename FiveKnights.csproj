@@ -96,12 +96,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioController.cs" />
-    <Compile Include="AudioExtensions.cs" />
+    <Compile Include="AudioSourceExtensions.cs" />
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DryyaDeath.cs" />
     <Compile Include="CustomWP.cs" />
+    <Compile Include="DryyaSetup.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="DryyaController.cs" />
