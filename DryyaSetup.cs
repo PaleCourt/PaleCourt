@@ -17,9 +17,7 @@ namespace FiveKnights
         
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
-        private PlayMakerFSM _corpseFSM;
-
-        private GameObject _corpse;
+        
         private GameObject _diveShockwave;
         private GameObject _elegyBeam1;
         private GameObject _elegyBeam2;
@@ -44,9 +42,7 @@ namespace FiveKnights
             "DRYYA_DIALOG_4",
             "DRYYA_DIALOG_5",
         };
-        
-        private float AnimFPS;
-        
+
         private void Awake()
         {
             GameObject go = gameObject;
@@ -83,19 +79,22 @@ namespace FiveKnights
             
             _ogrim = FiveKnights.preloadedGO["WD"];
             
+            _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
+            
             AddComponents();
             GetComponents();
             
             _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
             _control = gameObject.LocateMyFSM("Control");
-            _corpseFSM = _corpse.LocateMyFSM("corpse");
-            
+
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
 
+            _control.InsertMethod("Activate", 0, () => _hm.enabled = true);
+            
             _control.InsertMethod("Phase Check", 0, () => _control.Fsm.GetFsmInt("HP").Value = _hm.hp);
 
-            _control.InsertMethod("Counter Stance", _control.GetState("Counter Stance").Actions.Length, () =>
+            _control.InsertMethod("Counter Stance", 0, () =>
             {
                 _hm.IsInvincible = true;
                 if (transform.localScale.x == 1)
@@ -106,7 +105,7 @@ namespace FiveKnights
                 _audio.Play("Counter");
                 _spriteFlash.flashFocusHeal();
 
-                Vector2 fxPos = transform.position + Vector3.right * 1.3f * -transform.localScale.x + Vector3.up * 0.5f;
+                Vector2 fxPos = transform.position + Vector3.right * 1.3f * -transform.localScale.x + Vector3.up * 0.1f;
                 Quaternion fxRot = Quaternion.Euler(0, 0, -transform.localScale.x * -60);
                 GameObject counterFX = Instantiate(FiveKnights.preloadedGO["CounterFX"], fxPos, fxRot);
                 counterFX.SetActive(true);
@@ -125,39 +124,39 @@ namespace FiveKnights
             _control.InsertMethod("Counter Collider 1", 0, () => _audio.Play("Slash"));
 
             _control.InsertMethod("Dive", 0, () => _audio.Play("Dive"));
+            _control.InsertMethod("Dive Jump", 0, () => _audio.Play("Jump"));
             _control.InsertMethod("Dive Land Light", 0, () => _audio.Play("Light Land"));
             _control.InsertMethod("Dive Land Heavy", 0, () => _audio.Play("Heavy Land"));
-            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(2, 50, 1));
+            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
 
             _control.InsertMethod("Cheeky Collider 1", 0, () => _audio.Play("Slash", 0.85f, 1.15f));
             
             GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
-
+            
+            AssignFields();
+            
+            gameObject.PrintSceneHierarchyTree();
+            
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
 
-        private IEnumerator Start()
-        {
-            while (HeroController.instance == null) yield return null;
-
-            AssignFields();
-            gameObject.PrintSceneHierarchyTree();
-        }
-        
         private void DeathHandler()
         {
             CustomWP.Instance.wonLastFight = true;
-            Destroy(gameObject);
         }
 
+        private GameObject _dreamImpactPrefab;
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
             if (self.name.Contains("Dryya"))
+            {
                 _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
-
+                _dreamImpactPrefab.Spawn(transform.position);
+            }
+            
             orig(self);
         }
         
@@ -169,6 +168,7 @@ namespace FiveKnights
             orig(self, hitInstance);
         }
         
+        private GameObject _corpse;
         private tk2dSprite _sprite;
         private void GetComponents()
         {
@@ -221,14 +221,10 @@ namespace FiveKnights
             _hitEffects.enabled = true;
 
             _hm = gameObject.AddComponent<HealthManager>();
-            _hm.enabled = true;
+            _hm.enabled = false;
             _hm.hp = _hp;
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
-
-            _diveShockwave.AddComponent<DeactivateAfter2dtkAnimation>();
-            for (int i = 1; i <= 3; i++)
-                _diveShockwave.FindGameObjectInChildren("Collider " + i).AddComponent<DamageHero>();
 
             _elegyBeam1.AddComponent<ElegyBeam>().parent = gameObject;
 
@@ -268,7 +264,7 @@ namespace FiveKnights
             foreach (bool facingRight in facingRightBools)
             {
                 GameObject shockwave =
-                    Instantiate(_mageLord.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value); ;
+                    Instantiate(_mageLord.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value);
                 PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
                 shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
                 shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
@@ -278,7 +274,7 @@ namespace FiveKnights
                 shockwave.transform.SetScaleX(vertScale);
             }
         }
-
+        
         private void OnDestroy()
         {
             _hm.OnDeath += DeathHandler;
