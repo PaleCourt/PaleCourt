@@ -102,7 +102,6 @@ namespace FiveKnights
                 else if (transform.localScale.x == -1)
                     _hm.InvincibleFromDirection = 9;
                 
-                _audio.Play("Counter");
                 _spriteFlash.flashFocusHeal();
 
                 Vector2 fxPos = transform.position + Vector3.right * 1.3f * -transform.localScale.x + Vector3.up * 0.1f;
@@ -112,25 +111,11 @@ namespace FiveKnights
             });
             _control.InsertMethod("Counter End", 0, () => _hm.IsInvincible = false);
             _control.InsertMethod("Counter Slash Antic", 0, () => _hm.IsInvincible = false);
-            
-            _control.InsertMethod("Slash 1 Collider 1", 0, () => _audio.Play("Slash"));
-            _control.InsertMethod("Slash 2 Collider 1", 0, () => _audio.Play("Slash"));
-            _control.InsertMethod("Slash 3 Collider 1", 0, () => _audio.Play("Slash"));
-
-            _control.InsertMethod("Stab", 0, () => _audio.Play("Dash"));
 
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
-            _control.InsertMethod("Countered", 0, () => _audio.Play("Counter"));
-            _control.InsertMethod("Counter Collider 1", 0, () => _audio.Play("Slash"));
-
-            _control.InsertMethod("Dive", 0, () => _audio.Play("Dive"));
-            _control.InsertMethod("Dive Jump", 0, () => _audio.Play("Jump"));
-            _control.InsertMethod("Dive Land Light", 0, () => _audio.Play("Light Land"));
-            _control.InsertMethod("Dive Land Heavy", 0, () => _audio.Play("Heavy Land"));
+            
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
 
-            _control.InsertMethod("Cheeky Collider 1", 0, () => _audio.Play("Slash", 0.85f, 1.15f));
-            
             GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             
@@ -200,8 +185,7 @@ namespace FiveKnights
             foreach (tk2dSpriteDefinition spriteDef in flashSprite.Collection.spriteDefinitions)
                 spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
         }
-
-        private AudioSource _audio;
+        
         private EnemyDeathEffectsUninfected _deathEffects;
         private EnemyDreamnailReaction _dreamNailReaction;
         private EnemyHitEffectsUninfected _hitEffects;
@@ -209,8 +193,6 @@ namespace FiveKnights
         private SpriteFlash _spriteFlash;
         private void AddComponents()
         {
-            _audio = gameObject.AddComponent<AudioSource>();
-
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
