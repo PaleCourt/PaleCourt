@@ -116,12 +116,12 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
-                yield return null;
                 dd.SetActive(false);
-                DryyaController dc = FightController.Instance.CreateDryya();
+                DryyaSetup dc = FightController.Instance.CreateDryya();
 
                 yield return new WaitWhile(() => dc != null);
 
+                yield return new WaitForSeconds(5.0f);
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
                 var bsc = bossSceneController.GetComponent<BossSceneController>();
                 GameObject transition = Instantiate(bsc.transitionPrefab);

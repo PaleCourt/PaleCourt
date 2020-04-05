@@ -96,12 +96,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AudioController.cs" />
-    <Compile Include="AudioExtensions.cs" />
+    <Compile Include="AudioSourceExtensions.cs" />
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DryyaDeath.cs" />
     <Compile Include="CustomWP.cs" />
+    <Compile Include="DryyaSetup.cs" />
     <Compile Include="DungBall.cs" />
     <Compile Include="DungPillar.cs" />
     <Compile Include="DryyaController.cs" />
@@ -132,9 +133,9 @@
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\ismawin" />
     <EmbeddedResource Include="StreamingAssets\dryyawin" />
-	<EmbeddedResource Include="StreamingAssets\zemerwin" />
-	<EmbeddedResource Include="StreamingAssets\hegemolwin" />
-	<EmbeddedResource Include="StreamingAssets\ismabg" />
+    <EmbeddedResource Include="StreamingAssets\zemerwin" />
+    <EmbeddedResource Include="StreamingAssets\hegemolwin" />
+    <EmbeddedResource Include="StreamingAssets\ismabg" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />
