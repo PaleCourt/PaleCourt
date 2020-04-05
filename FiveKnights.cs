@@ -55,7 +55,7 @@ namespace FiveKnights
                 ("GG_Workshop","GG_Statue_TraitorLord"),
                 ("White_Palace_03_hub","doorWarp"),
                 ("White_Palace_03_hub","dream_beam_animation"),
-                ("White_Palace_03_hub","dream_nail_base")
+                ("White_Palace_03_hub","dream_nail_base"),
             };
         }
 

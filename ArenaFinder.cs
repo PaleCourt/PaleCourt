@@ -307,7 +307,7 @@ namespace FiveKnights
             AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
-            foreach (GameObject i in ab.LoadAllAssets<GameObject>())
+            /*foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.GetComponent<SpriteRenderer>() == null)
                 {
@@ -321,7 +321,7 @@ namespace FiveKnights
             foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
             {
                 sprites[spr.name] = spr;
-            }
+            }*/
             Log("Finished Loading Zemer Bundle");
         }
         

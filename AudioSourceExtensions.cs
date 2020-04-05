@@ -48,9 +48,12 @@ namespace FiveKnights
                 }   
             }
             
+            Log(GetAudioClip().name);
             audio.pitch = Random.Range(pitchMin, pitchMax);
             audio.time = time; 
             audio.PlayOneShot(GetAudioClip());
         }
+
+        private static void Log(object message) => Modding.Logger.Log("[Audio Source Extensions] " + message);
     }
 }

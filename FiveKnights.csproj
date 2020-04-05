@@ -121,6 +121,7 @@
     <Compile Include="StatueControl.cs" />
     <Compile Include="WDController.cs" />
     <Compile Include="ZemerController.cs" />
+    <Compile Include="ZemerSetup.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />

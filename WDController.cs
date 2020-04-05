@@ -152,8 +152,8 @@ namespace FiveKnights
             {
                 yield return null;
                 dd.SetActive(false);
-                ZemerController zc = FightController.Instance.CreateZemer();
-                yield return new WaitWhile(() => zc != null);
+                ZemerSetup zs = FightController.Instance.CreateZemer();
+                yield return new WaitWhile(() => zs != null);
                 var bossSceneController = GameObject.Find("Boss Scene Controller");
                 var bsc = bossSceneController.GetComponent<BossSceneController>();
                 GameObject transition = Instantiate(bsc.transitionPrefab);

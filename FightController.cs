@@ -99,13 +99,13 @@ namespace FiveKnights
             return _hegemol.AddComponent<HegemolController>();
         }
         
-        public ZemerController CreateZemer()
+        public ZemerSetup CreateZemer()
         {
             Log("Creating Zemer");
-            _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
-            _zemer.SetActive(true);
+            _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"], new Vector2(80, 9.75f), Quaternion.identity);
+            ZemerSetup zs = _zemer.AddComponent<ZemerSetup>();
 
-            foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
+            /*foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             {
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
@@ -113,9 +113,11 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
             }
             SpriteRenderer _sr = _zemer.GetComponent<SpriteRenderer>();
-            ZemerController zc = _zemer.AddComponent<ZemerController>();
+            ZemerController zc = _zemer.AddComponent<ZemerController>();*/
             Log("Done creating Zemer");
-            return zc;
+
+            
+            return zs;
         }
 
         private void OnDestroy()
