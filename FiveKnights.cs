@@ -11,6 +11,8 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
+using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
@@ -79,6 +81,8 @@ namespace FiveKnights
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
             preloadedGO["isma_stat"] = null;
+            
+            Log("FSM Name? " + (preloadedGO["PV"].LocateMyFSM("Control").GetAction<SendEventByName>("Idle Stance").eventTarget.gameObject));
 
             Instance = this;
             Log("Initalizing.");

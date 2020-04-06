@@ -1,6 +1,10 @@
-﻿using System.Linq;
+﻿using System.Collections.Specialized;
+using System.Linq;
 using System.Reflection;
+using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
 using ModCommon;
+using ModCommon.Util;
 using UnityEngine;
 
 namespace FiveKnights
@@ -8,48 +12,50 @@ namespace FiveKnights
     public class ZemerSetup : MonoBehaviour
     {
         private GameObject _ogrim;
+        private GameObject _pv;
         
-        private const int AttunedHP = 800;
-        private const int AscendedHP = 1000;
+        private const int AttunedHP = 1800;
+        private const int AscendedHP = 2100;
         
         private void Awake()
         {
             gameObject.name = "Zemer";
 
             _ogrim = FiveKnights.preloadedGO["WD"];
+            _pv = FiveKnights.preloadedGO["PV"];
             
-            Log("Adding Components");
             AddComponents();
-            Log("Getting Components");
             GetComponents();
-            Log("Getting GameObjects");
             GetGameObjects();
-            Log("Assigning Fields");
             AssignFields();
-            Log("Modifying FSMs");
             ModifyFSMs();
 
             gameObject.PrintSceneHierarchyTree();
         }
-
-        private AudioSource _as;
+        
         private EnemyDeathEffectsUninfected _de;
         private EnemyDreamnailReaction _dn;
         private EnemyHitEffectsUninfected _he;
         private HealthManager _hm;
         private SpriteFlash _sf;
+        private PlayMakerFSM _stun;
         private void AddComponents()
         {
-            _as = gameObject.AddComponent<AudioSource>();
             _de = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             _dn = gameObject.AddComponent<EnemyDreamnailReaction>();
             _he = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hm = gameObject.AddComponent<HealthManager>();
             _sf = gameObject.AddComponent<SpriteFlash>();
+            _stun = gameObject.AddComponent<PlayMakerFSM>();
 
+            PlayMakerFSM stunCtrl = _pv.LocateMyFSM("Stun Control");
+            foreach (FieldInfo fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                fi.SetValue(_stun, fi.GetValue(stunCtrl));
+            
             int bossLevel = BossSceneController.Instance.BossLevel;
             _hm.hp = bossLevel > 0 ? AscendedHP : AttunedHP;
             _hm.hasSpecialDeath = true;
+            _hm.SetAttr("stunControlFSM", _stun);
         }
 
         private tk2dSprite _sprite;
@@ -101,8 +107,43 @@ namespace FiveKnights
             _control.SetState("Init");
 
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
+            GameObject counterFlash = FiveKnights.preloadedGO["CounterFX"];
+            counterFlash.transform.localPosition = Vector3.right * 1.3f + Vector3.up * 0.1f;
+            counterFlash.transform.localRotation = Quaternion.Euler(0, 0, transform.localScale.x * 100);
+            _control.Fsm.GetFsmGameObject("CameraParent").Value = GameCameras.instance.gameObject;
+            _control.Fsm.GetFsmGameObject("Counter Flash").Value = counterFlash;
+            GameObject stunEffect = _pv.LocateMyFSM("Control").GetAction<SpawnObjectFromGlobalPool>("Stun Start", 17).gameObject.Value;
+            stunEffect.PrintSceneHierarchyTree();
+            _control.Fsm.GetFsmGameObject("Stun Effect").Value = stunEffect;
+
+            GameObject audioPlayerActor = GameObject.Find("Audio Player Actor");
+            AudioReverbFilter filter = audioPlayerActor.AddComponent<AudioReverbFilter>();
+            filter.reverbPreset = AudioReverbPreset.User;
+            filter.reverbLevel = 25;
+            filter.reflectionsLevel = 25;
+            
+            _control.InsertMethod("Counter Stance", 0, () =>
+            {
+                _hm.IsInvincible = true;
+                if (transform.localScale.x == 1)
+                    _hm.InvincibleFromDirection = 8;
+                else if (transform.localScale.x == -1)
+                    _hm.InvincibleFromDirection = 9;
+                
+                _sf.flashFocusHeal();
+            });
+            
+            _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+
+            _control.InsertMethod("Counter End", 0, () => _hm.IsInvincible = false);
+            _control.InsertMethod("CS Antic", 0, () => _hm.IsInvincible = false);
+
+            _stun.SetState("Init");
+            
+            _stun.Fsm.GetFsmInt("Stun Combo").Value = 7;
+            _stun.Fsm.GetFsmInt("Stun Hit Max").Value = 13;
         }
-        
+
         private void Log(object message) => Modding.Logger.Log("[Zemer Setup] " + message);
     }
 }
