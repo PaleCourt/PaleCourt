@@ -1,0 +1,82 @@
+ManifestFileVersion: 0
+CRC: 3391041766
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: a592915d84ee21b4ec4ac4948e9a5391
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 2bc21b53805640d9bbc8447291851306
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 23
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 33
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 50
+  Script: {instanceID: 0}
+- Class: 60
+  Script: {instanceID: 0}
+- Class: 61
+  Script: {instanceID: 0}
+- Class: 83
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: 3fac570381f34f647b768dc5a5aa1364, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: a5e54113e5604435b8ae87c7754f2725, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: ecaffc43a5d2b1d47858e3fb687e7271, type: 3}
+- Class: 114
+  Script: {fileID: 1384774831, guid: e743331561ef77147ae48cda9bcb8209, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: b9cba359441c1b04992c675f33b13213, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d546f34a90531a14eaba82a43b05b86b, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+- Class: 213
+  Script: {instanceID: 0}
+Assets:
+- Assets/Prefabs/Dryya.prefab
+- Assets/Sprites/StabFlashSpriteCollection Data/StabFlashSpriteCollection.prefab
+- Assets/Animations/DryyaCorpseSpriteAnimation.prefab
+- Assets/Animations/DryyaSilhouetteSpriteAnimation.prefab
+- Assets/Sprites/StabFlashSpriteCollection Data/atlas0 material.mat
+- Assets/Sprites/DryyaSilhouetteSpriteCollection Data/atlas0 material.mat
+- Assets/Sprites/DryyaSpriteCollection Data/atlas0.png
+- Assets/Audio/brkn_wand_down_stab_impact.wav
+- Assets/Audio/hornet_ground_land.wav
+- Assets/Sprites/ElegyBeamSpriteCollection Data/atlas0 material.mat
+- Assets/Sprites/DryyaSilhouetteSpriteCollection Data/atlas0.png
+- Assets/Audio/brkn_wand_down_stab_dash.wav
+- Assets/Audio/hornet_parry_prepare.wav
+- Assets/Audio/brkn_wand_horizontal_dash_dash.wav
+- Assets/Animations/DiveShockwaveSpriteAnimation.prefab
+- Assets/Animations/DryyaSpriteAnimation.prefab
+- Assets/Audio/brkn_wand_land.wav
+- Assets/TK2DROOT/tk2d/Shaders/resources/BlendVertexColor.shader
+- Assets/Sprites/DiveShockwaveSpriteCollection Data/DiveShockwaveSpriteCollection.prefab
+- Assets/Animations/ElegyBeamSpriteAnimation.prefab
+- Assets/Animations/StabFlashSpriteAnimation.prefab
+- Assets/Sprites/ElegyBeamSpriteCollection Data/atlas0.png
+- Assets/Audio/ruin_shield_sentry_sword_2.wav
+- Assets/Sprites/ElegyBeamSpriteCollection Data/ElegyBeamSpriteCollection.prefab
+- Assets/Sprites/DryyaSilhouetteSpriteCollection Data/DryyaSilhouetteSpriteCollection.prefab
+- Assets/Prefabs/Dryya Silhouette.prefab
+- Assets/Audio/ruin_shield_sentry_sword_1.wav
+- Assets/Sprites/DryyaSpriteCollection Data/DryyaSpriteCollection.prefab
+- Assets/Sprites/DiveShockwaveSpriteCollection Data/atlas0.png
+- Assets/Sprites/DiveShockwaveSpriteCollection Data/atlas0 material.mat
+- Assets/Sprites/StabFlashSpriteCollection Data/atlas0.png
+Dependencies: []

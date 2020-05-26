@@ -97,9 +97,9 @@ namespace FiveKnights
             _control.InsertMethod("Counter Stance", 0, () =>
             {
                 _hm.IsInvincible = true;
-                if (transform.localScale.x == 1)
+                if (transform.localScale.x > 0)
                     _hm.InvincibleFromDirection = 8;
-                else if (transform.localScale.x == -1)
+                else if (transform.localScale.x < 0)
                     _hm.InvincibleFromDirection = 9;
                 
                 _spriteFlash.flashFocusHeal();
@@ -171,19 +171,19 @@ namespace FiveKnights
             
             tk2dSprite shockwaveSprite = _diveShockwave.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in shockwaveSprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
+                spriteDef.material.shader = Shader.Find("Sprites/Default-ColorFlash");
 
             tk2dSprite beam1Sprite = _elegyBeam1.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in beam1Sprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
+                spriteDef.material.shader = Shader.Find("Sprites/Default-ColorFlash");
             
             tk2dSprite beam2Sprite = _elegyBeam2.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in beam2Sprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
+                spriteDef.material.shader = Shader.Find("Sprites/Default-ColorFlash");
             
             tk2dSprite flashSprite = _stabFlash.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in flashSprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
+                spriteDef.material.shader = Shader.Find("Sprites/Default-ColorFlash");
         }
         
         private EnemyDeathEffectsUninfected _deathEffects;
