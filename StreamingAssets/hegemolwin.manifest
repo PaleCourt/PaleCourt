@@ -1,0 +1,35 @@
+ManifestFileVersion: 0
+CRC: 4161159531
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 5989c65ce64ebcfe2beb32d2a9b6ba0c
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 96c5dd483cfb506711eb0e8d92136bd7
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: ecaffc43a5d2b1d47858e3fb687e7271, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 84c7a4b4ee15890498f818262bca0312, type: 3}
+- Class: 114
+  Script: {fileID: 1384774831, guid: e743331561ef77147ae48cda9bcb8209, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d546f34a90531a14eaba82a43b05b86b, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+Assets:
+- Assets/Animations/HegemolSpriteAnimation.prefab
+- Assets/Sprites/HegemolSpriteCollection.prefab
+Dependencies: []

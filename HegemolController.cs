@@ -89,39 +89,51 @@ namespace FiveKnights
             
             List<tk2dSpriteAnimationClip> clips = _anim.Library.clips.ToList();
 
-            GameObject animationPrefab = FiveKnights.preloadedGO["Hegemol Animation"];
+            foreach (var clip in clips)
+            {
+                Log("Clip: " + clip.name + " " + clip.wrapMode + " " + clip.loopStart);
+            }
+            
+            clips = new List<tk2dSpriteAnimationClip>();
+            
+            GameObject animationPrefab = FiveKnights.preloadedGO["Hegemol Animation Prefab"];
             tk2dSpriteAnimation animation = animationPrefab.GetComponent<tk2dSpriteAnimation>();
-            
-            
+
             foreach (tk2dSpriteAnimationClip clip in animation.clips)
             {
                 clips.Add(clip);
             }
-            
+
             _anim.Library.clips = clips.ToArray();
 
             AssignFields();
 
-            //Stuff for getting hegemol to work
-            _sprite.GetCurrentSpriteDef().material.mainTexture = FiveKnights.SPRITES[0].texture;
+            _control.Fsm.GetFsmFloat("Run Speed").Value = 20.0f;
 
-            _control.Fsm.GetFsmFloat("Run Speed").Value = 15.0f;
-            
             _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
             _control.GetAction<SetGravity2dScale>("Start Fall", 12).gravityScale.Value = 3.0f;
-            _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Enter"));
+            _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Fall"));
             _control.GetAction<Tk2dPlayAnimation>("State 1").clipName.Value = "Intro Land";
             _control.CreateState("Intro Greet");
             _control.InsertCoroutine("Intro Greet", 0, IntroGreet);
             _control.ChangeTransition("State 1", "FINISHED", "Intro Greet");
             // NOTE: Transition from Intro Greet does not actually work
             _control.AddTransition("Intro Greet", "FINISHED", "Idle");
+            
+            _collider.offset = new Vector2(0.0f, 2.6f);
 
+            var hitterCol = gameObject.FindGameObjectInChildren("Hitter").GetComponent<BoxCollider2D>();
+            hitterCol.offset = new Vector2(hitterCol.offset.x, 3.0f);
+            gameObject.FindGameObjectInChildren("Hitter").AddComponent<DebugColliders>();
+            gameObject.AddComponent<DebugColliders>();
+            
             AddDig();
+            
+            Log("Collider Offset: " + _collider.offset);
             
             yield return new WaitForSeconds(2.0f);
 
@@ -163,16 +175,12 @@ namespace FiveKnights
             //Log("Sending Camera Shake");
             //GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
 
-            Log("Getting Roar Lock");
             PlayMakerFSM roarLock = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
-            Log("Setting Roar Lock GO");
             roarLock.Fsm.GetFsmGameObject("Roar Object").Value = gameObject;
-            Log("Sending ROAR ENTER");
             roarLock.SendEvent("ROAR ENTER");
 
             yield return new WaitForSeconds(roarTime);
 
-            Log("Destroying Roar Emitter");
             Destroy(roarEmitter);
             roarLock.SendEvent("ROAR EXIT");
 
@@ -185,6 +193,7 @@ namespace FiveKnights
             {
                 "Dig Antic",
                 "Dig In",
+                "Dig Run",
                 "Dig Out",
             };
 
@@ -212,6 +221,14 @@ namespace FiveKnights
 
             _control.InsertCoroutine("Dig In", 0, DigIn);
 
+            IEnumerator DigRun()
+            {
+                Log("Dig Run");
+                _anim.Play("Dig Run");
+
+                yield return new WaitForSeconds(1.0f);
+            }
+            
             IEnumerator DigOut()
             {
                 Log("Dig Out");
@@ -495,22 +512,6 @@ namespace FiveKnights
                 
                 yield return new WaitForSeconds(0.1f);
             }
-        }
-        
-        private bool TouchingGround()
-        {
-            Bounds bounds = _collider.bounds;
-            Vector3 min = new Vector2(bounds.min.x, bounds.center.y);
-            Vector3 center = bounds.center;
-            Vector3 max = new Vector2(bounds.max.x, bounds.center.y);
-
-            float distance = bounds.extents.y + 0.16f;
-
-            RaycastHit2D minRay = Physics2D.Raycast(min, Vector2.down, distance, 256);
-            RaycastHit2D centerRay = Physics2D.Raycast(center, Vector2.down, distance, 256);
-            RaycastHit2D maxRay = Physics2D.Raycast(max, Vector2.down, distance, 256);
-
-            return minRay.collider != null || centerRay.collider != null || maxRay.collider != null;
         }
         
         private void OnDestroy()

@@ -279,7 +279,7 @@ namespace FiveKnights
             Log("Getting SpriteCollections");
             
             FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
-            FiveKnights.preloadedGO["Hegemol Animation"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+            FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
 
             Log("Finished Loading Hegemol Bundle");
             LoadZemerBundle();
