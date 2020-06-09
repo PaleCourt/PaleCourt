@@ -95,7 +95,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AfterImageFader.cs" />
+    <Compile Include="AudioController.cs" />
     <Compile Include="AudioSourceExtensions.cs" />
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="AnimatorExtensions.cs" />
@@ -114,15 +114,13 @@
     <Compile Include="FsmUtil.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
-    <Compile Include="MyAudioPlayerOneShotSingle.cs" />
     <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="GlobalModSettings.cs" />
+    <Compile Include="SaveSettings.cs" />
     <Compile Include="StatueControl.cs" />
     <Compile Include="WDController.cs" />
     <Compile Include="ZemerController.cs" />
-    <Compile Include="ZemerControllerP2.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />
@@ -138,7 +136,6 @@
     <EmbeddedResource Include="StreamingAssets\zemerwin" />
     <EmbeddedResource Include="StreamingAssets\hegemolwin" />
     <EmbeddedResource Include="StreamingAssets\ismabg" />
-	<EmbeddedResource Include="StreamingAssets\hubasset1" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

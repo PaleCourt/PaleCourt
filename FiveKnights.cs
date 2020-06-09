@@ -22,13 +22,13 @@ namespace FiveKnights
         public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
 
-        public override ModSettings GlobalSettings
+        public override ModSettings SaveSettings
         {
-            get => Settings;
-            set => Settings = (GlobalModSettings) value;
+            get => _settings;
+            set => _settings = value as SaveSettings ?? _settings;
         }
 
-        public GlobalModSettings Settings = new GlobalModSettings();
+        private SaveSettings _settings = new SaveSettings();
 
         public override string GetVersion()
         {
@@ -55,12 +55,7 @@ namespace FiveKnights
                 ("GG_Workshop","GG_Statue_TraitorLord"),
                 ("White_Palace_03_hub","doorWarp"),
                 ("White_Palace_03_hub","dream_beam_animation"),
-                ("White_Palace_03_hub","dream_nail_base"),
-                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
-                ("Abyss_05","Dusk Knight/Idle Pt"),
-                ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
-                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord")
-
+                ("White_Palace_03_hub","dream_nail_base")
             };
         }
 
@@ -83,12 +78,8 @@ namespace FiveKnights
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
-            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
-            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
-            preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
-            preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["isma_stat"] = null;
-            
+
             Instance = this;
             Log("Initalizing.");
 
@@ -134,34 +125,30 @@ namespace FiveKnights
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
-                Settings.CompletionIsma = (BossStatue.Completion)obj;
+                _settings.CompletionIsma = (BossStatue.Completion)obj;
             else if (key == "statueStateDryya")
-                Settings.CompletionDryya = (BossStatue.Completion)obj;
+                _settings.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
-                Settings.CompletionZemer = (BossStatue.Completion)obj;
-            else if (key == "statueStateZemer2")
-                Settings.CompletionZemer2 = (BossStatue.Completion)obj;
+                _settings.CompletionZemer = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
-                Settings.CompletionIsma2 = (BossStatue.Completion)obj;
+                _settings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
-                Settings.CompletionHegemol = (BossStatue.Completion)obj;
+                _settings.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                return Settings.CompletionIsma;
-            if (key == "statueStateDryya")
-                return Settings.CompletionDryya;
-            if (key == "statueStateZemer")
-                return Settings.CompletionZemer;
-            if (key == "statueStateZemer2")
-                return Settings.CompletionZemer2;
-            if (key == "statueStateIsma2")
-                return Settings.CompletionIsma2;
-            if (key == "statueStateHegemol")
-                return Settings.CompletionHegemol;
+                return _settings.CompletionIsma;
+            else if (key == "statueStateDryya")
+                return _settings.CompletionDryya;
+            else if (key == "statueStateZemer")
+                return _settings.CompletionZemer;
+            else if (key == "statueStateIsma2")
+                return _settings.CompletionIsma2;
+            else if (key == "statueStateHegemol")
+                return _settings.CompletionHegemol;
             return orig;
         }
 
@@ -171,16 +158,14 @@ namespace FiveKnights
             {
                 case "ISMA_NAME": return "Kindly Isma";
                 case "ISMA_DESC": return "Gentle god of moss and grove.";
-                case "DD_ISMA_NAME": return "Loyal Ogrim & Kindly Isma";
+                case "DD_ISMA_NAME": return "Loyal Ogrim & Kind Isma";
                 case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
                 case "HEG_NAME": return "Mighty Hegemol";
                 case "HEG_DESC": return "Something something...";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
                 case "ZEM_NAME": return "Mysterious Zemer";
-                case "ZEM2_NAME": return "Mystic Zemer";
-                case "ZEM_DESC": return "Grieving god of lands beyond.";
-                case "ZEM2_DESC": return "Strange god of a sacred land.";
+                case "ZEM_DESC": return "Foreign god of lands beyond.";
                 case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
                 case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
                 case "DRYYA_DIALOG_3_1": return "Protect...";
@@ -202,10 +187,9 @@ namespace FiveKnights
 
         private void BeforeSaveGameSave(SaveGameData data)
         {
-            Settings.AltStatueIsma = Settings.CompletionIsma.usingAltVersion;
-            Settings.CompletionIsma.usingAltVersion = false;
-            Settings.AltStatueZemer = Settings.CompletionZemer.usingAltVersion;
-            Settings.CompletionZemer.usingAltVersion = false;
+            _settings.AltStatueIsma = _settings.CompletionIsma.usingAltVersion;
+
+            _settings.CompletionIsma.usingAltVersion = false;
         }
 
         private void SaveGame(SaveGameData data)
@@ -216,8 +200,7 @@ namespace FiveKnights
 
         private void SaveGameSave(int id = 0)
         {
-            Settings.AltStatueIsma = Settings.AltStatueIsma;
-            Settings.AltStatueZemer = Settings.AltStatueZemer;
+            _settings.AltStatueIsma = _settings.AltStatueIsma;
         }
 
         private void AddComponent()

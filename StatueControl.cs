@@ -10,9 +10,8 @@ namespace FiveKnights
         private Sprite _spr;
         private bool canToggle;
         private GameObject _fakeStat;
-        private string statName;
 
-        private void Start()
+        private IEnumerator Start()
         {
             _bs = gameObject.transform.parent.gameObject.GetComponent<BossStatue>();
             _spr = transform.Find("Statue").Find("GG_statues_0006_5").GetComponent<SpriteRenderer>().sprite;
@@ -22,40 +21,22 @@ namespace FiveKnights
             _fakeStat.transform.localScale = transform.Find("Statue").Find("GG_statues_0006_5").localScale;
             _fakeStat.transform.position = transform.Find("Statue").Find("GG_statues_0006_5").position;
 
-            if (_bs.statueStatePD.Contains("Isma"))
-            {
-                statName = "Isma";
-                canToggle = true;
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueIsma;
-                On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
-            }
-            else if (_bs.statueStatePD.Contains("Zemer"))
-            {
-                statName = "Zemer";
-                canToggle = true;
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
-                On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
-            }
+            if (!_bs.statueStatePD.Contains("Isma")) yield break;
+            canToggle = true;
+            _sr.flipX = FiveKnights.Instance.SaveSettings.BoolValues["AltStatueIsma"];
+            On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
         }
 
         private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             if (!canToggle) return;
             string name = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
-            if (collision.tag == "Nail Attack" && (name.Contains("Isma") || name.Contains("Zemer")))
+            if (collision.tag == "Nail Attack" && name.Contains("Isma"))
             {
                 //_bs.transform.Find("alt_lever").Find("GG_statue_switch_lever").GetComponent<BossStatueLever>()
                 StartCoroutine(SwapStatues(self));
-                if (name.Contains("Isma"))
-                {
-                    FiveKnights.Instance.Settings.AltStatueIsma = !FiveKnights.Instance.Settings.AltStatueIsma;
-                    _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
-                }
-                else
-                {
-                    FiveKnights.Instance.Settings.AltStatueZemer = !FiveKnights.Instance.Settings.AltStatueZemer;
-                    _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
-                }
+                FiveKnights.Instance.SaveSettings.BoolValues["AltStatueIsma"] = !FiveKnights.Instance.SaveSettings.BoolValues["AltStatueIsma"];
+                _bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.BoolValues["AltStatueIsma"], false, false);
                 canToggle = false;
                 self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
                 GameManager.instance.FreezeMoment(1);
@@ -95,8 +76,7 @@ namespace FiveKnights
                 _bs.statueShakeLoop.Stop();
             }
             StartCoroutine(this.PlayAudioEventDelayed(_bs.statueDownSound, _bs.statueDownSoundDelay));
-            float time = (statName == "Isma") ? 0.5f : 1.5f;
-            yield return StartCoroutine(PlayAnimWait(_fakeStat, "Down", time));
+            yield return StartCoroutine(PlayAnimWait(_fakeStat, "Down", 0f));
 
             yield return new WaitForSeconds(0.5f);
             StartCoroutine(this.PlayParticlesDelay(_bs.statueUpParticles, _bs.upParticleDelay));
@@ -104,7 +84,7 @@ namespace FiveKnights
 
             _sr.flipX = !_sr.flipX;
 
-            yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", time));
+            yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", 0f));
             if (_bs.bossUIControlFSM)
             {
                 FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "CONVO CANCEL", false);
@@ -132,7 +112,7 @@ namespace FiveKnights
 
         private IEnumerator PlayAnimWait(GameObject go, string stateName, float normalizedTime)
         {
-            float t = normalizedTime;
+            float t = 0.5f;
             if (stateName == "Down")
             {
                 while (t >= 0f)
