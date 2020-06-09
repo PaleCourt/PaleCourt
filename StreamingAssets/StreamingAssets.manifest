@@ -1,0 +1,7 @@
+ManifestFileVersion: 0
+CRC: 2141030527
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: hubasset1
+      Dependencies: {}
