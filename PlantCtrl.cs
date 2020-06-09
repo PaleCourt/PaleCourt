@@ -48,7 +48,7 @@ namespace FiveKnights
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
             dh.enabled = true;
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(0.55f);
             if (!onlyIsma) StartCoroutine(Death());
         }
 

@@ -104,7 +104,20 @@ namespace FiveKnights
             Log("Creating Zemer");
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             _zemer.SetActive(true);
-
+            
+            FiveKnights.preloadedGO["SlashBeam"].AddComponent<DamageHero>().damageDealt = 1;
+            FiveKnights.preloadedGO["SlashBeam"].layer = 22;
+            
+            foreach (SpriteRenderer i in _zemer.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                i.material = new Material(Shader.Find("Sprites/Default"));
+                BoxCollider2D bc = i.gameObject.GetComponent<BoxCollider2D>();
+                if (bc == null) continue;
+                bc.isTrigger = true;
+                bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                bc.gameObject.layer = 22;
+            }
+            
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             {
                 i.isTrigger = true;

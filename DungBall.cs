@@ -15,12 +15,11 @@ namespace FiveKnights
     internal class DungBall : MonoBehaviour
     {
         private bool _hit;
-
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
             {
-                StartCoroutine(SpawnDungPillar(gameObject.transform.position));
+                if (!EnemyPlantSpawn.isPhase2) StartCoroutine(SpawnDungPillar(gameObject.transform.position));
                 StartCoroutine(DelayedKill());
                 _hit = true;
             }
@@ -28,7 +27,7 @@ namespace FiveKnights
 
         private IEnumerator DelayedKill()
         {
-            yield return new WaitForSeconds(1.5f);
+            yield return new WaitForSeconds(1.5f); 
             Destroy(gameObject);
         }
 
