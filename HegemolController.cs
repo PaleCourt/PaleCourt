@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using Modding;
 using ModCommon;
 using System.Collections;
 using System.Reflection;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using HutongGames.Utility;
-using JetBrains.Annotations;
 using ModCommon.Util;
 using Bounds = UnityEngine.Bounds;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights
@@ -422,34 +415,13 @@ namespace FiveKnights
 
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("False Knight Dream"))
-            {
-                if (hitInstance.AttackType == AttackTypes.Nail)
-                {
-                    // Manually gain soul when striking Hegemol
-                    int soulGain;
-                    if (PlayerData.instance.MPCharge >= 99)
-                    {
-                        soulGain = 6;
-                        if (PlayerData.instance.equippedCharm_20) soulGain += 2;
-                        if (PlayerData.instance.equippedCharm_21) soulGain += 4;
-                    }
-                    else
-                    {
-                        soulGain = 11;
-                        if (PlayerData.instance.equippedCharm_20) soulGain += 3;
-                        if (PlayerData.instance.equippedCharm_21) soulGain += 8;
-                    }
-                    HeroController.instance.AddMPCharge(soulGain);
-                }
-            }
-
+            if (self.name.Contains("False Knight Dream") && hitInstance.AttackType == AttackTypes.Nail)
+                HeroController.instance.SoulGain();
+            
             orig(self, hitInstance);
-
+            
             if (_hm.hp <= 0)
-            {
                 HegemolDeath();
-            }
         }
 
         private void HegemolDeath()

@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using Modding;
-using System.Reflection;
-using ModCommon.Util;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using System.Collections;
-using InControl;
 using ModCommon;
-using Object = System.Object;
 using UnityEngine.UI;
 
 namespace FiveKnights

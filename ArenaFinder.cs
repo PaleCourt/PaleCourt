@@ -1,10 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Reflection;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
 using ModCommon;
@@ -12,10 +9,6 @@ using System.Linq;
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
-using On;
-using System;
-using GlobalEnums;
-using InControl;
 
 namespace FiveKnights
 {

@@ -1,12 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using JetBrains.Annotations;
-using ModCommon.Util;
-using ModCommon;
-using Modding;
 using UnityEngine;
-using UnityEngine.UI;
 using Logger = Modding.Logger;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 

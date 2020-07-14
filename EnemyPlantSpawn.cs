@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using System.Collections;
-using ModCommon.Util;
-using HutongGames.PlayMaker;
 using ModCommon;
 using HutongGames.PlayMaker.Actions;
 
