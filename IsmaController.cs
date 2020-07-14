@@ -338,7 +338,7 @@ namespace FiveKnights
                 CollisionCheck cc = bomb.AddComponent<CollisionCheck>();
                 rb.angularVelocity = dir * 900f;
                 float xLim = dir > 0 ? 75f : 75f;
-                yield return new WaitWhile(() => !cc.isHit && !FastApproximately(bomb.transform.GetPositionX(), xLim, 0.6f));
+                yield return new WaitWhile(() => !cc.Hit && !FastApproximately(bomb.transform.GetPositionX(), xLim, 0.6f));
                 anim.Play("Bomb");
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 1);
                 rb.angularVelocity = 0f;
@@ -476,7 +476,7 @@ namespace FiveKnights
                 fist.SetActive(true);
                 int i = 0;
                 float stp = 0.35f;
-                while (!afc.isHit)
+                while (!afc.Hit)
                 {
                     stpSR.size = new Vector2(stpSR.size.x + stp, 0.42f);
                     Vector2 pos = strip.transform.position;

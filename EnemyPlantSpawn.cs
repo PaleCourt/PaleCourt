@@ -32,7 +32,7 @@ namespace FiveKnights
                 yield break;
             }
             CollisionCheck cc = gameObject.AddComponent<CollisionCheck>();
-            yield return new WaitWhile(() => !cc.isHit);
+            yield return new WaitWhile(() => !cc.Hit);
             pos = gameObject.transform.position;
             _sr = gameObject.GetComponent<SpriteRenderer>();
             bool skip = false;

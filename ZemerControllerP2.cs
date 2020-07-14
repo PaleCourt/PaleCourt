@@ -296,10 +296,10 @@ namespace FiveKnights
                 parRB.velocity = new Vector2(Mathf.Cos(rotVel) * velmag, Mathf.Sin(rotVel) * velmag);
                 yield return new WaitForSeconds(0.02f);
                 CollisionCheck cc = nailPar.transform.Find("ZNailC").gameObject.AddComponent<CollisionCheck>();
-                cc.shouldStopForMe = true;
-                cc.action = () =>
+                cc.Freeze = true;
+                cc.OnCollide += () =>
                 {
-                    if (cc.isHit) PlayAudioClip("AudLand");
+                    if (cc.Hit) PlayAudioClip("AudLand");
                 };
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 bool isTooHigh = (nailPar.transform.position.y > GroundY + 1);
@@ -322,9 +322,9 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 ToggleZemer(false, false);
                 _rb.velocity = Vector2.zero;
-                cc.isHit = rb.velocity == Vector2.zero;
+                cc.Hit = rb.velocity == Vector2.zero;
                 
-                yield return new WaitWhile((() => nail.transform.position.y < 17f && !cc.isHit));
+                yield return new WaitWhile((() => nail.transform.position.y < 17f && !cc.Hit));
                 
                 transform.position = nail.transform.position + new Vector3(5f*Mathf.Cos(rotVel),5f*Mathf.Sin(rotVel),0f);
                 _anim.Play("ZThrow3Air", -1, 0f);
@@ -357,15 +357,15 @@ namespace FiveKnights
                 }
                 rb.velocity = new Vector2(Mathf.Cos(rotVel) * 70f, Mathf.Sin(rotVel) * 70f);
                 nail.transform.position = transform.position;
-                cc.shouldStopForMe = false;
-                cc.action = () =>
+                cc.Freeze = false;
+                cc.OnCollide += () =>
                 {
                     GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                     nail.GetComponent<SpriteRenderer>().enabled = false;
                     nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
                 };
                 yield return new WaitForSeconds(0.02f);
-                cc.shouldStopForMe = true;
+                cc.Freeze = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 rotVel = dir > 0 ? 10f: -45f;
                 _rb.velocity = new Vector2(25f * Mathf.Cos(rotVel), 25f * Mathf.Sin(rotVel));
@@ -376,7 +376,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.1f);
                 _rb.velocity = Vector2.zero;
                 transform.position = new Vector3(80f, GroundY);
-                yield return new WaitWhile(() => !cc.isHit);
+                yield return new WaitWhile(() => !cc.Hit);
                 StartCoroutine(LaunchSide(nail, false));
             }
             
@@ -390,15 +390,15 @@ namespace FiveKnights
                 {
                     _anim.Play("ZThrow2");
                     _rb.velocity = new Vector2(-dir * 30f, 0f);
-                    cc.isHit = rbNail.velocity == Vector2.zero;
+                    cc.Hit = rbNail.velocity == Vector2.zero;
                     _bc.enabled = false;
                     _dontDmgKnigt = true;
                     yield return null;
-                    yield return new WaitWhile(() => !cc.isHit && _anim.IsPlaying());
+                    yield return new WaitWhile(() => !cc.Hit && _anim.IsPlaying());
                     ToggleZemer(false);
                     _bc.enabled = false;
                     //Spring(false, transform.position + new Vector3(-dir * 3.5f, 0f, 0f));
-                    yield return new WaitWhile(() => !cc.isHit);
+                    yield return new WaitWhile(() => !cc.Hit);
                     PlayAudioClip("AudLand");
                     Log("Stop nail");
                     yield return new WaitForSeconds(0.02f);
