@@ -200,16 +200,6 @@ namespace FiveKnights
             tp.sceneLoadVisualization = vis;
         }
 
-        private void GetChildren(Transform trans, Action<Transform> myMethodName)
-        {
-            if (trans == null) return;
-            foreach (Transform child in trans)
-            {
-                myMethodName(child);
-                GetChildren(child, myMethodName);
-            }
-        }
-
         private void CreateStatues()
         {
             //48f 98.75f Hegemol Top Left

@@ -16,16 +16,13 @@ namespace FiveKnights
     {
         public static Dictionary<string, AudioClip> ismaAudioClips;
         public static Dictionary<string, Material> materials;
-        public static Dictionary<string, Shader> shaders;
         public static Dictionary<string, Sprite> sprites;
-        public static Dictionary<string, Texture> textures;
         public static Dictionary<string, AudioClip> clips;
-        public static Dictionary<string, tk2dSpriteAnimation> spriteAnimations;
-        public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
-        public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
+        
         public static int defeats;
-        public static bool returnToWP;
+        
         private FightController fightCtrl;
+        
         private static bool hasSummonElevator;
 
         private void Start()
@@ -35,12 +32,8 @@ namespace FiveKnights
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
             ismaAudioClips = new Dictionary<string, AudioClip>();
             materials = new Dictionary<string, Material>();
-            shaders = new Dictionary<string, Shader>();
             sprites = new Dictionary<string, Sprite>();
             clips = new Dictionary<string, AudioClip>();
-            spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
-            spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
-            collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             LoadHubBundles();
 
         }

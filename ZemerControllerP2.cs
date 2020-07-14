@@ -17,7 +17,6 @@ namespace FiveKnights
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
         private MyAudioPlayerOneShotSingle _ap;
-        private AudioSource _aud;
         private GameObject _dd;
         private bool flashing;
         private GameObject[] traitorSlam;
@@ -67,7 +66,6 @@ namespace FiveKnights
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             _sr = GetComponent<SpriteRenderer>();
             _dnailReac = gameObject.GetComponent<EnemyDreamnailReaction>();
-            _aud = gameObject.GetComponent<AudioSource>();
             gameObject.GetComponent<DamageHero>().damageDealt = 1;
             _dd = FiveKnights.preloadedGO["WD"];
             _dnailEff = _dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");

@@ -10,17 +10,13 @@ namespace FiveKnights
     public class PlantCtrl : MonoBehaviour
     {
         private Animator _anim;
-        private BoxCollider2D _bc;
         private HealthManager _hm;
-        private SpriteRenderer _sr;
         public List<float> PlantX;
         public bool onlyIsma;
 
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
-            _bc = gameObject.GetComponent<BoxCollider2D>();
-            _sr = gameObject.GetComponent<SpriteRenderer>();
         }
 
         private IEnumerator Start()

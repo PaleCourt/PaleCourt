@@ -22,7 +22,6 @@ namespace FiveKnights
         private BoxCollider2D _bc;
         private HealthManager _hmDD;
         Rigidbody2D _rb;
-        private AudioSource _aud;
         private EnemyDreamnailReaction _dnailReac;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
@@ -47,13 +46,11 @@ namespace FiveKnights
         public static float offsetTime;
         public static bool killAllMinions;
         private bool isDead;
-        public static bool isIsmaVisible;
         public static bool eliminateMinions;
         private bool isIsmaHitLast;
         public static List<GameObject> PlantF { get; set; }
         public static List<GameObject> PlantG { get; set; }
         public bool introDone;
-        public bool endfight;
         private string[] _dnailDial =
         {
             "ISMA_DREAM_1",
@@ -68,7 +65,7 @@ namespace FiveKnights
             _anim = gameObject.GetComponent<Animator>();
             _bc = gameObject.GetComponent<BoxCollider2D>();
             _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
-            _aud = gameObject.AddComponent<AudioSource>();
+            gameObject.AddComponent<AudioSource>();
             _rb = gameObject.AddComponent<Rigidbody2D>();
             _rb.gravityScale = 0f;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
@@ -194,15 +191,6 @@ namespace FiveKnights
 
         private Action _prev;
 
-        private IEnumerator Transit(Action prev, Action curr)
-        {
-            if (prev == WhipAttack && curr == AirFist)
-            {
-                
-            }
-            yield return new WaitWhile((() => _anim.IsPlaying()));
-        }
-        
         private IEnumerator AttackChoice()
         {
             int lastA = 3;
@@ -1308,7 +1296,6 @@ namespace FiveKnights
             _anim.Play("Idle");
             _sr.enabled = visible;
             _bc.enabled = visible;
-            isIsmaVisible = visible;
         }
 
         IEnumerator IdleTimer(float time)

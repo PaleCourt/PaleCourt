@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using UnityEngine;
-using Logger = Modding.Logger;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace FiveKnights
@@ -46,11 +45,6 @@ namespace FiveKnights
                 DungPill2.transform.localScale = new Vector3(-1f * spikeSc2.x, spikeSc2.y, spikeSc2.z);
                 yield return new WaitForSeconds(0.1f);
             }
-        }
-
-        private static void Log(object obj)
-        {
-            Logger.Log("[Dung Ball] " + obj);
         }
     }
 }

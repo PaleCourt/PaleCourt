@@ -261,7 +261,5 @@ namespace FiveKnights
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
         }
-        
-        private void Log(object message) => Modding.Logger.Log("[Dryya Setup] " + message);
     }
 }

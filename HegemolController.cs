@@ -6,7 +6,6 @@ using System.Collections;
 using System.Reflection;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
-using Bounds = UnityEngine.Bounds;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights
@@ -26,7 +25,6 @@ namespace FiveKnights
         private BoxCollider2D _collider;
         private HealthManager _hm;
         private PlayMakerFSM _control;
-        private PlayMakerFSM _dd;
         private Rigidbody2D _rb;
         private tk2dSprite _sprite;
         private tk2dSpriteAnimator _anim;
@@ -41,7 +39,6 @@ namespace FiveKnights
             control.RemoveTransition("Pause", "Set Phase HP");
 
             _ogrim = FiveKnights.preloadedGO["WD"];
-            _dd = _ogrim.LocateMyFSM("Dung Defender");
 
             _control = gameObject.LocateMyFSM("FalseyControl");
             _anim = GetComponent<tk2dSpriteAnimator>();
@@ -468,23 +465,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.1f);
             }
         }
-        
-        private bool TouchingGround()
-        {
-            Bounds bounds = _collider.bounds;
-            Vector3 min = new Vector2(bounds.min.x, bounds.center.y);
-            Vector3 center = bounds.center;
-            Vector3 max = new Vector2(bounds.max.x, bounds.center.y);
 
-            float distance = bounds.extents.y + 0.16f;
-
-            RaycastHit2D minRay = Physics2D.Raycast(min, Vector2.down, distance, 256);
-            RaycastHit2D centerRay = Physics2D.Raycast(center, Vector2.down, distance, 256);
-            RaycastHit2D maxRay = Physics2D.Raycast(max, Vector2.down, distance, 256);
-
-            return minRay.collider != null || centerRay.collider != null || maxRay.collider != null;
-        }
-        
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;

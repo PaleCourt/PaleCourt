@@ -39,10 +39,5 @@ namespace FiveKnights
                 collider = col.name;
             }
         }
-        
-        private static void Log(object obj)
-        {
-            Modding.Logger.Log("[Collision Check] " + obj);
-        }
     }
 }

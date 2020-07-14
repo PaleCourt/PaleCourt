@@ -17,7 +17,6 @@ namespace FiveKnights
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
-        private AudioSource _aud;
         private GameObject _dd;
         private bool flashing;
         private GameObject _dnailEff;
@@ -25,7 +24,6 @@ namespace FiveKnights
         private Rigidbody2D _rb;
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
-        private EnemyDeathEffectsUninfected _deathEff;
         private GameObject _target;
         private const float GroundY = 9.75f;
         private const float LeftX = 61.5f;
@@ -66,7 +64,7 @@ namespace FiveKnights
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             _sr = GetComponent<SpriteRenderer>();
             _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
-            _aud = gameObject.AddComponent<AudioSource>();
+            gameObject.AddComponent<AudioSource>();
             gameObject.AddComponent<DamageHero>().damageDealt = 1;
             _dd = FiveKnights.preloadedGO["WD"];
             _dnailEff = _dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
@@ -707,23 +705,7 @@ namespace FiveKnights
                 Destroy(area);
             }
         }
-        
-        private Vector3 Product(Vector3 a, Vector3 b)
-        {
-            return new Vector3(a.x * b.x, a.y*b.y, a.z * b.z);
-        }
-        
-        private void Spring(bool isIn, Vector2 pos)
-        {
-            string n =  "VapeIn2";
-            GameObject go = Instantiate(FiveKnights.preloadedGO[n]);
-            PlayMakerFSM fsm = go.LocateMyFSM("FSM");
-            go.transform.localScale *= 1.3f;
-            fsm.GetAction<Wait>("State 1", 0).time = 0f;
-            go.transform.position = pos;
-            go.SetActive(true);
-        }
-        
+
         IEnumerator FlashWhite()
         {
             _sr.material.SetFloat("_FlashAmount", 1f);
@@ -737,11 +719,6 @@ namespace FiveKnights
             flashing = false;
         }
 
-        private bool IsPlayAboveHead()
-        {
-            return FastApproximately(transform.position.x, _target.transform.GetPositionX(), 1.2f);
-        }
-
         private void AssignFields()
         {
             
@@ -753,6 +730,7 @@ namespace FiveKnights
             }
             
             EnemyHitEffectsUninfected ogrimHitEffects = _dd.GetComponent<EnemyHitEffectsUninfected>();
+            
             foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields())
             {
                 if (fi.Name.Contains("Origin"))
@@ -775,8 +753,6 @@ namespace FiveKnights
                 pitchMin = 1f,
                 spawnPoint = HeroController.instance.gameObject
             };
-            
-            _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             
             _moves = new List<Action>
             {
@@ -843,49 +819,7 @@ namespace FiveKnights
         {
             return ((a - b) < 0 ? ((a - b) * -1) : (a - b)) <= threshold;
         }
-        
-        private void ToggleZemer(bool visible, bool fade = false)
-        {
-            IEnumerator Fade()
-            {
-                _bc.enabled = false;
-                Color col = _sr.color;
-                _sr.enabled = true;
-                if (visible)
-                {
-                    _sr.color = new Color(col.r, col.g, col.b, 0f);
-                    for (float i = 0; i <= 1f; i += 0.1f)
-                    {
-                        _sr.color = new Color(col.r, col.g, col.b, i);
-                        yield return new WaitForSeconds(0.01f);
-                    }
-                }
-                else
-                {
-                    _sr.color = new Color(col.r, col.g, col.b, 1f);
-                    for (float i = col.a; i >= 0f; i -= 0.1f)
-                    {
-                        _sr.color = new Color(col.r, col.g, col.b, i);
-                        yield return new WaitForSeconds(0.01f);
-                    }
-                }
 
-                Instant();
-            }
-
-            void Instant()
-            {
-                _sr.enabled = visible;
-                _bc.enabled = visible;
-                _rb.gravityScale = 0f;
-                Color col = _sr.color;
-                _sr.color = new Color(col.r, col.g, col.b, visible ? 1f : 0f);
-            }
-
-            if (fade) StartCoroutine(Fade());
-            else Instant();
-        }
-        
         private void Log(object o)
         {
             Modding.Logger.Log("[Zemer] " + o);
