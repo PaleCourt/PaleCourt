@@ -219,6 +219,8 @@ namespace FiveKnights
         private void CreateStatues()
         {
             //48f 98.75f Hegemol Top Left
+            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
+            On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
             GameObject stat = SetStatue(new Vector2(81.75f, 94.75f), new Vector2(-0.1f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         "GG_White_Defender", FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
@@ -227,6 +229,21 @@ namespace FiveKnights
                                         "GG_White_Defender", FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             GameObject stat4 = SetStatue(new Vector2(48f, 98.75f), new Vector2(-2f, 0.5f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         "GG_White_Defender", FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
+        }
+        
+        private Dictionary<string, StatueControl> StatueControls = new Dictionary<string, StatueControl>();
+        private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+        {
+            if (collision.tag != "Nail Attack") return;
+            string namePD = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
+            string statName = namePD.Contains("Isma") ? "Isma" : "";
+            statName = namePD.Contains("Zemer") ? "Zemer" : statName;
+            if (statName == "")
+            {
+                orig(self, collision);
+                return;
+            }
+            StatueControls[statName].StartLever(self);
         }
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
@@ -345,7 +362,22 @@ namespace FiveKnights
             sr.transform.SetPosition3D(sr.transform.GetPositionX() + offset.x, sr.transform.GetPositionY() + offset.y, 2f);
             if (bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen)
             {
-                statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
+                Sprite sprite = spr;
+                GameObject fakeStat = new GameObject("FakeStat");
+                SpriteRenderer sr2 = fakeStat.AddComponent<SpriteRenderer>();
+                sr2.sprite = sprite;
+                fakeStat.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale;
+                fakeStat.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
+                if (state.Contains("Isma") || state.Contains("Zemer"))
+                {
+                    StatueControl sc = statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
+                    sc.statName = state;
+                    sc._bs = bs;
+                    sc._sr = sr2;
+                    sc._fakeStat = fakeStat;
+                    if (state.Contains("Isma")) StatueControls["Isma"] = sc;
+                    else StatueControls["Zemer"] = sc;
+                }
             }
             var tmp = statue.transform.Find("Inspect").Find("Prompt Marker").position;
             statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x + nameOffset.x, tmp.y + nameOffset.y, tmp.z);
@@ -399,6 +431,7 @@ namespace FiveKnights
 
         private void OnDestroy()
         {
+            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.GameManager.BeginSceneTransition -= GameManager_BeginSceneTransition;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;

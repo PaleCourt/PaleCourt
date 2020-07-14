@@ -14,6 +14,8 @@ using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using On;
 using System;
+using GlobalEnums;
+using InControl;
 
 namespace FiveKnights
 {
@@ -47,6 +49,7 @@ namespace FiveKnights
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             LoadHubBundles();
+
         }
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
@@ -190,6 +193,7 @@ namespace FiveKnights
                 StartCoroutine(CameraFixer());
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
+            
         }
 
         private IEnumerator CameraFixer()
@@ -229,28 +233,15 @@ namespace FiveKnights
             Log("Finished hub bundle");
             LoadIsmaBundle();
         }
-        
+
         private void LoadIsmaBundle()
         {
             Log("Loading Isma Bundle");
-            string path = "";
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    path = "ismawin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    path = "ismalin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    path = "ismamc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-            AssetBundle ab = FiveKnights.assetbundles[path];
+            AssetBundle ab = null;
             AssetBundle ab2 = FiveKnights.assetbundles["ismabg"];
+            foreach (var i in
+                FiveKnights.assetbundles.Keys.
+                    Where(x => x.Contains("isma") && x != "ismabg")) ab = FiveKnights.assetbundles[i];
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
             FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
@@ -285,24 +276,10 @@ namespace FiveKnights
         
         private void LoadDryyaAssets()
         {
-            string dryyaAssetsPath;
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    dryyaAssetsPath = "dryyawin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    dryyaAssetsPath = "dryyalin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    dryyaAssetsPath = "dryyamc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-
-            AssetBundle dryyaAssetBundle = FiveKnights.assetbundles[dryyaAssetsPath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
+            string path = "";
+            foreach (var i in FiveKnights.assetbundles.Keys.
+                    Where(x => x.Contains("dryya"))) path = i;
+            AssetBundle dryyaAssetBundle = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
             FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
             FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
@@ -320,25 +297,11 @@ namespace FiveKnights
 
         private void LoadHegemolBundle()
         {
-            string hegemolBundlePath;
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    hegemolBundlePath = "hegemolwin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    hegemolBundlePath = "hegemollin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    hegemolBundlePath = "hegemolmc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-
             Log("Getting Hegemol Bundle");
-            AssetBundle hegemolBundle = FiveKnights.assetbundles[hegemolBundlePath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
+            string path = "";
+            foreach (var i in FiveKnights.assetbundles.Keys.
+                Where(x => x.Contains("hegemol"))) path = i;
+            AssetBundle hegemolBundle = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
 
             UnityEngine.Object[] objects = hegemolBundle.LoadAllAssets();
             foreach (UnityEngine.Object obj in objects)
@@ -359,37 +322,40 @@ namespace FiveKnights
         {
             Log("Loading Zemer Bundle");
             string path = "";
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    path = "zemerwin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    path = "zemerlin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    path = "zemermc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-
+            foreach (var i in FiveKnights.assetbundles.Keys.
+                Where(x => x.Contains("zemer"))) path = i;
             PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
             FiveKnights.preloadedGO["TraitorSlam"] = fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
             clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
             AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
-            FiveKnights.preloadedGO["SlashBeam"] = ab.LoadAsset<GameObject>("Slash");
+            FiveKnights.preloadedGO["SlashBeam"] = ab.LoadAsset<GameObject>("NewSlash");
+            FiveKnights.preloadedGO["SlashBeam2"] = ab.LoadAsset<GameObject>("NewSlash2");
+            FiveKnights.preloadedGO["SlashBeam3"] = ab.LoadAsset<GameObject>("NewSlash3");
+            
+            FiveKnights.preloadedGO["WaveShad"] = ab.LoadAsset<GameObject>("Shockwave");
+            Shader shader = ab.LoadAsset<Shader>("WaveEffectShader");
+            Texture tex = ab.LoadAsset<Texture>("sonar");
+            Log("Tex " + (tex == null));
+            Log("SHAD " + (shader == null));
+            materials["TestDist"] = new Material(shader);
+            Log("SHAD2 " + materials["TestDist"].shader.name);
+            materials["TestDist"].SetTexture("_NoiseTex", tex);
+            Log("DIOSP " + materials["TestDist"].GetFloat("_Intensity"));
+            materials["TestDist"].SetFloat("_Intensity", 0.2f);
+            Log("DIOSP " + materials["TestDist"].GetFloat("_Intensity"));
+            Log("MAPG");
+            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = materials["TestDist"];
+
+
             foreach (AudioClip aud in ab.LoadAllAssets<AudioClip>())
             {
                 clips[aud.name] = aud;
             }
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
-            {
-                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
-            }
+            
+            FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
+            
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.GetComponent<SpriteRenderer>() == null)
@@ -478,9 +444,9 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
         }
 
-        public static void Log(object o)
+        private void Log(object o)
         {
-            Logger.Log("[Lost Arena] " + o);
+            Logger.Log("[Scene] " + o);
         }
     }
 }

@@ -1,76 +1,54 @@
 ﻿using System.Collections;
+using IL.InControl;
 using UnityEngine;
 
 namespace FiveKnights
 {
     public class StatueControl : MonoBehaviour
     {
-        private BossStatue _bs;
-        private SpriteRenderer _sr;
-        private Sprite _spr;
+        public BossStatue _bs;
+        public SpriteRenderer _sr;
+        public GameObject _fakeStat;
+        public string statName;
         private bool canToggle;
-        private GameObject _fakeStat;
-        private string statName;
 
-        private void Start()
+        private IEnumerator Start()
         {
-            _bs = gameObject.transform.parent.gameObject.GetComponent<BossStatue>();
-            _spr = transform.Find("Statue").Find("GG_statues_0006_5").GetComponent<SpriteRenderer>().sprite;
-            _fakeStat = new GameObject("FakeStat");
-            _sr = _fakeStat.AddComponent<SpriteRenderer>();
-            _sr.sprite = _spr;
-            _fakeStat.transform.localScale = transform.Find("Statue").Find("GG_statues_0006_5").localScale;
-            _fakeStat.transform.position = transform.Find("Statue").Find("GG_statues_0006_5").position;
-
-            if (_bs.statueStatePD.Contains("Isma"))
-            {
-                statName = "Isma";
-                canToggle = true;
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueIsma;
-                On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
-            }
-            else if (_bs.statueStatePD.Contains("Zemer"))
-            {
-                statName = "Zemer";
-                canToggle = true;
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
-                On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
-            }
+            yield return null;
+            canToggle = true;
+            _sr.flipX = statName.Contains("Isma")
+                ? FiveKnights.Instance.Settings.AltStatueIsma
+                : FiveKnights.Instance.Settings.AltStatueZemer;
+            statName = statName.Contains("Isma") ? "Isma" : "Zemer";
         }
 
-        private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+        public void StartLever(BossStatueLever self)
         {
             if (!canToggle) return;
-            string name = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
-            if (collision.tag == "Nail Attack" && (name.Contains("Isma") || name.Contains("Zemer")))
+            if (statName == "Isma")
             {
-                //_bs.transform.Find("alt_lever").Find("GG_statue_switch_lever").GetComponent<BossStatueLever>()
                 StartCoroutine(SwapStatues(self));
-                if (name.Contains("Isma"))
-                {
-                    FiveKnights.Instance.Settings.AltStatueIsma = !FiveKnights.Instance.Settings.AltStatueIsma;
-                    _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
-                }
-                else
-                {
-                    FiveKnights.Instance.Settings.AltStatueZemer = !FiveKnights.Instance.Settings.AltStatueZemer;
-                    _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
-                }
-                canToggle = false;
-                self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
-                GameManager.instance.FreezeMoment(1);
-                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
-                if (self.strikeNailPrefab && self.hitOrigin)
-                {
-                    self.strikeNailPrefab.Spawn(self.hitOrigin.transform.position);
-                }
-                if (self.leverAnimator)
-                {
-                    self.leverAnimator.Play("Hit");
-                }
-                return;
+                FiveKnights.Instance.Settings.AltStatueIsma = !FiveKnights.Instance.Settings.AltStatueIsma;
+                _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
             }
-            orig(self, collision);
+            else if (statName == "Zemer")
+            {
+                StartCoroutine(SwapStatues(self));
+                FiveKnights.Instance.Settings.AltStatueZemer = !FiveKnights.Instance.Settings.AltStatueZemer;
+                _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
+            }
+            canToggle = false;
+            self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
+            GameManager.instance.FreezeMoment(1);
+            GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+            if (self.strikeNailPrefab && self.hitOrigin)
+            {
+                self.strikeNailPrefab.Spawn(self.hitOrigin.transform.position);
+            }
+            if (self.leverAnimator)
+            {
+                self.leverAnimator.Play("Hit");
+            }
         }
 
         private IEnumerator SwapStatues(BossStatueLever lev)
@@ -173,7 +151,6 @@ namespace FiveKnights
 
         private void OnDestroy()
         {
-            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
         }
     }
 }

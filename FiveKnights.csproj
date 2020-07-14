@@ -53,9 +53,6 @@
     <Reference Include="UnityEngine.AnimationModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
-    </Reference>
     <Reference Include="UnityEngine.AudioModule">
       <HintPath>..\..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
     </Reference>
@@ -97,8 +94,8 @@
   <ItemGroup>
     <Compile Include="AfterImageFader.cs" />
     <Compile Include="AudioSourceExtensions.cs" />
+    <Compile Include="WaveIncrease.cs" />
     <Compile Include="CollisionCheck.cs" />
-    <Compile Include="AnimatorExtensions.cs" />
     <Compile Include="ArenaFinder.cs" />
     <Compile Include="DryyaDeath.cs" />
     <Compile Include="CustomWP.cs" />
@@ -118,9 +115,10 @@
     <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="GlobalModSettings.cs" />
+    <Compile Include="SaveModSettings.cs" />
     <Compile Include="StatueControl.cs" />
     <Compile Include="WDController.cs" />
+    <Compile Include="YieldExtensions.cs" />
     <Compile Include="ZemerController.cs" />
     <Compile Include="ZemerControllerP2.cs" />
   </ItemGroup>
@@ -139,6 +137,8 @@
     <EmbeddedResource Include="StreamingAssets\hegemolwin" />
     <EmbeddedResource Include="StreamingAssets\ismabg" />
 	<EmbeddedResource Include="StreamingAssets\hubasset1" />
+	<EmbeddedResource Include="StreamingAssets\t2" />
+	<EmbeddedResource Include="StreamingAssets\lord" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

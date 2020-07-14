@@ -105,9 +105,27 @@ namespace FiveKnights
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             _zemer.SetActive(true);
             
-            FiveKnights.preloadedGO["SlashBeam"].AddComponent<DamageHero>().damageDealt = 1;
-            FiveKnights.preloadedGO["SlashBeam"].layer = 22;
-            
+            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
+            {
+                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
+                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB1").gameObject.layer = 22;
+                i.Find("HB2").gameObject.layer = 22;
+            }
+            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam3"].transform)
+            {
+                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
+                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB1").gameObject.layer = 22;
+                i.Find("HB2").gameObject.layer = 22;
+            }
             foreach (SpriteRenderer i in _zemer.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
@@ -119,7 +137,7 @@ namespace FiveKnights
             }
             
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
-            {
+            { 
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Parryable>();

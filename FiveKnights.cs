@@ -12,28 +12,29 @@ using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
 
+using HutongGames.PlayMaker;
+using HutongGames.PlayMaker.Actions;
+
 namespace FiveKnights
 {
     [UsedImplicitly]
     public class FiveKnights : Mod, ITogglableMod
     {
+        public FiveKnights() : base("Pale Court") { }
+
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
         public static Dictionary<string, AssetBundle> assetbundles = new Dictionary<string, AssetBundle>();
         public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
-
-        public override ModSettings GlobalSettings
+        
+        public SaveModSettings Settings = new SaveModSettings();
+        public override ModSettings SaveSettings
         {
             get => Settings;
-            set => Settings = (GlobalModSettings) value;
+            set => Settings = (SaveModSettings) value;
         }
 
-        public GlobalModSettings Settings = new GlobalModSettings();
-
-        public override string GetVersion()
-        {
-            return "0.0.0.0";
-        }
+        public override string GetVersion() => "0.0.0.0";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -59,8 +60,9 @@ namespace FiveKnights
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
-                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord")
-
+                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
+                ("Fungus3_13","BlurPlane"),
+                ("Fungus3_34","_Scenery/fung_lamp2 (1)/Active/haze2 (1)"),
             };
         }
 
@@ -96,23 +98,50 @@ namespace FiveKnights
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
-            ModHooks.Instance.BeforeSavegameSaveHook += BeforeSaveGameSave;
             ModHooks.Instance.NewGameHook += AddComponent;
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             int ind = 0;
+            string pathext = "";
             Assembly asm = Assembly.GetExecutingAssembly();
+            List<string> paths = new List<string>
+            {
+                "isma", "dryya","hegemol","zemer"
+            };
+            
+            switch (SystemInfo.operatingSystemFamily)
+            {
+                case OperatingSystemFamily.Windows:
+                    pathext = "win";
+                    break;
+                case OperatingSystemFamily.Linux:
+                    pathext = "lin";
+                    break;
+                case OperatingSystemFamily.MacOSX:
+                    pathext = "mc";
+                    break;
+                default:
+                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
+                    return;
+            }
+
+            for (int i = 0; i < paths.Count; i++) paths[i] = paths[i] + pathext;
+            //add generic bundles here
+            paths.AddRange(new List<string>
+            {
+                "ismabg",
+                "hubasset1",
+            });
             foreach (string res in asm.GetManifestResourceNames())
             {
                 using (Stream s = asm.GetManifestResourceStream(res))
                 {
                     if (s == null) continue;
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    s.Dispose();
                     if (res.EndsWith(".png"))
                     {
-                        byte[] buffer = new byte[s.Length];
-                        s.Read(buffer, 0, buffer.Length);
-                        s.Dispose();
-
                         // Create texture from bytes
                         var tex = new Texture2D(1, 1);
                         tex.LoadImage(buffer, true);
@@ -124,8 +153,9 @@ namespace FiveKnights
                     else
                     {
                         string bundleName = Path.GetExtension(res).Substring(1);
+                        if (!paths.Contains(bundleName)) continue;
                         Log("Loading bundle " + bundleName);
-                        assetbundles[bundleName] = AssetBundle.LoadFromStream(s);
+                        assetbundles[bundleName] = AssetBundle.LoadFromMemory(buffer);
                     }
                 }
             }
@@ -192,32 +222,17 @@ namespace FiveKnights
                 case "FALSE_KNIGHT_D_1": return "Show me what you're made of!";
                 case "FALSE_KNIGHT_D_2": return "Is that all you got?";
                 case "FALSE_KNIGHT_D_3": return "Prove to me you're a champion!";
-                case "ZEM_DREAM_1_1": return "Something about Sacrifice";
-                case "ZEM_DREAM_2_1": return "Something about Grove";
-                case "ZEM_DREAM_3_1": return "Something about Ogrim";
+                case "ZEM_DREAM_1_1": return "Shoutout to 56 (can't remove this can you)";
+                case "ZEM_DREAM_2_1": return "Shoutout to 56 (can't remove this can you)";
+                case "ZEM_DREAM_3_1": return "Shoutout to 56 (can't remove this can you)";
                 case "YN_THRONE": return "Answer the Champions' Call?";
                 default: return Language.Language.GetInternal(key, sheettitle);
             }
         }
 
-        private void BeforeSaveGameSave(SaveGameData data)
-        {
-            Settings.AltStatueIsma = Settings.CompletionIsma.usingAltVersion;
-            Settings.CompletionIsma.usingAltVersion = false;
-            Settings.AltStatueZemer = Settings.CompletionZemer.usingAltVersion;
-            Settings.CompletionZemer.usingAltVersion = false;
-        }
-
         private void SaveGame(SaveGameData data)
         {
-            SaveGameSave();
             AddComponent();
-        }
-
-        private void SaveGameSave(int id = 0)
-        {
-            Settings.AltStatueIsma = Settings.AltStatueIsma;
-            Settings.AltStatueZemer = Settings.AltStatueZemer;
         }
 
         private void AddComponent()
@@ -227,16 +242,12 @@ namespace FiveKnights
 
         public void Unload()
         {
-            AudioListener.volume = 1f;
-            AudioListener.pause = false;
             ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
             ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.BeforeSavegameSaveHook -= BeforeSaveGameSave;
             ModHooks.Instance.LanguageGetHook -= LangGet;
             ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
 
-            // ReSharper disable once Unity.NoNullPropogation
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
             if (x == null) return;
             UObject.Destroy(x);
