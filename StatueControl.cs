@@ -55,7 +55,7 @@ namespace FiveKnights
             canToggle = false;
             if (_bs.bossUIControlFSM)
             {
-                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "NPC CONTROL OFF", false);
+                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "NPC CONTROL OFF");
             }
             yield return new WaitForSeconds(0.25f);
             if (_bs.statueShakeParticles)
@@ -84,7 +84,7 @@ namespace FiveKnights
             yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", time));
             if (_bs.bossUIControlFSM)
             {
-                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "CONVO CANCEL", false);
+                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "CONVO CANCEL");
             }
             lev.leverAnimator.Play("Shine");
             canToggle = true;

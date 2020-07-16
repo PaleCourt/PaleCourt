@@ -320,7 +320,7 @@ namespace FiveKnights
                 yield return null;
                 //Spring(false, transform.position + new Vector3(-dir * 2.7f, 0f, 0f));
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                ToggleZemer(false, false);
+                ToggleZemer(false);
                 _rb.velocity = Vector2.zero;
                 cc.Hit = rb.velocity == Vector2.zero;
                 
@@ -328,7 +328,7 @@ namespace FiveKnights
                 
                 transform.position = nail.transform.position + new Vector3(5f*Mathf.Cos(rotVel),5f*Mathf.Sin(rotVel),0f);
                 _anim.Play("ZThrow3Air", -1, 0f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 nail.SetActive(false);
@@ -647,7 +647,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.05f);
                 //Spring(false, transform.position + new Vector3(dir * 4f, 4,0f));
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                ToggleZemer(false, false);
+                ToggleZemer(false);
                 _rb.velocity = Vector2.zero;
                 StartCoroutine(BackIn(dir));
             }
@@ -659,7 +659,7 @@ namespace FiveKnights
                 transform.position = new Vector3(x, GroundY + 6f);
                 Spring(true, transform.position, 1.8f);
                 yield return new WaitForSeconds(0.15f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 var diff = new Vector2(x - tarX, transform.position.y - GroundY-0.95f);
                 float rot = Mathf.Atan(diff.y / diff.x);
                 rot = (tarX < 75f) ? rot + Mathf.PI : rot;
@@ -717,7 +717,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.05f);
                 //Spring(false, transform.position + new Vector3(dir * 4f, 4,0f));
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                ToggleZemer(false, false);
+                ToggleZemer(false);
                 _rb.velocity = Vector2.zero;
                 StartCoroutine(FlyStrike());
             }
@@ -735,7 +735,7 @@ namespace FiveKnights
                 transform.position = new Vector3(x, GroundY + 9.5f);
                 Spring(true, transform.position, 1.4f);
                 yield return new WaitForSeconds(0.16f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 
                 heroX = _target.transform.position.x;
                 dir = FaceHero();
@@ -838,7 +838,7 @@ namespace FiveKnights
                 transform.position = new Vector3(x, GroundY + 9.5f);
                 Spring(true, transform.position, 1.4f);
                 yield return new WaitForSeconds(0.16f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 
                 heroX = _target.transform.position.x;
                 dir = FaceHero();
@@ -1302,7 +1302,7 @@ namespace FiveKnights
                 dir = FaceHero();
                 Spring(true, transform.position, 1.8f);
                 yield return new WaitForSeconds(0.15f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 var diff = new Vector2(x - heroX + xOff, transform.position.y - GroundY-0.95f);
                 float rot = Mathf.Atan(diff.y / diff.x);
                 rot = (heroX < 75f) ? rot + Mathf.PI : rot;
@@ -1345,7 +1345,7 @@ namespace FiveKnights
                 transform.position = new Vector3(x, GroundY + 9.5f);
                 Spring(true, transform.position, 1.4f);
                 yield return new WaitForSeconds(0.16f);
-                ToggleZemer(true, false);
+                ToggleZemer(true);
                 
                 heroX = _target.transform.position.x;
                 dir = FaceHero();
