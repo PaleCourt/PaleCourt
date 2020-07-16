@@ -1256,7 +1256,7 @@ namespace FiveKnights
             {
                 dir = -FaceHero();
                 PlayDeathFor(gameObject);
-                _bc.enabled = false;
+                _bc.enabled = true;
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZKnocked");
@@ -1266,6 +1266,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 if (shouldNotDoPhase2)
                 {
+                    _bc.enabled = false;
                     yield return new WaitForSeconds(1.75f);
                     CustomWP.Instance.wonLastFight = true;
                     // Stop music here.
