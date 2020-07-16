@@ -12,7 +12,7 @@ namespace FiveKnights
         private Animator _anim;
         private HealthManager _hm;
         public List<float> PlantX;
-        public bool onlyIsma;
+        public bool IsmaFight;
 
         private void Awake()
         {
@@ -22,7 +22,7 @@ namespace FiveKnights
         private IEnumerator Start()
         {
             yield return null;
-            if (onlyIsma)
+            if (IsmaFight)
             {
                 _hm = gameObject.AddComponent<HealthManager>();
                 SetupHM();
@@ -44,7 +44,7 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.IsPlaying());
             dh.enabled = true;
             yield return new WaitForSeconds(0.55f);
-            if (!onlyIsma) StartCoroutine(Death());
+            if (!IsmaFight) StartCoroutine(Death());
         }
 
         private IEnumerator Death()

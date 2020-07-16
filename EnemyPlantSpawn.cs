@@ -100,7 +100,7 @@ namespace FiveKnights
             GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
             PlantP.Add(pos.x);
             pillar.transform.position = new Vector2(pos.x, 6.1f);
-            pillar.AddComponent<PlantCtrl>().onlyIsma = true;
+            pillar.AddComponent<PlantCtrl>().IsmaFight = true;
             yield return new WaitForSeconds(0.1f);
             pillar.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
             pillar.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;

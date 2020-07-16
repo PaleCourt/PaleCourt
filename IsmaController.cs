@@ -25,7 +25,7 @@ namespace FiveKnights
         private EnemyDreamnailReaction _dnailReac;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
-        private MyAudioPlayerOneShotSingle _ap;
+        private MusicPlayer _ap;
         private GameObject _dnailEff;
         private SpriteRenderer _sr;
         private GameObject _target;
@@ -91,13 +91,13 @@ namespace FiveKnights
             yield return null;
             offsetTime = 0f;
             GameObject actor = GameObject.Find("Audio Player Actor");
-            _ap = new MyAudioPlayerOneShotSingle
+            _ap = new MusicPlayer
             {
-                volume = 1f,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                spawnPoint = HeroController.instance.gameObject
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = HeroController.instance.gameObject
             };
             if (CustomWP.boss == CustomWP.Boss.All)
             {
@@ -314,7 +314,7 @@ namespace FiveKnights
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb");
-                _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
                 //_aud.PlayOneShot(_randAud[_rand.Next(0, _randAud.Count)]);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -431,7 +431,7 @@ namespace FiveKnights
                 ToggleIsma(true);
                 float dir = FaceHero();
                 _anim.Play("AFistAntic");
-                _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
@@ -534,7 +534,7 @@ namespace FiveKnights
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("GFistAntic");
-                _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -588,7 +588,7 @@ namespace FiveKnights
         private IEnumerator BowWhipAttack()
         {
             float dir = -1f * FaceHero(true);
-            _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+            _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
             _ap.DoPlayRandomClip();
             _anim.Play("LoneDeath");
             _rb.velocity = new Vector2(-dir * 17f, 32f);
@@ -664,7 +664,7 @@ namespace FiveKnights
                     {
                         Vector2 pos = go.transform.position;
                         ToggleIsma(true);
-                        _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                        _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                         _ap.DoPlayRandomClip();
                         _attacking = true;
                         float side = go.GetComponent<Rigidbody2D>().velocity.x > 0f ? 1f : -1f;
@@ -763,7 +763,7 @@ namespace FiveKnights
                 _anim.Play("AgonyLoopIntro");
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
                 _anim.Play("AgonyLoop");
                 int j = onlyIsma ? 5 : 3;
@@ -856,7 +856,7 @@ namespace FiveKnights
             _anim.speed = 1.6f;
             while (true)
             {
-                _ap.audioClip = _randAud[_rand.Next(0, _randAud.Count)];
+                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
@@ -1282,11 +1282,11 @@ namespace FiveKnights
             sil.transform.localScale *= 1.15f;
             sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 80f);
             sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
-            sil.sprite = ArenaFinder.sprites["Sil_Isma_1"];
+            sil.sprite = ArenaFinder.Sprites["Sil_Isma_1"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Sil_Isma_2"];
+            sil.sprite = ArenaFinder.Sprites["Sil_Isma_2"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Sil_Isma_3"];
+            sil.sprite = ArenaFinder.Sprites["Sil_Isma_3"];
             yield return new WaitForSeconds(0.05f);
             sil.gameObject.SetActive(false);
         }
@@ -1352,7 +1352,7 @@ namespace FiveKnights
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
-                _ap.audioClip = ArenaFinder.ismaAudioClips["IsmaAudDeath"];
+                _ap.Clip = ArenaFinder.IsmaClips["IsmaAudDeath"];
                 _ap.DoPlayRandomClip();
                 //_aud.PlayOneShot(ArenaFinder.ismaAudioClips["IsmaAudDeath"]);
             }
@@ -1381,7 +1381,7 @@ namespace FiveKnights
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
-            foreach (AudioClip i in ArenaFinder.ismaAudioClips.Values.Where(x=> !x.name.Contains("Death")))
+            foreach (AudioClip i in ArenaFinder.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
             }

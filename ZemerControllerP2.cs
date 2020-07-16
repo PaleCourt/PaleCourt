@@ -16,7 +16,7 @@ namespace FiveKnights
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
-        private MyAudioPlayerOneShotSingle _ap;
+        private MusicPlayer _ap;
         private GameObject _dd;
         private bool flashing;
         private GameObject[] traitorSlam;
@@ -940,7 +940,7 @@ namespace FiveKnights
                 if (type == 3)
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.materials["TestDist"];
+                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
                     wav.transform.position = new Vector3(75.1f, 7.4f);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
@@ -1055,7 +1055,7 @@ namespace FiveKnights
                 if (type == 3)
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.materials["TestDist"];
+                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
                     wav.transform.position = new Vector3(75.1f, 7.4f);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
@@ -1778,15 +1778,15 @@ namespace FiveKnights
                     case "Slash":
                         return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     case "TraitorPillar":
-                        return ArenaFinder.clips["TraitorSlam"];
+                        return ArenaFinder.Clips["TraitorSlam"];
                     default:
-                        return ArenaFinder.clips[clipName];
+                        return ArenaFinder.Clips[clipName];
                 }
             }
 
-            _ap.pitchMax = pitchMax;
-            _ap.pitchMin = pitchMin;
-            _ap.audioClip = GetAudioClip();
+            _ap.MaxPitch = pitchMax;
+            _ap.MinPitch = pitchMin;
+            _ap.Clip = GetAudioClip();
             _ap.DoPlayRandomClip();
         }
 
@@ -1853,13 +1853,13 @@ namespace FiveKnights
             GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
             GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _ap = new MyAudioPlayerOneShotSingle
+            _ap = new MusicPlayer
             {
-                volume = 1f,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                spawnPoint = HeroController.instance.gameObject
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = HeroController.instance.gameObject
             };
             
             traitorSlam = new GameObject[2];

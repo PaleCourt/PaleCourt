@@ -89,7 +89,7 @@ namespace FiveKnights
             }
             
             var _sr = _isma.GetComponent<SpriteRenderer>();
-            _sr.material = ArenaFinder.materials["flash"];
+            _sr.material = ArenaFinder.Materials["flash"];
             
             _isma.AddComponent<IsmaController>();
             

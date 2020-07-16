@@ -355,7 +355,7 @@ namespace FiveKnights
                 if (state.Contains("Isma") || state.Contains("Zemer"))
                 {
                     StatueControl sc = statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
-                    sc.statName = state;
+                    sc.StatueName = state;
                     sc._bs = bs;
                     sc._sr = sr2;
                     sc._fakeStat = fakeStat;

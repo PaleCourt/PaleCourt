@@ -7,10 +7,11 @@
     {
         //Edited from Katie's original Fennel stuff
 
-        private SpriteRenderer sr;
-        void Start ()
+        private SpriteRenderer _sr;
+
+        private void Start ()
         {
-            sr = GetComponent<SpriteRenderer>();
+            _sr = GetComponent<SpriteRenderer>();
         }
 
         public void BeginFade()
@@ -18,20 +19,23 @@
             StartCoroutine(Fade());
         }
 
-        IEnumerator Fade()
+        private IEnumerator Fade()
         {
             float f = 0.5f;
+            
             while (f >= 0)
             {
-                Color c = sr.material.GetColor("_Color");
+                Color c = _sr.material.GetColor("_Color");
                 c.a = f;
-                sr.material.SetColor("_Color", c);
+                _sr.material.SetColor("_Color", c);
                 f -= Time.deltaTime;
                 yield return null;
             }
-            Color b = sr.material.GetColor("_Color");
+            
+            Color b = _sr.material.GetColor("_Color");
             b.a = 0;
-            sr.material.SetColor("_Color", b);
+            
+            _sr.material.SetColor("_Color", b);
         }
     }
 

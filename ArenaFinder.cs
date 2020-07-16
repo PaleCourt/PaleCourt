@@ -14,10 +14,10 @@ namespace FiveKnights
 {
     internal class ArenaFinder : MonoBehaviour
     {
-        public static Dictionary<string, AudioClip> ismaAudioClips;
-        public static Dictionary<string, Material> materials;
-        public static Dictionary<string, Sprite> sprites;
-        public static Dictionary<string, AudioClip> clips;
+        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
+        public static Dictionary<string, Material> Materials { get; private set; }
+        public static Dictionary<string, Sprite> Sprites { get; private set; }
+        public static Dictionary<string, AudioClip> Clips { get; private set; }
         
         public static int defeats;
         
@@ -30,10 +30,10 @@ namespace FiveKnights
             USceneManager.activeSceneChanged += SceneChanged;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
-            ismaAudioClips = new Dictionary<string, AudioClip>();
-            materials = new Dictionary<string, Material>();
-            sprites = new Dictionary<string, Sprite>();
-            clips = new Dictionary<string, AudioClip>();
+            IsmaClips = new Dictionary<string, AudioClip>();
+            Materials = new Dictionary<string, Material>();
+            Sprites = new Dictionary<string, Sprite>();
+            Clips = new Dictionary<string, AudioClip>();
             LoadHubBundles();
 
         }
@@ -235,10 +235,10 @@ namespace FiveKnights
             FiveKnights.preloadedGO["Fool"] = ab.LoadAsset<GameObject>("Fool");
             FiveKnights.preloadedGO["Wall"] = ab.LoadAsset<GameObject>("Wall");
             FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
-            clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
+            Clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
             foreach (AudioClip i in ab.LoadAllAssets<AudioClip>().Where(x=>x.name.Contains("IsmaAud")))
             {
-                ismaAudioClips[i.name] = i;
+                IsmaClips[i.name] = i;
             }
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
@@ -253,9 +253,9 @@ namespace FiveKnights
             }
             foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
             {
-                sprites[spr.name] = spr;
+                Sprites[spr.name] = spr;
             }
-            materials["flash"] = ab.LoadAsset<Material>("UnlitFlashMat");
+            Materials["flash"] = ab.LoadAsset<Material>("UnlitFlashMat");
             Log("Finished Loading Isma Bundle");
             LoadDryyaAssets();
         }
@@ -274,7 +274,7 @@ namespace FiveKnights
             foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
             {
                 Log("Sprite Name: " + sprite.name);
-                sprites[sprite.name] = sprite;
+                Sprites[sprite.name] = sprite;
             }
             
             Log("Finished Loading Dryya Bundle");
@@ -312,7 +312,7 @@ namespace FiveKnights
                 Where(x => x.Contains("zemer"))) path = i;
             PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
             FiveKnights.preloadedGO["TraitorSlam"] = fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
-            clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+            Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
             AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
             UObject[] assets = ab.LoadAllAssets();
             FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
@@ -325,19 +325,19 @@ namespace FiveKnights
             Texture tex = ab.LoadAsset<Texture>("sonar");
             Log("Tex " + (tex == null));
             Log("SHAD " + (shader == null));
-            materials["TestDist"] = new Material(shader);
-            Log("SHAD2 " + materials["TestDist"].shader.name);
-            materials["TestDist"].SetTexture("_NoiseTex", tex);
-            Log("DIOSP " + materials["TestDist"].GetFloat("_Intensity"));
-            materials["TestDist"].SetFloat("_Intensity", 0.2f);
-            Log("DIOSP " + materials["TestDist"].GetFloat("_Intensity"));
+            Materials["TestDist"] = new Material(shader);
+            Log("SHAD2 " + Materials["TestDist"].shader.name);
+            Materials["TestDist"].SetTexture("_NoiseTex", tex);
+            Log("DIOSP " + Materials["TestDist"].GetFloat("_Intensity"));
+            Materials["TestDist"].SetFloat("_Intensity", 0.2f);
+            Log("DIOSP " + Materials["TestDist"].GetFloat("_Intensity"));
             Log("MAPG");
-            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = materials["TestDist"];
+            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = Materials["TestDist"];
 
 
             foreach (AudioClip aud in ab.LoadAllAssets<AudioClip>())
             {
-                clips[aud.name] = aud;
+                Clips[aud.name] = aud;
             }
             
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
@@ -355,7 +355,7 @@ namespace FiveKnights
             }
             foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
             {
-                sprites[spr.name] = spr;
+                Sprites[spr.name] = spr;
             }
             Log("Finished Loading Zemer Bundle");
         }

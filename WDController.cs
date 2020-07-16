@@ -13,7 +13,7 @@ namespace FiveKnights
         private PlayMakerFSM _fsm;
         public GameObject dd; 
         private tk2dSpriteAnimator _tk;
-        public static MyAudioPlayerOneShotSingle CustomAudioPlayer;
+        public static MusicPlayer CustomAudioPlayer;
         public static bool alone;
         private bool HIT_FLAG;
         public static WDController Instance;
@@ -100,7 +100,7 @@ namespace FiveKnights
                 _fsm.SetState("Stun Recover");
                 yield return null;
                 yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-                CustomAudioPlayer.volume = 1f;
+                CustomAudioPlayer.Volume = 1f;
                 CustomAudioPlayer.UpdateMusic();
                 _fsm.SetState("Rage Roar");
                 PlayerData.instance.isInvincible = false;
@@ -297,16 +297,16 @@ namespace FiveKnights
         private void PlayMusic(CustomWP.Boss boss)
         {
             GameObject actor = GameObject.Find("Audio Player Actor");
-            AudioClip ac = ArenaFinder.clips["IsmaMusic"];
-            CustomAudioPlayer = new MyAudioPlayerOneShotSingle
+            AudioClip ac = ArenaFinder.Clips["IsmaMusic"];
+            CustomAudioPlayer = new MusicPlayer
             {
-                volume = 0f,
-                audioClip = ac,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                loop = true,
-                spawnPoint = HeroController.instance.gameObject
+                Volume = 0f,
+                Clip = ac,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Loop = true,
+                Spawn = HeroController.instance.gameObject
             };
             CustomAudioPlayer.DoPlayRandomClip();
         }

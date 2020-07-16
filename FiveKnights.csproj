@@ -94,7 +94,7 @@
     <Compile Include="FsmUtil.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
-    <Compile Include="MyAudioPlayerOneShotSingle.cs" />
+    <Compile Include="MusicPlayer.cs" />
     <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -123,11 +123,11 @@
     <EmbeddedResource Include="StreamingAssets\t2" />
     <EmbeddedResource Include="StreamingAssets\lord" />
   </ItemGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="@echo on" />
-        <Exec Command="echo Copying mod" />
-        <Exec Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
-        <Exec Condition="Exists('D:\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;D:\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
-    </Target>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="@echo on" />
+    <Exec Command="echo Copying mod" />
+    <Exec Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
+    <Exec Condition="Exists('D:\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;D:\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
+  </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

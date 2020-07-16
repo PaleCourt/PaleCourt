@@ -39,7 +39,7 @@ namespace FiveKnights
         private bool atPhase2;
         private const float TurnDelay = 0.05f;
         private bool _attacking;
-        private MyAudioPlayerOneShotSingle _ap;
+        private MusicPlayer _ap;
         private List<Action> _moves;
         private Dictionary<Action, int> _maxRepeats;
         private Dictionary<Action, int> _repeats;
@@ -657,11 +657,11 @@ namespace FiveKnights
             sil.transform.localScale *= 1.15f;
             sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 10f);
             sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_1"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_2"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_3"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
             yield return new WaitForSeconds(0.05f);
             sil.gameObject.SetActive(false);
         }
@@ -745,13 +745,13 @@ namespace FiveKnights
             GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
             GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _ap = new MyAudioPlayerOneShotSingle
+            _ap = new MusicPlayer
             {
-                volume = 1f,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                spawnPoint = HeroController.instance.gameObject
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = HeroController.instance.gameObject
             };
             
             _moves = new List<Action>
@@ -803,15 +803,15 @@ namespace FiveKnights
                     case "Slash":
                         return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     case "TraitorPillar":
-                        return ArenaFinder.clips["TraitorSlam"];
+                        return ArenaFinder.Clips["TraitorSlam"];
                     default:
-                        return ArenaFinder.clips[clipName];
+                        return ArenaFinder.Clips[clipName];
                 }
             }
 
-            _ap.pitchMax = pitchMax;
-            _ap.pitchMin = pitchMin;
-            _ap.audioClip = GetAudioClip();
+            _ap.MaxPitch = pitchMax;
+            _ap.MinPitch = pitchMin;
+            _ap.Clip = GetAudioClip();
             _ap.DoPlayRandomClip();
         }
         

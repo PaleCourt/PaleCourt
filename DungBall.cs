@@ -7,6 +7,7 @@ namespace FiveKnights
     internal class DungBall : MonoBehaviour
     {
         private bool _hit;
+        
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
