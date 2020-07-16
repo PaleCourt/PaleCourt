@@ -1643,7 +1643,7 @@ namespace FiveKnights
                 if (!_blockedHit)
                 {
                     _blockedHit = true;
-                    StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.2f, 0.04f, 0f));
+                    GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.2f, 0.04f, 0f));
                     Log("Blocked Hit");
                     Log("Closing " + _counterRoutine);
                     StopCoroutine(_counterRoutine);
