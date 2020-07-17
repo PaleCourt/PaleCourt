@@ -137,7 +137,6 @@
     <EmbeddedResource Include="StreamingAssets\hegemolwin" />
     <EmbeddedResource Include="StreamingAssets\ismabg" />
 	<EmbeddedResource Include="StreamingAssets\hubasset1" />
-	<EmbeddedResource Include="StreamingAssets\t2" />
 	<EmbeddedResource Include="StreamingAssets\lord" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

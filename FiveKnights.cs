@@ -131,6 +131,7 @@ namespace FiveKnights
             {
                 "ismabg",
                 "hubasset1",
+                "abyssbund"
             });
             foreach (string res in asm.GetManifestResourceNames())
             {
