@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Collections;
 using ModCommon;
 using UnityEngine;
@@ -12,23 +10,19 @@ namespace FiveKnights
     public class PlantCtrl : MonoBehaviour
     {
         private Animator _anim;
-        private BoxCollider2D _bc;
         private HealthManager _hm;
-        private SpriteRenderer _sr;
         public List<float> PlantX;
-        public bool onlyIsma;
+        public bool IsmaFight;
 
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
-            _bc = gameObject.GetComponent<BoxCollider2D>();
-            _sr = gameObject.GetComponent<SpriteRenderer>();
         }
 
         private IEnumerator Start()
         {
             yield return null;
-            if (onlyIsma)
+            if (IsmaFight)
             {
                 _hm = gameObject.AddComponent<HealthManager>();
                 SetupHM();
@@ -50,7 +44,7 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.IsPlaying());
             dh.enabled = true;
             yield return new WaitForSeconds(0.55f);
-            if (!onlyIsma) StartCoroutine(Death());
+            if (!IsmaFight) StartCoroutine(Death());
         }
 
         private IEnumerator Death()

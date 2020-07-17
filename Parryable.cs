@@ -1,13 +1,5 @@
-﻿using HutongGames.PlayMaker.Actions;
-using ModCommon.Util;
-using ModCommon;
-using Modding;
-using On;
-using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Collections.Generic;
 using Logger = Modding.Logger;
 
 namespace FiveKnights

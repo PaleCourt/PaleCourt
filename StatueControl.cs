@@ -1,5 +1,4 @@
 ﻿using System.Collections;
-using IL.InControl;
 using UnityEngine;
 
 namespace FiveKnights
@@ -9,29 +8,29 @@ namespace FiveKnights
         public BossStatue _bs;
         public SpriteRenderer _sr;
         public GameObject _fakeStat;
-        public string statName;
+        public string StatueName;
         private bool canToggle;
 
         private IEnumerator Start()
         {
             yield return null;
             canToggle = true;
-            _sr.flipX = statName.Contains("Isma")
+            _sr.flipX = StatueName.Contains("Isma")
                 ? FiveKnights.Instance.Settings.AltStatueIsma
                 : FiveKnights.Instance.Settings.AltStatueZemer;
-            statName = statName.Contains("Isma") ? "Isma" : "Zemer";
+            StatueName = StatueName.Contains("Isma") ? "Isma" : "Zemer";
         }
 
         public void StartLever(BossStatueLever self)
         {
             if (!canToggle) return;
-            if (statName == "Isma")
+            if (StatueName == "Isma")
             {
                 StartCoroutine(SwapStatues(self));
                 FiveKnights.Instance.Settings.AltStatueIsma = !FiveKnights.Instance.Settings.AltStatueIsma;
                 _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
             }
-            else if (statName == "Zemer")
+            else if (StatueName == "Zemer")
             {
                 StartCoroutine(SwapStatues(self));
                 FiveKnights.Instance.Settings.AltStatueZemer = !FiveKnights.Instance.Settings.AltStatueZemer;
@@ -56,7 +55,7 @@ namespace FiveKnights
             canToggle = false;
             if (_bs.bossUIControlFSM)
             {
-                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "NPC CONTROL OFF", false);
+                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "NPC CONTROL OFF");
             }
             yield return new WaitForSeconds(0.25f);
             if (_bs.statueShakeParticles)
@@ -73,7 +72,7 @@ namespace FiveKnights
                 _bs.statueShakeLoop.Stop();
             }
             StartCoroutine(this.PlayAudioEventDelayed(_bs.statueDownSound, _bs.statueDownSoundDelay));
-            float time = (statName == "Isma") ? 0.5f : 1.5f;
+            float time = (StatueName == "Isma") ? 0.5f : 1.5f;
             yield return StartCoroutine(PlayAnimWait(_fakeStat, "Down", time));
 
             yield return new WaitForSeconds(0.5f);
@@ -85,7 +84,7 @@ namespace FiveKnights
             yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", time));
             if (_bs.bossUIControlFSM)
             {
-                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "CONVO CANCEL", false);
+                FSMUtility.SendEventToGameObject(_bs.bossUIControlFSM.gameObject, "CONVO CANCEL");
             }
             lev.leverAnimator.Play("Shine");
             canToggle = true;

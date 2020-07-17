@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HutongGames.PlayMaker.Actions;
@@ -263,7 +261,5 @@ namespace FiveKnights
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
         }
-        
-        private void Log(object message) => Modding.Logger.Log("[Dryya Setup] " + message);
     }
 }

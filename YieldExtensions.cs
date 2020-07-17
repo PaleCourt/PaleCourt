@@ -5,21 +5,22 @@ namespace FiveKnights
 {
     public sealed class WaitSecWhile : CustomYieldInstruction
     {
-        internal float m_Seconds;
-        private Func<bool> m_Predicate;
+        private float _time;
+        private Func<bool> _pred;
         
         public WaitSecWhile(Func<bool> predicate, float seconds)
         {
-            this.m_Predicate = predicate;
-            this.m_Seconds = seconds;
+            _pred = predicate;
+            _time = seconds;
         }
         
         public override bool keepWaiting
         {
             get
             {
-                m_Seconds -= Time.fixedDeltaTime;
-                return this.m_Predicate() && m_Seconds > 0f;
+                _time -= Time.fixedDeltaTime;
+                
+                return _pred() && _time > 0f;
             }
         }
     }

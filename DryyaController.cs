@@ -4,13 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Random = UnityEngine.Random;
 using System.Reflection;
-using GlobalEnums;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using IL.InControl.NativeProfile;
 using ModCommon;
 using ModCommon.Util;
-using Modding;
 using UnityEngine;
 
 namespace FiveKnights
@@ -31,8 +27,6 @@ namespace FiveKnights
 
         private int _hp = 1650;
 
-        private PlayMakerFSM _pvControl;
-        private PlayMakerFSM _kinControl;
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
 
@@ -101,8 +95,6 @@ namespace FiveKnights
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
 
             Log("Getting FSMs");
-            _pvControl = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
-            _kinControl = FiveKnights.preloadedGO["Kin"].LocateMyFSM("IK Control");
             _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
             _ogrim = FiveKnights.preloadedGO["WD"];
             _control = gameObject.LocateMyFSM("Control");
@@ -172,8 +164,6 @@ namespace FiveKnights
 
             AnimFPS = 1.0f / _anim.ClipFps;
             
-            _dreamNailEffect = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
-
             _moves = new List<Action>
             {
                 DryyaCounter,
@@ -220,12 +210,10 @@ namespace FiveKnights
             _corpse.SetActive(true);
         }
 
-        private GameObject _dreamNailEffect;
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
             if (self.name.Contains("Dryya"))
             {
-                //Instantiate(_dreamNailEffect, transform.position, Quaternion.identity);
                 _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
             }
 

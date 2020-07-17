@@ -14,9 +14,6 @@ namespace FiveKnights
 {
     internal static class FsmUtil
     {
-        // ReSharper disable once InconsistentNaming
-        private static readonly FieldInfo FsmStringParamsFi = typeof(ActionData).GetField("fsmStringParams", BindingFlags.NonPublic | BindingFlags.Instance);
-
         [PublicAPI]
         public static void RemoveAction<T>(this PlayMakerFSM fsm, string stateName) where T : FsmStateAction
         {

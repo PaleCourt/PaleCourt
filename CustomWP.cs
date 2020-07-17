@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using Modding;
-using System.Reflection;
-using ModCommon.Util;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using System.Collections;
-using InControl;
 using ModCommon;
-using Object = System.Object;
 using UnityEngine.UI;
 
 namespace FiveKnights
@@ -115,7 +109,6 @@ namespace FiveKnights
                 fsm.GetAction<BeginSceneTransition>("Change Scene", 3).sceneName = "GG_Workshop";
                 fsm.GetAction<BeginSceneTransition>("Change Scene", 3).entryGateName = "door_dreamReturnGG_GG_Statue_Defender";
                 yield return new WaitWhile(() => !HeroController.instance);
-                SetDialogue();
                 Log("Checking if from godhome ");
                 Log(isFromGodhome);
                 if (isFromGodhome)
@@ -130,53 +123,6 @@ namespace FiveKnights
                     //yield return new WaitWhile(() => anim.IsPlaying("Exit Door To Idle"));
                     //HeroController.instance.RegainControl();
                 }
-            }
-
-            void SetDialogue()
-            {
-                PlayMakerFSM fsm = null;
-
-                IEnumerator LookForDialogClosed()
-                {
-                    PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
-                    while (textYN.ActiveStateName != "Ready for Input") yield return new WaitForEndOfFrame();
-                    while (textYN.ActiveStateName == "Ready for Input") yield return new WaitForEndOfFrame();
-                    GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
-                    fsm.enabled = true;
-                    yield return new WaitForSeconds(0.5f);
-                    PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-                    pm.SendEvent("FADE OUT");
-                    yield return new WaitForSeconds(0.5f);
-                    boss = Boss.All;
-                    GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-                    {
-                        SceneName = "Dream_04_White_Defender",
-                        EntryGateName = "door1",
-                        Visualization = GameManager.SceneLoadVisualizations.Dream,
-                        WaitForSceneTransitionCameraFade = false,
-
-                    });
-                }
-
-                IEnumerator Wait()
-                {
-                    GameObject go = Instantiate(FiveKnights.preloadedGO["throne"]);
-                    go.SetActive(true);
-                    go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
-                    PlayMakerFSM fsm = go.LocateMyFSM("Sit");
-                    yield return new WaitWhile(() => fsm.ActiveStateName != "Resting");
-                    fsm.enabled = false;
-                    Begin();
-                }
-
-                void Begin()
-                {
-                    GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
-                    GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "YN_THRONE");
-                    GameObject.Find("Text YN").GetComponent<MonoBehaviour>().StartCoroutine(LookForDialogClosed());
-                }
-
-                //StartCoroutine(Wait());
             }
 
             StartCoroutine(HubSet());
@@ -204,16 +150,6 @@ namespace FiveKnights
             var tmp = rm.AddComponent<HazardRespawnMarker>();
             tp.respawnMarker = rm.GetComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
-        }
-
-        private void GetChildren(Transform trans, Action<Transform> myMethodName)
-        {
-            if (trans == null) return;
-            foreach (Transform child in trans)
-            {
-                myMethodName(child);
-                GetChildren(child, myMethodName);
-            }
         }
 
         private void CreateStatues()
@@ -371,7 +307,7 @@ namespace FiveKnights
                 if (state.Contains("Isma") || state.Contains("Zemer"))
                 {
                     StatueControl sc = statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
-                    sc.statName = state;
+                    sc.StatueName = state;
                     sc._bs = bs;
                     sc._sr = sr2;
                     sc._fakeStat = fakeStat;

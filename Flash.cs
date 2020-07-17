@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
+﻿using UnityEngine;
 using System.Collections;
-using On;
 
 namespace FiveKnights
 {
@@ -16,7 +11,7 @@ namespace FiveKnights
         private void Start()
         {
             _sr = gameObject.GetComponent<SpriteRenderer>();
-            _sr.material = ArenaFinder.materials["flash"];
+            _sr.material = ArenaFinder.Materials["flash"];
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
         }
 
