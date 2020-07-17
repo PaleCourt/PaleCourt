@@ -16,7 +16,6 @@ namespace FiveKnights
     {
         //Note: Dreamnail code was taken from Jngo's code :)
         public bool onlyIsma;
-        private bool flashing;
         private bool _attacking;
         private HealthManager _hm;
         private BoxCollider2D _bc;
@@ -1264,7 +1263,6 @@ namespace FiveKnights
                 yield return null;
             }
             yield return null;
-            flashing = false;
         }
 
         private float FaceHero(bool opposite = false)

@@ -76,6 +76,7 @@
     <Compile Include="AfterImageFader.cs" />
     <Compile Include="AutoDestroy.cs" />
     <Compile Include="AudioSourceExtensions.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="Tink.cs" />
     <Compile Include="WaveIncrease.cs" />
     <Compile Include="CollisionCheck.cs" />

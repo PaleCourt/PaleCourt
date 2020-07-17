@@ -18,7 +18,6 @@ namespace FiveKnights
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
         private GameObject _dd;
-        private bool flashing;
         private GameObject _dnailEff;
         private Animator _anim;
         private Rigidbody2D _rb;
@@ -36,7 +35,6 @@ namespace FiveKnights
         private int traitorSlamIndex;
         private Coroutine _counterRoutine;
         private bool _blockedHit;
-        private bool atPhase2;
         private const float TurnDelay = 0.05f;
         private bool _attacking;
         private MusicPlayer _ap;
@@ -622,9 +620,10 @@ namespace FiveKnights
             if (self.name.Contains("Zemer"))
             {
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
+                
                 if (doingIntro)
                 {
-                    StopCoroutine("Start");
+                    StopCoroutine(nameof(Start));
                     _rb.velocity = new Vector2(0f,0f);
                     _attacking = true;
                     doingIntro = false;
@@ -633,7 +632,8 @@ namespace FiveKnights
                     ZemerCounter();
                     StartCoroutine(Attacks());
                 }
-                if (!atPhase2 && _hm.hp <= Phase2HP)
+                
+                if (_hm.hp <= Phase2HP)
                 {
                     Log("Going to phase 2");
                     _bc.enabled = false;
@@ -643,7 +643,7 @@ namespace FiveKnights
                         Destroy(extraNail);
                     }
                     OnDestroy();
-                    gameObject.AddComponent<ZemerControllerP2>().shouldNotDoPhase2 =
+                    gameObject.AddComponent<ZemerControllerP2>().DoPhase =
                         CustomWP.boss == CustomWP.Boss.Zemer;
                     Destroy(this);
                 }
@@ -716,7 +716,6 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.02f);
             }
             yield return null;
-            flashing = false;
         }
 
         private void AssignFields()
