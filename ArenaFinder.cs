@@ -318,6 +318,8 @@ namespace FiveKnights
             FiveKnights.preloadedGO["SlashBeam"] = ab.LoadAsset<GameObject>("NewSlash");
             FiveKnights.preloadedGO["SlashBeam2"] = ab.LoadAsset<GameObject>("NewSlash2");
             FiveKnights.preloadedGO["SlashBeam3"] = ab.LoadAsset<GameObject>("NewSlash3");
+            Clips["ZP1Intro"] = ab.LoadAsset<AudioClip>("ZP1Intro");
+            Clips["ZP1Loop"] = ab.LoadAsset<AudioClip>("ZP1Loop");
             
             FiveKnights.preloadedGO["WaveShad"] = ab.LoadAsset<GameObject>("Shockwave");
             Shader shader = ab.LoadAsset<Shader>("WaveEffectShader");

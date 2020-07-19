@@ -1,7 +1,9 @@
 ﻿using UnityEngine;
 using Modding;
 using System.Collections;
+using System.Collections.Generic;
 using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using ModCommon.Util;
 using ReflectionHelper = Modding.ReflectionHelper;
 
@@ -294,13 +296,25 @@ namespace FiveKnights
             }
         }
 
-        private void PlayMusic(CustomWP.Boss boss)
+        public void PlayMusic(AudioClip clip, float vol = 0f)
+        {
+            MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
+            List<MusicCue.MusicChannelInfo> channelInfos = new List<MusicCue.MusicChannelInfo>();
+            MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
+            channelInfo.SetAttr("clip", clip);
+            channelInfos.Add(channelInfo);
+            musicCue.SetAttr("channelInfos", channelInfos.ToArray());
+            GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
+            GameManager.instance.AudioManager.gameObject.PrintSceneHierarchyTree();
+        }
+        
+        /*public void PlayMusic(string clip, float vol = 0f)
         {
             GameObject actor = GameObject.Find("Audio Player Actor");
-            AudioClip ac = ArenaFinder.Clips["IsmaMusic"];
+            AudioClip ac = ArenaFinder.Clips[clip];
             CustomAudioPlayer = new MusicPlayer
             {
-                Volume = 0f,
+                Volume = vol,
                 Clip = ac,
                 Player = actor,
                 MaxPitch = 1f,
@@ -309,16 +323,22 @@ namespace FiveKnights
                 Spawn = HeroController.instance.gameObject
             };
             CustomAudioPlayer.DoPlayRandomClip();
-        }
+        }*/
 
         private bool startedMusic;
         
         private MusicCue.MusicChannelInfo MusicCue_GetChannelInfo(On.MusicCue.orig_GetChannelInfo orig, MusicCue self, MusicChannels channel)
         {
+            Log("NAME " + self.name);
             if (!startedMusic && CustomWP.boss == CustomWP.Boss.Ogrim && self.name.Contains("Defender"))
             {
                 startedMusic = true;
-                PlayMusic(CustomWP.Boss.Ogrim);
+                PlayMusic(ArenaFinder.Clips["IsmaMusic"]);
+            }
+            else if (self.name.Contains("Defender"))
+            {
+                Log("RUP");
+                return null;
             }
             return orig(self, channel);
         }

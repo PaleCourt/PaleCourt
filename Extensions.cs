@@ -45,6 +45,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator WaitToFrame(this Animator self, int frame)
         {
+            yield return null;
             while (self.GetCurrentFrame() < frame)
                 yield return null;
         }
@@ -52,6 +53,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayToEnd(this Animator self)
         {
+            yield return null;
             while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)
                 yield return null;
         }
@@ -59,6 +61,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator WaitForFramesWithActions(this Animator self, params (int frame, Action act)[] acts)
         {
+            yield return null;
             foreach ((int frame, Action act) in acts)
             {
                 yield return self.WaitToFrame(frame);

@@ -36,6 +36,7 @@ namespace FiveKnights
         private Coroutine _counterRoutine;
         private bool _blockedHit;
         private const float TurnDelay = 0.05f;
+        private const float IdleDelay = 0.4f;
         private bool _attacking;
         private MusicPlayer _ap;
         private List<Action> _moves;
@@ -98,6 +99,7 @@ namespace FiveKnights
             Destroy(GameObject.Find("World Edge v2"));
             if (!WDController.alone) StartCoroutine(SilLeave());
             else yield return new WaitForSeconds(1.7f);
+            StartCoroutine(MusicControl());
             gameObject.SetActive(true);
             gameObject.transform.position = new Vector2(80f, GroundY + 0.5f);
             FaceHero();
@@ -121,21 +123,29 @@ namespace FiveKnights
 
             yield return new WaitForSeconds(0.3f);
             StartCoroutine(ChangeIntroText(Instantiate(area), "Zemer", "", "Mysterious", false));
-            _bc.enabled = doingIntro = true;
             _anim.enabled = true;
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+            doingIntro = _bc.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 12);
             _anim.enabled = false;
-            yield return new WaitForSeconds(0.8f);
+            yield return new WaitForSeconds(0.4f);
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.Play("ZWalk");
             _rb.velocity = new Vector2(7f, 0f);
-            yield return new WaitWhile(() => transform.GetPositionX() < RightX - 5f);
+            yield return new WaitWhile(() => transform.GetPositionX() < RightX - 15f);
             _rb.velocity = Vector2.zero;
             doingIntro = false;
             _anim.Play("ZIdle");
             StartCoroutine(Attacks());
             Log("Done Intro");
+        }
+
+        private IEnumerator MusicControl()
+        {
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Intro"], 1f);
+            yield return new WaitForSeconds(7.08f);
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Loop"], 1f);
         }
 
         private void Update()
@@ -155,7 +165,7 @@ namespace FiveKnights
         {
             Log("[Waiting to start calculation]");
             yield return new WaitWhile(() => _attacking);
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(IdleDelay);
             Log("[End of Wait]");
             _attacking = true;
             Log("[Setting Attacks]");
@@ -235,7 +245,7 @@ namespace FiveKnights
                 Log("Doing [" + act.Method.Name + "]");
                 if (prev != null) _repeats[prev] = 0;
                 _attacking = true;
-                act.Invoke();
+                act();
                 yield return new WaitWhile(() => _attacking);
                 Log("Done [" + act.Method.Name + "]");
                 prev = act;
@@ -263,10 +273,14 @@ namespace FiveKnights
                 _anim.Play("ZAerial");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
-                _rb.velocity = new Vector2(xVel * 35f, 18f);
+                _rb.velocity = new Vector2(xVel * 38f, 15f);
                 _rb.gravityScale = 1.3f;
                 _rb.isKinematic = false;
                 yield return new WaitForSeconds(0.1f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
                 yield return new WaitWhile(() => transform.position.y > GroundY);
                 _rb.velocity = Vector2.zero;
                 _rb.gravityScale = 0f;
@@ -423,7 +437,7 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.IsPlaying());
 
             _anim.Play("ZIdle");
-            yield return new WaitForSeconds(0.4f);
+            yield return new WaitForSeconds(0.25f);
             _attacking = false;
         }
 
@@ -494,12 +508,22 @@ namespace FiveKnights
                 transform.Find("HyperCut").gameObject.SetActive(false);
 
                 _anim.Play("ZDash");
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
+                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+                yield return _anim.WaitToFrame(4);
+                
+                _anim.enabled = false;
+                
+                yield return new WaitForSeconds(0.3f);
+                
+                _anim.enabled = true;
+                
+                yield return _anim.WaitToFrame(5);
+    
                 PlayAudioClip("AudDashIntro");
                 if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
                 {
                     StartCoroutine(StrikeAlternate());
+                    transform.position = new Vector3(transform.position.x, GroundY);
                     yield break;
                 }
 
@@ -649,7 +673,7 @@ namespace FiveKnights
                     doingIntro = false;
                     _bc.enabled = true;
                     _anim.enabled = true;
-                    ZemerCounter();
+                    StartCoroutine(Countered());
                     StartCoroutine(Attacks());
                 }
 
