@@ -631,7 +631,8 @@ namespace FiveKnights
         {
             if (self.name.Contains("Zemer"))
             {
-                StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                
                 // Prevent code block from running every frame
                 if (!_blockedHit)
                 {
