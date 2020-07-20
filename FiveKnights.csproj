@@ -114,6 +114,7 @@
     <Compile Include="FsmUtil.cs" />
     <Compile Include="HegemolController.cs" />
     <Compile Include="IsmaController.cs" />
+    <Compile Include="Mace.cs" />
     <Compile Include="Parryable.cs" />
     <Compile Include="PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

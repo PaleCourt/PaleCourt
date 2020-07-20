@@ -268,18 +268,13 @@ namespace FiveKnights
             }
 
             Log("Getting Hegemol Bundle");
-            AssetBundle hegemolBundle = FiveKnights.assetbundles[hegemolBundlePath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
+            AssetBundle hegemolBundle = FiveKnights.assetbundles[hegemolBundlePath];
 
-            UnityEngine.Object[] objects = hegemolBundle.LoadAllAssets();
-            foreach (UnityEngine.Object obj in objects)
-            {
-                Log("Object Name: " + obj.name);
-            }
-            
             Log("Getting SpriteCollections");
             
             FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
             FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+            FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
 
             Log("Finished Loading Hegemol Bundle");
             LoadZemerBundle();

@@ -6,6 +6,7 @@ using UnityEngine;
 using Modding;
 using ModCommon;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Reflection;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -26,6 +27,7 @@ namespace FiveKnights
         private const float GroundX = 7.4f;
         private const float DigInWalkSpeed = 8.0f;
 
+        private GameObject _mace;
         private GameObject _ogrim;
         private GameObject _pv;
 
@@ -42,6 +44,8 @@ namespace FiveKnights
         {
             Log("Hegemol Awake");
 
+            gameObject.name = "Hegemol";
+            
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
             PlayMakerFSM control = _pv.LocateMyFSM("Control");
@@ -61,24 +65,23 @@ namespace FiveKnights
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
-
-        void Update()
-        {
-            Log("Current State: " + _control.ActiveStateName);
-        }
         
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
 
             _hm.hp = Health;
+
+            _mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
+            _mace.AddComponent<Mace>();
+            _mace.SetActive(false);
             
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
             List<tk2dSpriteDefinition> fcSpriteDefs = fcCollectionData.spriteDefinitions.ToList();
-            
+
             GameObject collectionPrefab = FiveKnights.preloadedGO["Hegemol Collection Prefab"];
             tk2dSpriteCollection collection = collectionPrefab.GetComponent<tk2dSpriteCollection>();
-            
+
             foreach (tk2dSpriteDefinition def in collection.spriteCollection.spriteDefinitions)
             {
                 def.material.shader = fcSpriteDefs[0].material.shader;
@@ -115,6 +118,7 @@ namespace FiveKnights
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
+            _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Toss Antic", 1);
             _control.GetAction<SetGravity2dScale>("Start Fall", 12).gravityScale.Value = 3.0f;
             _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Fall"));
             _control.GetAction<Tk2dPlayAnimation>("State 1").clipName.Value = "Intro Land";
@@ -132,6 +136,7 @@ namespace FiveKnights
             gameObject.AddComponent<DebugColliders>();
             
             AddDig();
+            AddGroundPunch();
             
             Log("Collider Offset: " + _collider.offset);
             
@@ -139,6 +144,8 @@ namespace FiveKnights
 
             _control.SetState("Init");
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
+
+            gameObject.PrintSceneHierarchyTree();
             
             _control.SendEvent("BATTLE START");
             while (true)
@@ -170,7 +177,6 @@ namespace FiveKnights
             PlayMakerFSM emitter = roarEmitter.LocateMyFSM("emitter");
             emitter.SetState("Init");
             roarEmitter.GetComponent<DisableAfterTime>().waitTime = roarTime;
-            roarEmitter.PrintSceneHierarchyTree();
 
             //Log("Sending Camera Shake");
             //GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
@@ -228,6 +234,8 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(1.0f);
             }
+            
+            _control.InsertCoroutine("Dig Run", 0, DigRun);
             
             IEnumerator DigOut()
             {
@@ -308,6 +316,57 @@ namespace FiveKnights
             }
             
             _control.InsertCoroutine("Dig Out", 0, DigOut);
+        }
+
+        private void AddGroundPunch()
+        {
+            string[] states =
+            {
+                "Toss Antic",
+                "Toss",
+                "Punch Antic",
+                "Punching",
+            };
+
+            _control.CreateStates(states, "Idle");
+
+            IEnumerator TossAntic()
+            {
+                _anim.Play("Toss Antic");
+                _rb.velocity = Vector2.zero;
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss Antic"));
+            }
+
+            _control.InsertCoroutine("Toss Antic", 0, TossAntic);
+            
+            IEnumerator Toss()
+            {
+                _anim.Play("Toss");
+
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss"));
+            }
+
+            _control.InsertCoroutine("Toss", 0, Toss);
+            
+            IEnumerator PunchAntic()
+            {
+                _anim.Play("Punch Antic");
+                _mace.SetActive(true);   
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
+            }
+
+            _control.InsertCoroutine("Punch Antic", 0, PunchAntic);
+            
+            IEnumerator Punching()
+            {
+                _anim.Play("Punching");
+                
+                yield return new WaitForSeconds(5.0f);
+            }
+            
+            _control.InsertCoroutine("Punching", 0, Punching);
         }
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
