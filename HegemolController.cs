@@ -127,19 +127,10 @@ namespace FiveKnights
             _control.ChangeTransition("State 1", "FINISHED", "Intro Greet");
             // NOTE: Transition from Intro Greet does not actually work
             _control.AddTransition("Intro Greet", "FINISHED", "Idle");
-            
-            _collider.offset = new Vector2(0.0f, 2.6f);
 
-            var hitterCol = gameObject.FindGameObjectInChildren("Hitter").GetComponent<BoxCollider2D>();
-            hitterCol.offset = new Vector2(hitterCol.offset.x, 3.0f);
-            gameObject.FindGameObjectInChildren("Hitter").AddComponent<DebugColliders>();
-            gameObject.AddComponent<DebugColliders>();
-            
             AddDig();
             AddGroundPunch();
-            
-            Log("Collider Offset: " + _collider.offset);
-            
+
             yield return new WaitForSeconds(2.0f);
 
             _control.SetState("Init");
@@ -177,9 +168,8 @@ namespace FiveKnights
             PlayMakerFSM emitter = roarEmitter.LocateMyFSM("emitter");
             emitter.SetState("Init");
             roarEmitter.GetComponent<DisableAfterTime>().waitTime = roarTime;
-
-            //Log("Sending Camera Shake");
-            //GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
+            
+            GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
 
             PlayMakerFSM roarLock = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
             roarLock.Fsm.GetFsmGameObject("Roar Object").Value = gameObject;
@@ -232,7 +222,7 @@ namespace FiveKnights
                 Log("Dig Run");
                 _anim.Play("Dig Run");
 
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(0.5f);
             }
             
             _control.InsertCoroutine("Dig Run", 0, DigRun);
@@ -277,8 +267,7 @@ namespace FiveKnights
                 };
 
                 hitter.AddComponent<DamageHero>().damageDealt = 2;
-                hitter.AddComponent<DebugColliders>();
-                
+
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return new WaitForSeconds(1.0f / 12);
