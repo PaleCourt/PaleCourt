@@ -28,7 +28,7 @@ namespace FiveKnights
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
         private const int Phase2HP = 200;
-        private const int MaxHP = 300 + Phase2HP;
+        private const int MaxHP = 500 + Phase2HP;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -144,7 +144,9 @@ namespace FiveKnights
         private IEnumerator MusicControl()
         {
             WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Intro"], 1f);
-            yield return new WaitForSeconds(7.08f);
+            yield return new WaitForSecondsRealtime(7.04f);
+            WDController.Instance.PlayMusic(null, 1f);
+            Log("Start p2");
             WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Loop"], 1f);
         }
 
@@ -165,9 +167,12 @@ namespace FiveKnights
         {
             Log("[Waiting to start calculation]");
             yield return new WaitWhile(() => _attacking);
-            yield return new WaitForSeconds(IdleDelay);
+            //yield return new WaitForSeconds(IdleDelay);
             Log("[End of Wait]");
             _attacking = true;
+            float xDisp = (transform.position.x < 75f) ? 8f : -8f;
+            Walk(xDisp);
+            yield return new WaitWhile(() => _attacking);
             Log("[Setting Attacks]");
             Vector2 posZem = transform.position;
             Vector2 posH = _target.transform.position;
@@ -297,20 +302,25 @@ namespace FiveKnights
         {
             IEnumerator Walk()
             {
+                Log("SPDDD " + _anim.speed);
                 float xPos = transform.position.x;
-                string animName = (displacement < 0) ? "ZWalk" : "ZWalkLeft";
-
+                string animName = (displacement < 0) ? "ZWalkLeft" : "ZWalkRight";
+                float signX = Mathf.Sign(displacement);
+                Vector3 pScale = gameObject.transform.localScale;
+                gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x), pScale.y, 1f);
+                _anim.speed = 1.38f;
                 _anim.Play(animName);
                 yield return null;
-                _rb.velocity = new Vector2(Mathf.Sign(displacement) * 7f, 0f);
+                _rb.velocity = new Vector2(signX * 7f, 0f);
                 yield return new WaitWhile
                 (
-                    () =>
-                        !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(xPos + displacement, transform.position.x, 0.1f)
+                    () => 
+                        !_rb.velocity.x.Within(0f,0.05f) && 
+                        !(xPos+displacement).Within(transform.GetPositionX(),0.15f)
                 );
+                _anim.speed = 1f;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZIdle");
-                yield return new WaitForSeconds(0.5f);
                 _attacking = false;
             }
 
@@ -674,6 +684,7 @@ namespace FiveKnights
                     doingIntro = false;
                     _bc.enabled = true;
                     _anim.enabled = true;
+                    _anim.speed = 1f;
                     StartCoroutine(Countered());
                     StartCoroutine(Attacks());
                 }
@@ -682,6 +693,9 @@ namespace FiveKnights
                 {
                     Log("Going to phase 2");
                     _bc.enabled = false;
+                    
+                    WDController.Instance.PlayMusic(null, 1f);
+                    
                     GameObject extraNail = GameObject.Find("ZNailB");
                     if (extraNail != null && extraNail.transform.parent == null)
                     {
@@ -715,7 +729,6 @@ namespace FiveKnights
 
         private float FaceHero(bool shouldRev = false)
         {
-            float currSign = Mathf.Sign(transform.GetScaleX());
             float heroSignX = Mathf.Sign(gameObject.transform.GetPositionX() - _target.transform.GetPositionX());
             heroSignX = shouldRev ? -1 * heroSignX : heroSignX;
             Vector3 pScale = gameObject.transform.localScale;

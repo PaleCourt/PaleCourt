@@ -305,7 +305,6 @@ namespace FiveKnights
             channelInfos.Add(channelInfo);
             musicCue.SetAttr("channelInfos", channelInfos.ToArray());
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
-            GameManager.instance.AudioManager.gameObject.PrintSceneHierarchyTree();
         }
         
         /*public void PlayMusic(string clip, float vol = 0f)
@@ -329,7 +328,6 @@ namespace FiveKnights
         
         private MusicCue.MusicChannelInfo MusicCue_GetChannelInfo(On.MusicCue.orig_GetChannelInfo orig, MusicCue self, MusicChannels channel)
         {
-            Log("NAME " + self.name);
             if (!startedMusic && CustomWP.boss == CustomWP.Boss.Ogrim && self.name.Contains("Defender"))
             {
                 startedMusic = true;
@@ -337,7 +335,6 @@ namespace FiveKnights
             }
             else if (self.name.Contains("Defender"))
             {
-                Log("RUP");
                 return null;
             }
             return orig(self, channel);

@@ -169,6 +169,7 @@ namespace FiveKnights
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Tink>();
+                i.gameObject.AddComponent<Pogoable>();
                 i.gameObject.layer = 22;
                 
             }

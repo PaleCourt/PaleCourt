@@ -35,7 +35,7 @@ namespace FiveKnights
         private const float RightX = 91.6f;
 
         private const int Phase2HP = 1500;
-        private const int Phase3HP = 900;
+        private const int Phase3HP = 1000;
 
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.45f;
@@ -935,6 +935,7 @@ namespace FiveKnights
                 PlayAudioClip("AudLand");
 
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                yield return new WaitForSeconds(0.1f);
 
                 StartCoroutine(Dash());
             }
@@ -973,7 +974,7 @@ namespace FiveKnights
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
 
-                SpawnPillar(dir, new Vector2(1.6f, 0.7f), 30f);
+                SpawnPillar(dir, new Vector2(1.6f, 0.65f), 30f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 _rb.velocity = new Vector2(dir * 40f, 40f);
                 yield return new WaitForSeconds(0.08f);
@@ -1431,6 +1432,13 @@ namespace FiveKnights
             StartCoroutine(FancyAttack());
         }
 
+        private IEnumerator MusicControl()
+        {
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP2Intro"], 1f);
+            yield return new WaitForSecondsRealtime(14.12f);
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP2Loop"], 1f);
+        }
+        
         private void EndPhase1()
         {
             float dir;
@@ -1443,9 +1451,10 @@ namespace FiveKnights
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZKnocked");
+                _anim.speed = 1f;
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
+                transform.position = new Vector3(transform.position.x, GroundY - 0.99f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 
                 if (DoPhase)
@@ -1459,12 +1468,14 @@ namespace FiveKnights
                 }
 
                 isHit = false;
-                yield return new WaitSecWhile(() => !isHit, 5f);
+                yield return new WaitSecWhile(() => !isHit, 8f);
                 StartCoroutine(Recover());
             }
 
             IEnumerator Recover()
             {
+                StartCoroutine(MusicControl());
+                
                 yield return _anim.PlayBlocking("ZRecover");
 
                 _anim.Play("ZThrow2B");
@@ -1472,7 +1483,7 @@ namespace FiveKnights
                 _rb.velocity = new Vector2(dir * 35f, 35f);
 
                 yield return _anim.PlayToEnd();
-
+                
                 ToggleZemer(false, true);
 
                 _rb.velocity = Vector2.zero;
@@ -1509,7 +1520,7 @@ namespace FiveKnights
                 _anim.Play("Z3Swing");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                SpawnPillar(-dir, new Vector2(1.4f, 0.65f), 25f);
+                SpawnPillar(-dir, new Vector2(1.4f, 0.55f), 26f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 _rb.velocity = new Vector2(dir * 40f, 40f);
                 yield return new WaitForSeconds(0.08f);
