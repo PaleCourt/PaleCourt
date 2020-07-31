@@ -19,6 +19,7 @@ namespace FiveKnights
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
         private MusicPlayer _ap;
+        private MusicPlayer _voice;
         private GameObject _dd;
         private GameObject[] traitorSlam;
         private int traitorSlamIndex;
@@ -29,6 +30,7 @@ namespace FiveKnights
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
         private GameObject _target;
+        private string[] _commonAtt;
 
         private const float GroundY = 9.75f;
         private const float LeftX = 61.5f;
@@ -40,6 +42,9 @@ namespace FiveKnights
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.45f;
         private const float MIDDLE = 75f;
+
+        private const float SmallPillarSpd = 23.5f;
+        private const float Att1CompAnticTime = 0.25f;
 
         private PlayMakerFSM _pvFsm;
         private Coroutine _counterRoutine;
@@ -53,6 +58,7 @@ namespace FiveKnights
 
         private Action _lastAtt;
         private bool isHit;
+        private int _spinType;
 
         public bool DoPhase;
 
@@ -106,6 +112,7 @@ namespace FiveKnights
             Log("Start2");
 
             _hm.hp = Phase2HP;
+            _spinType = 1;
 
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             _target = HeroController.instance.gameObject;
@@ -144,7 +151,9 @@ namespace FiveKnights
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZAerial");
-
+                
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
+                
                 yield return _anim.WaitToFrame(4);
 
                 _rb.velocity = new Vector2(xVel * 35f, 18f);
@@ -153,9 +162,9 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(0.1f);
                 yield return _anim.WaitToFrame(7);
-                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                PlayAudioClip("AudBigSlash2",_ap,0.85f,1.15f);
                 yield return _anim.WaitToFrame(10);
-                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                PlayAudioClip("AudBigSlash2",_ap,0.85f,1.15f);
                 yield return new WaitWhile(() => transform.position.y > GroundY);
 
                 _rb.velocity = Vector2.zero;
@@ -193,49 +202,57 @@ namespace FiveKnights
                 Vector2 posH = _target.transform.position;
                 _attacking = true;
                 List<Action> toDo = new List<Action>();
-                //If the player is close
-                if (posH.y > 19f && (posH.x <= 60.6 || posH.x >= 91.4f))
+                List<Action> dontRep = new List<Action>();
+                
+                if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
                 {
-                    Action[] lst = {SpinAttack, NailLaunch};
-                    toDo.Add(lst[_rand.Next(0, lst.Length)]);
+                    toDo.Add(SpinAttack);
                 }
                 else if (FastApproximately(posZem.x, posH.x, 5f))
                 {
-                    Action[] lst = {Dodge, Dodge, ZemerCounter, AerialAttack};
-                    Action curr = lst[_rand.Next(0, lst.Length)];
+                    List<Action> lst = new List<Action>{Dodge, Dodge, ZemerCounter, AerialAttack};
+                    Action curr = lst[_rand.Next(0, lst.Count)];
                     while (_repeats[curr] >= _maxRepeats[curr])
                     {
-                        curr = lst[_rand.Next(0, lst.Length)];
+                        lst.Remove(curr);
+                        curr = lst[_rand.Next(0, lst.Count)];
                     }
 
                     toDo.Add(curr);
+                    dontRep.Add(curr);
                     Log("Added " + curr.Method.Name);
                 }
 
-                Action[] attLst = {Dash, Attack1Base, Attack1Base, NailLaunch, AerialAttack, DoubleFancy, SweepDash};
-                Action currAtt = attLst[_rand.Next(0, attLst.Length)];
+                List<Action> attLst = new List<Action>
+                {
+                    Dash, Attack1Base, NailLaunch, 
+                    AerialAttack, DoubleFancy, SweepDash, ZemerSlam
+                };
+                
+                Action currAtt = attLst[_rand.Next(0, attLst.Count)];
                 while (_repeats[currAtt] >= _maxRepeats[currAtt])
                 {
-                    currAtt = attLst[_rand.Next(0, attLst.Length)];
+                    attLst.Remove(currAtt);
+                    currAtt = attLst[_rand.Next(0, attLst.Count)];
                 }
 
                 toDo.Add(currAtt);
+                dontRep.Add(currAtt);
                 Log("Added " + currAtt.Method.Name);
 
                 if (currAtt == Attack1Base)
                 {
-                    Action[] lst2 =
+                    List<Action> lst2 = new List<Action>
                     {
-                        Dash, Dash, Attack1Complete, Attack1Complete, FancyAttack, FancyAttack,
-                        NailLaunch, NailLaunch
+                        Dash, Attack1Complete, FancyAttack, NailLaunch
                     };
-                    currAtt = lst2[_rand.Next(0, lst2.Length)];
+                    currAtt = lst2[_rand.Next(0, lst2.Count)];
                     toDo.Add(currAtt);
                     Log("Added " + currAtt.Method.Name);
                     if (currAtt == Dash)
                     {
-                        lst2 = new Action[] {ZemerSlam, NailLaunch, null};
-                        currAtt = lst2[_rand.Next(0, lst2.Length)];
+                        lst2 = new List<Action> {ZemerSlam, NailLaunch, null};
+                        currAtt = lst2[_rand.Next(0, lst2.Count)];
                         if (currAtt != null)
                         {
                             toDo.Add(currAtt);
@@ -244,13 +261,13 @@ namespace FiveKnights
                     }
                     else if (currAtt == FancyAttack)
                     {
-                        lst2 = new Action[] {Dodge, Dash, NailLaunch};
-                        currAtt = lst2[_rand.Next(0, lst2.Length)];
+                        lst2 = new List<Action>{Dodge, NailLaunch};
+                        currAtt = lst2[_rand.Next(0, lst2.Count)];
                         if (currAtt == Dodge)
                         {
                             toDo.Add(Dodge);
                             toDo.Add(FancyAttack);
-                            toDo.Add(Dash);
+                            toDo.Add(Dodge);
                         }
 
                         Log("Added " + currAtt.Method.Name);
@@ -258,7 +275,7 @@ namespace FiveKnights
                 }
                 else if (currAtt == Dash)
                 {
-                    Action[] lst2 = {null, null, Dash, ZemerCounter};
+                    Action[] lst2 = {null, ZemerSlam};
                     currAtt = lst2[_rand.Next(0, lst2.Length)];
                     if (currAtt != null)
                     {
@@ -271,23 +288,19 @@ namespace FiveKnights
 
                 foreach (Action act in _moves)
                 {
-                    if (toDo.Contains(act)) _repeats[act]++;
+                    if (dontRep.Contains(act)) _repeats[act]++;
                     else _repeats[act] = 0;
                 }
-
-                Action prev = null;
-
+                
                 foreach (Action act in toDo)
                 {
                     Log("Doing [" + act.Method.Name + "]");
-                    if (prev != null) _repeats[prev] = 0;
                     _attacking = true;
                     yield return null;
-                    act.Invoke();
+                    act();
                     yield return null;
                     yield return new WaitWhile(() => _attacking);
                     Log("Done [" + act.Method.Name + "]");
-                    prev = act;
                     yield return null;
                 }
 
@@ -309,8 +322,9 @@ namespace FiveKnights
             {
                 Vector2 hero = _target.transform.position;
                 Vector2 zem = gameObject.transform.position;
-                if (FastApproximately(hero.x, zem.x, 10f) && hero.y < GroundY + 1)
+                if (FastApproximately(hero.x, zem.x, 10f) && hero.y < GroundY + 1.5f)
                 {
+                    Log("Failed NailLaunch");
                     _attacking = false;
                     yield break;
                 }
@@ -318,6 +332,7 @@ namespace FiveKnights
                 dir = FaceHero();
                 float rot;
                 _anim.Play("ZThrow1");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return _anim.WaitToFrame(4);
                 hero = _target.transform.position;
                 zem = gameObject.transform.position;
@@ -340,7 +355,7 @@ namespace FiveKnights
                 cc.Freeze = true;
                 cc.OnCollide += () =>
                 {
-                    if (cc.Hit) PlayAudioClip("AudLand");
+                    if (cc.Hit) PlayAudioClip("AudLand",_ap);
                 };
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 bool isTooHigh = nailPar.transform.position.y > GroundY + 2f;
@@ -372,6 +387,7 @@ namespace FiveKnights
                 ToggleZemer(true);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 nail.SetActive(false);
                 _anim.speed /= 2f;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
@@ -438,7 +454,7 @@ namespace FiveKnights
                     ToggleZemer(false, true);
                     //Spring(false, transform.position + new Vector3(-dir * 3.5f, 0f, 0f));
                     yield return new WaitWhile(() => !cc.Hit);
-                    PlayAudioClip("AudLand");
+                    PlayAudioClip("AudLand",_ap);
                     Log("Stop nail");
                     yield return new WaitForSeconds(0.02f);
                     nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
@@ -508,7 +524,8 @@ namespace FiveKnights
                     _anim.PlayAt("Z2Crawl", 1);
                     yield return null;
                     yield return new WaitWhile(() => _anim.IsPlaying());
-                    RageCombo(dir, true, 3);
+                    float sig = Mathf.Sign(transform.localScale.x);
+                    RageCombo(sig, true, _spinType);
                     yield break;
                 }
 
@@ -526,7 +543,6 @@ namespace FiveKnights
             IEnumerator Slam()
             {
                 yield return _anim.PlayToFrame("ZSlam", 3);
-
                 _anim.enabled = false;
 
                 yield return new WaitForSeconds(0.25f);
@@ -555,18 +571,18 @@ namespace FiveKnights
             IEnumerator Attack1Complete()
             {
                 _anim.Play("ZAtt1");
-
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 float xVel = FaceHero() * -1;
 
                 _anim.enabled = false;
 
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(Att1CompAnticTime);
 
                 _anim.enabled = true;
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
 
-                PlayAudioClip("AudBigSlash", 0.85f, 1.15f);
+                PlayAudioClip("AudBigSlash", _ap,0.85f, 1.15f);
 
                 _rb.velocity = new Vector2(40f * xVel, 0f);
 
@@ -600,8 +616,9 @@ namespace FiveKnights
                 }
 
                 float xVel = FaceHero() * -1f;
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return _anim.PlayToFrame("ZAtt1Base", 1);
-
+                
                 _anim.enabled = false;
 
                 yield return new WaitForSeconds(0.2f);
@@ -610,21 +627,21 @@ namespace FiveKnights
 
                 yield return _anim.WaitToFrame(2);
 
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash",_ap, 0.85f, 1.15f);
 
                 yield return _anim.WaitToFrame(6);
 
                 // If player has gone behind, do backward slash
                 if (_hm.hp <= Phase3HP && (int) -xVel != FaceHero(true))
                 {
-                    RageCombo(-xVel, _rand.Next(0, 5) >= 3, _rand.Next(1, 3));
+                    RageCombo(-xVel, _rand.Next(0, 5) >= 3, _spinType);
                     _lastAtt = null;
                     yield break;
                 }
 
                 yield return _anim.WaitToFrame(7);
 
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash", _ap,0.85f, 1.15f);
 
                 _rb.velocity = new Vector2(23f * xVel, 0f);
 
@@ -689,6 +706,7 @@ namespace FiveKnights
             IEnumerator Dodge(float xVel)
             {
                 _anim.Play("ZDodge");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 _rb.velocity = new Vector2(xVel * 40f, 0f);
 
                 yield return _anim.PlayToEnd();
@@ -715,12 +733,12 @@ namespace FiveKnights
                 yield return _anim.WaitToFrame(5);
 
                 yield return _anim.PlayToFrame("ZDash", 5);
-
-                PlayAudioClip("AudDashIntro");
+                
+                PlayAudioClip("AudDashIntro", _ap);
 
                 yield return _anim.WaitToFrame(6);
 
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
 
                 _rb.velocity = new Vector2(dir * 60f, 0f);
 
@@ -800,13 +818,14 @@ namespace FiveKnights
                     yield return Turn();
 
                 float dir = FaceHero();
-
+                
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return _anim.PlayToEndWithActions
                 (
                     "ZAtt2",
-                    (0, () => PlayAudioClip("AudBasicSlash1")),
-                    (2, () => PlayAudioClip("AudBasicSlash2")),
-                    (6, () => PlayAudioClip("AudBigSlash2")),
+                    (0, () => PlayAudioClip("AudBasicSlash1",_ap)),
+                    (2, () => PlayAudioClip("AudBasicSlash2",_ap)),
+                    (6, () => PlayAudioClip("AudBigSlash2",_ap)),
                     (7, () => SpawnPillar(dir, Vector2.one, 20f))
                 );
 
@@ -886,9 +905,10 @@ namespace FiveKnights
                 else heroX = dir > 0 ? heroX - 3f : heroX + 3f;
 
                 _anim.Play("Z4AirSweep");
+                PlayAudioClip("ZAudAtt1", _voice);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
 
                 if (FaceHero(true) == dir)
@@ -932,24 +952,97 @@ namespace FiveKnights
                 transform.position = new Vector3(transform.position.x, GroundY - 0.3f);
 
                 _rb.velocity = Vector2.zero;
-                PlayAudioClip("AudLand");
+                PlayAudioClip("AudLand",_ap);
 
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 yield return new WaitForSeconds(0.1f);
-
-                StartCoroutine(Dash());
+                
+                StartCoroutine(_rand.Next(0,5) < 2 ? LandSlide() : Dash());
+            }
+            
+            IEnumerator LandSlide()
+            {
+                float signX = Mathf.Sign(gameObject.transform.GetPositionX() - MIDDLE);
+                Vector3 pScale = gameObject.transform.localScale;
+                gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
+                _anim.Play("Z5LandSlide");
+                yield return null;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+                _rb.velocity = new Vector2(-signX * 45f, 0f);
+                _anim.enabled = false; 
+                yield return null;
+                yield return new WaitWhile
+                (
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                );
+                _anim.enabled = true;
+                _rb.velocity = Vector2.zero;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                yield return new WaitWhile(() => _anim.IsPlaying());
+                StartCoroutine(LaserNuts(1, _spinType));
             }
 
+            IEnumerator LaserNuts(int i, int type)
+            {
+                if (i == 1)
+                {
+                    _anim.Play("Z6LaserSpin", -1, 0f);
+                    yield return null;
+                    _anim.enabled = false;
+                    yield return new WaitForSeconds(0.15f);
+                    PlayAudioClip("ZAudLaser", _voice);
+                    _anim.enabled = true;
+                }
+                else _anim.PlayAt("Z6LaserSpin", 1);
+
+                transform.position = new Vector3(transform.position.x, GroundY - 1.2f);
+                yield return null;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+
+                if (type == 3)
+                {
+                    GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
+                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                    wav.transform.position = new Vector3(75.1f, 7.4f);
+                    wav.SetActive(true);
+                    wav.AddComponent<WaveIncrease>();
+                }
+
+                SpawnSlashes(type);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+
+                if (i > 3)
+                {
+                    yield return _anim.PlayToEnd();
+
+                    transform.position = new Vector3(transform.position.x, GroundY);
+
+                    FaceHero();
+
+                    _anim.Play("ZIdle");
+                    _anim.enabled = false;
+
+                    yield return new WaitForSeconds(0.1f);
+                    _anim.enabled = true;
+
+                    _attacking = false;
+                    yield break;
+                }
+                
+                yield return LaserNuts(++i, type);
+            }
+            
             IEnumerator Dash()
             {
                 float dir = FaceHero();
 
                 transform.Find("HyperCut").gameObject.SetActive(false);
 
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
 
                 _rb.velocity = new Vector2(-dir * 60f, 0f);
 
+                PlayAudioClip("ZAudHoriz",_voice);
                 yield return _anim.PlayToFrameAt("ZDash", 4, 9);
 
                 _rb.velocity = Vector2.zero;
@@ -973,8 +1066,8 @@ namespace FiveKnights
                 _anim.Play("Z3Swing");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-
-                SpawnPillar(dir, new Vector2(1.6f, 0.65f), 30f);
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
+                SpawnPillar(-dir, new Vector2(1.6f, 0.65f), SmallPillarSpd);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 _rb.velocity = new Vector2(dir * 40f, 40f);
                 yield return new WaitForSeconds(0.08f);
@@ -1012,9 +1105,10 @@ namespace FiveKnights
                 else heroX = dir > 0 ? heroX - 3f : heroX + 3f;
 
                 _anim.Play("Z4AirSweep");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 if (FaceHero(true) == (int) dir)
                 {
@@ -1045,7 +1139,7 @@ namespace FiveKnights
                 _anim.enabled = true;
                 transform.position = new Vector3(transform.position.x, GroundY - 0.3f);
                 _rb.velocity = Vector2.zero;
-                PlayAudioClip("AudLand");
+                PlayAudioClip("AudLand",_ap);
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
                 StartCoroutine(dashes ? LandSlide() : Dash()); //if far
@@ -1055,8 +1149,9 @@ namespace FiveKnights
             {
                 float dir = FaceHero();
                 transform.Find("HyperCut").gameObject.SetActive(false);
+                PlayAudioClip("ZAudHoriz",_voice);
                 _anim.PlayAt("ZDash", 4);
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
                 _rb.velocity = new Vector2(-dir * 60f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
@@ -1075,10 +1170,13 @@ namespace FiveKnights
                 _anim.Play("Z5LandSlide");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                _rb.velocity = new Vector2(-signX * 40f, 0f);
-                _anim.enabled = false;
+                _rb.velocity = new Vector2(-signX * 45f, 0f);
+                _anim.enabled = false; 
                 yield return null;
-                yield return new WaitWhile(() => !FastApproximately(transform.position.x, 75.1f, 0.1f));
+                yield return new WaitWhile
+                (
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                );
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1094,6 +1192,7 @@ namespace FiveKnights
                     yield return null;
                     _anim.enabled = false;
                     yield return new WaitForSeconds(0.15f);
+                    PlayAudioClip("ZAudLaser", _voice);
                     _anim.enabled = true;
                 }
                 else _anim.PlayAt("Z6LaserSpin", 1);
@@ -1131,9 +1230,7 @@ namespace FiveKnights
                     _attacking = false;
                     yield break;
                 }
-
-                if (type != 3) type = type % 2 + 1;
-
+                
                 yield return LaserNuts(++i, type);
             }
 
@@ -1152,7 +1249,9 @@ namespace FiveKnights
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.2f);
+                PlayAudioClip("ZAudHoriz",_voice);
+                yield return new WaitForSeconds(0.1f);
                 
                 _anim.enabled = true;
                 
@@ -1163,21 +1262,19 @@ namespace FiveKnights
                     StartCoroutine(StrikeAlternate());
                     yield break;
                 }
-                PlayAudioClip("AudDashIntro");
+                PlayAudioClip("AudDashIntro",_ap);
                 
                 yield return _anim.WaitToFrame(6);
                 
-                PlayAudioClip("AudDash");
-                _rb.velocity = new Vector2(-dir * 60f, 0f);
+                PlayAudioClip("AudDash",_ap);
+                //_rb.velocity = new Vector2(-dir * 60f, 0f);
                 if (_hm.hp <= Phase3HP && _rand.Next(0, 5) < 2)
                 {
                     StartCoroutine(LandSlide());
                     yield break;
                 }
-                
-                yield return _anim.WaitToFrame(7);
-                
-                _rb.velocity = Vector2.zero;
+                //yield return _anim.WaitToFrame(7);
+                //_rb.velocity = Vector2.zero;
                 
                 yield return _anim.WaitToFrame(9);
                 
@@ -1222,7 +1319,7 @@ namespace FiveKnights
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                StartCoroutine(LaserNuts(1, _rand.Next(1, typeMax)));
+                StartCoroutine(LaserNuts(1, _rand.Next(1, _spinType)));
             }
 
             IEnumerator LaserNuts(int i, int type)
@@ -1232,7 +1329,8 @@ namespace FiveKnights
                     _anim.Play("Z6LaserSpin", -1, 0f);
                     yield return null;
                     _anim.enabled = false;
-                    yield return new WaitForSeconds(0.15f);
+                    yield return new WaitForSeconds(0.3f);
+                    PlayAudioClip("ZAudLaser", _voice);
                     _anim.enabled = true;
                 }
                 else _anim.PlayAt("Z6LaserSpin", 1);
@@ -1267,7 +1365,6 @@ namespace FiveKnights
                     yield break;
                 }
 
-                if (type != 3) type = type % 2 + 1;
                 StartCoroutine(LaserNuts(++i, type));
             }
 
@@ -1276,7 +1373,7 @@ namespace FiveKnights
                 float dir = FaceHero();
 
                 _anim.Play("DashCounter");
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash",_ap, 0.85f, 1.15f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
@@ -1299,6 +1396,7 @@ namespace FiveKnights
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -1322,6 +1420,7 @@ namespace FiveKnights
 
                 dir = FaceHero() * -1f;
                 _anim.Play("ZCInit");
+                PlayAudioClip("ZAudCounter",_voice);
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
                 _counterRoutine = StartCoroutine(Countering());
@@ -1335,7 +1434,7 @@ namespace FiveKnights
                 _blockedHit = false;
                 On.HealthManager.Hit -= OnBlockedHit;
                 On.HealthManager.Hit += OnBlockedHit;
-                PlayAudioClip("Counter");
+                PlayAudioClip("Counter",_ap);
                 StartCoroutine(FlashWhite());
 
 
@@ -1374,9 +1473,10 @@ namespace FiveKnights
                 float rot = Mathf.Atan(diffY / diffX);
                 rot = xVel < 0 ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                PlayAudioClip("AudDashIntro");
+                PlayAudioClip("AudDashIntro",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _rb.velocity = new Vector2(60f * Mathf.Cos(rot), 60f * Mathf.Sin(rot));
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
@@ -1385,12 +1485,12 @@ namespace FiveKnights
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
-                PlayAudioClip("AudBigSlash2");
+                PlayAudioClip("AudBigSlash2",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _rb.isKinematic = false;
                 _rb.gravityScale = 1.5f;
                 yield return new WaitWhile(() => transform.position.y > GroundY);
-                PlayAudioClip("AudLand");
+                PlayAudioClip("AudLand",_ap);
                 _rb.velocity = Vector2.zero;
                 _rb.gravityScale = 0f;
                 _rb.isKinematic = true;
@@ -1414,12 +1514,13 @@ namespace FiveKnights
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return null;
-                PlayAudioClip("AudBasicSlash1");
+                PlayAudioClip("AudBasicSlash1",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                PlayAudioClip("AudBasicSlash2");
+                PlayAudioClip("AudBasicSlash2",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
-                PlayAudioClip("AudBigSlash2");
+                PlayAudioClip("AudBigSlash2",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
                 dir = FaceHero();
                 SpawnPillar(dir, Vector2.one, 15f);
@@ -1447,15 +1548,17 @@ namespace FiveKnights
             {
                 dir = -FaceHero();
                 PlayDeathFor(gameObject);
-                _bc.enabled = true;
+                _bc.enabled = false;
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZKnocked");
+                PlayAudioClip("ZAudP1Death",_voice);
                 _anim.speed = 1f;
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 transform.position = new Vector3(transform.position.x, GroundY - 0.99f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                _bc.enabled = true;
                 
                 if (DoPhase)
                 {
@@ -1488,7 +1591,7 @@ namespace FiveKnights
 
                 _rb.velocity = Vector2.zero;
 
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(3.5f);
 
                 StartCoroutine(TransitionIn());
             }
@@ -1508,6 +1611,7 @@ namespace FiveKnights
                 rot = heroX < MIDDLE ? rot + Mathf.PI : rot;
                 _rb.velocity = new Vector2(55f * Mathf.Cos(rot), 55f * Mathf.Sin(rot));
                 _anim.Play("Z1ZipIn");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return null;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.95f);
                 transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
@@ -1520,7 +1624,7 @@ namespace FiveKnights
                 _anim.Play("Z3Swing");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                SpawnPillar(-dir, new Vector2(1.4f, 0.55f), 26f);
+                SpawnPillar(-dir, new Vector2(1.4f, 0.55f), SmallPillarSpd);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 _rb.velocity = new Vector2(dir * 40f, 40f);
                 yield return new WaitForSeconds(0.08f);
@@ -1555,9 +1659,10 @@ namespace FiveKnights
                 else heroX = dir > 0 ? heroX - 3f : heroX + 3f;
 
                 _anim.Play("Z4AirSweep");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                PlayAudioClip("AudDash");
+                PlayAudioClip("AudDash",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 if (FaceHero(true) == (int) dir)
                 {
@@ -1596,7 +1701,7 @@ namespace FiveKnights
                 _anim.enabled = true;
                 transform.position = new Vector3(transform.position.x, GroundY - 0.3f);
                 _rb.velocity = Vector2.zero;
-                PlayAudioClip("AudLand");
+                PlayAudioClip("AudLand",_ap);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 StartCoroutine(LandSlide());
             }
@@ -1630,8 +1735,9 @@ namespace FiveKnights
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.15f);
                 _anim.enabled = true;
+                PlayAudioClip("ZAudLaser", _voice);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                SpawnSlashes(_rand.Next(1, 3));
+                SpawnSlashes(_spinType);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 transform.position = new Vector3(transform.position.x, GroundY);
                 _anim.Play("ZIdle");
@@ -1649,7 +1755,7 @@ namespace FiveKnights
             slam.SetActive(true);
             anim.enabled = true;
             anim.Play("mega_mantis_slash_big", -1, 0f);
-            PlayAudioClip("TraitorPillar");
+            PlayAudioClip("TraitorPillar",_ap);
             Rigidbody2D rb = slam.GetComponent<Rigidbody2D>();
             rb.velocity = new Vector2(-dir * xSpd, 0f);
             Vector3 pos = transform.position;
@@ -1659,10 +1765,33 @@ namespace FiveKnights
 
         private bool offsetAngle;
 
-        private void SpawnSlashes(int type = 0)
+        private void SpawnSlashes(int type)
         {
             Log("Laser Pattern " + type);
 
+            IEnumerator Pattern1()
+            {
+                Transform slash = transform.Find("NewSlash3");
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+                slash.Find("1").gameObject.SetActive(true);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                slash.Find("2").gameObject.SetActive(true);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                slash.Find("3").gameObject.SetActive(true);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
+                slash.Find("4").gameObject.SetActive(true);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                slash.Find("5").gameObject.SetActive(true);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
+                slash.Find("6").gameObject.SetActive(true);
+                Animator anim = slash.Find("6").GetComponent<Animator>();
+                yield return anim.PlayToEnd();
+                foreach (Transform i in slash)
+                {
+                    i.gameObject.SetActive(false);
+                }
+            }
+            
             IEnumerator Pattern3()
             {
                 string typ = "SlashBeam2";
@@ -1713,7 +1842,7 @@ namespace FiveKnights
                 }
             }
 
-            IEnumerator Pattern1()
+            /*IEnumerator Pattern1()
             {
                 List<float> lstRight = new List<float>();
                 List<float> lstLeft = new List<float>();
@@ -1767,7 +1896,7 @@ namespace FiveKnights
 
                     yield return new WaitForSeconds(0.05f);
                 }
-            }
+            }*/
 
             IEnumerator Randomized()
             {
@@ -1816,7 +1945,6 @@ namespace FiveKnights
             IEnumerator run = type switch
             {
                 1 => Pattern1(),
-                2 => Pattern2(),
                 3 => Pattern3(),
                 _ => Randomized()
             };
@@ -1874,7 +2002,7 @@ namespace FiveKnights
             _anim.Play("ZCAtt");
             _hm.IsInvincible = false;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
-            PlayAudioClip("Slash", 0.85f, 1.15f);
+            PlayAudioClip("Slash",_ap,0.85f, 1.15f);
             yield return new WaitWhile(() => _anim.IsPlaying());
             Parryable.ParryFlag = false;
             _anim.Play("ZIdle");
@@ -1900,7 +2028,11 @@ namespace FiveKnights
             {
                 isHit = true;
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
-                Log("IN1");
+                if (_spinType == 1 && _hm.hp <= Phase3HP)
+                {
+                    _spinType = 3;
+                }
+                
                 if (_hm.hp <= 50)
                 {
                     Log("IN2");
@@ -1921,16 +2053,20 @@ namespace FiveKnights
                 Destroy(extraNail);
             }
 
-            float dir = -FaceHero();
+            FaceHero();
             PlayDeathFor(gameObject);
             _bc.enabled = false;
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
+            _rb.gravityScale = 0f;
             _anim.Play("ZKnocked");
+            PlayAudioClip("ZAudP2Death1",_voice);
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
             transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
             yield return _anim.PlayToEnd();
+            yield return new WaitForSeconds(ArenaFinder.Clips["ZAudP2Death1"].length);
+            PlayAudioClip("ZAudP2Death2",_voice);
             yield return new WaitForSeconds(1.75f);
             CustomWP.Instance.wonLastFight = true;
             // Stop music here.
@@ -2000,12 +2136,14 @@ namespace FiveKnights
             }
         }
 
-        private void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
+        private void PlayAudioClip(
+            string clipName, MusicPlayer ap, 
+            float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
         {
-            _ap.MaxPitch = pitchMax;
-            _ap.MinPitch = pitchMin;
+            ap.MaxPitch = pitchMax;
+            ap.MinPitch = pitchMin;
 
-            _ap.Clip = clipName switch
+            ap.Clip = clipName switch
             {
                 "Counter" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip.Value,
                 "Slash" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value,
@@ -2013,7 +2151,7 @@ namespace FiveKnights
                 _ => ArenaFinder.Clips[clipName]
             };
 
-            _ap.DoPlayRandomClip();
+            ap.DoPlayRandomClip();
         }
 
         private static bool FastApproximately(float a, float b, float threshold)
@@ -2107,7 +2245,16 @@ namespace FiveKnights
                 Player = actor,
                 MaxPitch = 1f,
                 MinPitch = 1f,
-                Spawn = HeroController.instance.gameObject
+                Spawn = gameObject
+            };
+            
+            _voice = new MusicPlayer
+            {
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = gameObject
             };
 
             traitorSlam = new GameObject[2];
@@ -2149,7 +2296,8 @@ namespace FiveKnights
                 SpinAttack,
                 FancyAttack,
                 DoubleFancy,
-                SweepDash
+                SweepDash,
+                ZemerSlam
             };
 
             _repeats = new Dictionary<Action, int>
@@ -2164,7 +2312,8 @@ namespace FiveKnights
                 [SpinAttack] = 0,
                 [FancyAttack] = 0,
                 [DoubleFancy] = 0,
-                [SweepDash] = 0
+                [SweepDash] = 0,
+                [ZemerSlam] = 0
             };
 
             _maxRepeats = new Dictionary<Action, int>
@@ -2174,12 +2323,13 @@ namespace FiveKnights
                 [Attack1Complete] = 2,
                 [AerialAttack] = 2,
                 [NailLaunch] = 2,
-                [Dash] = 2,
+                [Dash] = 1,
                 [Dodge] = 2,
-                [SpinAttack] = 2,
+                [SpinAttack] = 1,
                 [FancyAttack] = 2,
                 [DoubleFancy] = 1,
-                [SweepDash] = 1
+                [SweepDash] = 1,
+                [ZemerSlam] = 1
             };
         }
 

@@ -28,7 +28,8 @@ namespace FiveKnights
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
         private const int Phase2HP = 200;
-        private const int MaxHP = 500 + Phase2HP;
+        private const int MaxHPV2 = 500 + Phase2HP;
+        private const int MaxHPV1 = 1200;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -90,7 +91,7 @@ namespace FiveKnights
         {
             Log("Start");
             GameCameras.instance.tk2dCam.ZoomFactor = 0.75f;
-            _hm.hp = MaxHP;
+            _hm.hp = CustomWP.boss == CustomWP.Boss.Zemer ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
             gameObject.transform.localScale *= 0.9f;
             gameObject.layer = 11;
@@ -125,6 +126,7 @@ namespace FiveKnights
             StartCoroutine(ChangeIntroText(Instantiate(area), "Zemer", "", "Mysterious", false));
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+            PlayAudioClip("ZAudBow");
             doingIntro = _bc.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 12);
             _anim.enabled = false;
@@ -177,40 +179,50 @@ namespace FiveKnights
             Vector2 posZem = transform.position;
             Vector2 posH = _target.transform.position;
             List<Action> toDo = new List<Action>();
+            List <Action> dontRep = new List<Action>();
 
             //If the player is close
-            if (posH.y > 19f && (posH.x <= 60.4 || posH.x >= 91.6f))
-            {
-                Action[] lst = {SpinAttack};
-                toDo.Add(lst[_rand.Next(0, lst.Length)]);
+            if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
+            { 
+                toDo.Add(SpinAttack);
             }
             else if (FastApproximately(posZem.x, posH.x, 5f))
             {
-                Action[] lst = {Dodge, Dodge, ZemerCounter, ZemerCounter, AerialAttack};
-                Action curr = lst[_rand.Next(0, lst.Length)];
+                List<Action> lst = new List<Action>
+                {
+                    Dodge, ZemerCounter
+                };
+                Action curr = lst[_rand.Next(0, lst.Count)];
                 while (_repeats[curr] >= _maxRepeats[curr])
                 {
-                    curr = lst[_rand.Next(0, lst.Length)];
+                    lst.Remove(curr);
+                    curr = lst[_rand.Next(0, lst.Count)];
                 }
 
                 toDo.Add(curr);
+                dontRep.Add(curr);
                 Log("Added " + curr.Method.Name);
             }
 
-            Action[] attLst = {Dash, Attack1Base, Attack1Base, AerialAttack};
-            Action currAtt = attLst[_rand.Next(0, attLst.Length)];
+            List<Action> attLst = new List<Action>
+            {
+                Dash, Attack1Base, Attack1Base, AerialAttack
+            };
+            Action currAtt = attLst[_rand.Next(0, attLst.Count)];
             while (_repeats[currAtt] >= _maxRepeats[currAtt])
             {
-                currAtt = attLst[_rand.Next(0, attLst.Length)];
+                attLst.Remove(currAtt);
+                currAtt = attLst[_rand.Next(0, attLst.Count)];
             }
 
             toDo.Add(currAtt);
+            dontRep.Add(currAtt);
             Log("Added " + currAtt.Method.Name);
 
             if (currAtt == Attack1Base)
             {
                 //REM
-                Action[] lst2 = {Dash, Dash, FancyAttack, FancyAttack, AerialAttack, null};
+                Action[] lst2 = {Dash, FancyAttack, AerialAttack, null};
                 currAtt = lst2[_rand.Next(0, lst2.Length)];
                 if (currAtt != null)
                 {
@@ -222,17 +234,7 @@ namespace FiveKnights
                 {
                     toDo.Add(Dodge);
                     toDo.Add(currAtt);
-                    toDo.Add(Dash);
-                    Log("Added " + currAtt.Method.Name);
-                }
-            }
-            else if (currAtt == Dash)
-            {
-                Action[] lst2 = {null, null, Dash, ZemerCounter};
-                currAtt = lst2[_rand.Next(0, lst2.Length)];
-                if (currAtt != null)
-                {
-                    toDo.Add(currAtt);
+                    toDo.Add(Dodge);
                     Log("Added " + currAtt.Method.Name);
                 }
             }
@@ -240,20 +242,17 @@ namespace FiveKnights
             Log("[Done Setting Attacks]");
             foreach (Action act in _moves)
             {
-                if (toDo.Contains(act)) _repeats[act]++;
+                if (dontRep.Contains(act)) _repeats[act]++;
                 else _repeats[act] = 0;
             }
 
-            Action prev = null;
             foreach (Action act in toDo)
             {
                 Log("Doing [" + act.Method.Name + "]");
-                if (prev != null) _repeats[prev] = 0;
                 _attacking = true;
                 act();
                 yield return new WaitWhile(() => _attacking);
                 Log("Done [" + act.Method.Name + "]");
-                prev = act;
                 yield return null;
             }
 
@@ -276,6 +275,7 @@ namespace FiveKnights
                 float xVel = FaceHero() * -1f;
                 transform.Find("BladeAerialShadow").gameObject.SetActive(false);
                 _anim.Play("ZAerial");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 _rb.velocity = new Vector2(xVel * 38f, 15f);
@@ -304,10 +304,14 @@ namespace FiveKnights
             {
                 Log("SPDDD " + _anim.speed);
                 float xPos = transform.position.x;
-                string animName = (displacement < 0) ? "ZWalkLeft" : "ZWalkRight";
-                float signX = Mathf.Sign(displacement);
+                float hPosX = _target.transform.position.x;
+                int signX = (int) Mathf.Sign(displacement);
+                int diffSig = (int) Mathf.Sign(hPosX - xPos);
+                string animName = (diffSig != signX) ? "ZWalkRight" : "ZWalkLeft";
                 Vector3 pScale = gameObject.transform.localScale;
-                gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x), pScale.y, 1f);
+                float xScl = Mathf.Abs(pScale.x) * signX;
+                xScl = (animName == "ZWalkRight") ? xScl : -xScl;
+                gameObject.transform.localScale = new Vector3(xScl, pScale.y, 1f);
                 _anim.speed = 1.38f;
                 _anim.Play(animName);
                 yield return null;
@@ -353,6 +357,7 @@ namespace FiveKnights
 
                 dir = FaceHero() * -1f;
                 _anim.Play("ZCInit");
+                PlayAudioClip("ZAudCounter");
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
                 _counterRoutine = StartCoroutine(Countering());
@@ -403,6 +408,7 @@ namespace FiveKnights
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -456,6 +462,7 @@ namespace FiveKnights
             IEnumerator Attack1Complete()
             {
                 _anim.Play("ZAtt1");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 float xVel = FaceHero() * -1;
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.1f);
@@ -485,6 +492,7 @@ namespace FiveKnights
 
                 float xVel = FaceHero() * -1f;
                 _anim.Play("ZAtt1Base");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
@@ -523,7 +531,9 @@ namespace FiveKnights
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(0.3f);
+                yield return new WaitForSeconds(0.2f);
+                PlayAudioClip("ZAudHoriz");
+                yield return new WaitForSeconds(0.1f);
                 
                 _anim.enabled = true;
                 
@@ -581,6 +591,7 @@ namespace FiveKnights
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -608,6 +619,7 @@ namespace FiveKnights
                 float rot = Mathf.Atan(diffY / diffX);
                 rot = (xVel < 0) ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 PlayAudioClip("AudDashIntro");
@@ -701,7 +713,7 @@ namespace FiveKnights
                     {
                         Destroy(extraNail);
                     }
-
+                    
                     OnDestroy();
                     gameObject.AddComponent<ZemerControllerP2>().DoPhase =
                         CustomWP.boss == CustomWP.Boss.Zemer;
@@ -811,7 +823,7 @@ namespace FiveKnights
                 Player = actor,
                 MaxPitch = 1f,
                 MinPitch = 1f,
-                Spawn = HeroController.instance.gameObject
+                Spawn = gameObject
             };
 
             _moves = new List<Action>

@@ -96,7 +96,7 @@ namespace FiveKnights
                 Player = actor,
                 MaxPitch = 1f,
                 MinPitch = 1f,
-                Spawn = HeroController.instance.gameObject
+                Spawn = gameObject//HeroController.instance.gameObject
             };
             if (CustomWP.boss == CustomWP.Boss.All)
             {
