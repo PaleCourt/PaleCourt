@@ -38,11 +38,8 @@ namespace FiveKnights
         private bool _blockedHit;
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.4f;
-        private bool _attacking;
+        private bool _countering;
         private MusicPlayer _ap;
-        private List<Action> _moves;
-        private Dictionary<Action, int> _maxRepeats;
-        private Dictionary<Action, int> _repeats;
 
         private readonly string[] _dnailDial =
         {
@@ -167,109 +164,115 @@ namespace FiveKnights
 
         private IEnumerator Attacks()
         {
-            Log("[Waiting to start calculation]");
-            yield return new WaitWhile(() => _attacking);
-            //yield return new WaitForSeconds(IdleDelay);
-            Log("[End of Wait]");
-            _attacking = true;
-            float xDisp = (transform.position.x < 75f) ? 8f : -8f;
-            Walk(xDisp);
-            yield return new WaitWhile(() => _attacking);
-            Log("[Setting Attacks]");
-            Vector2 posZem = transform.position;
-            Vector2 posH = _target.transform.position;
-            List<Action> toDo = new List<Action>();
-            List <Action> dontRep = new List<Action>();
-
-            //If the player is close
-            if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
-            { 
-                toDo.Add(SpinAttack);
-            }
-            else if (FastApproximately(posZem.x, posH.x, 5f))
+            int counterCount = 0;
+            Dictionary<Func<IEnumerator>, int> rep = new Dictionary<Func<IEnumerator>, int>
             {
-                List<Action> lst = new List<Action>
-                {
-                    Dodge, ZemerCounter
-                };
-                Action curr = lst[_rand.Next(0, lst.Count)];
-                while (_repeats[curr] >= _maxRepeats[curr])
-                {
-                    lst.Remove(curr);
-                    curr = lst[_rand.Next(0, lst.Count)];
-                }
-
-                toDo.Add(curr);
-                dontRep.Add(curr);
-                Log("Added " + curr.Method.Name);
-            }
-
-            List<Action> attLst = new List<Action>
-            {
-                Dash, Attack1Base, Attack1Base, AerialAttack
+                [Dash] = 0,
+                [Attack1Base] = 0,
+                [AerialAttack] = 0,
             };
-            Action currAtt = attLst[_rand.Next(0, attLst.Count)];
-            while (_repeats[currAtt] >= _maxRepeats[currAtt])
-            {
-                attLst.Remove(currAtt);
-                currAtt = attLst[_rand.Next(0, attLst.Count)];
-            }
+            if (_countering) yield return (Countered());
 
-            toDo.Add(currAtt);
-            dontRep.Add(currAtt);
-            Log("Added " + currAtt.Method.Name);
-
-            if (currAtt == Attack1Base)
+            while (true)
             {
-                //REM
-                Action[] lst2 = {Dash, FancyAttack, AerialAttack, null};
-                currAtt = lst2[_rand.Next(0, lst2.Length)];
-                if (currAtt != null)
+                Log("[Waiting to start calculation]");
+                //yield return new WaitForSeconds(IdleDelay);
+                float xDisp = (transform.position.x < 75f) ? 8f : -8f;
+                yield return Walk(xDisp);
+                Log("[Setting Attacks]");
+                Vector2 posZem = transform.position;
+                Vector2 posH = _target.transform.position;
+
+                //If the player is close
+                if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
                 {
-                    toDo.Add(currAtt);
-                    Log("Added " + currAtt.Method.Name);
+                    yield return SpinAttack();
+                }
+                else if (FastApproximately(posZem.x, posH.x, 5f))
+                {
+                    int r = _rand.Next(0, 3);
+                    if (r == 0 && counterCount < 2)
+                    {
+                        counterCount++;
+                        Log("Doing Counter");
+                        ZemerCounter();
+                        _countering = true;
+                        yield return new WaitWhile(() => _countering);
+                        Log("Done Counter");
+                    }
+                    else if (r == 1)
+                    {
+                        Log("Doing Dodge");
+                        counterCount = 0;
+                        yield return Dodge();
+                        Log("Done Dodge");
+                    }
+                    else
+                    {
+                        counterCount = 0;
+                    }
                 }
 
-                if (currAtt == FancyAttack && _rand.Next(0, 3) == 0)
-                {
-                    toDo.Add(Dodge);
-                    toDo.Add(currAtt);
-                    toDo.Add(Dodge);
-                    Log("Added " + currAtt.Method.Name);
-                }
-            }
-
-            Log("[Done Setting Attacks]");
-            foreach (Action act in _moves)
-            {
-                if (dontRep.Contains(act)) _repeats[act]++;
-                else _repeats[act] = 0;
-            }
-
-            foreach (Action act in toDo)
-            {
-                Log("Doing [" + act.Method.Name + "]");
-                _attacking = true;
-                act();
-                yield return new WaitWhile(() => _attacking);
-                Log("Done [" + act.Method.Name + "]");
                 yield return null;
-            }
+                
+                List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
+                {
+                    Dash, Attack1Base, Attack1Base, AerialAttack
+                };
+                Func<IEnumerator> currAtt = attLst[_rand.Next(0, attLst.Count)];
+                while (rep[currAtt] > 2)
+                {
+                    attLst.Remove(currAtt);
+                    rep[currAtt] = 0;
+                    currAtt = attLst[_rand.Next(0, attLst.Count)];
+                }
 
-            _anim.Play("ZIdle");
-            Log("[Restarting Calculations]");
-            yield return new WaitForEndOfFrame();
-            StartCoroutine(Attacks());
+                Log("Doing " + currAtt.Method.Name);
+                rep[currAtt]++;
+                yield return currAtt();
+                Log("Done " + currAtt.Method.Name);
+                
+                yield return null;
+                
+                if (currAtt == Attack1Base)
+                {
+                    //REM
+                    Func<IEnumerator>[] lst2 = {Dash, FancyAttack, null};
+                    currAtt = lst2[_rand.Next(0, lst2.Length)];
+                    if (currAtt != null)
+                    { 
+                        Log("Doing " + currAtt.Method.Name);
+                        yield return currAtt();
+                        Log("Done " + currAtt.Method.Name);
+                    }
+
+                    if (currAtt == FancyAttack && _rand.Next(0, 3) == 0)
+                    {
+                        Log("Doing Special Fancy Attack");
+                        yield return Dodge();
+                        yield return FancyAttack();
+                        yield return Dodge();
+                        Log("Done Special Fancy Attack");
+                    }
+                }
+                
+                yield return null;
+                
+                Log("[Done Doing Attacks]");
+
+                _anim.Play("ZIdle");
+                Log("[Restarting Calculations]");
+                yield return new WaitForEndOfFrame();
+            }
         }
 
-        private void AerialAttack()
+        private IEnumerator AerialAttack()
         {
             IEnumerator Attack()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float xVel = FaceHero() * -1f;
@@ -292,17 +295,15 @@ namespace FiveKnights
                 _rb.isKinematic = true;
                 transform.position = new Vector2(transform.position.x, GroundY);
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _attacking = false;
             }
 
-            StartCoroutine(Attack());
+            yield return Attack();
         }
 
-        private void Walk(float displacement)
+        private IEnumerator Walk(float displacement)
         {
             IEnumerator Walk()
             {
-                Log("SPDDD " + _anim.speed);
                 float xPos = transform.position.x;
                 float hPosX = _target.transform.position.x;
                 int signX = (int) Mathf.Sign(displacement);
@@ -325,21 +326,15 @@ namespace FiveKnights
                 _anim.speed = 1f;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Walk());
+            yield return Walk();
         }
 
-        private void Turn()
+        private IEnumerator Turn()
         {
-            IEnumerator Turn()
-            {
-                _anim.Play("ZTurn");
-                yield return new WaitForSeconds(TurnDelay);
-            }
-
-            StartCoroutine(Turn());
+            _anim.Play("ZTurn");
+            yield return new WaitForSeconds(TurnDelay);
         }
 
         //Stolen from Jngo
@@ -351,8 +346,7 @@ namespace FiveKnights
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 dir = FaceHero() * -1f;
@@ -372,7 +366,6 @@ namespace FiveKnights
                 PlayAudioClip("Counter");
                 StartCoroutine(FlashWhite());
 
-
                 Vector2 fxPos = transform.position + Vector3.right * (1.7f * dir) + Vector3.up * 0.8f;
                 Quaternion fxRot = Quaternion.Euler(0, 0, dir * 80f);
                 GameObject counterFx = Instantiate(FiveKnights.preloadedGO["CounterFX"], fxPos, fxRot);
@@ -388,21 +381,19 @@ namespace FiveKnights
                 On.HealthManager.Hit -= OnBlockedHit;
                 _anim.Play("ZCCancel");
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _attacking = false;
+                _countering = false;
             }
 
-            Log("DO1");
             _counterRoutine = StartCoroutine(CounterAntic());
         }
 
-        private void FancyAttack()
+        private IEnumerator FancyAttack()
         {
-            IEnumerator FancyAttack()
+            IEnumerator Attack()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float dir = FaceHero();
@@ -421,7 +412,6 @@ namespace FiveKnights
                 SpawnPillar(dir);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
             void SpawnPillar(float dir)
@@ -439,7 +429,8 @@ namespace FiveKnights
                 slam.transform.localScale = new Vector3(-dir, 1f, 1f);
             }
 
-            StartCoroutine(FancyAttack());
+            yield return Attack();
+
         }
 
         // Put these IEnumerators outside so that they can be started in OnBlockedHit
@@ -454,10 +445,10 @@ namespace FiveKnights
 
             _anim.Play("ZIdle");
             yield return new WaitForSeconds(0.25f);
-            _attacking = false;
+            _countering = false;
         }
 
-        private void Attack1Complete()
+        private IEnumerator Attack1Complete()
         {
             IEnumerator Attack1Complete()
             {
@@ -474,20 +465,18 @@ namespace FiveKnights
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Attack1Complete());
+            yield return Attack1Complete();
         }
 
-        private void Attack1Base()
+        private IEnumerator Attack1Base()
         {
             IEnumerator Attack1Base()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float xVel = FaceHero() * -1f;
@@ -506,20 +495,18 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _attacking = false;
             }
 
-            StartCoroutine(Attack1Base());
+            yield return Attack1Base();
         }
 
-        private void Dash()
+        private IEnumerator Dash()
         {
             IEnumerator Dash()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float dir = FaceHero();
@@ -542,7 +529,7 @@ namespace FiveKnights
                 PlayAudioClip("AudDashIntro");
                 if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
                 {
-                    StartCoroutine(StrikeAlternate());
+                    yield return StrikeAlternate();
                     transform.position = new Vector3(transform.position.x, GroundY);
                     yield break;
                 }
@@ -555,37 +542,33 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
                 transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
-                _attacking = false;
             }
 
             IEnumerator StrikeAlternate()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
-                float dir = FaceHero();
+                FaceHero();
                 _anim.Play("DashCounter");
                 PlayAudioClip("Slash", 0.85f, 1.15f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Dash());
+            yield return Dash();
         }
 
-        private void Dodge()
+        private IEnumerator Dodge()
         {
             IEnumerator Dodge()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float xVel = FaceHero() * -1f;
@@ -597,20 +580,18 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _rb.velocity = new Vector2(0f, 0f);
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Dodge());
+            yield return Dodge();
         }
 
-        private void SpinAttack()
+        private IEnumerator SpinAttack()
         {
             IEnumerator SpinAttack()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
 
                 float xVel = FaceHero() * -1f;
@@ -643,10 +624,9 @@ namespace FiveKnights
                 transform.position = new Vector3(transform.position.x, GroundY);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(SpinAttack());
+            yield return SpinAttack();
         }
 
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
@@ -692,12 +672,11 @@ namespace FiveKnights
                 {
                     StopCoroutine(nameof(Start));
                     _rb.velocity = new Vector2(0f, 0f);
-                    _attacking = true;
                     doingIntro = false;
                     _bc.enabled = true;
                     _anim.enabled = true;
                     _anim.speed = 1f;
-                    StartCoroutine(Countered());
+                    _countering = true;
                     StartCoroutine(Attacks());
                 }
 
@@ -713,7 +692,7 @@ namespace FiveKnights
                     {
                         Destroy(extraNail);
                     }
-                    
+                    StopCoroutine(nameof(Attacks));
                     OnDestroy();
                     gameObject.AddComponent<ZemerControllerP2>().DoPhase =
                         CustomWP.boss == CustomWP.Boss.Zemer;
@@ -824,42 +803,6 @@ namespace FiveKnights
                 MaxPitch = 1f,
                 MinPitch = 1f,
                 Spawn = gameObject
-            };
-
-            _moves = new List<Action>
-            {
-                ZemerCounter,
-                Attack1Base,
-                Attack1Complete,
-                Dash,
-                Dodge,
-                SpinAttack,
-                AerialAttack,
-                FancyAttack,
-            };
-
-            _repeats = new Dictionary<Action, int>
-            {
-                [ZemerCounter] = 0,
-                [Attack1Base] = 0,
-                [Attack1Complete] = 0,
-                [Dash] = 0,
-                [Dodge] = 0,
-                [SpinAttack] = 0,
-                [AerialAttack] = 0,
-                [FancyAttack] = 0
-            };
-
-            _maxRepeats = new Dictionary<Action, int>
-            {
-                [ZemerCounter] = 1,
-                [Attack1Base] = 2,
-                [Attack1Complete] = 2,
-                [Dash] = 2,
-                [Dodge] = 2,
-                [SpinAttack] = 2,
-                [AerialAttack] = 2,
-                [FancyAttack] = 2
             };
         }
 
