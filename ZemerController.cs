@@ -80,15 +80,14 @@ namespace FiveKnights
                 Destroy(traitorSlam[i].GetComponent<AutoRecycleSelf>());
                 traitorSlam[i].transform.Find("slash_core").Find("hurtbox").GetComponent<DamageHero>().damageDealt = 1;
                 traitorSlam[i].SetActive(false);
-                Log("FOR SURE");
             }
         }
-
+        
         private IEnumerator Start()
         {
             Log("Start");
             GameCameras.instance.tk2dCam.ZoomFactor = 0.75f;
-            _hm.hp = CustomWP.boss == CustomWP.Boss.Zemer ? MaxHPV1 : MaxHPV2;
+            _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
             gameObject.transform.localScale *= 0.9f;
             gameObject.layer = 11;
@@ -113,14 +112,21 @@ namespace FiveKnights
             gameObject.transform.position = new Vector2(80f, GroundY);
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
+            yield return new WaitForSeconds(0.3f);
+            
             GameObject area = null;
             foreach (GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
 
-            yield return new WaitForSeconds(0.3f);
-            StartCoroutine(ChangeIntroText(Instantiate(area), "Zemer", "", "Mysterious", false));
+            string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
+            
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f, 
+                "","","",
+                "Ze'mer",title);
+            
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
             PlayAudioClip("ZAudBow");
@@ -251,7 +257,7 @@ namespace FiveKnights
                         Log("Doing Special Fancy Attack");
                         yield return Dodge();
                         yield return FancyAttack();
-                        yield return Dodge();
+                        yield return Dash();
                         Log("Done Special Fancy Attack");
                     }
                 }
@@ -399,7 +405,7 @@ namespace FiveKnights
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                PlayAudioClip("ZAudAtt" + _rand.Next(2,5));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -695,7 +701,7 @@ namespace FiveKnights
                     StopCoroutine(nameof(Attacks));
                     OnDestroy();
                     gameObject.AddComponent<ZemerControllerP2>().DoPhase =
-                        CustomWP.boss == CustomWP.Boss.Zemer;
+                        CustomWP.boss == CustomWP.Boss.Ze;
                     Destroy(this);
                 }
             }
@@ -734,28 +740,6 @@ namespace FiveKnights
             return sigZem == sigDiff;
         }
 
-        private IEnumerator ChangeIntroText(GameObject area, string mainTxt, string subTxt, string supTxt, bool right)
-        {
-            area.SetActive(true);
-            PlayMakerFSM fsm = area.LocateMyFSM("Area Title Control");
-            fsm.FsmVariables.FindFsmBool("Visited").Value = true;
-            fsm.FsmVariables.FindFsmBool("Display Right").Value = right;
-            yield return null;
-            GameObject parent = area.transform.Find("Title Small").gameObject;
-            GameObject main = parent.transform.Find("Title Small Main").gameObject;
-            GameObject super = parent.transform.Find("Title Small Super").gameObject;
-            GameObject sub = parent.transform.Find("Title Small Sub").gameObject;
-            main.GetComponent<TextMeshPro>().text = mainTxt;
-            super.GetComponent<TextMeshPro>().text = supTxt;
-            sub.GetComponent<TextMeshPro>().text = subTxt;
-            Vector3 pos = parent.transform.position;
-            parent.transform.position = new Vector3(pos.x, pos.y, -0.1f);
-            yield return new WaitForSeconds(10f);
-            if (area.name.Contains("Clone"))
-            {
-                Destroy(area);
-            }
-        }
 
         IEnumerator FlashWhite()
         {

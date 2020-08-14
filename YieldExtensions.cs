@@ -18,7 +18,7 @@ namespace FiveKnights
         {
             get
             {
-                _time -= Time.fixedDeltaTime;
+                _time -= Time.unscaledDeltaTime;
                 
                 return _pred() && _time > 0f;
             }

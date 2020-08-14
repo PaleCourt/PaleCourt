@@ -74,7 +74,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayWithActions(this Animator self, string anim, params (int frame, Action act)[] acts)
         {
-            self.Play(anim);
+            self.PlayAt(anim, 0);
 
             yield return null;
 

@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using Modding;
 
@@ -33,16 +34,10 @@ namespace FiveKnights
             {
                 HeroController.instance.Bounce();
             }
-            Log("Trying to end parry1");
-            StartCoroutine(DoNextFrame());
         }
 
-        IEnumerator DoNextFrame()
+        private void OnEnable()
         {
-            yield return null;
-            Log("Time");
-            yield return new WaitForSecondsRealtime(0.2f);
-            Log("Time2");
             ParryFlag = false;
         }
 

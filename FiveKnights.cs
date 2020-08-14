@@ -200,8 +200,8 @@ namespace FiveKnights
                 case "HEG_DESC": return "Something something...";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
-                case "ZEM_NAME": return "Mysterious Zemer";
-                case "ZEM2_NAME": return "Mystic Zemer";
+                case "ZEM_NAME": return "Mysterious Ze'mer";
+                case "ZEM2_NAME": return "Mystic Ze'mer";
                 case "ZEM_DESC": return "Grieving god of lands beyond.";
                 case "ZEM2_DESC": return "Strange god of a sacred land.";
                 case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";

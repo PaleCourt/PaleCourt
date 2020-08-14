@@ -190,8 +190,9 @@ namespace FiveKnights
                 bsc.DoDreamReturn();
                 Destroy(this);
             }
-            else if (CustomWP.boss == CustomWP.Boss.Zemer || CustomWP.boss == CustomWP.Boss.Mystic)
+            else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
+                Modding.Logger.Log("BOSS IS " + CustomWP.boss);
                 yield return null;
                 dd.SetActive(false);
                 GameObject.Find("Burrow Effect").SetActive(false);
@@ -204,7 +205,7 @@ namespace FiveKnights
                 if (CustomWP.Instance.wonLastFight)
                 {
                     int lev = CustomWP.Instance.lev + 1;
-                    if (CustomWP.boss == CustomWP.Boss.Zemer)
+                    if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
                         var box = (object) FiveKnights.Instance.Settings.CompletionZemer;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");

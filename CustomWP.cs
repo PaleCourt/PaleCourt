@@ -18,7 +18,7 @@ namespace FiveKnights
         public static CustomWP Instance;
         public bool wonLastFight;
         public int lev;
-        public enum Boss { Ogrim, Dryya, Isma, Hegemol, All, None, Mystic, Zemer };
+        public enum Boss { Ogrim, Dryya, Isma, Hegemol, All, None, Mystic, Ze };
 
         private void Start()
         {
@@ -43,7 +43,7 @@ namespace FiveKnights
                 {
                     info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
                 }
-                else if (boss == Boss.Zemer || boss == Boss.Mystic)
+                else if (boss == Boss.Ze || boss == Boss.Mystic)
                 {
                     info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
                 }
@@ -184,14 +184,14 @@ namespace FiveKnights
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
         {
-            string name = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
+            string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
             foreach (Boss b in Enum.GetValues(typeof(Boss)))
             {
-                if (name.Contains(b.ToString()))
+                if (title.Contains(b.ToString()))
                 {
                     boss = b;
                     if (b != Boss.Isma) break;
-                    if (b != Boss.Zemer) break;
+                    if (b != Boss.Ze) break;
                 }
             }
             lev = level;
