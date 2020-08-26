@@ -36,8 +36,8 @@ namespace FiveKnights
         private int traitorSlamIndex;
         private Coroutine _counterRoutine;
         private bool _blockedHit;
+        private const float DashDelay = 0.18f;
         private const float TurnDelay = 0.05f;
-        private const float IdleDelay = 0.4f;
         private bool _countering;
         private MusicPlayer _ap;
 
@@ -283,17 +283,17 @@ namespace FiveKnights
 
                 float xVel = FaceHero() * -1f;
                 transform.Find("BladeAerialShadow").gameObject.SetActive(false);
-                _anim.Play("ZAerial");
+                _anim.Play("ZAerial2");
                 PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 _rb.velocity = new Vector2(xVel * 38f, 15f);
                 _rb.gravityScale = 1.3f;
                 _rb.isKinematic = false;
                 yield return new WaitForSeconds(0.1f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
-                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 13);
                 PlayAudioClip("AudBigSlash2",0.85f,1.15f);
                 yield return new WaitWhile(() => transform.position.y > GroundY);
                 _rb.velocity = Vector2.zero;
@@ -524,9 +524,8 @@ namespace FiveKnights
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(DashDelay);
                 PlayAudioClip("ZAudHoriz");
-                yield return new WaitForSeconds(0.1f);
                 
                 _anim.enabled = true;
                 

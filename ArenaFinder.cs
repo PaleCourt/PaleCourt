@@ -212,9 +212,9 @@ namespace FiveKnights
         private void LoadHubBundles()
         {
             Log("Loading hub bundle");
-            AssetBundle ab3 = FiveKnights.assetbundles["hubasset1"];
-            ab3.LoadAllAssets();
-            FiveKnights.preloadedGO["hubfloor"] = ab3.LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
+            AssetBundle ab = FiveKnights.assetbundles["hubasset1"];
+            ab.LoadAllAssets();
+            FiveKnights.preloadedGO["hubfloor"] = ab.LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
             Log("Finished hub bundle");
             LoadIsmaBundle();
         }
@@ -324,15 +324,9 @@ namespace FiveKnights
             FiveKnights.preloadedGO["WaveShad"] = ab.LoadAsset<GameObject>("Shockwave");
             Shader shader = ab.LoadAsset<Shader>("WaveEffectShader");
             Texture tex = ab.LoadAsset<Texture>("sonar");
-            Log("Tex " + (tex == null));
-            Log("SHAD " + (shader == null));
             Materials["TestDist"] = new Material(shader);
-            Log("SHAD2 " + Materials["TestDist"].shader.name);
             Materials["TestDist"].SetTexture("_NoiseTex", tex);
-            Log("DIOSP " + Materials["TestDist"].GetFloat("_Intensity"));
             Materials["TestDist"].SetFloat("_Intensity", 0.2f);
-            Log("DIOSP " + Materials["TestDist"].GetFloat("_Intensity"));
-            Log("MAPG");
             FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = Materials["TestDist"];
 
 

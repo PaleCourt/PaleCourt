@@ -117,17 +117,17 @@ namespace FiveKnights
         
         public ZemerController CreateZemer()
         {
-            Log("Creating Zemer");
+            Log("Creating Zemer8");
             
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             _zemer.SetActive(true);
-            
+            Log("Creating Zemer7");
             foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
             {
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.layer = 22;
             }
-            
+            Log("Creating Zemer6");
             foreach (Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
             {
                 i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
@@ -138,18 +138,9 @@ namespace FiveKnights
                 i.Find("HB1").gameObject.layer = 22;
                 i.Find("HB2").gameObject.layer = 22;
             }
+            Log("Creating Zemer5");
             
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam3"].transform)
-            {
-                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
-                
-                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                
-                i.Find("HB1").gameObject.layer = 22;
-                i.Find("HB2").gameObject.layer = 22;
-            }
-            
+            Log("Creating Zemer4");
             foreach (SpriteRenderer i in _zemer.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
@@ -163,7 +154,7 @@ namespace FiveKnights
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 bc.gameObject.layer = 22;
             }
-            
+            Log("Creating Zemer3");
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             { 
                 i.isTrigger = true;
@@ -173,10 +164,10 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
                 
             }
-            
+            Log("Creating Zemer2");
             _zemer.GetComponent<SpriteRenderer>();
             var zc = _zemer.AddComponent<ZemerController>();
-            
+            Log("Creating Zemer1");
             Log("Done creating Zemer");
             
             return zc;

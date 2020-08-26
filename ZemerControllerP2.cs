@@ -41,6 +41,7 @@ namespace FiveKnights
 
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.38f;
+        private const float DashDelay = 0.18f;
         private const float MIDDLE = 75f;
 
         private const float SmallPillarSpd = 23.5f;
@@ -248,20 +249,20 @@ namespace FiveKnights
 
                 float xVel = FaceHero() * -1f;
 
-                _anim.Play("ZAerial");
+                _anim.Play("ZAerial2");
                 
                 PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                 
-                yield return _anim.WaitToFrame(4);
+                yield return _anim.WaitToFrame(8);
 
                 _rb.velocity = new Vector2(xVel * 35f, 18f);
                 _rb.gravityScale = 1.3f;
                 _rb.isKinematic = false;
 
                 yield return new WaitForSeconds(0.1f);
-                yield return _anim.WaitToFrame(7);
-                PlayAudioClip("AudBigSlash2",_ap,0.85f,1.15f);
                 yield return _anim.WaitToFrame(10);
+                PlayAudioClip("AudBigSlash2",_ap,0.85f,1.15f);
+                yield return _anim.WaitToFrame(13);
                 PlayAudioClip("AudBigSlash2",_ap,0.85f,1.15f);
                 yield return new WaitWhile(() => transform.position.y > GroundY);
 
@@ -302,6 +303,10 @@ namespace FiveKnights
                 float rot;
                 _anim.Play("ZThrow1");
                 PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
+                yield return _anim.WaitToFrame(2);
+                _anim.enabled = false;
+                yield return new WaitForSeconds(0.2f);
+                _anim.enabled = true;
                 yield return _anim.WaitToFrame(4);
                 hero = _target.transform.position;
                 zem = gameObject.transform.position;
@@ -608,8 +613,8 @@ namespace FiveKnights
 
                 _anim.speed = 1.5f;
                 
-                while ((xVel > 0 && transform.position.x < RightX - 6f) ||
-                       (xVel < 0 && transform.position.x > LeftX + 6f))
+                while ((xVel > 0 && transform.position.x < RightX - 10f) ||
+                       (xVel < 0 && transform.position.x > LeftX + 10f))
                 {
                     yield return _anim.PlayToEndWithActions("ZAtt1Loop",
                         (0, ()=>PlayAudioClip("Slash", _ap,0.85f, 1.15f))
@@ -722,9 +727,8 @@ namespace FiveKnights
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(DashDelay-0.8f);
                 PlayAudioClip("ZAudHoriz",_voice);
-                yield return new WaitForSeconds(0.1f);
                 
                 _anim.enabled = true;
                 
@@ -733,7 +737,8 @@ namespace FiveKnights
                 PlayAudioClip("AudDashIntro",_ap);
                 
                 yield return _anim.WaitToFrame(6);
-                
+
+                _anim.enabled = false;
                 _rb.velocity = new Vector2(-dir * 60f, 0f);
                 
                 PlayAudioClip("AudDash",_ap);
@@ -741,14 +746,15 @@ namespace FiveKnights
                 if (-dir > 0)
                 {
                     yield return new WaitWhile(() => 
-                        transform.GetPositionX() < RightX - 7f);
+                        transform.GetPositionX() < RightX - 12f);
                 }
                 else
                 {
                     yield return new WaitWhile(() => 
-                        transform.GetPositionX() > LeftX + 7f);
+                        transform.GetPositionX() > LeftX + 12f);
                 }
-                yield return _anim.WaitToFrame(9);
+                _anim.enabled = true;
+                yield return _anim.WaitToFrame(7);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
@@ -1164,9 +1170,8 @@ namespace FiveKnights
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(DashDelay);
                 PlayAudioClip("ZAudHoriz",_voice);
-                yield return new WaitForSeconds(0.1f);
                 
                 _anim.enabled = true;
                 
@@ -1616,6 +1621,7 @@ namespace FiveKnights
                 _rb.velocity = Vector2.zero;
                 PlayAudioClip("AudLand",_ap);
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                yield return new WaitForSeconds(0.25f);
                 yield return (LandSlide());
             }
 
@@ -1656,6 +1662,7 @@ namespace FiveKnights
                 transform.position = new Vector3(transform.position.x, GroundY);
                 _anim.Play("ZIdle");
                 FaceHero();
+                yield return new WaitForSeconds(0.3f);
             }
 
             yield return (KnockedOut());
