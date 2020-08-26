@@ -1,19 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
-using Modding;
 using ModCommon;
 using System.Collections;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using HutongGames.Utility;
 using ModCommon.Util;
 using System.Reflection;
 using TMPro;
-using UnityEngine.UI;
-using Object = UnityEngine.Object;
 
 namespace FiveKnights
 {
@@ -23,40 +17,35 @@ namespace FiveKnights
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
-        private AudioSource _aud;
         private GameObject _dd;
-        private bool flashing;
         private GameObject _dnailEff;
         private Animator _anim;
         private Rigidbody2D _rb;
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
-        private EnemyDeathEffectsUninfected _deathEff;
         private GameObject _target;
         private const float GroundY = 9.75f;
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
         private const int Phase2HP = 200;
-        private const int MaxHP = 1500+Phase2HP;
+        private const int MaxHPV2 = 500 + Phase2HP;
+        private const int MaxHPV1 = 1200;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
         private int traitorSlamIndex;
         private Coroutine _counterRoutine;
         private bool _blockedHit;
-        private bool atPhase2;
+        private const float DashDelay = 0.18f;
         private const float TurnDelay = 0.05f;
-        private bool _attacking;
-        private MyAudioPlayerOneShotSingle _ap;
-        private List<Action> _moves;
-        private Dictionary<Action, int> _maxRepeats;
-        private Dictionary<Action, int> _repeats;
-        
+        private bool _countering;
+        private MusicPlayer _ap;
+
         private readonly string[] _dnailDial =
         {
-            "ISMA_DREAM_1",
-            "ISMA_DREAM_2",
-            "ISMA_DREAM_3"
+            "ZEM_DREAM_1",
+            "ZEM_DREAM_2",
+            "ZEM_DREAM_3"
         };
 
         private void Awake()
@@ -72,7 +61,7 @@ namespace FiveKnights
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             _sr = GetComponent<SpriteRenderer>();
             _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
-            _aud = gameObject.AddComponent<AudioSource>();
+            gameObject.AddComponent<AudioSource>();
             gameObject.AddComponent<DamageHero>().damageDealt = 1;
             _dd = FiveKnights.preloadedGO["WD"];
             _dnailEff = _dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
@@ -91,61 +80,79 @@ namespace FiveKnights
                 Destroy(traitorSlam[i].GetComponent<AutoRecycleSelf>());
                 traitorSlam[i].transform.Find("slash_core").Find("hurtbox").GetComponent<DamageHero>().damageDealt = 1;
                 traitorSlam[i].SetActive(false);
-                Log("FOR SURE");
             }
         }
-
+        
         private IEnumerator Start()
         {
             Log("Start");
             GameCameras.instance.tk2dCam.ZoomFactor = 0.75f;
-            _hm.hp = MaxHP;
+            _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
             gameObject.transform.localScale *= 0.9f;
             gameObject.layer = 11;
-            yield return new WaitWhile(()=> !(_target = HeroController.instance.gameObject));
+            yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
             Destroy(GameObject.Find("Bounds Cage"));
             Destroy(GameObject.Find("World Edge v2"));
             if (!WDController.alone) StartCoroutine(SilLeave());
             else yield return new WaitForSeconds(1.7f);
+            StartCoroutine(MusicControl());
             gameObject.SetActive(true);
-            float x = 80f;
-            gameObject.transform.position = new Vector2(x,GroundY + 10f);
+            gameObject.transform.position = new Vector2(80f, GroundY + 0.5f);
             FaceHero();
             AssignFields();
             _bc.enabled = false;
+            _sr.enabled = false;
+            //Spring(true, gameObject.transform.position);
+            yield return new WaitForSeconds(0.2f);
             _anim.Play("ZIntro");
-            _rb.velocity = new Vector2(0f,-40f);
+            _sr.enabled = true;
             yield return null;
-            yield return new WaitWhile(() => transform.GetPositionY() > GroundY && _anim.GetCurrentFrame() < 2);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+            gameObject.transform.position = new Vector2(80f, GroundY);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
-            yield return new WaitWhile(()=> transform.GetPositionY() > GroundY);
-            _rb.velocity = Vector2.zero;
-            PlayAudioClip("AudLand");
-            GameCameras.instance.cameraShakeFSM.SendEvent("SmallShake");
-            transform.position = new Vector2(x, GroundY);
+            yield return new WaitForSeconds(0.3f);
+            
             GameObject area = null;
             foreach (GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
-            yield return new WaitForSeconds(0.1f);
-            StartCoroutine(ChangeIntroText(Instantiate(area), "Zemer", "", "Mysterious", false));
-            _bc.enabled = doingIntro = true;
+
+            string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
+            
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f, 
+                "","","",
+                "Ze'mer",title);
+            
             _anim.enabled = true;
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+            PlayAudioClip("ZAudBow");
+            doingIntro = _bc.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 12);
             _anim.enabled = false;
-            yield return new WaitForSeconds(0.8f);
+            yield return new WaitForSeconds(0.4f);
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.Play("ZWalk");
             _rb.velocity = new Vector2(7f, 0f);
-            yield return new WaitWhile(() => transform.GetPositionX() < RightX - 5f);
+            yield return new WaitWhile(() => transform.GetPositionX() < RightX - 15f);
             _rb.velocity = Vector2.zero;
             doingIntro = false;
             _anim.Play("ZIdle");
             StartCoroutine(Attacks());
             Log("Done Intro");
+        }
+
+        private IEnumerator MusicControl()
+        {
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Intro"], 1f);
+            yield return new WaitForSecondsRealtime(7.04f);
+            WDController.Instance.PlayMusic(null, 1f);
+            Log("Start p2");
+            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Loop"], 1f);
         }
 
         private void Update()
@@ -154,6 +161,7 @@ namespace FiveKnights
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
+
             if (transform.GetPositionX() < (LeftX + 1.3f) && _rb.velocity.x < 0f)
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
@@ -162,150 +170,194 @@ namespace FiveKnights
 
         private IEnumerator Attacks()
         {
-            Log("[Waiting to start calculation]");
-            yield return new WaitWhile(()=>_attacking);
-            yield return new WaitForSeconds(0.2f);
-            /*if (!IsFacingPlayer())
+            int counterCount = 0;
+            Dictionary<Func<IEnumerator>, int> rep = new Dictionary<Func<IEnumerator>, int>
             {
-                Turn();
-                yield return new WaitForSeconds(0.05f);
-                FaceHero();
-            }
-            _attacking = true;
-            if (transform.position.x < 75) Walk(5f);
-            else Walk(-5f);
-            yield return new WaitWhile(() => _attacking);*/
-            Log("[End of Wait]");
-            _attacking = true;
-            Log("[Setting Attacks]");
-            Vector2 posZem = transform.position;
-            Vector2 posH = _target.transform.position;
-            List<Action> toDo = new List<Action>();
-            
-            //if (!IsFacingPlayer()) toDo.Add(Turn);
+                [Dash] = 0,
+                [Attack1Base] = 0,
+                [AerialAttack] = 0,
+            };
+            if (_countering) yield return (Countered());
 
-            //If the player is close
-            if (FastApproximately(posZem.x, posH.x, 5f))
+            while (true)
             {
-                Action[] lst = {Dodge, Dodge, ZemerCounter, ZemerCounter, SpinAttack};
-                Action curr = lst[_rand.Next(0, lst.Length)];
-                while (_repeats[curr] >= _maxRepeats[curr])
+                Log("[Waiting to start calculation]");
+                //yield return new WaitForSeconds(IdleDelay);
+                float xDisp = (transform.position.x < 75f) ? 8f : -8f;
+                yield return Walk(xDisp);
+                Log("[Setting Attacks]");
+                Vector2 posZem = transform.position;
+                Vector2 posH = _target.transform.position;
+
+                //If the player is close
+                if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
                 {
-                    curr = lst[_rand.Next(0, lst.Length)];
+                    yield return SpinAttack();
                 }
-                toDo.Add(curr);
-                Log("Added " + curr.Method.Name);
-            }
-            
-            Action[] attLst = {Dash, Attack1Base, Attack1Base, SpinAttack, SpinAttack};
-            Action currAtt = attLst[_rand.Next(0, attLst.Length)];
-            while (_repeats[currAtt] >= _maxRepeats[currAtt])
-            {
-                currAtt = attLst[_rand.Next(0, attLst.Length)];
-            }
-            toDo.Add(currAtt);
-            Log("Added " + currAtt.Method.Name);
-            
-            if (currAtt == Attack1Base)
-            {
-                Action[] lst2 = {Dash, Dash, Attack1Complete, FancyAttack, FancyAttack, FancyAttack, null};
-                currAtt = lst2[_rand.Next(0, lst2.Length)];
-                if (!PlayerData.instance.canShadowDash) currAtt = FancyAttack;
-                if (currAtt != null)
+                else if (FastApproximately(posZem.x, posH.x, 5f))
                 {
-                    toDo.Add(currAtt);
-                    Log("Added " + currAtt.Method.Name);
+                    int r = _rand.Next(0, 3);
+                    if (r == 0 && counterCount < 2)
+                    {
+                        counterCount++;
+                        Log("Doing Counter");
+                        ZemerCounter();
+                        _countering = true;
+                        yield return new WaitWhile(() => _countering);
+                        Log("Done Counter");
+                    }
+                    else if (r == 1)
+                    {
+                        Log("Doing Dodge");
+                        counterCount = 0;
+                        yield return Dodge();
+                        Log("Done Dodge");
+                    }
+                    else
+                    {
+                        counterCount = 0;
+                    }
                 }
 
-                if (currAtt == FancyAttack && _rand.Next(0, 3) == 0)
-                {
-                    toDo.Add(Dodge);
-                    toDo.Add(currAtt);
-                    toDo.Add(Dash);
-                    Log("Added " + currAtt.Method.Name);
-                }
-            }
-            else if (currAtt == Dash)
-            {
-                Action[] lst2 = {null, null, Dash, ZemerCounter};
-                currAtt = lst2[_rand.Next(0, lst2.Length)];
-                if (currAtt != null)
-                {
-                    toDo.Add(currAtt);
-                    Log("Added " + currAtt.Method.Name);
-                }
-            }
-            
-            Log("[Done Setting Attacks]");
-            foreach (Action act in _moves)
-            {
-                if (toDo.Contains(act)) _repeats[act]++;
-                else _repeats[act] = 0;
-            }
-
-            Action prev = null;
-            foreach (Action act in toDo)
-            {
-                Log("Doing [" + act.Method.Name + "]");
-                if (prev != null) _repeats[prev] = 0;
-                _attacking = true;
-                act.Invoke();
-                yield return new WaitWhile(() => _attacking);
-                Log("Done [" + act.Method.Name + "]");
-                prev = act;
                 yield return null;
-            }
+                
+                List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
+                {
+                    Dash, Attack1Base, Attack1Base, AerialAttack
+                };
+                Func<IEnumerator> currAtt = attLst[_rand.Next(0, attLst.Count)];
+                while (rep[currAtt] > 2)
+                {
+                    attLst.Remove(currAtt);
+                    rep[currAtt] = 0;
+                    currAtt = attLst[_rand.Next(0, attLst.Count)];
+                }
 
-            Log("[Restarting Calculations]");
-            yield return new WaitForEndOfFrame();
-            StartCoroutine(Attacks());
+                Log("Doing " + currAtt.Method.Name);
+                rep[currAtt]++;
+                yield return currAtt();
+                Log("Done " + currAtt.Method.Name);
+                
+                yield return null;
+                
+                if (currAtt == Attack1Base)
+                {
+                    //REM
+                    Func<IEnumerator>[] lst2 = {Dash, FancyAttack, null};
+                    currAtt = lst2[_rand.Next(0, lst2.Length)];
+                    if (currAtt != null)
+                    { 
+                        Log("Doing " + currAtt.Method.Name);
+                        yield return currAtt();
+                        Log("Done " + currAtt.Method.Name);
+                    }
+
+                    if (currAtt == FancyAttack && _rand.Next(0, 3) == 0)
+                    {
+                        Log("Doing Special Fancy Attack");
+                        yield return Dodge();
+                        yield return FancyAttack();
+                        yield return Dash();
+                        Log("Done Special Fancy Attack");
+                    }
+                }
+                
+                yield return null;
+                
+                Log("[Done Doing Attacks]");
+
+                _anim.Play("ZIdle");
+                Log("[Restarting Calculations]");
+                yield return new WaitForEndOfFrame();
+            }
         }
 
-        private void Walk(float displacement)
+        private IEnumerator AerialAttack()
+        {
+            IEnumerator Attack()
+            {
+                if (!IsFacingPlayer())
+                {
+                    yield return Turn();
+                }
+
+                float xVel = FaceHero() * -1f;
+                transform.Find("BladeAerialShadow").gameObject.SetActive(false);
+                _anim.Play("ZAerial2");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                yield return null;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
+                _rb.velocity = new Vector2(xVel * 38f, 15f);
+                _rb.gravityScale = 1.3f;
+                _rb.isKinematic = false;
+                yield return new WaitForSeconds(0.1f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 13);
+                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                yield return new WaitWhile(() => transform.position.y > GroundY);
+                _rb.velocity = Vector2.zero;
+                _rb.gravityScale = 0f;
+                _rb.isKinematic = true;
+                transform.position = new Vector2(transform.position.x, GroundY);
+                yield return new WaitWhile(() => _anim.IsPlaying());
+            }
+
+            yield return Attack();
+        }
+
+        private IEnumerator Walk(float displacement)
         {
             IEnumerator Walk()
             {
                 float xPos = transform.position.x;
-                string animName = (displacement < 0) ? "ZWalk" : "ZWalkLeft";
-                
+                float hPosX = _target.transform.position.x;
+                int signX = (int) Mathf.Sign(displacement);
+                int diffSig = (int) Mathf.Sign(hPosX - xPos);
+                string animName = (diffSig != signX) ? "ZWalkRight" : "ZWalkLeft";
+                Vector3 pScale = gameObject.transform.localScale;
+                float xScl = Mathf.Abs(pScale.x) * signX;
+                xScl = (animName == "ZWalkRight") ? xScl : -xScl;
+                gameObject.transform.localScale = new Vector3(xScl, pScale.y, 1f);
+                _anim.speed = 1.38f;
                 _anim.Play(animName);
                 yield return null;
-                _rb.velocity = new Vector2(Mathf.Sign(displacement) * 7f, 0f);
-                yield return new WaitWhile(() =>
-                    !FastApproximately(_rb.velocity.x, 0f, 0.1f) &&
-                    !FastApproximately(xPos + displacement, transform.position.x, 0.1f));
+                _rb.velocity = new Vector2(signX * 7f, 0f);
+                yield return new WaitWhile
+                (
+                    () => 
+                        !_rb.velocity.x.Within(0f,0.05f) && 
+                        !(xPos+displacement).Within(transform.GetPositionX(),0.15f)
+                );
+                _anim.speed = 1f;
                 _rb.velocity = Vector2.zero;
                 _anim.Play("ZIdle");
-                yield return new WaitForSeconds(0.5f);
-                _attacking = false;
             }
 
-            StartCoroutine(Walk());
+            yield return Walk();
         }
-        
-        private void Turn()
+
+        private IEnumerator Turn()
         {
-            IEnumerator Turn()
-            {
-                _anim.Play("ZTurn");
-                yield return new WaitForSeconds(TurnDelay);
-            }
-            StartCoroutine(Turn());
+            _anim.Play("ZTurn");
+            yield return new WaitForSeconds(TurnDelay);
         }
 
         //Stolen from Jngo
         private void ZemerCounter()
         {
             float dir = 0f;
+
             IEnumerator CounterAntic()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 dir = FaceHero() * -1f;
                 _anim.Play("ZCInit");
+                PlayAudioClip("ZAudCounter");
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
                 _counterRoutine = StartCoroutine(Countering());
@@ -319,7 +371,6 @@ namespace FiveKnights
                 On.HealthManager.Hit += OnBlockedHit;
                 PlayAudioClip("Counter");
                 StartCoroutine(FlashWhite());
-
 
                 Vector2 fxPos = transform.position + Vector3.right * (1.7f * dir) + Vector3.up * 0.8f;
                 Quaternion fxRot = Quaternion.Euler(0, 0, dir * 80f);
@@ -335,25 +386,26 @@ namespace FiveKnights
                 _hm.IsInvincible = false;
                 On.HealthManager.Hit -= OnBlockedHit;
                 _anim.Play("ZCCancel");
-                yield return new WaitWhile(()=>_anim.IsPlaying());
-                _attacking = false;
+                yield return new WaitWhile(() => _anim.IsPlaying());
+                _countering = false;
             }
-            Log("DO1");
+
             _counterRoutine = StartCoroutine(CounterAntic());
         }
 
-        private void FancyAttack()
+        private IEnumerator FancyAttack()
         {
-            IEnumerator FancyAttack()
+            IEnumerator Attack()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 float dir = FaceHero();
-                
+
                 _anim.Play("ZAtt2");
+                PlayAudioClip("ZAudAtt" + _rand.Next(2,5));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -362,10 +414,10 @@ namespace FiveKnights
                 PlayAudioClip("AudBigSlash2");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
                 dir = FaceHero();
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 SpawnPillar(dir);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
             void SpawnPillar(float dir)
@@ -374,38 +426,40 @@ namespace FiveKnights
                 Animator anim = slam.transform.Find("slash_core").GetComponent<Animator>();
                 slam.SetActive(true);
                 anim.enabled = true;
-                anim.Play("mega_mantis_slash_big",-1,0f);
+                anim.Play("mega_mantis_slash_big", -1, 0f);
                 PlayAudioClip("TraitorPillar");
                 Rigidbody2D rb = slam.GetComponent<Rigidbody2D>();
-                rb.velocity = new Vector2(-dir * 15f,0f);
+                rb.velocity = new Vector2(-dir * 15f, 0f);
                 Vector3 pos = transform.position;
-                slam.transform.position = new Vector3(-dir*2.15f + pos.x, GroundY - 3.2f, 6.4f);
+                slam.transform.position = new Vector3(-dir * 4.4f + pos.x, GroundY - 3.2f, 6.4f);
                 slam.transform.localScale = new Vector3(-dir, 1f, 1f);
             }
 
-            StartCoroutine(FancyAttack());
+            yield return Attack();
+
         }
-        
+
         // Put these IEnumerators outside so that they can be started in OnBlockedHit
         private IEnumerator Countered()
         {
             _anim.Play("ZCAtt");
             _hm.IsInvincible = false;
             On.HealthManager.Hit -= OnBlockedHit;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame()<15);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
             PlayAudioClip("Slash", 0.85f, 1.15f);
             yield return new WaitWhile(() => _anim.IsPlaying());
-            
+
             _anim.Play("ZIdle");
-            yield return new WaitForSeconds(0.4f);
-            _attacking = false;
+            yield return new WaitForSeconds(0.25f);
+            _countering = false;
         }
 
-        private void Attack1Complete()
+        private IEnumerator Attack1Complete()
         {
             IEnumerator Attack1Complete()
             {
                 _anim.Play("ZAtt1");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 float xVel = FaceHero() * -1;
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.1f);
@@ -417,23 +471,23 @@ namespace FiveKnights
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Attack1Complete());
+            yield return Attack1Complete();
         }
-        
-        private void Attack1Base()
+
+        private IEnumerator Attack1Base()
         {
             IEnumerator Attack1Base()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 float xVel = FaceHero() * -1f;
                 _anim.Play("ZAtt1Base");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
@@ -447,163 +501,145 @@ namespace FiveKnights
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            IEnumerator SpawnKiBlast(float dir)
-            {
-                Transform orig = transform.Find("KiBlast"); 
-                GameObject ki = Instantiate(orig.gameObject);
-                Animator anim = ki.GetComponent<Animator>();
-                Rigidbody2D rb = ki.GetComponent<Rigidbody2D>();
-                ki.SetActive(true);
-                ki.transform.position = orig.position - new Vector3(0f,0.1f,0f);
-                ki.transform.localScale = new Vector3(dir * 1.5f, 1.6f, 0);
-                anim.Play("KiAnim"); 
-                rb.velocity = new Vector2(-70 * dir, 0f);
-                yield return null;
-                anim.enabled = false;
-                yield return new WaitForSeconds(0.16f);
-                anim.enabled = true;
-                yield return new WaitWhile(() => anim.IsPlaying());
-                Destroy(ki);
-            }
-            
-            StartCoroutine(Attack1Base());
+            yield return Attack1Base();
         }
 
-        private void Dash()
+        private IEnumerator Dash()
         {
             IEnumerator Dash()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 float dir = FaceHero();
-                transform.Find("HyperCut").Find("Hyper1").GetComponent<SpriteRenderer>().enabled = false;
-                transform.Find("HyperCut").Find("Hyper2").GetComponent<SpriteRenderer>().enabled = false;
-                
+                transform.Find("HyperCut").gameObject.SetActive(false);
+
                 _anim.Play("ZDash");
-                transform.position = new Vector3(transform.position.x, GroundY - 0.3f, transform.position.z);
-                yield return null;
-                yield return new WaitWhile(()=> _anim.GetCurrentFrame() < 5);
+                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+                yield return _anim.WaitToFrame(4);
+                
+                _anim.enabled = false;
+                
+                yield return new WaitForSeconds(DashDelay);
+                PlayAudioClip("ZAudHoriz");
+                
+                _anim.enabled = true;
+                
+                yield return _anim.WaitToFrame(5);
+    
                 PlayAudioClip("AudDashIntro");
                 if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
                 {
-                    StartCoroutine(StrikeAlternate());
+                    yield return StrikeAlternate();
+                    transform.position = new Vector3(transform.position.x, GroundY);
                     yield break;
                 }
-                yield return new WaitWhile(()=> _anim.GetCurrentFrame() < 6);
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 PlayAudioClip("AudDash");
                 _rb.velocity = new Vector2(-dir * 60f, 0f);
-                yield return new WaitWhile(()=> _anim.GetCurrentFrame() < 9);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 _rb.velocity = Vector2.zero;
-                yield return new WaitWhile(()=> _anim.IsPlaying());
+                yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
                 transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
-                _attacking = false;
             }
 
             IEnumerator StrikeAlternate()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
-                float dir = FaceHero();
+
+                FaceHero();
                 _anim.Play("DashCounter");
                 PlayAudioClip("Slash", 0.85f, 1.15f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Dash());
+            yield return Dash();
         }
 
-        private void Dodge()
+        private IEnumerator Dodge()
         {
             IEnumerator Dodge()
             {
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge");
-                _rb.velocity = new Vector2(-xVel * 40f,0f);
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _rb.velocity = new Vector2(0f, 0f);
                 _anim.Play("ZIdle");
-                _attacking = false;
             }
 
-            StartCoroutine(Dodge());
+            yield return Dodge();
         }
 
-        private void SpinAttack()
+        private IEnumerator SpinAttack()
         {
             IEnumerator SpinAttack()
             {
-                const float time = 0.385f;
                 if (!IsFacingPlayer())
                 {
-                    Turn();
-                    yield return new WaitForSeconds(TurnDelay);
+                    yield return Turn();
                 }
+
                 float xVel = FaceHero() * -1f;
-                float diffX = _target.transform.GetPositionX() - transform.GetPositionX();
-                if (diffX > 11f)
-                {
-                    _attacking = false;
-                    yield break;
-                }
-                Vector2 vel = new Vector2(diffX / time, 31f);
-                if (IsPlayAboveHead())
-                {
-                    vel = new Vector2(xVel * 15f, 35f);
-                }
+                float diffX = Mathf.Abs(_target.transform.GetPositionX() - transform.GetPositionX());
+                float diffY = Mathf.Abs(_target.transform.GetPositionY() - transform.GetPositionY());
+                float rot = Mathf.Atan(diffY / diffX);
+                rot = (xVel < 0) ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                _anim.enabled = false;
-                yield return new WaitForSeconds(0.25f);
-                _anim.enabled = true;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 PlayAudioClip("AudDashIntro");
-                _rb.velocity = vel;
-                _rb.gravityScale = 1.5f;
-                _rb.isKinematic = false;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                _rb.velocity = new Vector2(60f * Mathf.Cos(rot), 60f * Mathf.Sin(rot));
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                _anim.enabled = false;
+                yield return new WaitWhile(() => transform.position.x > LeftX + 4f && transform.position.x < RightX - 4f);
+                _anim.enabled = true;
+                _rb.velocity = Vector2.zero;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 PlayAudioClip("AudBigSlash2");
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 12);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
+                _rb.isKinematic = false;
+                _rb.gravityScale = 1.5f;
                 yield return new WaitWhile(() => transform.position.y > GroundY);
                 PlayAudioClip("AudLand");
                 _rb.velocity = Vector2.zero;
                 _rb.gravityScale = 0f;
+                _rb.isKinematic = true;
                 transform.position = new Vector3(transform.position.x, GroundY);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
-                FaceHero();
-                _attacking = false;
             }
 
-            StartCoroutine(SpinAttack());
+            yield return SpinAttack();
         }
 
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.name.Contains("Zemer"))
             {
-                StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                
                 // Prevent code block from running every frame
                 if (!_blockedHit)
                 {
@@ -617,7 +653,7 @@ namespace FiveKnights
 
             orig(self, hitInstance);
         }
-        
+
 
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
@@ -627,6 +663,7 @@ namespace FiveKnights
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
                 _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
             }
+
             orig(self);
         }
 
@@ -635,53 +672,59 @@ namespace FiveKnights
             if (self.name.Contains("Zemer"))
             {
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
+
                 if (doingIntro)
                 {
-                    StopCoroutine("Start");
-                    _rb.velocity = new Vector2(0f,0f);
-                    _attacking = true;
+                    StopCoroutine(nameof(Start));
+                    _rb.velocity = new Vector2(0f, 0f);
                     doingIntro = false;
                     _bc.enabled = true;
                     _anim.enabled = true;
-                    ZemerCounter();
+                    _anim.speed = 1f;
+                    _countering = true;
                     StartCoroutine(Attacks());
                 }
-                if (!atPhase2 && _hm.hp <= Phase2HP)
+
+                if (_hm.hp <= Phase2HP)
                 {
                     Log("Going to phase 2");
                     _bc.enabled = false;
+                    
+                    WDController.Instance.PlayMusic(null, 1f);
+                    
                     GameObject extraNail = GameObject.Find("ZNailB");
                     if (extraNail != null && extraNail.transform.parent == null)
                     {
                         Destroy(extraNail);
                     }
+                    StopCoroutine(nameof(Attacks));
                     OnDestroy();
-                    gameObject.AddComponent<ZemerControllerP2>().shouldNotDoPhase2 =
-                        CustomWP.boss == CustomWP.Boss.Zemer;
+                    gameObject.AddComponent<ZemerControllerP2>().DoPhase =
+                        CustomWP.boss == CustomWP.Boss.Ze;
                     Destroy(this);
                 }
             }
+
             orig(self, hitInstance);
         }
-        
+
         private IEnumerator SilLeave()
         {
             SpriteRenderer sil = GameObject.Find("Silhouette Zemer").GetComponent<SpriteRenderer>();
             sil.transform.localScale *= 1.15f;
             sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 10f);
             sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_1"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_2"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
             yield return new WaitForSeconds(0.05f);
-            sil.sprite = ArenaFinder.sprites["Zem_Sil_3"];
+            sil.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
             yield return new WaitForSeconds(0.05f);
             sil.gameObject.SetActive(false);
         }
 
         private float FaceHero(bool shouldRev = false)
         {
-            float currSign = Mathf.Sign(transform.GetScaleX());
             float heroSignX = Mathf.Sign(gameObject.transform.GetPositionX() - _target.transform.GetPositionX());
             heroSignX = shouldRev ? -1 * heroSignX : heroSignX;
             Vector3 pScale = gameObject.transform.localScale;
@@ -696,45 +739,7 @@ namespace FiveKnights
             return sigZem == sigDiff;
         }
 
-        private IEnumerator ChangeIntroText(GameObject area, string mainTxt, string subTxt, string supTxt, bool right)
-        {
-            area.SetActive(true);
-            PlayMakerFSM fsm = area.LocateMyFSM("Area Title Control");
-            fsm.FsmVariables.FindFsmBool("Visited").Value = true;
-            fsm.FsmVariables.FindFsmBool("Display Right").Value = right;
-            yield return null;
-            GameObject parent = area.transform.Find("Title Small").gameObject;
-            GameObject main = parent.transform.Find("Title Small Main").gameObject;
-            GameObject super = parent.transform.Find("Title Small Super").gameObject;
-            GameObject sub = parent.transform.Find("Title Small Sub").gameObject;
-            main.GetComponent<TextMeshPro>().text = mainTxt;
-            super.GetComponent<TextMeshPro>().text = supTxt;
-            sub.GetComponent<TextMeshPro>().text = subTxt;
-            Vector3 pos = parent.transform.position;
-            parent.transform.position = new Vector3(pos.x, pos.y, -0.1f);
-            yield return new WaitForSeconds(10f);
-            if (area.name.Contains("Clone"))
-            {
-                Destroy(area);
-            }
-        }
-        
-        private Vector3 Product(Vector3 a, Vector3 b)
-        {
-            return new Vector3(a.x * b.x, a.y*b.y, a.z * b.z);
-        }
-        
-        private void Spring(bool isIn, Vector2 pos)
-        {
-            string n =  "VapeIn2";
-            GameObject go = Instantiate(FiveKnights.preloadedGO[n]);
-            PlayMakerFSM fsm = go.LocateMyFSM("FSM");
-            go.transform.localScale *= 1.3f;
-            fsm.GetAction<Wait>("State 1", 0).time = 0f;
-            go.transform.position = pos;
-            go.SetActive(true);
-        }
-        
+
         IEnumerator FlashWhite()
         {
             _sr.material.SetFloat("_FlashAmount", 1f);
@@ -744,160 +749,81 @@ namespace FiveKnights
                 _sr.material.SetFloat("_FlashAmount", i);
                 yield return new WaitForSeconds(0.02f);
             }
-            yield return null;
-            flashing = false;
-        }
 
-        private bool IsPlayAboveHead()
-        {
-            return FastApproximately(transform.position.x, _target.transform.GetPositionX(), 1.2f);
+            yield return null;
         }
 
         private void AssignFields()
         {
             HealthManager hornHP = _dd.GetComponent<HealthManager>();
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                .Where(x => x.Name.Contains("Prefab")))
+                                                          .Where(x => x.Name.Contains("Prefab")))
             {
                 fi.SetValue(_hm, fi.GetValue(hornHP));
             }
 
             EnemyHitEffectsUninfected ogrimHitEffects = _dd.GetComponent<EnemyHitEffectsUninfected>();
-            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
+
+            foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields())
             {
                 if (fi.Name.Contains("Origin"))
                 {
                     _hitEffects.effectOrigin = new Vector3(0f, 0.5f, 0f);
                     continue;
                 }
+
                 fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
-            
+
             PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
             GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
             GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _ap = new MyAudioPlayerOneShotSingle
+            _ap = new MusicPlayer
             {
-                volume = 1f,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                spawnPoint = HeroController.instance.gameObject
-            };
-            
-            _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            
-            _moves = new List<Action>
-            {
-                ZemerCounter,
-                Attack1Base,
-                Attack1Complete,
-                Dash,
-                Dodge,
-                SpinAttack,
-                FancyAttack,
-            };
-
-            _repeats = new Dictionary<Action, int>
-            {
-                [ZemerCounter] = 0,
-                [Attack1Base] = 0,
-                [Attack1Complete] = 0,
-                [Dash] = 0,
-                [Dodge] = 0,
-                [SpinAttack] = 0,
-                [FancyAttack] = 0
-            };
-
-            _maxRepeats = new Dictionary<Action, int>
-            {
-                [ZemerCounter] = 1,
-                [Attack1Base] = 2,
-                [Attack1Complete] = 2,
-                [Dash] = 2,
-                [Dodge] = 2,
-                [SpinAttack] = 2,
-                [FancyAttack] = 2
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = gameObject
             };
         }
-        
-        public void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
+
+        private void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
         {
             AudioClip GetAudioClip()
             {
                 switch (clipName)
                 {
                     case "Counter":
-                        return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip
-                            .Value;
+                        return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1)
+                                                 .audioClip
+                                                 .Value;
                     case "Slash":
                         return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     case "TraitorPillar":
-                        return ArenaFinder.clips["TraitorSlam"];
+                        return ArenaFinder.Clips["TraitorSlam"];
                     default:
-                        return ArenaFinder.clips[clipName];
+                        return ArenaFinder.Clips[clipName];
                 }
             }
 
-            _ap.pitchMax = pitchMax;
-            _ap.pitchMin = pitchMin;
-            _ap.audioClip = GetAudioClip();
+            _ap.MaxPitch = pitchMax;
+            _ap.MinPitch = pitchMin;
+            _ap.Clip = GetAudioClip();
             _ap.DoPlayRandomClip();
         }
-        
+
         private static bool FastApproximately(float a, float b, float threshold)
         {
             return ((a - b) < 0 ? ((a - b) * -1) : (a - b)) <= threshold;
         }
-        
-        private void ToggleZemer(bool visible, bool fade = false)
-        {
-            IEnumerator Fade()
-            {
-                _bc.enabled = false;
-                Color col = _sr.color;
-                _sr.enabled = true;
-                if (visible)
-                {
-                    _sr.color = new Color(col.r, col.g, col.b, 0f);
-                    for (float i = 0; i <= 1f; i += 0.1f)
-                    {
-                        _sr.color = new Color(col.r, col.g, col.b, i);
-                        yield return new WaitForSeconds(0.01f);
-                    }
-                }
-                else
-                {
-                    _sr.color = new Color(col.r, col.g, col.b, 1f);
-                    for (float i = col.a; i >= 0f; i -= 0.1f)
-                    {
-                        _sr.color = new Color(col.r, col.g, col.b, i);
-                        yield return new WaitForSeconds(0.01f);
-                    }
-                }
 
-                Instant();
-            }
-
-            void Instant()
-            {
-                _sr.enabled = visible;
-                _bc.enabled = visible;
-                _rb.gravityScale = 0f;
-                Color col = _sr.color;
-                _sr.color = new Color(col.r, col.g, col.b, visible ? 1f : 0f);
-            }
-
-            if (fade) StartCoroutine(Fade());
-            else Instant();
-        }
-        
         private void Log(object o)
         {
             Modding.Logger.Log("[Zemer] " + o);
         }
-        
+
         private void OnDestroy()
         {
             On.HealthManager.Hit -= OnBlockedHit;

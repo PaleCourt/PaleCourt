@@ -1,19 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using UnityEngine.Audio;
+﻿using UnityEngine;
 using Modding;
 using System.Collections;
-using System.Reflection;
-using HutongGames.PlayMaker;
+using System.Collections.Generic;
 using HutongGames.PlayMaker.Actions;
-using HutongGames.Utility;
-using InControl;
-using ModCommon.Util;
 using ModCommon;
-using Object = UnityEngine.Object;
+using ModCommon.Util;
 using ReflectionHelper = Modding.ReflectionHelper;
 
 namespace FiveKnights
@@ -24,7 +15,7 @@ namespace FiveKnights
         private PlayMakerFSM _fsm;
         public GameObject dd; 
         private tk2dSpriteAnimator _tk;
-        public static MyAudioPlayerOneShotSingle CustomAudioPlayer;
+        public static MusicPlayer CustomAudioPlayer;
         public static bool alone;
         private bool HIT_FLAG;
         public static WDController Instance;
@@ -111,7 +102,7 @@ namespace FiveKnights
                 _fsm.SetState("Stun Recover");
                 yield return null;
                 yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-                CustomAudioPlayer.volume = 1f;
+                CustomAudioPlayer.Volume = 1f;
                 CustomAudioPlayer.UpdateMusic();
                 _fsm.SetState("Rage Roar");
                 PlayerData.instance.isInvincible = false;
@@ -199,8 +190,9 @@ namespace FiveKnights
                 bsc.DoDreamReturn();
                 Destroy(this);
             }
-            else if (CustomWP.boss == CustomWP.Boss.Zemer || CustomWP.boss == CustomWP.Boss.Mystic)
+            else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
+                Modding.Logger.Log("BOSS IS " + CustomWP.boss);
                 yield return null;
                 dd.SetActive(false);
                 GameObject.Find("Burrow Effect").SetActive(false);
@@ -213,7 +205,7 @@ namespace FiveKnights
                 if (CustomWP.Instance.wonLastFight)
                 {
                     int lev = CustomWP.Instance.lev + 1;
-                    if (CustomWP.boss == CustomWP.Boss.Zemer)
+                    if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
                         var box = (object) FiveKnights.Instance.Settings.CompletionZemer;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
@@ -305,22 +297,33 @@ namespace FiveKnights
             }
         }
 
-        private void PlayMusic(CustomWP.Boss boss)
+        public void PlayMusic(AudioClip clip, float vol = 0f)
+        {
+            MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
+            List<MusicCue.MusicChannelInfo> channelInfos = new List<MusicCue.MusicChannelInfo>();
+            MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
+            channelInfo.SetAttr("clip", clip);
+            channelInfos.Add(channelInfo);
+            musicCue.SetAttr("channelInfos", channelInfos.ToArray());
+            GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
+        }
+        
+        /*public void PlayMusic(string clip, float vol = 0f)
         {
             GameObject actor = GameObject.Find("Audio Player Actor");
-            AudioClip ac = ArenaFinder.clips["IsmaMusic"];
-            CustomAudioPlayer = new MyAudioPlayerOneShotSingle
+            AudioClip ac = ArenaFinder.Clips[clip];
+            CustomAudioPlayer = new MusicPlayer
             {
-                volume = 0f,
-                audioClip = ac,
-                audioPlayer = actor,
-                pitchMax = 1f,
-                pitchMin = 1f,
-                loop = true,
-                spawnPoint = HeroController.instance.gameObject
+                Volume = vol,
+                Clip = ac,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Loop = true,
+                Spawn = HeroController.instance.gameObject
             };
             CustomAudioPlayer.DoPlayRandomClip();
-        }
+        }*/
 
         private bool startedMusic;
         
@@ -329,7 +332,11 @@ namespace FiveKnights
             if (!startedMusic && CustomWP.boss == CustomWP.Boss.Ogrim && self.name.Contains("Defender"))
             {
                 startedMusic = true;
-                PlayMusic(CustomWP.Boss.Ogrim);
+                PlayMusic(ArenaFinder.Clips["IsmaMusic"]);
+            }
+            else if (self.name.Contains("Defender"))
+            {
+                return null;
             }
             return orig(self, channel);
         }

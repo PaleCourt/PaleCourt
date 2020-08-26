@@ -1,27 +1,21 @@
-﻿using HutongGames.PlayMaker.Actions;
-using ModCommon.Util;
-using ModCommon;
-using Modding;
-using On;
-using System;
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
-using UnityEngine.UI;
-using System.Collections.Generic;
 using Logger = Modding.Logger;
 
 namespace FiveKnights
 {
     internal class Parryable : MonoBehaviour
     {
-        public static bool doingOne = false;
+        public static bool ParryFlag;
 
         private void OnTriggerEnter2D(Collider2D col)
         {
-            if (doingOne || col.gameObject.layer != 16) return;
-            doingOne = true;
-            //GameManager.instance.FreezeMoment(1);
-            StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.15f, 0.04f, 0f));
+            Log("Out " + ParryFlag);
+            Log("Out2 " + col.gameObject.layer);
+            if (ParryFlag || col.gameObject.layer != 16) return;
+            Log("In " + col.name);
+            ParryFlag = true;
+            StartCoroutine(GameManager.instance.FreezeMoment(0.03f, 0.1f, 0.03f, 0f));
             HeroController.instance.NailParry();
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             FiveKnights.preloadedGO["ClashTink"].transform.SetPosition2D(transform.position);
@@ -29,11 +23,8 @@ namespace FiveKnights
             GameObject slash = col.transform.parent.gameObject;
             float degrees = 0f;
             PlayMakerFSM damagesEnemy = PlayMakerFSM.FindFsmOnGameObject(slash, "damages_enemy");
-            if (damagesEnemy != null)
-            {
-                degrees = damagesEnemy.FsmVariables.FindFsmFloat("direction").Value;
-            }
-            else return;
+            if (damagesEnemy == null) return;
+            degrees = damagesEnemy.FsmVariables.FindFsmFloat("direction").Value;
             Vector3 pos = new Vector3();
             if (degrees < 45f)
             {
@@ -60,16 +51,18 @@ namespace FiveKnights
             fx.transform.SetPosition2D(HeroController.instance.transform.position);
             fx.transform.position += pos;
             fx.SetActive(true);
-            StartCoroutine(EndParry());
+            Log("Trying to end parry1");
+            StartCoroutine(DoNextFrame());
         }
 
-        IEnumerator EndParry()
+        IEnumerator DoNextFrame()
         {
             yield return null;
             HeroController.instance.NailParryRecover();
-            yield return new WaitForSeconds(0.2f);
-            doingOne = false;
-            Log("No Error2");
+            Log("Time");
+            yield return new WaitForSecondsRealtime(0.5f);
+            Log("Time2");
+            ParryFlag = false;
         }
 
         private void Log(object ob)

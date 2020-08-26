@@ -44,7 +44,5 @@ namespace FiveKnights
             gameObject.SetActive(false);
             gameObject.transform.SetParent(parent.transform);
         }
-
-        private void Log(object message) => Modding.Logger.Log("[Elegy Beam] " + message);
     }
 }
