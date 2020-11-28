@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
@@ -17,11 +17,16 @@ namespace FiveKnights
 {
     internal class ArenaFinder : MonoBehaviour
     {
+        public static Dictionary<string, tk2dSpriteAnimation> spriteAnimations;
+        
+        public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
+        
+        public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
         public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
         public static Dictionary<string, Material> Materials { get; private set; }
         public static Dictionary<string, Sprite> Sprites { get; private set; }
         public static Dictionary<string, AudioClip> Clips { get; private set; }
-        
+
         public static int defeats;
         
         private FightController fightCtrl;
@@ -33,6 +38,9 @@ namespace FiveKnights
             USceneManager.activeSceneChanged += SceneChanged;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
+            spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
+            spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
+            collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             IsmaClips = new Dictionary<string, AudioClip>();
             Materials = new Dictionary<string, Material>();
             Sprites = new Dictionary<string, Sprite>();

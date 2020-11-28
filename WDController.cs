@@ -540,11 +540,9 @@ namespace FiveKnights
                     hegemolBundle = AssetBundle.LoadFromStream(s);
                 }
 
-                FiveKnights.preloadedGO["Hegemol Collection Prefab"] =
-                    hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
-                FiveKnights.preloadedGO["Hegemol Animation"] =
-                    hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
-                _assetBundles.Add(hegemolBundle);
+                FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
+                FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
                 
                 yield return null;
                 

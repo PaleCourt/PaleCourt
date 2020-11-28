@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
@@ -115,12 +115,9 @@ namespace FiveKnights
         public HegemolController CreateHegemol()
         {
             Log("Creating Hegemol");
-            
-            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(HeroController.instance.transform.position.x, 23), Quaternion.identity);
+            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
             _hegemol.SetActive(true);
-            
             Log("Adding HegemolController component");
-            
             return _hegemol.AddComponent<HegemolController>();
         }
         

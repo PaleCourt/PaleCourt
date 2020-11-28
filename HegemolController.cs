@@ -1,23 +1,33 @@
-﻿using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using UnityEngine;
+using Modding;
 using ModCommon;
 using System.Collections;
+using System.Collections.Specialized;
 using System.Reflection;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using HutongGames.Utility;
+using JetBrains.Annotations;
 using ModCommon.Util;
+using Bounds = UnityEngine.Bounds;
+using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 500;//2400;
+        private const int Health = 2400;
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
         private const float DigInWalkSpeed = 8.0f;
 
+        private GameObject _mace;
         private GameObject _ogrim;
         private GameObject _pv;
 
@@ -25,6 +35,7 @@ namespace FiveKnights
         private BoxCollider2D _collider;
         private HealthManager _hm;
         private PlayMakerFSM _control;
+        private PlayMakerFSM _dd;
         private Rigidbody2D _rb;
         private tk2dSprite _sprite;
         private tk2dSpriteAnimator _anim;
@@ -33,12 +44,15 @@ namespace FiveKnights
         {
             Log("Hegemol Awake");
 
+            gameObject.name = "Hegemol";
+            
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
             PlayMakerFSM control = _pv.LocateMyFSM("Control");
             control.RemoveTransition("Pause", "Set Phase HP");
 
             _ogrim = FiveKnights.preloadedGO["WD"];
+            _dd = _ogrim.LocateMyFSM("Dung Defender");
 
             _control = gameObject.LocateMyFSM("FalseyControl");
             _anim = GetComponent<tk2dSpriteAnimator>();
@@ -51,24 +65,23 @@ namespace FiveKnights
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
-
-        void Update()
-        {
-            Log("Current State: " + _control.ActiveStateName);
-        }
         
         private IEnumerator Start()
         {
             while (HeroController.instance == null) yield return null;
 
             _hm.hp = Health;
+
+            _mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
+            _mace.AddComponent<Mace>();
+            _mace.SetActive(false);
             
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
             List<tk2dSpriteDefinition> fcSpriteDefs = fcCollectionData.spriteDefinitions.ToList();
-            
+
             GameObject collectionPrefab = FiveKnights.preloadedGO["Hegemol Collection Prefab"];
             tk2dSpriteCollection collection = collectionPrefab.GetComponent<tk2dSpriteCollection>();
-            
+
             foreach (tk2dSpriteDefinition def in collection.spriteCollection.spriteDefinitions)
             {
                 def.material.shader = fcSpriteDefs[0].material.shader;
@@ -79,31 +92,35 @@ namespace FiveKnights
             
             List<tk2dSpriteAnimationClip> clips = _anim.Library.clips.ToList();
 
-            GameObject animationPrefab = FiveKnights.preloadedGO["Hegemol Animation"];
+            foreach (var clip in clips)
+            {
+                Log("Clip: " + clip.name + " " + clip.wrapMode + " " + clip.loopStart);
+            }
+            
+            clips = new List<tk2dSpriteAnimationClip>();
+            
+            GameObject animationPrefab = FiveKnights.preloadedGO["Hegemol Animation Prefab"];
             tk2dSpriteAnimation animation = animationPrefab.GetComponent<tk2dSpriteAnimation>();
-            
-            
+
             foreach (tk2dSpriteAnimationClip clip in animation.clips)
             {
                 clips.Add(clip);
             }
-            
+
             _anim.Library.clips = clips.ToArray();
 
             AssignFields();
 
-            //Stuff for getting hegemol to work
-            _sprite.GetCurrentSpriteDef().material.mainTexture = FiveKnights.SPRITES[0].texture;
+            _control.Fsm.GetFsmFloat("Run Speed").Value = 20.0f;
 
-            _control.Fsm.GetFsmFloat("Run Speed").Value = 15.0f;
-            
             _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
+            _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Toss Antic", 1);
             _control.GetAction<SetGravity2dScale>("Start Fall", 12).gravityScale.Value = 3.0f;
-            _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Enter"));
+            _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Fall"));
             _control.GetAction<Tk2dPlayAnimation>("State 1").clipName.Value = "Intro Land";
             _control.CreateState("Intro Greet");
             _control.InsertCoroutine("Intro Greet", 0, IntroGreet);
@@ -112,11 +129,14 @@ namespace FiveKnights
             _control.AddTransition("Intro Greet", "FINISHED", "Idle");
 
             AddDig();
-            
+            AddGroundPunch();
+
             yield return new WaitForSeconds(2.0f);
 
             _control.SetState("Init");
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
+
+            gameObject.PrintSceneHierarchyTree();
             
             _control.SendEvent("BATTLE START");
             while (true)
@@ -148,21 +168,15 @@ namespace FiveKnights
             PlayMakerFSM emitter = roarEmitter.LocateMyFSM("emitter");
             emitter.SetState("Init");
             roarEmitter.GetComponent<DisableAfterTime>().waitTime = roarTime;
-            roarEmitter.PrintSceneHierarchyTree();
+            
+            GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
 
-            //Log("Sending Camera Shake");
-            //GameCameras.instance.cameraShakeFSM.SendEvent("MedRumble");
-
-            Log("Getting Roar Lock");
             PlayMakerFSM roarLock = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
-            Log("Setting Roar Lock GO");
             roarLock.Fsm.GetFsmGameObject("Roar Object").Value = gameObject;
-            Log("Sending ROAR ENTER");
             roarLock.SendEvent("ROAR ENTER");
 
             yield return new WaitForSeconds(roarTime);
 
-            Log("Destroying Roar Emitter");
             Destroy(roarEmitter);
             roarLock.SendEvent("ROAR EXIT");
 
@@ -175,6 +189,7 @@ namespace FiveKnights
             {
                 "Dig Antic",
                 "Dig In",
+                "Dig Run",
                 "Dig Out",
             };
 
@@ -202,6 +217,16 @@ namespace FiveKnights
 
             _control.InsertCoroutine("Dig In", 0, DigIn);
 
+            IEnumerator DigRun()
+            {
+                Log("Dig Run");
+                _anim.Play("Dig Run");
+
+                yield return new WaitForSeconds(0.5f);
+            }
+            
+            _control.InsertCoroutine("Dig Run", 0, DigRun);
+            
             IEnumerator DigOut()
             {
                 Log("Dig Out");
@@ -242,8 +267,7 @@ namespace FiveKnights
                 };
 
                 hitter.AddComponent<DamageHero>().damageDealt = 2;
-                hitter.AddComponent<DebugColliders>();
-                
+
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return new WaitForSeconds(1.0f / 12);
@@ -281,6 +305,57 @@ namespace FiveKnights
             }
             
             _control.InsertCoroutine("Dig Out", 0, DigOut);
+        }
+
+        private void AddGroundPunch()
+        {
+            string[] states =
+            {
+                "Toss Antic",
+                "Toss",
+                "Punch Antic",
+                "Punching",
+            };
+
+            _control.CreateStates(states, "Idle");
+
+            IEnumerator TossAntic()
+            {
+                _anim.Play("Toss Antic");
+                _rb.velocity = Vector2.zero;
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss Antic"));
+            }
+
+            _control.InsertCoroutine("Toss Antic", 0, TossAntic);
+            
+            IEnumerator Toss()
+            {
+                _anim.Play("Toss");
+
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss"));
+            }
+
+            _control.InsertCoroutine("Toss", 0, Toss);
+            
+            IEnumerator PunchAntic()
+            {
+                _anim.Play("Punch Antic");
+                _mace.SetActive(true);   
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
+            }
+
+            _control.InsertCoroutine("Punch Antic", 0, PunchAntic);
+            
+            IEnumerator Punching()
+            {
+                _anim.Play("Punching");
+                
+                yield return new WaitForSeconds(5.0f);
+            }
+            
+            _control.InsertCoroutine("Punching", 0, Punching);
         }
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
@@ -412,13 +487,34 @@ namespace FiveKnights
 
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("False Knight Dream") && hitInstance.AttackType == AttackTypes.Nail)
-                HeroController.instance.SoulGain();
-            
+            if (self.name.Contains("False Knight Dream"))
+            {
+                if (hitInstance.AttackType == AttackTypes.Nail)
+                {
+                    // Manually gain soul when striking Hegemol
+                    int soulGain;
+                    if (PlayerData.instance.MPCharge >= 99)
+                    {
+                        soulGain = 6;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 2;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 4;
+                    }
+                    else
+                    {
+                        soulGain = 11;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 3;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 8;
+                    }
+                    HeroController.instance.AddMPCharge(soulGain);
+                }
+            }
+
             orig(self, hitInstance);
-            
+
             if (_hm.hp <= 0)
+            {
                 HegemolDeath();
+            }
         }
 
         private void HegemolDeath()
@@ -465,7 +561,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(0.1f);
             }
         }
-
+        
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
