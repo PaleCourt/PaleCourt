@@ -1,29 +1,37 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using UnityEngine;
-using Modding;
 
 namespace FiveKnights
 {
     public class CollisionCheck : MonoBehaviour
     {
-        public bool isHit { get; set; }
-        public string collider { get; set; }
+        public bool Hit { get; set; }
+        public bool Freeze { get; set; }
+        public event Action OnCollide;
 
         private void OnTriggerEnter2D(Collider2D col)
         {
+            if (col.gameObject.layer != (int) GlobalEnums.PhysLayers.TERRAIN)
+                return;
+            
+            Hit = true;
+
+            OnCollide?.Invoke();
+
+            if (!Freeze) 
+                return;
+            
+            Rigidbody2D rb = GetComponent<Rigidbody2D>() ?? transform.parent.GetComponent<Rigidbody2D>();
+            
+            rb.velocity = Vector2.zero;
+        }
+        
+        private void OnTriggerStay2D(Collider2D col)
+        {
             if (col.gameObject.layer == 8)
             {
-                isHit = true;
-                collider = col.name;
+                Hit = true;
             }
-        }
-
-        private static void Log(object obj)
-        {
-            Modding.Logger.Log("[Collision Check] " + obj);
         }
     }
 }

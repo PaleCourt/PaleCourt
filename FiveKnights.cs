@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Reflection;
 using Modding;
 using JetBrains.Annotations;
-using ModCommon;
-using MonoMod.RuntimeDetour;
-using UnityEngine.SceneManagement;
 using UnityEngine;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
@@ -14,26 +10,38 @@ using System.IO;
 
 namespace FiveKnights
 {
+
     [UsedImplicitly]
     public class FiveKnights : Mod, ITogglableMod
     {
+        public FiveKnights() : base("Pale Court") { }
+
+        public static string OS
+        {
+            get
+            {
+                return SystemInfo.operatingSystemFamily switch
+                {
+                    OperatingSystemFamily.Windows => "win",
+                    OperatingSystemFamily.Linux => "lin",
+                    OperatingSystemFamily.MacOSX => "mc",
+                    _ => null
+                };
+            }
+        }
+        
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static Dictionary<string, AssetBundle> assetbundles = new Dictionary<string, AssetBundle>();
         public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
-
+        
+        public SaveModSettings Settings = new SaveModSettings();
         public override ModSettings SaveSettings
         {
-            get => _settings;
-            set => _settings = value as SaveSettings ?? _settings;
+            get => Settings;
+            set => Settings = (SaveModSettings) value;
         }
 
-        private SaveSettings _settings = new SaveSettings();
-
-        public override string GetVersion()
-        {
-            return "0.0.0.0";
-        }
+        public override string GetVersion() => "0.0.0.0";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -55,7 +63,13 @@ namespace FiveKnights
                 ("GG_Workshop","GG_Statue_TraitorLord"),
                 ("White_Palace_03_hub","doorWarp"),
                 ("White_Palace_03_hub","dream_beam_animation"),
-                ("White_Palace_03_hub","dream_nail_base")
+                ("White_Palace_03_hub","dream_nail_base"),
+                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
+                ("Abyss_05","Dusk Knight/Idle Pt"),
+                ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
+                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
+                ("Fungus3_13","BlurPlane"),
+                ("Fungus3_34","_Scenery/fung_lamp2 (1)/Active/haze2 (1)"),
             };
         }
 
@@ -78,8 +92,12 @@ namespace FiveKnights
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
+            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
+            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
+            preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
+            preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["isma_stat"] = null;
-
+            
             Instance = this;
             Log("Initalizing.");
 
@@ -87,7 +105,6 @@ namespace FiveKnights
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
-            ModHooks.Instance.BeforeSavegameSaveHook += BeforeSaveGameSave;
             ModHooks.Instance.NewGameHook += AddComponent;
             ModHooks.Instance.LanguageGetHook += LangGet;
 
@@ -95,29 +112,21 @@ namespace FiveKnights
             Assembly asm = Assembly.GetExecutingAssembly();
             foreach (string res in asm.GetManifestResourceNames())
             {
-                using (Stream s = asm.GetManifestResourceStream(res))
+                Log("looking at file " + res);
+                using Stream s = asm.GetManifestResourceStream(res);
+                if (s == null) continue;
+                if (res.EndsWith(".png"))
                 {
-                    if (s == null) continue;
-                    if (res.EndsWith(".png"))
-                    {
-                        byte[] buffer = new byte[s.Length];
-                        s.Read(buffer, 0, buffer.Length);
-                        s.Dispose();
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    s.Dispose();
+                    // Create texture from bytes
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(buffer, true);
+                    // Create sprite from texture
+                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 
-                        // Create texture from bytes
-                        var tex = new Texture2D(1, 1);
-                        tex.LoadImage(buffer, true);
-                        // Create sprite from texture
-                        SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
-                        Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
-                    }
-                    else
-                    {
-                        string bundleName = Path.GetExtension(res).Substring(1);
-                        Log("Loading bundle " + bundleName);
-                        assetbundles[bundleName] = AssetBundle.LoadFromStream(s);
-                    }
+                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
                 }
             }
         }
@@ -125,30 +134,34 @@ namespace FiveKnights
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
-                _settings.CompletionIsma = (BossStatue.Completion)obj;
+                Settings.CompletionIsma = (BossStatue.Completion)obj;
             else if (key == "statueStateDryya")
-                _settings.CompletionDryya = (BossStatue.Completion)obj;
+                Settings.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
-                _settings.CompletionZemer = (BossStatue.Completion)obj;
+                Settings.CompletionZemer = (BossStatue.Completion)obj;
+            else if (key == "statueStateZemer2")
+                Settings.CompletionZemer2 = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
-                _settings.CompletionIsma2 = (BossStatue.Completion)obj;
+                Settings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
-                _settings.CompletionHegemol = (BossStatue.Completion)obj;
+                Settings.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                return _settings.CompletionIsma;
-            else if (key == "statueStateDryya")
-                return _settings.CompletionDryya;
-            else if (key == "statueStateZemer")
-                return _settings.CompletionZemer;
-            else if (key == "statueStateIsma2")
-                return _settings.CompletionIsma2;
-            else if (key == "statueStateHegemol")
-                return _settings.CompletionHegemol;
+                return Settings.CompletionIsma;
+            if (key == "statueStateDryya")
+                return Settings.CompletionDryya;
+            if (key == "statueStateZemer")
+                return Settings.CompletionZemer;
+            if (key == "statueStateZemer2")
+                return Settings.CompletionZemer2;
+            if (key == "statueStateIsma2")
+                return Settings.CompletionIsma2;
+            if (key == "statueStateHegemol")
+                return Settings.CompletionHegemol;
             return orig;
         }
 
@@ -158,14 +171,16 @@ namespace FiveKnights
             {
                 case "ISMA_NAME": return "Kindly Isma";
                 case "ISMA_DESC": return "Gentle god of moss and grove.";
-                case "DD_ISMA_NAME": return "Loyal Ogrim & Kind Isma";
+                case "DD_ISMA_NAME": return "Loyal Ogrim & Kindly Isma";
                 case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
                 case "HEG_NAME": return "Mighty Hegemol";
                 case "HEG_DESC": return "Something something...";
                 case "DRY_NAME": return "Fierce Dryya";
                 case "DRY_DESC": return "Protective god of Root and King.";
-                case "ZEM_NAME": return "Mysterious Zemer";
-                case "ZEM_DESC": return "Foreign god of lands beyond.";
+                case "ZEM_NAME": return "Mysterious Ze'mer";
+                case "ZEM2_NAME": return "Mystic Ze'mer";
+                case "ZEM_DESC": return "Grieving god of lands beyond.";
+                case "ZEM2_DESC": return "Strange god of a sacred land.";
                 case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
                 case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
                 case "DRYYA_DIALOG_3_1": return "Protect...";
@@ -177,30 +192,17 @@ namespace FiveKnights
                 case "FALSE_KNIGHT_D_1": return "Show me what you're made of!";
                 case "FALSE_KNIGHT_D_2": return "Is that all you got?";
                 case "FALSE_KNIGHT_D_3": return "Prove to me you're a champion!";
-                case "ZEM_DREAM_1_1": return "Something about Sacrifice";
-                case "ZEM_DREAM_2_1": return "Something about Grove";
-                case "ZEM_DREAM_3_1": return "Something about Ogrim";
+                case "ZEM_DREAM_1_1": return "Shoutout to 56 (can't remove this can you)";
+                case "ZEM_DREAM_2_1": return "Shoutout to 56 (can't remove this can you)";
+                case "ZEM_DREAM_3_1": return "Shoutout to 56 (can't remove this can you)";
                 case "YN_THRONE": return "Answer the Champions' Call?";
                 default: return Language.Language.GetInternal(key, sheettitle);
             }
         }
 
-        private void BeforeSaveGameSave(SaveGameData data)
-        {
-            _settings.AltStatueIsma = _settings.CompletionIsma.usingAltVersion;
-
-            _settings.CompletionIsma.usingAltVersion = false;
-        }
-
         private void SaveGame(SaveGameData data)
         {
-            SaveGameSave();
             AddComponent();
-        }
-
-        private void SaveGameSave(int id = 0)
-        {
-            _settings.AltStatueIsma = _settings.AltStatueIsma;
         }
 
         private void AddComponent()
@@ -210,16 +212,12 @@ namespace FiveKnights
 
         public void Unload()
         {
-            AudioListener.volume = 1f;
-            AudioListener.pause = false;
             ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
             ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.BeforeSavegameSaveHook -= BeforeSaveGameSave;
             ModHooks.Instance.LanguageGetHook -= LangGet;
             ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
 
-            // ReSharper disable once Unity.NoNullPropogation
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
             if (x == null) return;
             UObject.Destroy(x);

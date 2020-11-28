@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HutongGames.PlayMaker.Actions;
@@ -13,7 +11,7 @@ namespace FiveKnights
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1650;
+        private int _hp = 500;//1650;
         
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -120,8 +118,6 @@ namespace FiveKnights
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             
             AssignFields();
-            
-            gameObject.PrintSceneHierarchyTree();
             
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -263,7 +259,5 @@ namespace FiveKnights
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
         }
-        
-        private void Log(object message) => Modding.Logger.Log("[Dryya Setup] " + message);
     }
 }

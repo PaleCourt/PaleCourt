@@ -16,7 +16,5 @@ namespace FiveKnights
             yield return new WaitForSeconds(1.0f);
             bsc.DoDreamReturn();
         }
-        
-        private void Log(object message) => Modding.Logger.Log("[Dryya Death] " + message);
     }
 }

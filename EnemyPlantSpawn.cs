@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 using System.Collections;
-using ModCommon.Util;
-using HutongGames.PlayMaker;
 using ModCommon;
 using HutongGames.PlayMaker.Actions;
 
@@ -35,7 +32,7 @@ namespace FiveKnights
                 yield break;
             }
             CollisionCheck cc = gameObject.AddComponent<CollisionCheck>();
-            yield return new WaitWhile(() => !cc.isHit);
+            yield return new WaitWhile(() => !cc.Hit);
             pos = gameObject.transform.position;
             _sr = gameObject.GetComponent<SpriteRenderer>();
             bool skip = false;
@@ -103,7 +100,7 @@ namespace FiveKnights
             GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
             PlantP.Add(pos.x);
             pillar.transform.position = new Vector2(pos.x, 6.1f);
-            pillar.AddComponent<PlantCtrl>().onlyIsma = true;
+            pillar.AddComponent<PlantCtrl>().IsmaFight = true;
             yield return new WaitForSeconds(0.1f);
             pillar.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
             pillar.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;

@@ -1,53 +1,103 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using System.Reflection;
-using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
 using ModCommon;
 using System.Linq;
+using System.Reflection;
+using GlobalEnums;
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
-using On;
-using System;
 
 namespace FiveKnights
 {
     internal class ArenaFinder : MonoBehaviour
     {
-        public static Dictionary<string, AudioClip> ismaAudioClips;
-        public static Dictionary<string, Material> materials;
-        public static Dictionary<string, Shader> shaders;
-        public static Dictionary<string, Sprite> sprites;
-        public static Dictionary<string, Texture> textures;
-        public static Dictionary<string, AudioClip> clips;
         public static Dictionary<string, tk2dSpriteAnimation> spriteAnimations;
+        
         public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
+        
         public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
+        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
+        public static Dictionary<string, Material> Materials { get; private set; }
+        public static Dictionary<string, Sprite> Sprites { get; private set; }
+        public static Dictionary<string, AudioClip> Clips { get; private set; }
+
         public static int defeats;
-        public static bool returnToWP;
+        
         private FightController fightCtrl;
+        
         private static bool hasSummonElevator;
 
         private void Start()
         {
             USceneManager.activeSceneChanged += SceneChanged;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
-            ismaAudioClips = new Dictionary<string, AudioClip>();
-            materials = new Dictionary<string, Material>();
-            shaders = new Dictionary<string, Shader>();
-            sprites = new Dictionary<string, Sprite>();
-            clips = new Dictionary<string, AudioClip>();
+            On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
-            LoadIsmaBundle();
+            IsmaClips = new Dictionary<string, AudioClip>();
+            Materials = new Dictionary<string, Material>();
+            Sprites = new Dictionary<string, Sprite>();
+            Clips = new Dictionary<string, AudioClip>();
+            LoadHubBundles();
         }
 
+        private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
+        {
+            if (info.SceneName == "Waterways_13")
+            {
+                GameObject dn = GameObject.Find("Dream Dialogue");
+                if (dn != null) Destroy(dn);
+                CreateDreamGateway("Dream Enter", "door_dreamEnter", new Vector2(93.5f, 19.3f), 
+                    new Vector2(5.25f, 5.25f),
+                    "GG_White_Defender", "Waterways_13");
+                Log(info.EntryGateName);
+            }
+            orig(self, info);
+        }
+
+        //Code from SFGrenade
+        private void CreateDreamGateway(string gateName, string toGate, Vector2 pos, Vector2 size, string toScene, string returnScene)
+        {
+            Log("Creating Dream Gateway");
+            
+            GameObject dreamEnter = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal"]);
+            dreamEnter.name = gateName;
+            dreamEnter.SetActive(true);
+            dreamEnter.transform.position = pos;
+            dreamEnter.transform.localScale = Vector3.one;
+            dreamEnter.transform.eulerAngles = Vector3.zero;
+
+            dreamEnter.GetComponent<BoxCollider2D>().size = size;
+            dreamEnter.GetComponent<BoxCollider2D>().offset = Vector2.zero;
+
+            foreach (var pfsm in dreamEnter.GetComponents<PlayMakerFSM>())
+            {
+                if (pfsm.FsmName == "Control")
+                {
+                    pfsm.FsmVariables.GetFsmString("Return Scene").Value = returnScene;
+                    pfsm.FsmVariables.GetFsmString("To Scene").Value = toScene;
+                    pfsm.GetAction<BeginSceneTransition>("Change Scene", 4).entryGateName = toGate;
+                }
+            }
+
+            GameObject dreamPT = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal2"]);
+            dreamPT.SetActive(true);
+            dreamPT.transform.position = new Vector3(pos.x, pos.y, -0.002f);
+            dreamPT.transform.localScale = Vector3.one;
+            dreamPT.transform.eulerAngles = Vector3.zero;
+
+            var shape = dreamPT.GetComponent<ParticleSystem>().shape;
+            shape.scale = new Vector3(size.x, size.y, 0.001f);
+
+            Log("Done Creating Dream Gateway");
+        }
         private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             //52.6 62.2
@@ -86,41 +136,58 @@ namespace FiveKnights
             toggle.SetState(true);
             altLever.transform.position = new Vector2(57.4f,37.5f);
         }
-
+        
+        private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
+        {
+            Log(self.cameraYMax);
+            self.cameraYMax = 13.6f;
+            self.cameraYMin = 13.6f;
+        }
+        
         private void SceneChanged(Scene arg0, Scene arg1)
         {
+            CustomWP.isFromGodhome = arg0.name == "GG_Workshop";
+            
             if (arg1.name == "GG_Workshop")
             {
-                StartCoroutine(CameraFixer());
+                StartCoroutine(CameraFixer()); //97.5 19.3
                 StartCoroutine(Arena());
             }
 
+            if (arg0.name == "Waterways_13" && arg1.name == "GG_White_Defender")
+            {
+                CustomWP.boss = CustomWP.Boss.Isma;
+                StartCoroutine(AddComponent());
+            }
+            
             if (arg0.name == "White_Palace_09" && arg1.name == "GG_White_Defender") //DO arg0.name == "White_Palace_09"
             {
+                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
             }
 
             if (arg1.name == "White_Palace_09" && arg0.name == "GG_White_Defender") //REMOVE THIS ONCE DONE
             {
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-                Destroy(fightCtrl);
+                GameCameras.instance.tk2dCam.ZoomFactor = 1f;
                 PlayerData.instance.isInvincible = false;
             }
 
             if (arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender")
             {
+                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
             }
 
             if (arg1.name == "White_Palace_09" && arg0.name == "Dream_04_White_Defender") //DO arg1.name == "White_Palace_09" EVENTUALLY
             {
+                Log("DEATH");
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 PlayerData.instance.whiteDefenderDefeats = defeats;
-                Destroy(fightCtrl);
                 PlayerData.instance.isInvincible = false;
             }
             
-            if (arg1.name == "White_Palace_09")
+            if (arg1.name == "White_Palace_09" && arg0.name != "White_Palace_13")
             {
                 if (CustomWP.Instance == null)
                 {
@@ -128,6 +195,13 @@ namespace FiveKnights
                 }
                 StartCoroutine(CameraFixer());
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
+            }
+
+            if (fightCtrl != null && arg1.name != "Dream_04_White_Defender" && arg1.name != "GG_White_Defender")
+            {
+                Log("Destroying fightctrl");
+                On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
+                Destroy(fightCtrl);
             }
         }
 
@@ -138,7 +212,7 @@ namespace FiveKnights
             while(GameCameras.instance.cameraFadeFSM.ActiveStateName != "Normal")
             {
                 GameCameras.instance.cameraFadeFSM.SetState("FadeIn");
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(1f);
             }
         }
 
@@ -152,7 +226,6 @@ namespace FiveKnights
             fsm.FsmVariables.FindFsmString("Spawn Name").Value = name;
             fsm.FsmVariables.FindFsmVector3("Sit Vector").Value = new Vector3(0f,0.5f,0f);
         }
-       
 
         private IEnumerator AddComponent()
         {
@@ -160,190 +233,141 @@ namespace FiveKnights
             fightCtrl = GameManager.instance.gameObject.AddComponent<FightController>();
         }
 
-        private void LoadIsmaBundle()
+        private void LoadHubBundles()
         {
-            Log("Loading Isma Bundle");
-            string path = "";
-            switch (SystemInfo.operatingSystemFamily)
+            Log("Loading hub bundle");
+            Assembly asm = Assembly.GetExecutingAssembly();
+            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.hubasset1"))
             {
-                case OperatingSystemFamily.Windows:
-                    path = "ismawin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    path = "ismalin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    path = "ismamc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
+                AssetBundle ab = AssetBundle.LoadFromStream(s);
+                ab.LoadAllAssets();
+                FiveKnights.preloadedGO["hubfloor"] = ab.LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
             }
-            AssetBundle ab = FiveKnights.assetbundles[path];//AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            AssetBundle ab2 = FiveKnights.assetbundles["ismabg"]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "ismabg"));
-            UObject[] assets = ab.LoadAllAssets();
-            FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
-            FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
-            FiveKnights.preloadedGO["Gulka"] = ab.LoadAsset<GameObject>("Gulka");
-            FiveKnights.preloadedGO["Fool"] = ab.LoadAsset<GameObject>("Fool");
-            FiveKnights.preloadedGO["Wall"] = ab.LoadAsset<GameObject>("Wall");
-            FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
-            clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
-            foreach (AudioClip i in ab.LoadAllAssets<AudioClip>().Where(x=>x.name.Contains("IsmaAud")))
+
+            IEnumerator LoadMiscBund()
             {
-                ismaAudioClips[i.name] = i;
-            }
-            foreach (GameObject i in ab.LoadAllAssets<GameObject>())
-            {
-                if (i.GetComponent<SpriteRenderer>() == null)
+                Object[] clips = null;
+                using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
                 {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
+                    var req = AssetBundle.LoadFromStreamAsync(s);
+                    yield return req;
+                    var req2 = req.assetBundle.LoadAllAssetsAsync();
+                    yield return req2;
+                    clips = req2.allAssets;
+                }
+
+                if (clips == null)
+                {
+                    Log("Failed to load clips");
+                    yield break;
+                }
+
+                foreach (var o in clips)
+                {
+                    var clip = (AudioClip) o;
+                    Log("Loading " + clip.name);
+                    if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
+                    if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
+                    else Clips[clip.name] = clip;
+                }
+                
+                Object[] misc = null;
+                using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.miscbund"))
+                {
+                    var req = AssetBundle.LoadFromStreamAsync(s);
+                    yield return req;
+                    var req2 = req.assetBundle.LoadAllAssetsAsync();
+                    yield return req2;
+                    misc = req2.allAssets;
+                }
+
+                if (misc == null)
+                {
+                    Log("Failed to load misc bundle");
+                    yield break;
+                }
+
+                Texture tex = null;
+                foreach (Object asset in misc)
+                {
+                    Log("Loading " + asset.name);
+                    if (asset.name == "Shockwave") FiveKnights.preloadedGO["WaveShad"] = asset as GameObject;
+                    else if (asset.name == "WaveEffectMaterial") ArenaFinder.Materials["WaveEffectMaterial"] = asset as Material;
+                    else if (asset.name == "UnlitFlashMat") ArenaFinder.Materials["flash"] = asset as Material;
+                    else if (asset.name == "sonar") tex = asset as Texture;
+                    else if (asset.name == "petal-test") ArenaFinder.Sprites["ZemParticPetal"] = asset as Sprite;
+                    else if (asset.name == "dung-test") ArenaFinder.Sprites["ZemParticDung"] = asset as Sprite;
+                    else if (asset.name.Contains("Zem_Sil_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("Sil_Isma_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("Dryya_Silhouette_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("hegemol_silhouette_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    if (asset is GameObject i)
                     {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
+                        if (i.GetComponent<SpriteRenderer>() == null)
+                        {
+                            foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
+                            {
+                                sr.material = new Material(Shader.Find("Sprites/Default"));
+                            }
+                        }
+                        else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
                     }
                 }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-            foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
-            {
-                sprites[spr.name] = spr;
-            }
-            materials["flash"] = ab.LoadAsset<Material>("UnlitFlashMat");
-            Log("Finished Loading Isma Bundle");
-            LoadDryyaAssets();
-        }
-        
-        private void LoadDryyaAssets()
-        {
-            string dryyaAssetsPath;
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    dryyaAssetsPath = "dryyawin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    dryyaAssetsPath = "dryyalin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    dryyaAssetsPath = "dryyamc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
+                
+                ArenaFinder.Materials["TestDist"] = new Material(ArenaFinder.Materials["WaveEffectMaterial"]);
+                ArenaFinder.Materials["TestDist"].SetTexture("_NoiseTex", tex);
+                ArenaFinder.Materials["TestDist"].SetFloat("_Intensity", 0.2f);
+                FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                Log("Done loading misc bund");
             }
 
-            AssetBundle dryyaAssetBundle = FiveKnights.assetbundles[dryyaAssetsPath]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
-            FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
-            FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
-            FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
-            FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
-            Log("Getting Sprites");
-            foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
-            {
-                Log("Sprite Name: " + sprite.name);
-                sprites[sprite.name] = sprite;
-            }
+            StartCoroutine(LoadMiscBund());
+            Log("Finished hub bundle");
+            // StartCoroutine(test());
+        }
+
+        private IEnumerator test()
+        {
+            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+    
+            Material[] blurPlaneMaterials = new Material[1];
+            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
+            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+
+            string str = "";
             
-            Log("Finished Loading Dryya Bundle");
-            LoadHegemolBundle();
-        }
-
-        private void LoadHegemolBundle()
-        {
-            string hegemolBundlePath;
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    hegemolBundlePath = "hegemolwin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    hegemolBundlePath = "hegemollin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    hegemolBundlePath = "hegemolmc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-
-            Log("Getting Hegemol Bundle");
-            AssetBundle hegemolBundle = FiveKnights.assetbundles[hegemolBundlePath];
-
-            Log("Getting SpriteCollections");
+            Assembly asm = Assembly.GetExecutingAssembly();
+            using Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.dBund");
+            AssetBundle ab = AssetBundle.LoadFromStream(s);
+            str = ab.GetAllScenePaths()[0];
+            Log("str " + str);
+            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
             
-            FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
-            FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
-            FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
+            //On.SceneManager.Start += SceneManagerOnStart;
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Zemer godhome arena");
+            /*GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+            {
+                SceneName = str,
+                EntryGateName = "door_test1",
+                Visualization = GameManager.SceneLoadVisualizations.Dream,
+                WaitForSceneTransitionCameraFade = false,
 
-            Log("Finished Loading Hegemol Bundle");
-            LoadZemerBundle();
+            });*/
         }
         
-        private void LoadZemerBundle()
+        private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
         {
-            Log("Loading Zemer Bundle");
-            string path = "";
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    path = "zemerwin";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    path = "zemerlin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    path = "zemermc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-            AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            UObject[] assets = ab.LoadAllAssets();
-            FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
-            foreach (GameObject i in ab.LoadAllAssets<GameObject>())
-            {
-                if (i.GetComponent<SpriteRenderer>() == null)
-                {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
-                    {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
-                    }
-                }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-            foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
-            {
-                sprites[spr.name] = spr;
-            }
-            Log("Finished Loading Zemer Bundle");
+            Log("Log " + self.mapZone);
+            orig(self);
         }
         
-        private void CreateGateway(string gateName, Vector2 pos, Vector2 size, string toScene, string entryGate,
-                                  bool right, bool left, bool onlyOut, GameManager.SceneLoadVisualizations vis)
-        {
-            GameObject gate = new GameObject(gateName);
-            gate.transform.SetPosition2D(pos);
-            var tp = gate.AddComponent<TransitionPoint>();
-            if (!onlyOut)
-            {
-                var bc = gate.AddComponent<BoxCollider2D>();
-                bc.size = size;
-                bc.isTrigger = true;
-                tp.targetScene = toScene;
-                tp.entryPoint = entryGate;
-            }
-            tp.alwaysEnterLeft = left;
-            tp.alwaysEnterRight = right;
-            GameObject rm = new GameObject("Hazard Respawn Marker");
-            rm.transform.parent = tp.transform;
-            rm.transform.position = new Vector2(rm.transform.position.x - 3f, rm.transform.position.y);
-            var tmp = rm.AddComponent<HazardRespawnMarker>();
-            tp.respawnMarker = rm.GetComponent<HazardRespawnMarker>();
-            tp.sceneLoadVisualization = vis;
-        }
-
         IEnumerator Arena()
         {
             yield return new WaitWhile(() => !HeroController.instance);
@@ -353,6 +377,8 @@ namespace FiveKnights
             {
                 yield return new WaitWhile(() => HeroController.instance.transform.GetPositionX() < 53f);
                 GameObject go = Instantiate(FiveKnights.preloadedGO["lift"]);
+                Destroy(go.transform.Find("Rise Beam").gameObject);
+                Destroy(go.transform.Find("Pt").gameObject);
                 go.transform.position = new Vector2(53.2f, 20f);
                 go.SetActive(true);
                 PlayMakerFSM fsm = go.LocateMyFSM("Control");
@@ -370,14 +396,25 @@ namespace FiveKnights
                 yield return new WaitWhile(() => fsm.ActiveStateName != "Hit Top");
                 fsm.FsmVariables.FindFsmFloat("Top Y").Value = 91f;
                 fsm.SetState("Bot");
-                yield return new WaitWhile(() => go.transform.GetPositionY() < 90f);
-                if (HeroController.instance.transform.GetPositionY() < 85f)
+                bool trig = false;
+                while (go.transform.GetPositionY() < 65f)
+                {
+                    if (!trig && 
+                        HeroController.instance.transform.GetPositionY() > 47f &&
+                        go.transform.GetPositionY() > 45f)
+                    {
+                        trig = true;
+                        HeroController.instance.RelinquishControl();
+                    }
+
+                    yield return null;
+                }
+                if (!trig)
                 {
                     yield return null;
                     hasSummonElevator = false;
                     continue;
                 }
-                HeroController.instance.RelinquishControl();
                 HeroController.instance.StopAnimationControl();
                 GameManager.instance.playerData.disablePause = true;
                 PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
@@ -401,9 +438,9 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
         }
 
-        public static void Log(object o)
+        private void Log(object o)
         {
-            Logger.Log("[Lost Arena] " + o);
+            Logger.Log("[Scene] " + o);
         }
     }
 }
