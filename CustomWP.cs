@@ -87,12 +87,62 @@ namespace FiveKnights
                               GameManager.SceneLoadVisualizations.Default);
                 orig(self, false);
                 SetupHub();
+                SetupThrone();
                 Log("MADE CUSTOM WP");
                 return;
             }
             orig(self, false);
         }
 
+        private void SetupThrone()
+        {
+            IEnumerator Throne()
+            {
+                GameObject go = Instantiate(FiveKnights.preloadedGO["throne"]);
+                go.SetActive(true);
+                go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
+                PlayMakerFSM fsm = go.LocateMyFSM("Sit");
+                FiveKnights.preloadedGO["Statue"].transform.position = new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
+                for (int i = 0; i < 3; i++)
+                {
+                    GameObject s = Instantiate(FiveKnights.preloadedGO["Statue"]);
+                    float y = s.transform.position.y;
+                    s.transform.position = new Vector3(50.2f + i * 5f, y, HeroController.instance.transform.GetPositionZ());
+                }
+                yield return new WaitWhile(() => fsm.ActiveStateName != "Resting");
+                fsm.enabled = false;
+                GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
+                GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "YN_THRONE");
+                GameObject.Find("Text YN").GetComponent<MonoBehaviour>().StartCoroutine(LookForDialogClosed(fsm));
+            }
+            
+            IEnumerator LookForDialogClosed(PlayMakerFSM fsm)
+            {
+                PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
+                while (textYN.ActiveStateName != "Ready for Input") yield return new WaitForEndOfFrame();
+                while (textYN.ActiveStateName == "Ready for Input") yield return new WaitForEndOfFrame();
+                GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
+                fsm.enabled = true;
+                yield return new WaitForSeconds(0.5f);
+                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+                pm.SendEvent("FADE OUT");
+                yield return new WaitForSeconds(0.5f);
+                boss = Boss.All;
+                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+                {
+                    SceneName = "Dream_04_White_Defender",
+                    EntryGateName = "door1",
+                    Visualization = GameManager.SceneLoadVisualizations.Dream,
+                    WaitForSceneTransitionCameraFade = false,
+
+                });
+                yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+                pm.SetState("FadeIn");
+            }
+
+            StartCoroutine(Throne());
+        }
+        
         private void SetupHub()
         {
             IEnumerator HubSet()
@@ -372,6 +422,7 @@ namespace FiveKnights
             On.GameManager.BeginSceneTransition -= GameManager_BeginSceneTransition;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
             ModHooks.Instance.TakeHealthHook -= Instance_TakeHealthHook;
+            
         }
         
         private static void Log(object o)

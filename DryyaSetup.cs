@@ -11,7 +11,7 @@ namespace FiveKnights
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1650;
+        private int _hp = 500;//1650;
         
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -118,8 +118,6 @@ namespace FiveKnights
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             
             AssignFields();
-            
-            gameObject.PrintSceneHierarchyTree();
             
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;

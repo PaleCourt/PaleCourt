@@ -1,11 +1,14 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
 using ModCommon;
 using System.Linq;
+using System.Reflection;
+using GlobalEnums;
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
@@ -125,7 +128,14 @@ namespace FiveKnights
             toggle.SetState(true);
             altLever.transform.position = new Vector2(57.4f,37.5f);
         }
-
+        
+        private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
+        {
+            Log(self.cameraYMax);
+            self.cameraYMax = 13.6f;
+            self.cameraYMin = 13.6f;
+        }
+        
         private void SceneChanged(Scene arg0, Scene arg1)
         {
             CustomWP.isFromGodhome = arg0.name == "GG_Workshop";
@@ -138,13 +148,13 @@ namespace FiveKnights
 
             if (arg0.name == "Waterways_13" && arg1.name == "GG_White_Defender")
             {
-                Log("YAYAYA");
                 CustomWP.boss = CustomWP.Boss.Isma;
                 StartCoroutine(AddComponent());
             }
             
             if (arg0.name == "White_Palace_09" && arg1.name == "GG_White_Defender") //DO arg0.name == "White_Palace_09"
             {
+                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
             }
 
@@ -152,20 +162,20 @@ namespace FiveKnights
             {
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 GameCameras.instance.tk2dCam.ZoomFactor = 1f;
-                Destroy(fightCtrl);
                 PlayerData.instance.isInvincible = false;
             }
 
             if (arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender")
             {
+                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
             }
 
             if (arg1.name == "White_Palace_09" && arg0.name == "Dream_04_White_Defender") //DO arg1.name == "White_Palace_09" EVENTUALLY
             {
+                Log("DEATH");
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 PlayerData.instance.whiteDefenderDefeats = defeats;
-                Destroy(fightCtrl);
                 PlayerData.instance.isInvincible = false;
             }
             
@@ -178,7 +188,13 @@ namespace FiveKnights
                 StartCoroutine(CameraFixer());
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
-            
+
+            if (fightCtrl != null && arg1.name != "Dream_04_White_Defender" && arg1.name != "GG_White_Defender")
+            {
+                Log("Destroying fightctrl");
+                On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
+                Destroy(fightCtrl);
+            }
         }
 
         private IEnumerator CameraFixer()
@@ -212,149 +228,138 @@ namespace FiveKnights
         private void LoadHubBundles()
         {
             Log("Loading hub bundle");
-            AssetBundle ab = FiveKnights.assetbundles["hubasset1"];
-            ab.LoadAllAssets();
-            FiveKnights.preloadedGO["hubfloor"] = ab.LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
+            Assembly asm = Assembly.GetExecutingAssembly();
+            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.hubasset1"))
+            {
+                AssetBundle ab = AssetBundle.LoadFromStream(s);
+                ab.LoadAllAssets();
+                FiveKnights.preloadedGO["hubfloor"] = ab.LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
+            }
+
+            IEnumerator LoadMiscBund()
+            {
+                Object[] clips = null;
+                using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
+                {
+                    var req = AssetBundle.LoadFromStreamAsync(s);
+                    yield return req;
+                    var req2 = req.assetBundle.LoadAllAssetsAsync();
+                    yield return req2;
+                    clips = req2.allAssets;
+                }
+
+                if (clips == null)
+                {
+                    Log("Failed to load clips");
+                    yield break;
+                }
+
+                foreach (var o in clips)
+                {
+                    var clip = (AudioClip) o;
+                    Log("Loading " + clip.name);
+                    if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
+                    if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
+                    else Clips[clip.name] = clip;
+                }
+                
+                Object[] misc = null;
+                using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.miscbund"))
+                {
+                    var req = AssetBundle.LoadFromStreamAsync(s);
+                    yield return req;
+                    var req2 = req.assetBundle.LoadAllAssetsAsync();
+                    yield return req2;
+                    misc = req2.allAssets;
+                }
+
+                if (misc == null)
+                {
+                    Log("Failed to load misc bundle");
+                    yield break;
+                }
+
+                Texture tex = null;
+                foreach (Object asset in misc)
+                {
+                    Log("Loading " + asset.name);
+                    if (asset.name == "Shockwave") FiveKnights.preloadedGO["WaveShad"] = asset as GameObject;
+                    else if (asset.name == "WaveEffectMaterial") ArenaFinder.Materials["WaveEffectMaterial"] = asset as Material;
+                    else if (asset.name == "UnlitFlashMat") ArenaFinder.Materials["flash"] = asset as Material;
+                    else if (asset.name == "sonar") tex = asset as Texture;
+                    else if (asset.name == "petal-test") ArenaFinder.Sprites["ZemParticPetal"] = asset as Sprite;
+                    else if (asset.name == "dung-test") ArenaFinder.Sprites["ZemParticDung"] = asset as Sprite;
+                    else if (asset.name.Contains("Zem_Sil_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("Sil_Isma_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("Dryya_Silhouette_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    else if (asset.name.Contains("hegemol_silhouette_")) ArenaFinder.Sprites[asset.name] = asset as Sprite;
+                    if (asset is GameObject i)
+                    {
+                        if (i.GetComponent<SpriteRenderer>() == null)
+                        {
+                            foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
+                            {
+                                sr.material = new Material(Shader.Find("Sprites/Default"));
+                            }
+                        }
+                        else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+                    }
+                }
+                
+                ArenaFinder.Materials["TestDist"] = new Material(ArenaFinder.Materials["WaveEffectMaterial"]);
+                ArenaFinder.Materials["TestDist"].SetTexture("_NoiseTex", tex);
+                ArenaFinder.Materials["TestDist"].SetFloat("_Intensity", 0.2f);
+                FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                Log("Done loading misc bund");
+            }
+
+            StartCoroutine(LoadMiscBund());
             Log("Finished hub bundle");
-            LoadIsmaBundle();
+            // StartCoroutine(test());
         }
 
-        private void LoadIsmaBundle()
+        private IEnumerator test()
         {
-            Log("Loading Isma Bundle");
-            AssetBundle ab = null;
-            AssetBundle ab2 = FiveKnights.assetbundles["ismabg"];
-            foreach (var i in
-                FiveKnights.assetbundles.Keys.
-                    Where(x => x.Contains("isma") && x != "ismabg")) ab = FiveKnights.assetbundles[i];
-            UObject[] assets = ab.LoadAllAssets();
-            FiveKnights.preloadedGO["Isma"] = ab.LoadAsset<GameObject>("Isma");
-            FiveKnights.preloadedGO["Plant"] = ab.LoadAsset<GameObject>("Plant");
-            FiveKnights.preloadedGO["Gulka"] = ab.LoadAsset<GameObject>("Gulka");
-            FiveKnights.preloadedGO["Fool"] = ab.LoadAsset<GameObject>("Fool");
-            FiveKnights.preloadedGO["Wall"] = ab.LoadAsset<GameObject>("Wall");
-            FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
-            Clips["IsmaMusic"] = ab.LoadAsset<AudioClip>("Aud_Isma");
-            foreach (AudioClip i in ab.LoadAllAssets<AudioClip>().Where(x=>x.name.Contains("IsmaAud")))
+            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+    
+            Material[] blurPlaneMaterials = new Material[1];
+            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
+            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+
+            string str = "";
+            
+            Assembly asm = Assembly.GetExecutingAssembly();
+            using Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.dBund");
+            AssetBundle ab = AssetBundle.LoadFromStream(s);
+            str = ab.GetAllScenePaths()[0];
+            Log("str " + str);
+            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+            
+            //On.SceneManager.Start += SceneManagerOnStart;
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Zemer godhome arena");
+            /*GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
-                IsmaClips[i.name] = i;
-            }
-            foreach (GameObject i in ab.LoadAllAssets<GameObject>())
-            {
-                if (i.GetComponent<SpriteRenderer>() == null)
-                {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
-                    {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
-                    }
-                }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-            foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
-            {
-                Sprites[spr.name] = spr;
-            }
-            Materials["flash"] = ab.LoadAsset<Material>("UnlitFlashMat");
-            Log("Finished Loading Isma Bundle");
-            LoadDryyaAssets();
+                SceneName = str,
+                EntryGateName = "door_test1",
+                Visualization = GameManager.SceneLoadVisualizations.Dream,
+                WaitForSceneTransitionCameraFade = false,
+
+            });*/
         }
         
-        private void LoadDryyaAssets()
+        private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
         {
-            string path = "";
-            foreach (var i in FiveKnights.assetbundles.Keys.
-                    Where(x => x.Contains("dryya"))) path = i;
-            AssetBundle dryyaAssetBundle = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, dryyaAssetsPath));
-            FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
-            FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
-            FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
-            FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
-            Log("Getting Sprites");
-            foreach (Sprite sprite in dryyaAssetBundle.LoadAssetWithSubAssets<Sprite>("Dryya_Silhouette"))
-            {
-                Log("Sprite Name: " + sprite.name);
-                Sprites[sprite.name] = sprite;
-            }
-            
-            Log("Finished Loading Dryya Bundle");
-            LoadHegemolBundle();
-        }
-
-        private void LoadHegemolBundle()
-        {
-            Log("Getting Hegemol Bundle");
-            string path = "";
-            foreach (var i in FiveKnights.assetbundles.Keys.
-                Where(x => x.Contains("hegemol"))) path = i;
-            AssetBundle hegemolBundle = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, hegemolBundlePath));
-
-            UnityEngine.Object[] objects = hegemolBundle.LoadAllAssets();
-            foreach (UnityEngine.Object obj in objects)
-            {
-                Log("Object Name: " + obj.name);
-            }
-            
-            Log("Getting SpriteCollections");
-            
-            FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
-            FiveKnights.preloadedGO["Hegemol Animation"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
-
-            Log("Finished Loading Hegemol Bundle");
-            LoadZemerBundle();
+            Log("Log " + self.mapZone);
+            orig(self);
         }
         
-        private void LoadZemerBundle()
-        {
-            Log("Loading Zemer Bundle");
-            string path = "";
-            foreach (var i in FiveKnights.assetbundles.Keys.
-                Where(x => x.Contains("zemer"))) path = i;
-            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
-            FiveKnights.preloadedGO["TraitorSlam"] = fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
-            Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
-            AssetBundle ab = FiveKnights.assetbundles[path]; //AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, path));
-            UObject[] assets = ab.LoadAllAssets();
-            FiveKnights.preloadedGO["Zemer"] = ab.LoadAsset<GameObject>("Zemer");
-            FiveKnights.preloadedGO["SlashBeam"] = ab.LoadAsset<GameObject>("NewSlash");
-            FiveKnights.preloadedGO["SlashBeam2"] = ab.LoadAsset<GameObject>("NewSlash2");
-            FiveKnights.preloadedGO["SlashBeam3"] = ab.LoadAsset<GameObject>("NewSlash3");
-            Clips["ZP1Intro"] = ab.LoadAsset<AudioClip>("ZP1Intro");
-            Clips["ZP1Loop"] = ab.LoadAsset<AudioClip>("ZP1Loop");
-            
-            FiveKnights.preloadedGO["WaveShad"] = ab.LoadAsset<GameObject>("Shockwave");
-            Shader shader = ab.LoadAsset<Shader>("WaveEffectShader");
-            Texture tex = ab.LoadAsset<Texture>("sonar");
-            Materials["TestDist"] = new Material(shader);
-            Materials["TestDist"].SetTexture("_NoiseTex", tex);
-            Materials["TestDist"].SetFloat("_Intensity", 0.2f);
-            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = Materials["TestDist"];
-
-
-            foreach (AudioClip aud in ab.LoadAllAssets<AudioClip>())
-            {
-                Clips[aud.name] = aud;
-            }
-            
-            FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
-            
-            foreach (GameObject i in ab.LoadAllAssets<GameObject>())
-            {
-                if (i.GetComponent<SpriteRenderer>() == null)
-                {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
-                    {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
-                    }
-                }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-            foreach (Sprite spr in ab.LoadAllAssets<Sprite>())
-            {
-                Sprites[spr.name] = spr;
-            }
-            Log("Finished Loading Zemer Bundle");
-        }
-
         IEnumerator Arena()
         {
             yield return new WaitWhile(() => !HeroController.instance);

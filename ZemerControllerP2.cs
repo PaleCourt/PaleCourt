@@ -32,12 +32,12 @@ namespace FiveKnights
         private GameObject _target;
         private string[] _commonAtt;
 
-        private const float GroundY = 9.75f;
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 9.75f;
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
 
-        private const int Phase2HP = 1500;
-        private const int Phase3HP = 1000;
+        private const int Phase2HP = 500;//1500;
+        private const int Phase3HP = 500;//1000;
 
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.38f;
@@ -1908,7 +1908,8 @@ namespace FiveKnights
                 if (!_blockedHit)
                 {
                     _blockedHit = true;
-                    GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.2f, 0.04f, 0f));
+                    //(0.04f, 0.2f, 0.04f, 0f)
+                    GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.01f, 0.35f, 0.1f, 0.0f));
                     Log("Blocked Hit");
                     Log("Closing " + _counterRoutine);
                     StopCoroutine(_counterRoutine);

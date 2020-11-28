@@ -10,13 +10,27 @@ using System.IO;
 
 namespace FiveKnights
 {
+
     [UsedImplicitly]
     public class FiveKnights : Mod, ITogglableMod
     {
         public FiveKnights() : base("Pale Court") { }
 
+        public static string OS
+        {
+            get
+            {
+                return SystemInfo.operatingSystemFamily switch
+                {
+                    OperatingSystemFamily.Windows => "win",
+                    OperatingSystemFamily.Linux => "lin",
+                    OperatingSystemFamily.MacOSX => "mc",
+                    _ => null
+                };
+            }
+        }
+        
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static Dictionary<string, AssetBundle> assetbundles = new Dictionary<string, AssetBundle>();
         public static readonly List<Sprite> SPRITES = new List<Sprite>();
         public static FiveKnights Instance;
         
@@ -95,61 +109,24 @@ namespace FiveKnights
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             int ind = 0;
-            string pathext = "";
             Assembly asm = Assembly.GetExecutingAssembly();
-            List<string> paths = new List<string>
-            {
-                "isma", "dryya","hegemol","zemer"
-            };
-            
-            switch (SystemInfo.operatingSystemFamily)
-            {
-                case OperatingSystemFamily.Windows:
-                    pathext = "win";
-                    break;
-                case OperatingSystemFamily.Linux:
-                    pathext = "lin";
-                    break;
-                case OperatingSystemFamily.MacOSX:
-                    pathext = "mc";
-                    break;
-                default:
-                    Log("ERROR UNSUPPORTED SYSTEM: " + SystemInfo.operatingSystemFamily);
-                    return;
-            }
-
-            for (int i = 0; i < paths.Count; i++) paths[i] = paths[i] + pathext;
-            //add generic bundles here
-            paths.AddRange(new List<string>
-            {
-                "ismabg",
-                "hubasset1",
-            });
             foreach (string res in asm.GetManifestResourceNames())
             {
-                using (Stream s = asm.GetManifestResourceStream(res))
+                Log("looking at file " + res);
+                using Stream s = asm.GetManifestResourceStream(res);
+                if (s == null) continue;
+                if (res.EndsWith(".png"))
                 {
-                    if (s == null) continue;
                     byte[] buffer = new byte[s.Length];
                     s.Read(buffer, 0, buffer.Length);
                     s.Dispose();
-                    if (res.EndsWith(".png"))
-                    {
-                        // Create texture from bytes
-                        var tex = new Texture2D(1, 1);
-                        tex.LoadImage(buffer, true);
-                        // Create sprite from texture
-                        SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
+                    // Create texture from bytes
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(buffer, true);
+                    // Create sprite from texture
+                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 
-                        Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
-                    }
-                    else
-                    {
-                        string bundleName = Path.GetExtension(res).Substring(1);
-                        if (!paths.Contains(bundleName)) continue;
-                        Log("Loading bundle " + bundleName);
-                        assetbundles[bundleName] = AssetBundle.LoadFromMemory(buffer);
-                    }
+                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
                 }
             }
         }

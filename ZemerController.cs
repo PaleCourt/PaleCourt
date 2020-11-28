@@ -24,12 +24,12 @@ namespace FiveKnights
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private const float GroundY = 9.75f;
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 9.75f;
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
-        private const int Phase2HP = 200;
-        private const int MaxHPV2 = 500 + Phase2HP;
-        private const int MaxHPV1 = 1200;
+        private const int Phase2HP = 500;//200;
+        private const int MaxHPV2 = 500;// + Phase2HP;
+        private const int MaxHPV1 = 500;//1200;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -74,6 +74,9 @@ namespace FiveKnights
             _pvFsm = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
             traitorSlam = new GameObject[2];
             traitorSlamIndex = 0;
+            string partic = (CustomWP.boss == CustomWP.Boss.All) ? "ZemParticDung" : "ZemParticPetal";
+            FiveKnights.preloadedGO["TraitorSlam"].transform.Find("Grass").GetComponent<ParticleSystemRenderer>()
+                .material.mainTexture = ArenaFinder.Sprites[partic].texture;
             for (int i = 0; i < traitorSlam.Length; i++)
             {
                 traitorSlam[i] = Instantiate(FiveKnights.preloadedGO["TraitorSlam"]);
@@ -82,11 +85,9 @@ namespace FiveKnights
                 traitorSlam[i].SetActive(false);
             }
         }
-        
         private IEnumerator Start()
         {
             Log("Start");
-            GameCameras.instance.tk2dCam.ZoomFactor = 0.75f;
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
             gameObject.transform.localScale *= 0.9f;
@@ -121,7 +122,8 @@ namespace FiveKnights
             }
 
             string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
-            
+            area = Instantiate(area);
+            area.SetActive(true);
             AreaTitleCtrl.ShowBossTitle(
                 this, area, 2f, 
                 "","","",
@@ -638,7 +640,7 @@ namespace FiveKnights
         {
             if (self.name.Contains("Zemer"))
             {
-                GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
+                GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.01f, 0.35f, 0.1f, 0.0f));
                 
                 // Prevent code block from running every frame
                 if (!_blockedHit)
@@ -711,16 +713,14 @@ namespace FiveKnights
         private IEnumerator SilLeave()
         {
             SpriteRenderer sil = GameObject.Find("Silhouette Zemer").GetComponent<SpriteRenderer>();
-            sil.transform.localScale *= 1.15f;
-            sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 10f);
-            sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
+            sil.transform.localScale *= 1.2f;
             sil.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
             yield return new WaitForSeconds(0.05f);
             sil.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
             yield return new WaitForSeconds(0.05f);
             sil.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
             yield return new WaitForSeconds(0.05f);
-            sil.gameObject.SetActive(false);
+            Destroy(sil.gameObject);
         }
 
         private float FaceHero(bool shouldRev = false)

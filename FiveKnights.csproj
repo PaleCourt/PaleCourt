@@ -123,6 +123,9 @@
     <EmbeddedResource Include="StreamingAssets\ismabg" />
 	<EmbeddedResource Include="StreamingAssets\hubasset1" />
 	<EmbeddedResource Include="StreamingAssets\lord" />
+	<EmbeddedResource Include="StreamingAssets\dBund" />
+	<EmbeddedResource Include="StreamingAssets\soundbund" />
+	<EmbeddedResource Include="StreamingAssets\miscbund" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

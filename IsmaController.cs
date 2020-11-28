@@ -38,9 +38,9 @@ namespace FiveKnights
         private const float LEFT_X = 60.3f;
         private const float RIGHT_X = 90.6f;
         private const float GROUND_Y = 5.9f;
-        private const int MAX_HP = 1200;
-        private const int WALL_HP = 900;
-        private const int SPIKE_HP = 600;
+        private const int MAX_HP = 500;//1200;
+        private const int WALL_HP = 500;//900;
+        private const int SPIKE_HP = 500;//600;
         private const float IDLE_TIME = 0.1f;
         public static float offsetTime;
         public static bool killAllMinions;
@@ -89,7 +89,21 @@ namespace FiveKnights
             Log("Begin Isma");
             yield return null;
             offsetTime = 0f;
-            GameObject actor = GameObject.Find("Audio Player Actor");
+            GameObject actor = null;
+            foreach (var i in FindObjectsOfType<GameObject>())
+            {
+                if (i.name.Contains("Audio Player Actor"))
+                {
+                    actor = i;
+                    break;
+                }
+            }
+
+            if (actor == null)
+            {
+                Log("ERROR: Actor not found.");
+                yield break;
+            }
             _ap = new MusicPlayer
             {
                 Volume = 1f,
@@ -147,7 +161,13 @@ namespace FiveKnights
                 area = i.transform.Find("Area Title").gameObject;
             }
             if (!onlyIsma) StartCoroutine(ChangeIntroText(area, "Ogrim", "", "Loyal", true));
-            StartCoroutine(ChangeIntroText(Instantiate(area), "Isma", "", "Kindly", false));
+            
+            GameObject area2 = Instantiate(area);
+            area2.SetActive(true);
+            AreaTitleCtrl.ShowBossTitle(
+                this, area2, 2f, 
+                "","","",
+                "Isma","Kindly");
             _bc.enabled = true;
             waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
@@ -976,29 +996,7 @@ namespace FiveKnights
             HeroController.instance.StartAnimationControl();
             yield return new WaitWhile(() => transform.position.y < 25f);
             //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
-            WDController.CustomAudioPlayer.StopMusic();
-            PlayMakerFSM fsm = GameObject.Find("Battle Scene").LocateMyFSM("Battle Scene");
-
-            PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-            pm.SendEvent("FADE OUT INSTANT");
-            PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
-            fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-            fsm2.SendEvent("FADE IN");
-            yield return null;
-            HeroController.instance.MaxHealth();
-            yield return null;
-            GameCameras.instance.cameraFadeFSM.FsmVariables.FindFsmBool("No Fade").Value = true;
-            yield return null;
-            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-            {
-                SceneName = "White_Palace_09",
-                EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)",
-                Visualization = GameManager.SceneLoadVisualizations.GodsAndGlory,
-                WaitForSceneTransitionCameraFade = false,
-                PreventCameraFadeOut = true,
-                EntryDelay = 0
-
-            });
+            yield return new WaitForSeconds(1f);
             CustomWP.Instance.wonLastFight = true;
             Destroy(this);
         }
@@ -1031,7 +1029,6 @@ namespace FiveKnights
             _anim.enabled = true;
             yield return null;
             PlayDeathFor(gameObject);
-            if (WDController.CustomAudioPlayer != null) WDController.CustomAudioPlayer.StopMusic();
             //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
             _rb.gravityScale = 1.5f;
             float ismaXSpd = dir * 10f;
@@ -1106,19 +1103,26 @@ namespace FiveKnights
             }
             eliminateMinions = true;
             killAllMinions = true;
-            StopCoroutine(c);
+            Log(1);
+            if (c != null) StopCoroutine(c);
+            Log(12);
             _anim.speed = 1f;
+            Log(125);
             foreach (SpriteRenderer i in gameObject.GetComponentsInChildren<SpriteRenderer>())
             {
                 if (i.name.Contains("Isma")) continue;
                 i.gameObject.SetActive(false);
             }
+            Log(13);
             Destroy(fakeIsma);
+            Log(14);
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
+            Log(5);
             PlayDeathFor(gameObject);
-            WDController.CustomAudioPlayer.StopMusic();
+            Log(155);
+            Log(16);
             //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
 
             _anim.Play("Falling");
@@ -1277,16 +1281,14 @@ namespace FiveKnights
         private IEnumerator SilLeave()
         {
             SpriteRenderer sil = GameObject.Find("Silhouette Isma").GetComponent<SpriteRenderer>();
-            sil.transform.localScale *= 1.15f;
-            sil.gameObject.AddComponent<Rigidbody2D>().velocity = new Vector2(0f, 80f);
-            sil.gameObject.GetComponent<Rigidbody2D>().gravityScale = 0f;
+            sil.transform.localScale *= 1.2f;
             sil.sprite = ArenaFinder.Sprites["Sil_Isma_1"];
             yield return new WaitForSeconds(0.05f);
             sil.sprite = ArenaFinder.Sprites["Sil_Isma_2"];
             yield return new WaitForSeconds(0.05f);
             sil.sprite = ArenaFinder.Sprites["Sil_Isma_3"];
             yield return new WaitForSeconds(0.05f);
-            sil.gameObject.SetActive(false);
+            Destroy(sil.gameObject);
         }
 
         private void ToggleIsma(bool visible)
@@ -1323,6 +1325,7 @@ namespace FiveKnights
                 Destroy(i);
             }
             yield return null;
+            Log("YA");
             GameObject go = Instantiate(FiveKnights.preloadedGO["ismaBG"]);
             foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
             {
@@ -1337,6 +1340,7 @@ namespace FiveKnights
                     i.transform.position = i.transform.position - new Vector3(0f,0.15f,0f);
                 }
             }
+            Log("YA2");
         }
 
         private void PlayDeathFor(GameObject go)

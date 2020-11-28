@@ -12,7 +12,7 @@ namespace FiveKnights
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 2400;
+        private const int Health = 500;//2400;
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;

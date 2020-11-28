@@ -13,7 +13,7 @@ namespace FiveKnights
 {
     public class DryyaController : MonoBehaviour
     {
-        private const float GroundY = 10.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 8.5f : 10.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
         private const float LeftX = 61.0f;
@@ -194,7 +194,6 @@ namespace FiveKnights
             AssignFields();
 
             Log("Printing Out Dryya");
-            gameObject.PrintSceneHierarchyTree();
 
             //DryyaIntro();
         }
