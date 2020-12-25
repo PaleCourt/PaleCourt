@@ -174,7 +174,13 @@ namespace FiveKnights
         private void OnDestroy()
         {
             WDController ctrl = GameManager.instance.gameObject.GetComponent<WDController>();
-            if (ctrl != null) Destroy(ctrl);
+            if (ctrl != null)
+            {
+                ctrl.PlayMusic(null);
+                ctrl._ap.StopMusic();
+                ctrl._ap2.StopMusic();
+                Destroy(ctrl);
+            }
             Destroy(_whiteD);
             Destroy(_isma);    
             Destroy(_zemer);

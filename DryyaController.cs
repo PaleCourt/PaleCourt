@@ -194,7 +194,6 @@ namespace FiveKnights
             AssignFields();
 
             Log("Printing Out Dryya");
-
             //DryyaIntro();
         }
 

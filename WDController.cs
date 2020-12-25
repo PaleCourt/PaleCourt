@@ -21,6 +21,8 @@ namespace FiveKnights
         public GameObject dd; 
         private tk2dSpriteAnimator _tk;
         private List<AssetBundle> _assetBundles;
+        public MusicPlayer _ap;
+        public MusicPlayer _ap2;
         public static bool alone;
         private bool HIT_FLAG;
         public static WDController Instance;
@@ -52,8 +54,6 @@ namespace FiveKnights
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
                 yield return new WaitWhile(() => ic != null);
-                //var endCtrl = GameObject.Find("Boss Scene Controller").LocateMyFSM("Dream Return");
-                //endCtrl.SendEvent("DREAM RETURN");
                 if (CustomWP.Instance.wonLastFight)
                 {
                     int lev = CustomWP.Instance.lev + 1;
@@ -107,6 +107,8 @@ namespace FiveKnights
                 FightController.Instance.CreateIsma();
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 yield return new WaitWhile(() => !ic.introDone);
+                _ap.Volume = 1f;
+                _ap.UpdateMusic();
                 _fsm.enabled = true;
                 _fsm.SetState("Stun Recover");
                 yield return null;
@@ -119,6 +121,8 @@ namespace FiveKnights
                 yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
                 burrow.SendEvent("BURROW END");
                 yield return new WaitWhile(() => ic != null);
+                _ap.StopMusic();
+                _ap2.StopMusic();
                 if (CustomWP.Instance.wonLastFight)
                 {
                     int lev = CustomWP.Instance.lev + 1;
@@ -243,15 +247,32 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.All)
             {
-                yield return LoadIsmaBundle();
                 yield return null;
-                yield return LoadDryyaAssets();
-                yield return null;
-                yield return LoadHegemolBundle();
-                yield return null;
-                yield return LoadZemerBundle();
-                yield return null;
+                bool flag = false;
+                StartCoroutine(Wow());
+                var isma = StartCoroutine(LoadIsmaBundle());
+                var dryya = StartCoroutine(LoadDryyaAssets());
+                var hegem = StartCoroutine(LoadHegemolBundle());
+                var zemer = StartCoroutine(LoadZemerBundle());
+                yield return isma;
+                yield return dryya;
+                yield return hegem;
+                yield return zemer;
+                flag = true;
+                HeroController.instance.RegainControl();
+                HeroController.instance.AcceptInput();
                 
+                IEnumerator Wow()
+                {
+                    while (!flag)
+                    {
+                        HeroController.instance.RelinquishControl();
+                        HeroController.instance.IgnoreInput();
+                        HeroController.instance.IgnoreInputWithoutReset();
+                        yield return null;
+                    }
+                }
+
                 alone = false;
                 _hm.hp = 950;
                 _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
@@ -285,6 +306,8 @@ namespace FiveKnights
                 FightController.Instance.CreateIsma();
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 yield return new WaitWhile(() => !ic.introDone);
+                _ap.Volume = 1f;
+                _ap.UpdateMusic();
                 _fsm.enabled = true;
                 _fsm.SetState("Stun Recover");
                 yield return null;
@@ -299,7 +322,10 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null, 1f);
                 dd.SetActive(false);
-
+                _ap.StopMusic();
+                _ap2.StopMusic();
+                
+                
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
@@ -396,12 +422,43 @@ namespace FiveKnights
         
         private MusicCue.MusicChannelInfo MusicCue_GetChannelInfo(On.MusicCue.orig_GetChannelInfo orig, MusicCue self, MusicChannels channel)
         {
-            if (!startedMusic && (CustomWP.boss == CustomWP.Boss.Ogrim || CustomWP.boss == CustomWP.Boss.All) && self.name.Contains("Defender"))
+            if (!startedMusic && self.name.Contains("Defender") && (CustomWP.boss == CustomWP.Boss.Ogrim || CustomWP.boss == CustomWP.Boss.All))
             {
+                Log("PLayed Isma song too " + self.name);
                 startedMusic = true;
-                PlayMusic(ArenaFinder.Clips["IsmaMusic"]);
+                PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
+                GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
+                PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
+                GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
+                _ap = new MusicPlayer
+                {
+                    Volume = 0f,
+                    Player = actor,
+                    MaxPitch = 1f,
+                    MinPitch = 1f,
+                    Loop = true,
+                    Clip = FiveKnights.Clips["IsmaMusic"],
+                    Spawn = HeroController.instance.gameObject
+                };
+                _ap2 = new MusicPlayer
+                {
+                    Volume = 1f,
+                    Player = actor,
+                    MaxPitch = 1f,
+                    MinPitch = 1f,
+                    Loop = true,
+                    Clip = FiveKnights.Clips["OgrimMusic"],
+                    Spawn = HeroController.instance.gameObject
+                };
+
+                _ap.DoPlayRandomClip();
+                _ap2.DoPlayRandomClip();
+                
+                return null;
             }
-            else if (self.name.Contains("Defender"))
+
+            if (startedMusic && self.name.Contains("Defender") &&
+                (CustomWP.boss == CustomWP.Boss.Ogrim || CustomWP.boss == CustomWP.Boss.All))
             {
                 return null;
             }
@@ -431,6 +488,12 @@ namespace FiveKnights
         private IEnumerator LoadIsmaBundle()
         {
             Log("Loading Isma Bundle");
+            if (FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
+            {
+                Log("broke Isma");
+                yield break;
+            }
+            
             Assembly asm = Assembly.GetExecutingAssembly();
             using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.isma"+FiveKnights.OS))
             {
@@ -490,6 +553,11 @@ namespace FiveKnights
         private IEnumerator LoadDryyaAssets()
         {
             Log("Loading Dryya Bundle");
+            if (FiveKnights.preloadedGO.TryGetValue("Dryya", out var go) && go != null)
+            {
+                Log("broke Dryya");
+                yield break;
+            }
             
             Assembly asm = Assembly.GetExecutingAssembly();
             
@@ -523,6 +591,11 @@ namespace FiveKnights
         private IEnumerator LoadHegemolBundle()
         {
             Log("Loading Hegemol Bundle");
+            if (FiveKnights.preloadedGO.TryGetValue("Hegemol Collection Prefab", out var go) && go != null)
+            {
+                Log("broke Hegemol Collection Prefab");
+                yield break;
+            }
             
             Assembly asm = Assembly.GetExecutingAssembly();
 
@@ -556,10 +629,16 @@ namespace FiveKnights
         {
             Log("Loading Zemer Bundle");
             
+            if (FiveKnights.preloadedGO.TryGetValue("Zemer", out var go) && go != null)
+            {
+                Log("broke Zemer");
+                yield break;
+            }
+            
             PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
             FiveKnights.preloadedGO["TraitorSlam"] =
                 fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
-            ArenaFinder.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
             
             Assembly asm = Assembly.GetExecutingAssembly();
 

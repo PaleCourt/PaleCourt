@@ -38,9 +38,9 @@ namespace FiveKnights
         private const float LEFT_X = 60.3f;
         private const float RIGHT_X = 90.6f;
         private const float GROUND_Y = 5.9f;
-        private const int MAX_HP = 500;//1200;
-        private const int WALL_HP = 500;//900;
-        private const int SPIKE_HP = 500;//600;
+        private const int MAX_HP = 1200;
+        private const int WALL_HP = 900;
+        private const int SPIKE_HP = 600;
         private const float IDLE_TIME = 0.1f;
         public static float offsetTime;
         public static bool killAllMinions;
@@ -148,9 +148,16 @@ namespace FiveKnights
             whip.layer = 11;
             PlantG = new List<GameObject>();
             PlantF = new List<GameObject>();
+            if (onlyIsma) MusicControl();
             StartCoroutine("Start2");
         }
-
+        
+        private void MusicControl()
+        {
+            Log("Start music");
+            WDController.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaMusic"], 1f);
+        }
+        
         private IEnumerator Start2()
         {
             float dir = FaceHero();
@@ -939,6 +946,10 @@ namespace FiveKnights
             _healthPool = 40;
             yield return new WaitWhile(() => _healthPool > 0);
             float xSpd = _target.transform.GetPositionX() > dd.transform.GetPositionX() ? -10f : 10f;
+            WDController.Instance.PlayMusic(null, 1f);
+            Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
+            GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
+            GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
             PlayDeathFor(dd);
             eliminateMinions = true;
             killAllMinions = true;
@@ -947,10 +958,6 @@ namespace FiveKnights
             yield return null;
             yield return new WaitWhile(() => _ddFsm.ActiveStateName == "Stun Set");
             PlayerData.instance.isInvincible = true;
-            HeroController.instance.RelinquishControl();
-            GameManager.instance.playerData.disablePause = true;
-            if (dd.transform.position.x > _target.transform.position.x) HeroController.instance.FaceRight();
-            else HeroController.instance.FaceLeft();
             float x = CalculateTrajector(new Vector2(xSpd, 45f), 7.95f, dd.GetComponent<Rigidbody2D>().gravityScale) + dd.transform.GetPositionX();
             if (x < 68f) x = 68f;
             else if (x > 85f) x = 85f;
@@ -990,14 +997,14 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
             _rb.velocity = new Vector2(0f, 35f);
             GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
-            PlayerData.instance.isInvincible = false;
-            HeroController.instance.RegainControl();
-            GameManager.instance.playerData.disablePause = false;
             HeroController.instance.StartAnimationControl();
-            yield return new WaitWhile(() => transform.position.y < 25f);
-            //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
-            yield return new WaitForSeconds(1f);
+            yield return new WaitWhile(() => transform.position.y < 19f);
+            PlayerData.instance.isInvincible = false;
+            Log("Death ogrim end0");
+            if (CustomWP.boss != CustomWP.Boss.All) yield return new WaitForSeconds(1f);
             CustomWP.Instance.wonLastFight = true;
+            Log("Death ogrim end");
+            _ddFsm.enabled = false;
             Destroy(this);
         }
 
@@ -1028,6 +1035,7 @@ namespace FiveKnights
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
+            WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
             _rb.gravityScale = 1.5f;
@@ -1103,34 +1111,26 @@ namespace FiveKnights
             }
             eliminateMinions = true;
             killAllMinions = true;
-            Log(1);
             if (c != null) StopCoroutine(c);
-            Log(12);
             _anim.speed = 1f;
-            Log(125);
             foreach (SpriteRenderer i in gameObject.GetComponentsInChildren<SpriteRenderer>())
             {
                 if (i.name.Contains("Isma")) continue;
                 i.gameObject.SetActive(false);
             }
-            Log(13);
             Destroy(fakeIsma);
-            Log(14);
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
-            Log(5);
+            Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
+            Log("1 dada ");
+            GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
+            GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
+            Log("2 dada");
+            WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
-            Log(155);
-            Log(16);
-            //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
-
             _anim.Play("Falling");
-            PlayerData.instance.isInvincible = true;
-            HeroController.instance.RelinquishControl();
-            GameManager.instance.playerData.disablePause = true;
-            if (dd.transform.position.x > _target.transform.position.x) HeroController.instance.FaceRight();
-            else HeroController.instance.FaceLeft();
+            PlayerData.instance.isInvincible = true; ;
 
             _rb.gravityScale = 1.5f;
             float ismaXSpd = dir * 10f;
@@ -1183,15 +1183,14 @@ namespace FiveKnights
             gameObject.transform.localScale *= 1.25f;
             _rb.gravityScale = 0f;
             _rb.velocity = new Vector2(0f, 50f);
-            yield return new WaitWhile(() => gameObject.transform.position.y < 22f);
+            yield return new WaitWhile(() => transform.position.y < 19f);
             PlayerData.instance.isInvincible = false;
-            HeroController.instance.RegainControl();
-            GameManager.instance.playerData.disablePause = false;
-            HeroController.instance.StartAnimationControl();
-            yield return new WaitWhile(() => transform.position.y < 25f);
             //Time.timeScale = 1f;
-            yield return new WaitForSeconds(1f);
+            Log("isma dead end 1");
+            if (CustomWP.boss != CustomWP.Boss.All) yield return new WaitForSeconds(1f);
             CustomWP.Instance.wonLastFight = true;
+            Log("isma dead end 2");
+            _ddFsm.enabled = false;
             Destroy(this);
         }
 
@@ -1354,7 +1353,7 @@ namespace FiveKnights
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
-                _ap.Clip = ArenaFinder.IsmaClips["IsmaAudDeath"];
+                _ap.Clip = FiveKnights.IsmaClips["IsmaAudDeath"];
                 _ap.DoPlayRandomClip();
                 //_aud.PlayOneShot(ArenaFinder.ismaAudioClips["IsmaAudDeath"]);
             }
@@ -1383,7 +1382,7 @@ namespace FiveKnights
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
-            foreach (AudioClip i in ArenaFinder.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
+            foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
             }

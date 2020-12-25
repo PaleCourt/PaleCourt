@@ -36,8 +36,8 @@ namespace FiveKnights
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
 
-        private const int Phase2HP = 500;//1500;
-        private const int Phase3HP = 500;//1000;
+        private const int Phase2HP = 1500;
+        private const int Phase3HP = 1000;
 
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.38f;
@@ -1453,9 +1453,9 @@ namespace FiveKnights
 
         private IEnumerator MusicControl()
         {
-            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP2Intro"], 1f);
+            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
             yield return new WaitForSecondsRealtime(14.12f);
-            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP2Loop"], 1f);
+            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
         }
         
         private IEnumerator EndPhase1()
@@ -1978,6 +1978,7 @@ namespace FiveKnights
             }
 
             FaceHero();
+            WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _bc.enabled = false;
             _anim.enabled = true;
@@ -1989,7 +1990,7 @@ namespace FiveKnights
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
             transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
             yield return _anim.PlayToEnd();
-            yield return new WaitForSeconds(ArenaFinder.Clips["ZAudP2Death1"].length);
+            yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
             PlayAudioClip("ZAudP2Death2",_voice);
             yield return new WaitForSeconds(1.75f);
             CustomWP.Instance.wonLastFight = true;
@@ -2071,8 +2072,8 @@ namespace FiveKnights
             {
                 "Counter" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip.Value,
                 "Slash" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value,
-                "TraitorPillar" => ArenaFinder.Clips["TraitorSlam"],
-                _ => ArenaFinder.Clips[clipName]
+                "TraitorPillar" => FiveKnights.Clips["TraitorSlam"],
+                _ => FiveKnights.Clips[clipName]
             };
 
             ap.DoPlayRandomClip();

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.CodeDom;
+using System.Collections;
 using System.Reflection;
 using Modding;
 using JetBrains.Annotations;
@@ -7,6 +9,8 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
+using ModCommon;
+using On.HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
@@ -15,6 +19,8 @@ namespace FiveKnights
     public class FiveKnights : Mod, ITogglableMod
     {
         public FiveKnights() : base("Pale Court") { }
+        public static Dictionary<string, AudioClip> Clips { get; private set; }
+        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
 
         public static string OS
         {
@@ -102,6 +108,8 @@ namespace FiveKnights
             Log("Initalizing.");
 
             Unload();
+            GameManager.instance.StartCoroutine(LoadMusic());
+            
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
@@ -131,6 +139,37 @@ namespace FiveKnights
             }
         }
 
+        IEnumerator LoadMusic()
+        {
+            UObject[] clips = null;
+            Assembly asm = Assembly.GetExecutingAssembly();
+            Clips = new Dictionary<string, AudioClip>();
+            IsmaClips = new Dictionary<string, AudioClip>();
+            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
+            {
+                var ab = AssetBundle.LoadFromStream(s);
+                yield return null;
+                clips = ab.LoadAllAssets();
+            }
+
+            if (clips == null)
+            {
+                Log("Failed to load clips");
+                yield break;
+            }
+
+            foreach (var o in clips)
+            {
+                var clip = (AudioClip) o;
+                if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
+                if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
+                else Clips[clip.name] = clip;
+            }
+            
+            AudioSource aud = GameObject.Find("Music").transform.Find("Main").GetComponent<AudioSource>();
+            aud.clip = Clips["MM_Aud"];
+            aud.Play();
+        }
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")

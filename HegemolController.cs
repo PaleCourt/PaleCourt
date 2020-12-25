@@ -21,7 +21,7 @@ namespace FiveKnights
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 2400;
+        private const int Health = 1700; //2400;
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
@@ -135,8 +135,6 @@ namespace FiveKnights
 
             _control.SetState("Init");
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
-
-            gameObject.PrintSceneHierarchyTree();
             
             _control.SendEvent("BATTLE START");
             while (true)
@@ -181,6 +179,13 @@ namespace FiveKnights
             roarLock.SendEvent("ROAR EXIT");
 
             _control.SetState("Check");
+            MusicControl();
+        }
+        
+        private void MusicControl()
+        {
+            Log("Start music");
+            WDController.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
         }
         
         private void AddDig()
@@ -511,7 +516,7 @@ namespace FiveKnights
 
             orig(self, hitInstance);
 
-            if (_hm.hp <= 0)
+            if (_hm.hp <= 100)
             {
                 HegemolDeath();
             }
@@ -520,6 +525,7 @@ namespace FiveKnights
         private void HegemolDeath()
         {
             Log("Hegemol Death");
+            WDController.Instance.PlayMusic(null, 1f);
             Destroy(gameObject);
         }
         

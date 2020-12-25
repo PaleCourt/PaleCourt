@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using HutongGames.PlayMaker.Actions;
@@ -11,7 +12,7 @@ namespace FiveKnights
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 500;//1650;
+        private int _hp = 1650;
         
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -124,8 +125,24 @@ namespace FiveKnights
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
 
+
+
+        private IEnumerator Start()
+        {
+            var rb = gameObject.GetComponent<Rigidbody2D>();
+            yield return new WaitWhile(()=> rb.velocity.y == 0f);
+            yield return new WaitWhile(()=> rb.velocity.y != 0f);
+            MusicControl();
+        }
+        
+        private void MusicControl()
+        {
+            WDController.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
+        }
+        
         private void DeathHandler()
         {
+            WDController.Instance.PlayMusic(null, 1f);
             CustomWP.Instance.wonLastFight = true;
         }
 

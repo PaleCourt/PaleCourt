@@ -6,7 +6,9 @@ using Modding;
 using HutongGames.PlayMaker.Actions;
 using System.Collections;
 using ModCommon;
+using ModCommon.Util;
 using UnityEngine.UI;
+using Object = System.Object;
 
 namespace FiveKnights
 {
@@ -96,34 +98,57 @@ namespace FiveKnights
 
         private void SetupThrone()
         {
-            IEnumerator Throne()
+            GameObject go = Instantiate(FiveKnights.preloadedGO["throne"]);
+            go.SetActive(true);
+            go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
+            PlayMakerFSM fsm = go.LocateMyFSM("Sit");
+            FiveKnights.preloadedGO["Statue"].transform.position =
+                new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
+            for (int i = 0; i < 3; i++)
             {
-                GameObject go = Instantiate(FiveKnights.preloadedGO["throne"]);
-                go.SetActive(true);
-                go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
-                PlayMakerFSM fsm = go.LocateMyFSM("Sit");
-                FiveKnights.preloadedGO["Statue"].transform.position = new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
-                for (int i = 0; i < 3; i++)
-                {
-                    GameObject s = Instantiate(FiveKnights.preloadedGO["Statue"]);
-                    float y = s.transform.position.y;
-                    s.transform.position = new Vector3(50.2f + i * 5f, y, HeroController.instance.transform.GetPositionZ());
-                }
-                yield return new WaitWhile(() => fsm.ActiveStateName != "Resting");
-                fsm.enabled = false;
-                GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
-                GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "YN_THRONE");
-                GameObject.Find("Text YN").GetComponent<MonoBehaviour>().StartCoroutine(LookForDialogClosed(fsm));
+                GameObject s = Instantiate(FiveKnights.preloadedGO["Statue"]);
+                float y = s.transform.position.y;
+                s.transform.position = new Vector3(50.2f + i * 5f, y,
+                    HeroController.instance.transform.GetPositionZ());
             }
             
-            IEnumerator LookForDialogClosed(PlayMakerFSM fsm)
+            IEnumerator Throne()
+            {
+                while (gameObject)
+                {
+                    yield return new WaitWhile(() => fsm.ActiveStateName != "Resting");
+                    fsm.enabled = false;
+                    GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
+                    GameObject.Find("DialogueManager").SetActive(true);
+                    GameObject.Find("Text YN").SetActive(true);
+                    GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "YN_THRONE");
+                    PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
+                    textYN.FsmVariables.FindFsmInt("Toll Cost").Value = 0;
+                    textYN.InsertCoroutine("Yes", 1, SaidYes);
+                    textYN.InsertCoroutine("No", 1, SaidNo);
+                    textYN.enabled = true;
+                    while (textYN.ActiveStateName != "Ready for Input") yield return new WaitForEndOfFrame();
+                    while (textYN.ActiveStateName == "Ready for Input") yield return new WaitForEndOfFrame();
+                    yield return new WaitForSeconds(0.1f);
+                }
+            }
+
+            IEnumerator SaidNo()
+            {
+                yield return null;
+                PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
+                GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN"); 
+                fsm.enabled = true;
+                textYN.enabled = true;
+                fsm.SetState("Get Up");
+                textYN.RemoveAction("No", 1);
+                textYN.RemoveAction("Yes", 1);
+            }
+            
+            IEnumerator SaidYes()
             {
                 PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
-                while (textYN.ActiveStateName != "Ready for Input") yield return new WaitForEndOfFrame();
-                while (textYN.ActiveStateName == "Ready for Input") yield return new WaitForEndOfFrame();
                 GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
-                fsm.enabled = true;
-                yield return new WaitForSeconds(0.5f);
                 PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
                 pm.SendEvent("FADE OUT");
                 yield return new WaitForSeconds(0.5f);
@@ -136,8 +161,12 @@ namespace FiveKnights
                     WaitForSceneTransitionCameraFade = false,
 
                 });
-                yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
-                pm.SetState("FadeIn");
+
+                textYN.RemoveAction("Yes", 1);
+                textYN.RemoveAction("No", 1);
+                textYN.enabled = true;
+                fsm.enabled = true;
+
             }
 
             StartCoroutine(Throne());

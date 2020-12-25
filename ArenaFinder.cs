@@ -22,10 +22,8 @@ namespace FiveKnights
         public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
         
         public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
-        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
         public static Dictionary<string, Material> Materials { get; private set; }
         public static Dictionary<string, Sprite> Sprites { get; private set; }
-        public static Dictionary<string, AudioClip> Clips { get; private set; }
 
         public static int defeats;
         
@@ -41,10 +39,8 @@ namespace FiveKnights
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
-            IsmaClips = new Dictionary<string, AudioClip>();
             Materials = new Dictionary<string, Material>();
             Sprites = new Dictionary<string, Sprite>();
-            Clips = new Dictionary<string, AudioClip>();
             LoadHubBundles();
         }
 
@@ -139,10 +135,9 @@ namespace FiveKnights
         
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
         {
-            Log(self.cameraYMax);
             self.cameraYMax = 13.6f;
             self.cameraYMin = 13.6f;
-        }
+        }                                                                                                            
         
         private void SceneChanged(Scene arg0, Scene arg1)
         {
@@ -173,7 +168,8 @@ namespace FiveKnights
                 PlayerData.instance.isInvincible = false;
             }
 
-            if (arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender")
+            if ((arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender") ||
+                (arg0.name == "Dream_04_White_Defender" && arg1.name == "Dream_04_White_Defender" && CustomWP.boss == CustomWP.Boss.All))
             {
                 On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
@@ -246,31 +242,6 @@ namespace FiveKnights
 
             IEnumerator LoadMiscBund()
             {
-                Object[] clips = null;
-                using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
-                {
-                    var req = AssetBundle.LoadFromStreamAsync(s);
-                    yield return req;
-                    var req2 = req.assetBundle.LoadAllAssetsAsync();
-                    yield return req2;
-                    clips = req2.allAssets;
-                }
-
-                if (clips == null)
-                {
-                    Log("Failed to load clips");
-                    yield break;
-                }
-
-                foreach (var o in clips)
-                {
-                    var clip = (AudioClip) o;
-                    Log("Loading " + clip.name);
-                    if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
-                    if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
-                    else Clips[clip.name] = clip;
-                }
-                
                 Object[] misc = null;
                 using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.miscbund"))
                 {

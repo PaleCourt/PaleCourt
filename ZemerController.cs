@@ -27,9 +27,9 @@ namespace FiveKnights
         private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 9.75f;
         private const float LeftX = 61.5f;
         private const float RightX = 91.6f;
-        private const int Phase2HP = 500;//200;
-        private const int MaxHPV2 = 500;// + Phase2HP;
-        private const int MaxHPV1 = 500;//1200;
+        private const int Phase2HP = 200;
+        private const int MaxHPV2 = 500 + Phase2HP;
+        private const int MaxHPV1 = 1200;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -150,11 +150,11 @@ namespace FiveKnights
 
         private IEnumerator MusicControl()
         {
-            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Intro"], 1f);
+            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"], 1f);
             yield return new WaitForSecondsRealtime(7.04f);
             WDController.Instance.PlayMusic(null, 1f);
             Log("Start p2");
-            WDController.Instance.PlayMusic(ArenaFinder.Clips["ZP1Loop"], 1f);
+            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"], 1f);
         }
 
         private void Update()
@@ -802,9 +802,9 @@ namespace FiveKnights
                     case "Slash":
                         return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
                     case "TraitorPillar":
-                        return ArenaFinder.Clips["TraitorSlam"];
+                        return FiveKnights.Clips["TraitorSlam"];
                     default:
-                        return ArenaFinder.Clips[clipName];
+                        return FiveKnights.Clips[clipName];
                 }
             }
 

@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
@@ -16,12 +17,11 @@ namespace FiveKnights
         private AudioSource audio;
         private Coroutine _loop;
 
-        private IEnumerator LoopMusic()
+        private IEnumerator LoopMusic(AudioClip clip)
         {
             while (true)
             {
                 yield return new WaitForSeconds(Clip.length);
-                AudioClip clip = Clip;
                 audio.pitch = Random.Range(MinPitch, MaxPitch);
                 audio.volume = Volume;
                 audio.PlayOneShot(clip);
@@ -37,15 +37,27 @@ namespace FiveKnights
 
         public void StopMusic()
         {
-            if (!Loop)
+            if (!Loop || _loop == null)
                 return;
-
             WDController.Instance.StopCoroutine(_loop);
             audio.Stop();
         }
 
+        private IEnumerator FixSpawn()
+        {
+            yield return new WaitWhile(() => HeroController.instance == null);
+            Spawn = HeroController.instance.gameObject;
+            DoPlayRandomClip();
+        }
+        
         public void DoPlayRandomClip()
         {
+            if (Spawn == null)
+            {
+                GameManager.instance.StartCoroutine(FixSpawn());
+                return;
+            }
+            
             GameObject audioPlayer = Player.Spawn
             (
                 Spawn.transform.position,
@@ -60,7 +72,7 @@ namespace FiveKnights
 
             if (Loop)
             {
-                _loop = WDController.Instance.StartCoroutine(LoopMusic());
+                _loop = WDController.Instance.StartCoroutine(LoopMusic(Clip));
             }
         }
     }
