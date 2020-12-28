@@ -526,6 +526,7 @@ namespace FiveKnights
         {
             Log("Hegemol Death");
             WDController.Instance.PlayMusic(null, 1f);
+            CustomWP.wonLastFight = true;
             Destroy(gameObject);
         }
         

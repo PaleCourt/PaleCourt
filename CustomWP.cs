@@ -17,8 +17,8 @@ namespace FiveKnights
         public static bool isFromGodhome;
         public static Boss boss;
         public static CustomWP Instance;
-        public bool wonLastFight;
-        public int lev;
+        public static bool wonLastFight;
+        public static int lev;
         public enum Boss { Ogrim, Dryya, Isma, Hegemol, All, None, Mystic, Ze };
 
         private void Start()

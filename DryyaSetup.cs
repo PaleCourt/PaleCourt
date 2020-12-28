@@ -143,7 +143,7 @@ namespace FiveKnights
         private void DeathHandler()
         {
             WDController.Instance.PlayMusic(null, 1f);
-            CustomWP.Instance.wonLastFight = true;
+            CustomWP.wonLastFight = true;
         }
 
         private GameObject _dreamImpactPrefab;

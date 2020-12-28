@@ -1002,7 +1002,7 @@ namespace FiveKnights
             PlayerData.instance.isInvincible = false;
             Log("Death ogrim end0");
             if (CustomWP.boss != CustomWP.Boss.All) yield return new WaitForSeconds(1f);
-            CustomWP.Instance.wonLastFight = true;
+            CustomWP.wonLastFight = true;
             Log("Death ogrim end");
             _ddFsm.enabled = false;
             Destroy(this);
@@ -1053,7 +1053,7 @@ namespace FiveKnights
             _rb.gravityScale = 0f;
             _rb.velocity = new Vector2(0f,0f);
             yield return new WaitForSeconds(1f);
-            CustomWP.Instance.wonLastFight = true;
+            CustomWP.wonLastFight = true;
             Destroy(this);
         }
 
@@ -1188,7 +1188,7 @@ namespace FiveKnights
             //Time.timeScale = 1f;
             Log("isma dead end 1");
             if (CustomWP.boss != CustomWP.Boss.All) yield return new WaitForSeconds(1f);
-            CustomWP.Instance.wonLastFight = true;
+            CustomWP.wonLastFight = true;
             Log("isma dead end 2");
             _ddFsm.enabled = false;
             Destroy(this);

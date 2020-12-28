@@ -1482,7 +1482,7 @@ namespace FiveKnights
                 {
                     _bc.enabled = false;
                     yield return new WaitForSeconds(1.75f);
-                    CustomWP.Instance.wonLastFight = true;
+                    CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);
                     yield break;
@@ -1993,7 +1993,7 @@ namespace FiveKnights
             yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
             PlayAudioClip("ZAudP2Death2",_voice);
             yield return new WaitForSeconds(1.75f);
-            CustomWP.Instance.wonLastFight = true;
+            CustomWP.wonLastFight = true;
             // Stop music here.
             Destroy(this);
         }

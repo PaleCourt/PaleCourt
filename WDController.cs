@@ -54,9 +54,9 @@ namespace FiveKnights
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
                 yield return new WaitWhile(() => ic != null);
-                if (CustomWP.Instance.wonLastFight)
+                if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.Instance.lev + 1;
+                    int lev = CustomWP.lev + 1;
                     var box = (object) FiveKnights.Instance.Settings.CompletionIsma;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
@@ -123,9 +123,9 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 _ap.StopMusic();
                 _ap2.StopMusic();
-                if (CustomWP.Instance.wonLastFight)
+                if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.Instance.lev + 1;
+                    int lev = CustomWP.lev + 1;
                     var box = (object) FiveKnights.Instance.Settings.CompletionIsma2;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
@@ -161,9 +161,9 @@ namespace FiveKnights
                 dd.SetActive(false);
                 DryyaSetup dc = FightController.Instance.CreateDryya();
                 yield return new WaitWhile(() => dc != null);
-                if (CustomWP.Instance.wonLastFight)
+                if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.Instance.lev + 1;
+                    int lev = CustomWP.lev + 1;
                     var box = (object) FiveKnights.Instance.Settings.CompletionDryya;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
@@ -188,9 +188,9 @@ namespace FiveKnights
                 GameObject.Find("Burrow Effect").SetActive(false);
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                if (CustomWP.Instance.wonLastFight)
+                if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.Instance.lev + 1;
+                    int lev = CustomWP.lev + 1;
                     var box = (object) FiveKnights.Instance.Settings.CompletionHegemol;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
@@ -217,9 +217,9 @@ namespace FiveKnights
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
-                if (CustomWP.Instance.wonLastFight)
+                if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.Instance.lev + 1;
+                    int lev = CustomWP.lev + 1;
                     if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
                         var box = (object) FiveKnights.Instance.Settings.CompletionZemer;
@@ -364,6 +364,25 @@ namespace FiveKnights
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
+                
+                Log("Won!");
+                
+                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+                pm.SendEvent("FADE OUT");
+                yield return null;
+                HeroController.instance.MaxHealth();
+                yield return new WaitForSeconds(0.5f);
+                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+                {
+                    SceneName = "White_Palace_09",
+                    EntryGateName = "door_dreamReturnGGTestingIt(Clone)(Clone)",
+                    Visualization = GameManager.SceneLoadVisualizations.Default,
+                    WaitForSceneTransitionCameraFade = false,
+                    PreventCameraFadeOut = true,
+                    EntryDelay = 0
+                });
+
+                Destroy(this);
             }
         }
 

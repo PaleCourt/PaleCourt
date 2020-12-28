@@ -63,6 +63,10 @@ namespace FiveKnights
                 {
                     info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
                 }
+                else if (CustomWP.boss == CustomWP.Boss.All)
+                {
+                    info.EntryGateName = "door_dreamReturnGGTestingIt";
+                }
                 else
                 {
                     info.EntryGateName = "door_dreamReturnGGstatueState" + CustomWP.boss +
@@ -204,7 +208,7 @@ namespace FiveKnights
                 StartCoroutine(AddComponent());
             }
 
-            if (arg1.name == "White_Palace_09" && arg0.name == "GG_White_Defender") //REMOVE THIS ONCE DONE
+            if (arg1.name == "White_Palace_09" && (arg0.name == "GG_White_Defender" || arg0.name == "Dream_04_White_Defender")) //REMOVE THIS ONCE DONE
             {
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 GameCameras.instance.tk2dCam.ZoomFactor = 1f;
