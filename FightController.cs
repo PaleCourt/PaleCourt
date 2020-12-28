@@ -173,17 +173,32 @@ namespace FiveKnights
 
         private void OnDestroy()
         {
+            Log("OnDestroy");
             WDController ctrl = GameManager.instance.gameObject.GetComponent<WDController>();
             if (ctrl != null)
             {
-                ctrl.PlayMusic(null);
-                ctrl._ap.StopMusic();
-                ctrl._ap2.StopMusic();
                 Destroy(ctrl);
+                WDController.Instance = null;
+                Log("Destroyed WDCtrl");
             }
-            Destroy(_whiteD);
-            Destroy(_isma);    
-            Destroy(_zemer);
+
+            if (_whiteD != null)
+            {
+                Log("Destroying _whiteD");
+                Destroy(_whiteD);
+            }
+
+            if (_isma != null)
+            {
+                Log("Destroying _isma");
+                Destroy(_isma);
+            }
+            
+            if (_zemer != null)
+            {
+                Log("Destroying _zemer");
+                Destroy(_zemer);
+            }
         }
 
         private void Log(object o)

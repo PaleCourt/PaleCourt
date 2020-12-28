@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -18,18 +19,22 @@ namespace FiveKnights
     internal class ArenaFinder : MonoBehaviour
     {
         public static Dictionary<string, tk2dSpriteAnimation> spriteAnimations;
-        
+
         public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
-        
+
         public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
         public static Dictionary<string, Material> Materials { get; private set; }
         public static Dictionary<string, Sprite> Sprites { get; private set; }
 
         public static int defeats;
-        
+
         private FightController fightCtrl;
-        
+
         private static bool hasSummonElevator;
+
+        private bool hasKingFrag;
+
+        private string prevScene;
 
         private void Start()
         {
@@ -41,10 +46,41 @@ namespace FiveKnights
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             Materials = new Dictionary<string, Material>();
             Sprites = new Dictionary<string, Sprite>();
+            hasKingFrag = PlayerData.instance.gotKingFragment;
+            PlayerData.instance.gotKingFragment = true;
             LoadHubBundles();
         }
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
+        {
+            if (info.SceneName == "White_Palace_09")
+            {
+                if (CustomWP.boss == CustomWP.Boss.Isma || CustomWP.boss == CustomWP.Boss.Ogrim)
+                {
+                    info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
+                }
+                else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
+                {
+                    info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
+                }
+                else
+                {
+                    info.EntryGateName = "door_dreamReturnGGstatueState" + CustomWP.boss +
+                                         "_GG_Statue_TraitorLord(Clone)(Clone)";
+                }
+            }
+            else if (prevScene == "Dream_04_White_Defender" && info.SceneName == prevScene)
+            {
+                Log("in here boi");
+                info.SceneName = "White_Palace_09";
+                info.EntryGateName = "door_dreamReturnGGTestingIt";
+            }
+            Log($"Going to #{info.SceneName} from #{prevScene}");
+            prevScene = info.SceneName;
+            orig(self, info);
+        }
+        
+        /*private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
             if (info.SceneName == "Waterways_13")
             {
@@ -56,7 +92,7 @@ namespace FiveKnights
                 Log(info.EntryGateName);
             }
             orig(self, info);
-        }
+        }*/
 
         //Code from SFGrenade
         private void CreateDreamGateway(string gateName, string toGate, Vector2 pos, Vector2 size, string toScene, string returnScene)
@@ -98,7 +134,7 @@ namespace FiveKnights
         {
             //52.6 62.2
             Vector2 pos = HeroController.instance.transform.position;
-            if (pos.x > 49f && pos.x < 62.2f && collision.tag == "Nail Attack")
+            if (pos.x > 49f && pos.x < 62.2f && pos.y > 35f && collision.tag == "Nail Attack")
             {
                 self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
                 GameManager.instance.FreezeMoment(1);
@@ -131,6 +167,7 @@ namespace FiveKnights
             BossStatueLever toggle = switchLever.GetComponent<BossStatueLever>();
             toggle.SetState(true);
             altLever.transform.position = new Vector2(57.4f,37.5f);
+            
         }
         
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
@@ -142,6 +179,12 @@ namespace FiveKnights
         private void SceneChanged(Scene arg0, Scene arg1)
         {
             CustomWP.isFromGodhome = arg0.name == "GG_Workshop";
+            
+            if (arg0.name == "White_Palace_09")
+            {
+                Destroy(CustomWP.Instance);
+                CustomWP.Instance = null;
+            }
             
             if (arg1.name == "GG_Workshop")
             {
@@ -166,6 +209,7 @@ namespace FiveKnights
                 GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 GameCameras.instance.tk2dCam.ZoomFactor = 1f;
                 PlayerData.instance.isInvincible = false;
+                
             }
 
             if ((arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender") ||
@@ -197,19 +241,28 @@ namespace FiveKnights
             {
                 Log("Destroying fightctrl");
                 On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
-                Destroy(fightCtrl);
+                if (fightCtrl != null)
+                {
+                    Log("Killed fightCtrl");
+                    Destroy(fightCtrl);
+                    Log("Killed fightCtrl2");
+                }
             }
         }
 
         private IEnumerator CameraFixer()
         {
+            Log("Fixing WP_09 cam");
             yield return new WaitWhile(() => GameManager.instance.gameState != GlobalEnums.GameState.PLAYING);
+            Log("Fixing WP_09 cam2");
             yield return new WaitForSeconds(1f);
             while(GameCameras.instance.cameraFadeFSM.ActiveStateName != "Normal")
             {
+                Log("Fixing WP_09 cam3");
                 GameCameras.instance.cameraFadeFSM.SetState("FadeIn");
                 yield return new WaitForSeconds(1f);
             }
+            Log("Fixing WP_09 cam4");
         }
 
         private void MakeBench(string scene, string name, Vector3 pos)
@@ -221,6 +274,8 @@ namespace FiveKnights
             fsm.FsmVariables.FindFsmString("Scene Name").Value = scene;
             fsm.FsmVariables.FindFsmString("Spawn Name").Value = name;
             fsm.FsmVariables.FindFsmVector3("Sit Vector").Value = new Vector3(0f,0.5f,0f);
+            PlayerData.instance.respawnScene = "White_Palace_09";
+            PlayerData.instance.respawnMarkerName = go.name;
         }
 
         private IEnumerator AddComponent()
@@ -242,7 +297,7 @@ namespace FiveKnights
 
             IEnumerator LoadMiscBund()
             {
-                Object[] misc = null;
+                UObject[] misc = null;
                 using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.miscbund"))
                 {
                     var req = AssetBundle.LoadFromStreamAsync(s);
@@ -259,10 +314,11 @@ namespace FiveKnights
                 }
 
                 Texture tex = null;
-                foreach (Object asset in misc)
+                foreach (UObject asset in misc)
                 {
-                    Log("Loading " + asset.name);
-                    if (asset.name == "Shockwave") FiveKnights.preloadedGO["WaveShad"] = asset as GameObject;
+                    if (asset.name == "GG_Statue_Isma") FiveKnights.preloadedGO["GG_Statue_Isma"] = asset as GameObject;
+                    else if (asset.name == "IsmaOgrimStatue") FiveKnights.preloadedGO["IsmaOgrimStatue"] = asset as GameObject;
+                    else if (asset.name == "Shockwave") FiveKnights.preloadedGO["WaveShad"] = asset as GameObject;
                     else if (asset.name == "WaveEffectMaterial") ArenaFinder.Materials["WaveEffectMaterial"] = asset as Material;
                     else if (asset.name == "UnlitFlashMat") ArenaFinder.Materials["flash"] = asset as Material;
                     else if (asset.name == "sonar") tex = asset as Texture;
@@ -407,6 +463,7 @@ namespace FiveKnights
         {
             USceneManager.activeSceneChanged -= SceneChanged;
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
+            PlayerData.instance.gotKingFragment = hasKingFrag;
         }
 
         private void Log(object o)

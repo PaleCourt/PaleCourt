@@ -456,9 +456,7 @@ namespace FiveKnights
                 
                 return null;
             }
-
-            if (startedMusic && self.name.Contains("Defender") &&
-                (CustomWP.boss == CustomWP.Boss.Ogrim || CustomWP.boss == CustomWP.Boss.All))
+            else if (self.name.Contains("Defender"))
             {
                 return null;
             }
@@ -474,10 +472,12 @@ namespace FiveKnights
                 i.Unload(true);
             }
 
-            
             ModHooks.Instance.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.MusicCue.GetChannelInfo -= MusicCue_GetChannelInfo;
+
+            _ap?.StopMusic();
+            _ap2?.StopMusic();
         }
 
         private void Log(object o)

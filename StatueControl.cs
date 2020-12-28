@@ -8,16 +8,45 @@ namespace FiveKnights
         public BossStatue _bs;
         public SpriteRenderer _sr;
         public GameObject _fakeStat;
+        public GameObject _fakeStatAlt;
+        public GameObject _fakeStatAlt2;
         public string StatueName;
         private bool canToggle;
 
         private IEnumerator Start()
         {
             yield return null;
+            yield return null;
+            yield return null;
+            yield return null;
             canToggle = true;
-            _sr.flipX = StatueName.Contains("Isma")
-                ? FiveKnights.Instance.Settings.AltStatueIsma
-                : FiveKnights.Instance.Settings.AltStatueZemer;
+            if (StatueName.Contains("Isma"))
+            {
+                if (FiveKnights.Instance.Settings.AltStatueIsma)
+                {
+                    _fakeStat = _fakeStatAlt;
+                    _fakeStat.SetActive(false);
+                    _fakeStat = _fakeStatAlt2;
+                    _fakeStat.transform.position = new Vector3(82.2f, 95.9f, 2.0f);
+                    _fakeStatAlt.transform.position = new Vector3(82.2f, 91.6f, 2.0f);
+                    _fakeStat.SetActive(true);
+                }
+                else
+                {
+                    _fakeStat = _fakeStatAlt2;
+                    _fakeStat.SetActive(false);
+                    _fakeStat = _fakeStatAlt;
+                    _sr.sprite = FiveKnights.SPRITES[2];
+                    _fakeStat.transform.position = new Vector3(82.2f, 96.5f, 2.0f);
+                    _fakeStatAlt2.transform.position = new Vector3(82.2f, 90.9f, 2.0f);
+                    _fakeStat.SetActive(true);
+                }
+            }
+            else
+            {
+                _fakeStat = _fakeStatAlt;
+                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
+            }
             StatueName = StatueName.Contains("Isma") ? "Isma" : "Zemer";
         }
 
@@ -75,11 +104,29 @@ namespace FiveKnights
             float time = (StatueName == "Isma") ? 0.5f : 1.5f;
             yield return StartCoroutine(PlayAnimWait(_fakeStat, "Down", time));
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(time);
             StartCoroutine(this.PlayParticlesDelay(_bs.statueUpParticles, _bs.upParticleDelay));
             StartCoroutine(this.PlayAudioEventDelayed(_bs.statueUpSound, _bs.statueUpSoundDelay));
-
-            _sr.flipX = !_sr.flipX;
+            if (StatueName.Contains("Isma"))
+            {
+                if (FiveKnights.Instance.Settings.AltStatueIsma)
+                {
+                    _fakeStat.SetActive(false);
+                    _fakeStat = _fakeStatAlt2;
+                    _fakeStat.SetActive(true);
+                }
+                else
+                {
+                    _fakeStat.SetActive(false);
+                    _fakeStat = _fakeStatAlt;
+                    _sr.sprite = FiveKnights.SPRITES[2];
+                    _fakeStat.SetActive(true);
+                }
+            }
+            else
+            {
+                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
+            }
 
             yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", time));
             if (_bs.bossUIControlFSM)
@@ -110,10 +157,12 @@ namespace FiveKnights
         private IEnumerator PlayAnimWait(GameObject go, string stateName, float normalizedTime)
         {
             float t = normalizedTime;
+            float mid = t / 2;
             if (stateName == "Down")
             {
                 while (t >= 0f)
                 {
+                    if (t <= mid) go.SetActive(false);
                     go.transform.position -= new Vector3(0f,0.2f,0f);
                     t -= Time.fixedDeltaTime;
                     yield return new WaitForEndOfFrame();
@@ -123,6 +172,7 @@ namespace FiveKnights
             {
                 while (t >= 0f)
                 {
+                    if (t <= mid) go.SetActive(true);
                     go.transform.position += new Vector3(0f, 0.2f, 0f);
                     t -= Time.fixedDeltaTime;
                     yield return new WaitForEndOfFrame();
