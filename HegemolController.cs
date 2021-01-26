@@ -72,10 +72,48 @@ namespace FiveKnights
 
             _hm.hp = Health;
 
-            _mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
+            //_mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
+            //_mace.AddComponent<Mace>();
+            //_mace.SetActive(false);
+            float sizemod = 1.754386f;
+            _mace = new GameObject("Mace");
+            GameObject _head = new GameObject("Head");
+            GameObject _handle = new GameObject("Handle");
+            GameObject _Msprite = new GameObject("Mace Sprite");
+            _head.transform.parent = _mace.transform;
+            _handle.transform.parent = _mace.transform;
+            _Msprite.transform.parent = _mace.transform;
+            Rigidbody2D _macerb2d = _mace.AddComponent<Rigidbody2D>();
+            _macerb2d.gravityScale = 1f;
+            _macerb2d.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            _macerb2d.interpolation = RigidbodyInterpolation2D.Interpolate;
+            _handle.transform.localPosition = new Vector3(-3.2f, -0.29f, 0f);
+            _handle.transform.SetRotationZ(-25f);
+            BoxCollider2D _headcol = _head.AddComponent<BoxCollider2D>();
+            _headcol.isTrigger = true;
+            _headcol.offset = new Vector2(-0.1039203f, -0.1409256f);
+            _headcol.size = new Vector2(2.75424f, 3.117193f);
+            DamageHero _headdamage = _head.AddComponent<DamageHero>();
+            _headdamage.damageDealt = 2;
+            _headdamage.hazardType = 1;
+            _handle.transform.localPosition = new Vector3(-0.07f, -1.64f, 0f);
+            _handle.transform.SetRotationZ(-24.44f);
+            BoxCollider2D _handlecol = _handle.AddComponent<BoxCollider2D>();
+            _handlecol.isTrigger = true;
+            _handlecol.offset = new Vector2(1.787836f, -0.2449788f);
+            _handlecol.size = new Vector2(7.905645f, 0.3324739f);
+            DamageHero _handledamage = _handle.AddComponent<DamageHero>();
+            _handledamage.damageDealt = 2;
+            _handledamage.hazardType = 1;
+            _handle.transform.localPosition = new Vector3(0f, 0.75f * sizemod, 0f);
+            _handle.transform.SetRotationZ(0f);
+            _Msprite.transform.localScale = new Vector3(sizemod, sizemod, 1f);
+            //_Msprite.AddComponent<SpriteRenderer>().sprite = FiveKnights.SPRITES[6];
             _mace.AddComponent<Mace>();
+            _mace.AddComponent<DebugColliders>();
+            _mace.PrintSceneHierarchyTree();
             _mace.SetActive(false);
-            
+
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
             List<tk2dSpriteDefinition> fcSpriteDefs = fcCollectionData.spriteDefinitions.ToList();
 
@@ -127,7 +165,13 @@ namespace FiveKnights
             _control.ChangeTransition("State 1", "FINISHED", "Intro Greet");
             // NOTE: Transition from Intro Greet does not actually work
             _control.AddTransition("Intro Greet", "FINISHED", "Idle");
+            _control.GetState("Check Direction").Actions = new FsmStateAction[]
+            {
+                new InvokeCoroutine(new Func<IEnumerator>(Die), false)
+            };
+            _control.GetState("Check Direction").Transitions = new FsmTransition[0];
 
+            AddIntro();
             AddDig();
             AddGroundPunch();
 
@@ -137,6 +181,21 @@ namespace FiveKnights
             yield return new WaitWhile(() => _control.ActiveStateName != "Dormant");
             
             _control.SendEvent("BATTLE START");
+            foreach(var why in UnityEngine.Object.FindObjectsOfType<PlayMakerFSM>())
+            {
+                foreach (var state in why.Fsm.States)
+                {
+                    foreach (var action in state.Actions)
+                    {
+                        if (action.GetType() == typeof(Tk2dPauseAnimation))
+                        {
+                            var tk2daction = (action as Tk2dPauseAnimation);
+                            if (tk2daction.pause == null)
+                                tk2daction.pause = false;
+                        }
+                    }
+                }
+            }
             while (true)
             {
                 if (_control.ActiveStateName.Contains("Hero Pos"))//JA Check Hero Pos
@@ -154,6 +213,12 @@ namespace FiveKnights
             float roarTime = 3.0f;
 
             _anim.Play("Intro Greet");
+
+            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
+            _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
+            _mace.SetActive(true);
+            _mace.SetActiveChildren(true);
+            _mace.transform.Find("Mace Sprite").gameObject.SetActive(true);
 
             yield return new WaitWhile(() => _anim.IsPlaying("Intro Greet"));
 
@@ -178,7 +243,7 @@ namespace FiveKnights
             Destroy(roarEmitter);
             roarLock.SendEvent("ROAR EXIT");
 
-            _control.SetState("Check");
+            _control.SetState("Intro Grab");
             MusicControl();
         }
         
@@ -187,7 +252,46 @@ namespace FiveKnights
             Log("Start music");
             WDController.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
         }
-        
+
+		private void AddIntro()
+        {
+            string[] stateNames = new string[]
+            {
+                "Intro Grab",
+                "Grab 1",
+                "Grabbed 1",
+            };
+
+            _control.CreateStates(stateNames, "Idle");
+
+            IEnumerator IntroGrab()
+            {
+			yield return _anim.PlayAnimWait("Intro Grab");
+            }
+
+            _control.InsertCoroutine("Intro Grab", 0, IntroGrab);
+
+            IEnumerator Grab()
+            {
+                _anim.Play("Grab");
+
+                yield return new WaitWhile(() => _anim.CurrentFrame < 3);
+            }
+
+            _control.InsertCoroutine("Grab 1", 0, Grab);
+
+            IEnumerator Grabbed()
+            {
+                _mace.SetActive(false);
+                _mace.SetActiveChildren(false);
+                _mace.GetComponent<Mace>().LaunchSpeed = 93f;
+                _mace.GetComponent<Mace>().SpinSpeed = 500f;
+                yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
+            }
+
+            _control.InsertCoroutine("Grabbed 1", 0, Grabbed);
+        }
+
         private void AddDig()
         {
             string[] states =
@@ -320,6 +424,8 @@ namespace FiveKnights
                 "Toss",
                 "Punch Antic",
                 "Punching",
+                "Grab 2",
+                "Grabbed 2",
             };
 
             _control.CreateStates(states, "Idle");
@@ -346,8 +452,12 @@ namespace FiveKnights
             IEnumerator PunchAntic()
             {
                 _anim.Play("Punch Antic");
-                _mace.SetActive(true);   
-                
+                _mace.GetComponent<Mace>().SpinSpeed = 500f * transform.localScale.x;
+                _mace.transform.localScale = new Vector3(transform.position.x, 1f, 1f);
+                _mace.transform.position = new Vector3(transform.position.x, transform.position.y, _mace.transform.position.z);
+                _mace.SetActive(true);
+                _mace.SetActiveChildren(true);
+
                 yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
             }
 
@@ -361,6 +471,24 @@ namespace FiveKnights
             }
             
             _control.InsertCoroutine("Punching", 0, Punching);
+
+            IEnumerator Grab()
+            {
+                _anim.Play("Grab");
+
+                yield return new WaitWhile(() => _anim.CurrentFrame < 3);
+            }
+
+            _control.InsertCoroutine("Grab 2", 0, Grab);
+
+            IEnumerator Grabbed()
+            {
+                _mace.SetActive(false);
+                _mace.SetActiveChildren(false);
+                yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
+            }
+
+            _control.InsertCoroutine("Grabbed 2", 0, Grabbed);
         }
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
@@ -518,18 +646,32 @@ namespace FiveKnights
 
             if (_hm.hp <= 100)
             {
-                HegemolDeath();
+                //HegemolDeath();
             }
         }
 
         private void HegemolDeath()
         {
+            StartCoroutine(Die());
+        }
+
+        private IEnumerator Die()
+        {
             Log("Hegemol Death");
             WDController.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
+            _anim.Play("Idle");
+            yield return new WaitForSeconds(0.4f);
+
+            _anim.Play("Leave Antic");
+            
+            yield return new WaitForSeconds(0.2f);
+
+            yield return _anim.PlayAnimWait("Leave");
+
             Destroy(gameObject);
         }
-        
+
         private void AssignFields()
         {
             HealthManager ogrimHealth = _ogrim.GetComponent<HealthManager>();

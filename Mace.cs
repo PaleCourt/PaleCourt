@@ -4,8 +4,8 @@ namespace FiveKnights
 {
     public class Mace : MonoBehaviour
     {
-        private const float LaunchSpeed = 50;
-        private const float SpinSpeed = 60;
+        public float LaunchSpeed = 45f;
+        public float SpinSpeed = -300f;
 
         private Rigidbody2D _rb;
 
@@ -17,6 +17,7 @@ namespace FiveKnights
         private void OnEnable()
         {
             _rb.velocity = Vector3.up * LaunchSpeed;
+            transform.rotation = Quaternion.Euler(0f, 0f, 0f);
         }
 
         private void FixedUpdate()

@@ -197,17 +197,16 @@ namespace FiveKnights
 
         private void CreateStatues()
         {
-            //48f 98.75f Hegemol Top Left
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
             GameObject stat = SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
-                                        "GG_White_Defender", FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
+                                        ArenaFinder.IsmaScene, FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
-                                        "GG_White_Defender", FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
+                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
             GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
-                                        "GG_White_Defender", FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
+                                        ArenaFinder.ZemerScene, FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             GameObject stat4 = SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
-                                        "GG_White_Defender", FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
+                                        ArenaFinder.HegemolScene, FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
         
         private Dictionary<string, StatueControl> StatueControls = new Dictionary<string, StatueControl>();
@@ -233,6 +232,8 @@ namespace FiveKnights
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
         {
+            UnityEngine.Object.DontDestroyOnLoad((UnityEngine.Object) GameManager.instance);
+            
             string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
             foreach (Boss b in Enum.GetValues(typeof(Boss)))
             {
@@ -312,8 +313,15 @@ namespace FiveKnights
                     bs.StatueState = FiveKnights.Instance.Settings.CompletionDryya;
                     break;
                 case "ZEM_NAME":
+                    //Log("Changing zem fsm1");
+                    //Debug.Log("Debug this boi");
+                    //var fsm = statue.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI");
+                    //fsm.ChangeTransition("Challenge", "FINISHED", "Change Scene");
+                    //fsm.InsertMethod("Change Scene", 0, () => Log("Wow I logged it uwu"));
+                    //Log("Changing zem fsm2");
+                    
                     bs.StatueState = FiveKnights.Instance.Settings.CompletionZemer;
-                    SetStatue2(statue, "GG_White_Defender", "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
+                    SetStatue2(statue, sceneName, "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
                     bs.DreamStatueState = FiveKnights.Instance.Settings.CompletionZemer2;
                     bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
                     break;

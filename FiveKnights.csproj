@@ -71,6 +71,9 @@
     <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\References\UnityEngine.UI.dll</HintPath>
     </Reference>
+    <Reference Include="Vasi, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\Vasi.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AreaTitleCtrl.cs" />
@@ -115,6 +118,7 @@
     <EmbeddedResource Include="assets\Dryya.png" />
     <EmbeddedResource Include="assets\Zemer.png" />
     <EmbeddedResource Include="assets\Hegemol.png" />
+    <EmbeddedResource Include="assets\mace.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\ismawin" />
@@ -123,10 +127,13 @@
     <EmbeddedResource Include="StreamingAssets\hegemolwin" />
     <EmbeddedResource Include="StreamingAssets\ismabg" />
 	<EmbeddedResource Include="StreamingAssets\hubasset1" />
-	<EmbeddedResource Include="StreamingAssets\lord" />
-	<EmbeddedResource Include="StreamingAssets\dBund" />
 	<EmbeddedResource Include="StreamingAssets\soundbund" />
 	<EmbeddedResource Include="StreamingAssets\miscbund" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaZemer" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaDryya" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaDep" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaIsma" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaHegemol" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

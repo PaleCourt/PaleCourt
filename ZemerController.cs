@@ -24,9 +24,9 @@ namespace FiveKnights
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 9.75f;
-        private const float LeftX = 61.5f;
-        private const float RightX = 91.6f;
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
+        private const float LeftX = 11.2f;
+        private const float RightX = 45.7f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
         private const int MaxHPV1 = 1200;
@@ -99,7 +99,7 @@ namespace FiveKnights
             else yield return new WaitForSeconds(1.7f);
             StartCoroutine(MusicControl());
             gameObject.SetActive(true);
-            gameObject.transform.position = new Vector2(80f, GroundY + 0.5f);
+            gameObject.transform.position = new Vector2(RightX - 10f, GroundY + 0.5f);
             FaceHero();
             AssignFields();
             _bc.enabled = false;
@@ -110,7 +110,7 @@ namespace FiveKnights
             _sr.enabled = true;
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            gameObject.transform.position = new Vector2(80f, GroundY);
+            gameObject.transform.position = new Vector2(RightX - 10f, GroundY);
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
             yield return new WaitForSeconds(0.3f);
@@ -185,14 +185,14 @@ namespace FiveKnights
             {
                 Log("[Waiting to start calculation]");
                 //yield return new WaitForSeconds(IdleDelay);
-                float xDisp = (transform.position.x < 75f) ? 8f : -8f;
+                float xDisp = (transform.position.x < RightX - 22f) ? 8f : -8f;
                 yield return Walk(xDisp);
                 Log("[Setting Attacks]");
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
 
                 //If the player is close
-                if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
+                if (posH.y > GroundY+9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
                     yield return SpinAttack();
                 }

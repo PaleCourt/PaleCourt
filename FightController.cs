@@ -16,12 +16,15 @@ namespace FiveKnights
 
         private IEnumerator Start()
         {
+            Log("In arena");   
+            
             Instance = this;
             
-            yield return new WaitWhile(() => !GameObject.Find("White Defender"));
-            
-            _whiteD = GameObject.Find("White Defender");
-            
+            //yield return new WaitWhile(() => !GameObject.Find("White Defender"));
+            yield return new WaitWhile(() => !HeroController.instance);
+
+            _whiteD = Instantiate(FiveKnights.preloadedGO["WhiteDef"]); //GameObject.Find("White Defender");
+            _whiteD.SetActive(false);
             //_whiteD.AddComponent<WDController>();
             
             GameManager.instance.gameObject.AddComponent<WDController>().dd = _whiteD;

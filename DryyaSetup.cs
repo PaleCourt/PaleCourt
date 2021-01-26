@@ -75,17 +75,13 @@ namespace FiveKnights
             };
             
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
-            
             _ogrim = FiveKnights.preloadedGO["WD"];
-            
             _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
-            
             AddComponents();
             GetComponents();
-            
             _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
             _control = gameObject.LocateMyFSM("Control");
-
+            Modding.Logger.Log("Test6");
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
 
@@ -114,12 +110,9 @@ namespace FiveKnights
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
             
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
-
-            GameObject.Find("Burrow Effect").SetActive(false);
+            //GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
-            
             AssignFields();
-            
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;

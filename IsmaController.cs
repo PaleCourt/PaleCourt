@@ -743,7 +743,6 @@ namespace FiveKnights
 
         IEnumerator Agony()
         {
-            tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             while (true)
             {
                 int oldHp = _hm.hp - 150;
@@ -809,22 +808,22 @@ namespace FiveKnights
                         Animator i = anims[ind++];
                         i.gameObject.layer = 17;
                         i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r == start ? rot : r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                        i.GetComponentInChildren<LineRenderer>(true).enabled = true;
+                        //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
                     }
                     for (int r = start - 1; r > start-off-1; r--)
                     {
                         Animator i = anims[ind++];
                         i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                        i.GetComponentInChildren<LineRenderer>(true).enabled = true;
+                        //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
                     }
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                     foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                     {
-                        LineRenderer lr = i.GetComponentInChildren<LineRenderer>(true);
-                        if (!lr.enabled) continue;
-                        lr.enabled = false;
+                        //LineRenderer lr = i.GetComponentInChildren<LineRenderer>(true);
+                        //if (!lr.enabled) continue;
+                        //lr.enabled = false;
                         i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                        i.Play("ThornShot");
+                        i.Play("AThornAnim");
                     }
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                     _anim.enabled = false;
@@ -1322,22 +1321,6 @@ namespace FiveKnights
             foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("dung")))
             {
                 Destroy(i);
-            }
-            yield return null;
-            Log("YA");
-            GameObject go = Instantiate(FiveKnights.preloadedGO["ismaBG"]);
-            foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.gameObject.SetActive(true);
-                i.material = new Material(Shader.Find("Sprites/Default"));
-                if (i.name == "acid_plant_0020_root1" || i.name == "acid_plant_0000_root9 (2)")
-                {
-                    i.transform.position = i.transform.position - new Vector3(0f, 12.5f, 0f);
-                }
-                if (i.name.Contains("acid_root_floor"))
-                {
-                    i.transform.position = i.transform.position - new Vector3(0f,0.15f,0f);
-                }
             }
             Log("YA2");
         }

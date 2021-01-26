@@ -32,9 +32,9 @@ namespace FiveKnights
         private GameObject _target;
         private string[] _commonAtt;
 
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 9.75f;
-        private const float LeftX = 61.5f;
-        private const float RightX = 91.6f;
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
+        private const float LeftX = 11.2f;
+        private const float RightX = 45.7f;
 
         private const int Phase2HP = 1500;
         private const int Phase3HP = 1000;
@@ -42,7 +42,7 @@ namespace FiveKnights
         private const float TurnDelay = 0.05f;
         private const float IdleDelay = 0.38f;
         private const float DashDelay = 0.18f;
-        private const float MIDDLE = 75f;
+        private const float MIDDLE = 29f;
 
         private const float SmallPillarSpd = 23.5f;
         private const float Att1CompAnticTime = 0.25f;
@@ -158,7 +158,7 @@ namespace FiveKnights
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
 
-                if (posH.y > 18f && (posH.x <= 61 || posH.x >= 90f))
+                if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
                     yield return SpinAttack();
                 }
@@ -897,7 +897,7 @@ namespace FiveKnights
                 yield return null;
                 yield return new WaitWhile
                 (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, MIDDLE, 0.25f)
                 );
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
@@ -927,7 +927,7 @@ namespace FiveKnights
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
                     wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
-                    wav.transform.position = new Vector3(75.1f, 7.4f);
+                    wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
                 }
@@ -1095,7 +1095,7 @@ namespace FiveKnights
                 yield return null;
                 yield return new WaitWhile
                 (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, MIDDLE, 0.25f)
                 );
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
@@ -1125,7 +1125,7 @@ namespace FiveKnights
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
                     wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
-                    wav.transform.position = new Vector3(75.1f, 7.4f);
+                    wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
                 }
@@ -1240,7 +1240,7 @@ namespace FiveKnights
                 yield return null;
                 yield return new WaitWhile
                 (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, MIDDLE, 0.25f)
                 );
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
@@ -1270,7 +1270,7 @@ namespace FiveKnights
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
                     wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
-                    wav.transform.position = new Vector3(75.1f, 7.4f);
+                    wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
                 }
@@ -1638,7 +1638,7 @@ namespace FiveKnights
                 yield return null;
                 yield return new WaitWhile
                 (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, 75.1f, 0.25f)
+                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, MIDDLE, 0.25f)
                 );
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;

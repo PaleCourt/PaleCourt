@@ -48,6 +48,7 @@ namespace FiveKnights
             //Be sure to do CustomWP.Instance.wonLastFight = true; on win
             if (CustomWP.boss == CustomWP.Boss.Isma)
             {
+                dd = GameObject.Find("White Defender");
                 yield return LoadIsmaBundle();
                 dd.SetActive(false);
                 FightController.Instance.CreateIsma();
@@ -73,6 +74,7 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
             {
+                dd = GameObject.Find("White Defender");
                 yield return LoadIsmaBundle();
                 alone = false;
                 _hm.hp = 950;
@@ -185,7 +187,6 @@ namespace FiveKnights
                 
                 dd.SetActive(false);
                 HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
-                GameObject.Find("Burrow Effect").SetActive(false);
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 if (CustomWP.wonLastFight)
@@ -209,7 +210,7 @@ namespace FiveKnights
             {
                 yield return LoadZemerBundle();
                 dd.SetActive(false);
-                GameObject.Find("Burrow Effect").SetActive(false);
+                Log("WAIT");
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;
                 ZemerController zc = FightController.Instance.CreateZemer();
@@ -634,7 +635,7 @@ namespace FiveKnights
 
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
-                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
+                //FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
                 
                 yield return null;
                 

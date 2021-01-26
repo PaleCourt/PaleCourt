@@ -76,6 +76,9 @@ namespace FiveKnights
                 ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
                 ("Fungus3_13","BlurPlane"),
                 ("Fungus3_34","_Scenery/fung_lamp2 (1)/Active/haze2 (1)"),
+                ("GG_White_Defender", "Boss Scene Controller"),
+                ("GG_White_Defender", "_SceneManager"),
+                ("GG_White_Defender", "White Defender"),
             };
         }
 
@@ -102,6 +105,8 @@ namespace FiveKnights
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
+            preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
+            preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
             preloadedGO["isma_stat"] = null;
             
             Instance = this;
@@ -109,6 +114,7 @@ namespace FiveKnights
 
             Unload();
             GameManager.instance.StartCoroutine(LoadMusic());
+            GameManager.instance.StartCoroutine(LoadDep());
             
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
@@ -169,6 +175,23 @@ namespace FiveKnights
             AudioSource aud = GameObject.Find("Music").transform.Find("Main").GetComponent<AudioSource>();
             aud.clip = Clips["MM_Aud"];
             aud.Play();
+        }
+        IEnumerator LoadDep()
+        {
+            UObject[] obj = null;
+            Assembly asm = Assembly.GetExecutingAssembly();
+            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.ggArenaDep"))
+            {
+                var ab = AssetBundle.LoadFromStream(s);
+                yield return null;
+                obj = ab.LoadAllAssets();
+            }
+
+            if (obj == null)
+            {
+                Log("Failed to load scene dep");
+                yield break;
+            }
         }
         private object SetVariableHook(Type t, string key, object obj)
         {
