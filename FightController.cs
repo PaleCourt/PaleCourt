@@ -1,7 +1,10 @@
+using System;
 using UnityEngine;
 using System.Collections;
+using System.Linq;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
@@ -20,7 +23,6 @@ namespace FiveKnights
             
             Instance = this;
             
-            //yield return new WaitWhile(() => !GameObject.Find("White Defender"));
             yield return new WaitWhile(() => !HeroController.instance);
 
             _whiteD = Instantiate(FiveKnights.preloadedGO["WhiteDef"]); //GameObject.Find("White Defender");
@@ -65,6 +67,30 @@ namespace FiveKnights
         public void CreateIsma()
         {
             Log("Creating Isma");
+
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            string[] arr = new[]
+            {
+                "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
+                "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
+            };
+
+            IEnumerator LoadSlow()
+            {
+                foreach (var i in arr)
+                {
+                    FiveKnights.IsmaClips[i] = snd.LoadAsset<AudioClip>(i);
+                    yield return null;
+                }
+            }
+            
+            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Sil_Isma_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+
+            StartCoroutine(LoadSlow());
             
             _isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
             
@@ -101,11 +127,20 @@ namespace FiveKnights
         
         public DryyaSetup CreateDryya()
         {
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
+            
+            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+            
             IEnumerator DryyaIntro()
             {
                 var bc = _dryya.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                yield return new WaitWhile(() => _dryya.transform.position.y > 20);
+                yield return new WaitWhile(() => _dryya.transform.position.y > 20f);
                 bc.enabled = true;
             }
             
@@ -117,6 +152,15 @@ namespace FiveKnights
 
         public HegemolController CreateHegemol()
         {
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
+            
+            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+            
             Log("Creating Hegemol");
             _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
             _hegemol.SetActive(true);
@@ -127,7 +171,29 @@ namespace FiveKnights
         public ZemerController CreateZemer()
         {
             Log("Creating Zemer");
+
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            string[] arr = new[]
+            {
+                "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
+                "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
+                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1", 
+                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2"
+            };
             
+            foreach (var i in arr)
+            {
+                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+            }
+
+            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            ArenaFinder.Sprites["ZemParticPetal"] = misc.LoadAsset<Sprite>("petal-test");
+            ArenaFinder.Sprites["ZemParticDung"] = misc.LoadAsset<Sprite>("dung-test");
+            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Zem_Sil_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+
             _zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             _zemer.SetActive(true);
             foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)

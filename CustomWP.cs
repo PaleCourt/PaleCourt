@@ -28,6 +28,67 @@ namespace FiveKnights
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
             ModHooks.Instance.TakeHealthHook += Instance_TakeHealthHook;
             boss = Boss.None;
+
+            
+            FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
+            GameObject root = Instantiate(FiveKnights.preloadedGO["HubRoot"]);
+            
+            
+            root.SetActive(true);
+            foreach (var i in root.transform.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                i.material = new Material(Shader.Find("Sprites/Default"));
+            }
+
+            foreach (var go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("wp_rib_back")))
+            {
+                if (go.name != "wp_rib_back(3)" && go.name != "wp_rib_back(4)")
+                {
+                    Destroy(go);
+                }
+            }
+
+            var del = GameObject.Find("core_extras_0024_wp(14)");
+            if (del != null)
+            {
+                Log("Found del, deleting");
+                Destroy(del);
+            }
+            
+            foreach (var i in FindObjectsOfType<GameObject>()
+                .Where(x => x.name.Contains("new_cloud") 
+                            && x.transform.position.x <= 25f))
+            {
+                Destroy(i);
+            }
+            
+            Material[] blurPlaneMaterials = new Material[1];
+            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
+            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+            Log("Look for blur!");
+            foreach (var i in FindObjectsOfType<GameObject>()
+                .Where(x => x.name == "BlurPlane"))
+            {
+                Log("Found blur!");
+                i.SetActive(true);
+                i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
+            }
+            
+            var cLock = GameObject.Find("CameraLockArea (2)");
+            if (cLock != null)
+            {
+                var bc = cLock.GetComponent<BoxCollider2D>();
+                bc.size = new Vector2(50f, bc.size.y);
+                bc.offset = new Vector2(-10, bc.offset.y);
+                Log("Fixed WP_09 camera at edges");
+            }
         }
 
         private int Instance_TakeHealthHook(int damage)
@@ -39,17 +100,41 @@ namespace FiveKnights
         {
             if (self.sceneName == "White_Palace_09")
             {
+                foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name == "GG_extra_walls_0000_2_2_crack"))
+                {
+                    Destroy(i);
+                }
+                
+                // Create extra floor
+                GameObject go = Instantiate(FiveKnights.preloadedGO["hubfloor"]);
+                GameObject go2 = GameObject.Find("Chunk 2 0");
+                go.transform.Find("Chunk 2 0").GetComponent<MeshRenderer>().material =
+                    go2.GetComponent<MeshRenderer>().material;
+                
+                GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
+                crack.SetActive(true);
+                crack.transform.position = new Vector3(13.8f, 95.93f, 4.21f);
+                crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
+                GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
+                TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
+                tp.targetScene = "GG_Workshop";
+                tp.entryPoint = "door_Land_of_Storms_return";
+                crack.transform.Find("door_Land_of_Storms_return").gameObject.SetActive(true);
+                secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                    .FsmVariables.FindFsmString("New Scene").Value = "GG_Workshop";
+                secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                    .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
+                secret.LocateMyFSM("Deactivate").enabled = false;
+                secret.SetActive(true);
+                
                 CreateStatues();
                 HubRemove();
                 AddLift();
-                CreateGateway("left test2", new Vector2(14f, 94.4f), Vector2.zero, 
-                              null, null, false, true, true, 
-                              GameManager.SceneLoadVisualizations.Default);
                 CreateGateway("door_dreamReturnGGTestingIt", new Vector2(60.5f, 98.4f), Vector2.zero, 
                     null, null, false, true, true, 
                     GameManager.SceneLoadVisualizations.Default);
                 orig(self, false);
-                SetupHub();
+                //SetupHub();
                 SetupThrone();
                 Log("MADE CUSTOM WP");
                 return;
@@ -79,6 +164,7 @@ namespace FiveKnights
                 {
                     yield return new WaitWhile(() => fsm.ActiveStateName != "Resting");
                     fsm.enabled = false;
+                    PlayerData.instance.disablePause = true;
                     GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
                     GameObject.Find("DialogueManager").SetActive(true);
                     GameObject.Find("Text YN").SetActive(true);
@@ -97,6 +183,7 @@ namespace FiveKnights
             IEnumerator SaidNo()
             {
                 yield return null;
+                PlayerData.instance.disablePause = false;
                 PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
                 GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN"); 
                 fsm.enabled = true;
@@ -108,6 +195,7 @@ namespace FiveKnights
             
             IEnumerator SaidYes()
             {
+                PlayerData.instance.disablePause = false;
                 PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
                 GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
                 PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
@@ -130,45 +218,10 @@ namespace FiveKnights
                 textYN.RemoveAction("No", 1);
                 textYN.enabled = true;
                 fsm.enabled = true;
-
+                
             }
 
             StartCoroutine(Throne());
-        }
-        
-        private void SetupHub()
-        {
-            IEnumerator HubSet()
-            {
-                GameObject go = Instantiate(FiveKnights.preloadedGO["Warp"]);
-                GameObject go2 = Instantiate(FiveKnights.preloadedGO["WarpBase"]);
-                GameObject go3 = Instantiate(FiveKnights.preloadedGO["WarpAnim"]);
-                go.SetActive(true);
-                go2.SetActive(true);
-                go3.SetActive(true);
-                go.transform.position = new Vector3(24.5f,94.4f) - new Vector3(0f, 0.7f, 0f);
-                go3.transform.position = go2.transform.position = new Vector3(go.transform.position.x + 0.1f, go.transform.position.y - 0.4f, -0.5f);
-                var fsm = go.LocateMyFSM("Door Control");
-                fsm.GetAction<BeginSceneTransition>("Change Scene", 3).sceneName = "GG_Workshop";
-                fsm.GetAction<BeginSceneTransition>("Change Scene", 3).entryGateName = "door_dreamReturnGG_GG_Statue_Defender";
-                yield return new WaitWhile(() => !HeroController.instance);
-                Log("Checking if from godhome ");
-                Log(isFromGodhome);
-                if (isFromGodhome)
-                {
-                    HeroController.instance.transform.position = new Vector2(12f,94.4f);
-                    //tk2dSpriteAnimator anim = HeroController.instance.gameObject.GetComponent<tk2dSpriteAnimator>();
-                    //HeroController.instance.StopAnimationControl();
-                    //yield return new WaitForSeconds(1.5f);
-                    //HeroController.instance.StartAnimationControl();
-                    //anim.Play("Exit Door To Idle");
-                    //yield return null;
-                    //yield return new WaitWhile(() => anim.IsPlaying("Exit Door To Idle"));
-                    //HeroController.instance.RegainControl();
-                }
-            }
-
-            StartCoroutine(HubSet());
         }
 
         private void CreateGateway(string gateName, Vector2 pos, Vector2 size, string toScene, string entryGate,
@@ -199,13 +252,13 @@ namespace FiveKnights
         {
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
-            GameObject stat = SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
+            SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
-            GameObject stat2 = SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.DryyaScene, FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
-            GameObject stat3 = SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.ZemerScene, FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
-            GameObject stat4 = SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.HegemolScene, FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
         
@@ -213,9 +266,7 @@ namespace FiveKnights
         private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             if (collision.tag != "Nail Attack") return;
-            Log("Exist1");
             string namePD = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
-            Log("Exist2");
             if (namePD.Contains("Isma"))
             {
                 StatueControls["Isma"].StartLever(self);
@@ -253,9 +304,9 @@ namespace FiveKnights
             foreach (var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
             string[] arr = { "Breakable Wall Waterways", "black_fader","White_Palace_throne_room_top_0000_2", "White_Palace_throne_room_top_0001_1",
                              "Glow Response floor_ring large2 (1)", "core_extras_0006_wp", "msk_station",
-                             "core_extras_0028_wp (12)", "wp_additions_01", "BlurPlane",
+                             "core_extras_0028_wp (12)", "wp_additions_01",
                              "Inspect Region (1)", "core_extras_0021_wp (4)", "core_extras_0021_wp (5)","core_extras_0021_wp (1)", 
-                             "core_extras_0021_wp (6)", "core_extras_0021_wp (7)","core_extras_0021_wp (2)"};
+                             "core_extras_0021_wp (6)", "core_extras_0021_wp (7)","core_extras_0021_wp (2)", "Darkness Region"};
             foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.activeSelf))
             {
                 foreach (string j in arr)
@@ -282,10 +333,6 @@ namespace FiveKnights
                     Destroy(i);
                 }
                 yield return null;
-                GameObject go = Instantiate(FiveKnights.preloadedGO["hubfloor"]);
-                GameObject go2 = GameObject.Find("Chunk 2 0");
-                go.transform.Find("Chunk 2 0").GetComponent<MeshRenderer>().material =
-                    go2.GetComponent<MeshRenderer>().material;
             }
             
             StartCoroutine(FixArena());
@@ -313,13 +360,6 @@ namespace FiveKnights
                     bs.StatueState = FiveKnights.Instance.Settings.CompletionDryya;
                     break;
                 case "ZEM_NAME":
-                    //Log("Changing zem fsm1");
-                    //Debug.Log("Debug this boi");
-                    //var fsm = statue.transform.Find("Inspect").gameObject.LocateMyFSM("GG Boss UI");
-                    //fsm.ChangeTransition("Challenge", "FINISHED", "Change Scene");
-                    //fsm.InsertMethod("Change Scene", 0, () => Log("Wow I logged it uwu"));
-                    //Log("Changing zem fsm2");
-                    
                     bs.StatueState = FiveKnights.Instance.Settings.CompletionZemer;
                     SetStatue2(statue, sceneName, "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
                     bs.DreamStatueState = FiveKnights.Instance.Settings.CompletionZemer2;

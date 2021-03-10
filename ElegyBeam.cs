@@ -9,6 +9,7 @@ namespace FiveKnights
         
         private tk2dSpriteAnimator _anim;
         private BoxCollider2D _collider;
+        private float PosY = (OWArenaFinder.IsInOverWorld) ? 100.5f : 10f;
 
         private void Awake()
         {
@@ -27,7 +28,7 @@ namespace FiveKnights
 
         private IEnumerator Beam()
         {
-            Vector2 beamPos = new Vector2(HeroController.instance.transform.position.x, 10);
+            Vector2 beamPos = new Vector2(HeroController.instance.transform.position.x, PosY);
             Quaternion randomRot = Quaternion.Euler(0, 0, Random.Range(60, 120));
             gameObject.transform.SetPositionAndRotation(beamPos, randomRot);
             

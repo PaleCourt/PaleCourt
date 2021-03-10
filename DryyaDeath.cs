@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using UnityEngine;
+using Logger = Modding.Logger;
 
 namespace FiveKnights
 {

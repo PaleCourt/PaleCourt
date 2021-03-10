@@ -13,11 +13,12 @@ namespace FiveKnights
 {
     public class DryyaController : MonoBehaviour
     {
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 8.5f : 10.5f; //Message to Jngo: This was 8.5 but 8.5 isn't high enough in GG WD arena
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 8.5f : 10.5f; 
+        private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;
-        private const float LeftX = 61.0f;
-        private const float RightX = 91.0f;
+        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
+        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
         private const float DashSpeed = 90.0f;
         private const float DiveJumpSpeed = 50.0f;
         private const float DiveSpeed = 80.0f;
@@ -61,7 +62,7 @@ namespace FiveKnights
         private void Awake()
         {
             Log("Dryya Awake");
-            
+            GroundY = (OWArenaFinder.IsInOverWorld) ? 99f : GroundY;
             GameObject go = gameObject;
             go.SetActive(true);
             go.layer = 11;
@@ -1004,7 +1005,7 @@ namespace FiveKnights
                 shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
                 shockwave.AddComponent<DamageHero>().damageDealt = damage;
                 shockwave.SetActive(true);
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6f));
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), SlamY));
                 shockwave.transform.SetScaleX(vertScale);
             }
         }

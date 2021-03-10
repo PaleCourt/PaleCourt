@@ -12,8 +12,9 @@ namespace FiveKnights
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1650;
-        
+        private int _hp = 110;//1650;
+
+        private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
         
@@ -81,7 +82,6 @@ namespace FiveKnights
             GetComponents();
             _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
             _control = gameObject.LocateMyFSM("Control");
-            Modding.Logger.Log("Test6");
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
 
@@ -130,12 +130,13 @@ namespace FiveKnights
         
         private void MusicControl()
         {
-            WDController.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
+            if (!OWArenaFinder.IsInOverWorld)
+                WDController.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
         }
         
         private void DeathHandler()
         {
-            WDController.Instance.PlayMusic(null, 1f);
+            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
         }
 
@@ -258,7 +259,7 @@ namespace FiveKnights
                 shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
                 shockwave.AddComponent<DamageHero>().damageDealt = damage;
                 shockwave.SetActive(true);
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6f));
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), SlamY));
                 shockwave.transform.SetScaleX(vertScale);
             }
         }

@@ -76,10 +76,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ABManager.cs" />
     <Compile Include="AreaTitleCtrl.cs" />
     <Compile Include="AutoDestroy.cs" />
     <Compile Include="AudioSourceExtensions.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="LanguageCtrl.cs" />
+    <Compile Include="OWArenaFinder.cs" />
+    <Compile Include="OWBossManager.cs" />
     <Compile Include="Pogoable.cs" />
     <Compile Include="Tink.cs" />
     <Compile Include="WaveIncrease.cs" />
@@ -119,6 +123,7 @@
     <EmbeddedResource Include="assets\Zemer.png" />
     <EmbeddedResource Include="assets\Hegemol.png" />
     <EmbeddedResource Include="assets\mace.png" />
+    <EmbeddedResource Include="assets\Language.json" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\ismawin" />
@@ -130,10 +135,17 @@
 	<EmbeddedResource Include="StreamingAssets\soundbund" />
 	<EmbeddedResource Include="StreamingAssets\miscbund" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaZemer" />
+	<EmbeddedResource Include="StreamingAssets\owArenaZemer" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaDryya" />
+	<EmbeddedResource Include="StreamingAssets\owArenaDryya" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaDep" />
+	<EmbeddedResource Include="StreamingAssets\owArenaDep" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaIsma" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaHegemol" />
+	<EmbeddedResource Include="StreamingAssets\owArenaHegemol" />
+	<EmbeddedResource Include="StreamingAssets\ggArenaHub" />
+	<EmbeddedResource Include="StreamingAssets\workShopEntranceDep" />
+	<EmbeddedResource Include="StreamingAssets\workShopEntrance" />
   </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />

@@ -9,6 +9,7 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ModCommon;
 using On.HutongGames.PlayMaker.Actions;
 
@@ -19,8 +20,10 @@ namespace FiveKnights
     public class FiveKnights : Mod, ITogglableMod
     {
         public FiveKnights() : base("Pale Court") { }
-        public static Dictionary<string, AudioClip> Clips { get; private set; }
-        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
+        
+        public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
+        private LanguageCtrl langStrings { get; set; }
 
         public static string OS
         {
@@ -56,39 +59,40 @@ namespace FiveKnights
                 ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
+                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
+                ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("GG_Failed_Champion","False Knight Dream"),
-                ("White_Palace_09","White Palace Lift"),
                 ("White_Palace_09","White King Corpse/Throne Sit"),
                 ("Fungus1_12","Plant Turret"),
+                ("Fungus1_12","simple_grass"),
+                ("Fungus1_12","green_grass_2"),
+                ("Fungus1_12","green_grass_3"),
+                ("Fungus1_12","green_grass_1 (1)"),
                 ("Fungus1_19", "Plant Trap"),
                 ("White_Palace_01","WhiteBench"),
                 ("GG_Workshop","GG_Statue_ElderHu"),
                 ("GG_Lost_Kin", "Lost Kin"),
                 ("GG_Soul_Tyrant", "Dream Mage Lord"),
-                ("GG_Workshop","GG_Statue_ElderHu"),
                 ("GG_Workshop","GG_Statue_TraitorLord"),
-                ("White_Palace_03_hub","doorWarp"),
-                ("White_Palace_03_hub","dream_beam_animation"),
-                ("White_Palace_03_hub","dream_nail_base"),
-                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
-                ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
                 ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
-                ("Fungus3_13","BlurPlane"),
-                ("Fungus3_34","_Scenery/fung_lamp2 (1)/Active/haze2 (1)"),
                 ("GG_White_Defender", "Boss Scene Controller"),
-                ("GG_White_Defender", "_SceneManager"),
-                ("GG_White_Defender", "White Defender"),
+                //("GG_White_Defender", "White Defender"),
+                ("GG_Atrium_Roof", "Land of Storms Doors"),
+                ("GG_White_Defender", "GG_Arena_Prefab/Godseeker Crowd"),
+                ("Dream_04_White_Defender","_SceneManager"),
+                ("Dream_04_White_Defender", "Battle Gate (1)"),
+                ("Dream_04_White_Defender", "Dream Entry"),
+                ("Dream_04_White_Defender", "White Defender"),
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
             Log("Storing GOs");
-            preloadedGO["Warp"] = preloadedObjects["White_Palace_03_hub"]["doorWarp"];
-            preloadedGO["WarpAnim"] = preloadedObjects["White_Palace_03_hub"]["dream_beam_animation"];
-            preloadedGO["WarpBase"] = preloadedObjects["White_Palace_03_hub"]["dream_nail_base"];
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
+            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
+            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
             preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
             preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
@@ -97,24 +101,36 @@ namespace FiveKnights
             preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
-            preloadedGO["lift"] = preloadedObjects["White_Palace_09"]["White Palace Lift"];
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
+            
+            preloadedGO["Grass0"] = preloadedObjects["Fungus1_12"]["simple_grass"];
+            preloadedGO["Grass2"] = preloadedObjects["Fungus1_12"]["green_grass_2"];
+            preloadedGO["Grass3"] = preloadedObjects["Fungus1_12"]["green_grass_3"];
+            preloadedGO["Grass1"] = preloadedObjects["Fungus1_12"]["green_grass_1 (1)"];
+            
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
-            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
-            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
-            preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
+            //preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
+            preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];
+            preloadedGO["Godseeker"] = preloadedObjects["GG_White_Defender"]["GG_Arena_Prefab/Godseeker Crowd"];
+            
+            preloadedGO["WhiteDef"] = preloadedObjects["Dream_04_White_Defender"]["White Defender"];
+            preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
+            preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
+            preloadedGO["BattleGate"] = preloadedObjects["Dream_04_White_Defender"]["Battle Gate (1)"];
             preloadedGO["isma_stat"] = null;
             
             Instance = this;
             Log("Initalizing.");
 
             Unload();
+            langStrings = new LanguageCtrl();
             GameManager.instance.StartCoroutine(LoadMusic());
-            GameManager.instance.StartCoroutine(LoadDep());
+            LoadDep();
+            LoadBossBundles();
             
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
@@ -145,53 +161,44 @@ namespace FiveKnights
             }
         }
 
-        IEnumerator LoadMusic()
+        private IEnumerator LoadMusic()
         {
-            UObject[] clips = null;
-            Assembly asm = Assembly.GetExecutingAssembly();
-            Clips = new Dictionary<string, AudioClip>();
-            IsmaClips = new Dictionary<string, AudioClip>();
-            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
-            {
-                var ab = AssetBundle.LoadFromStream(s);
-                yield return null;
-                clips = ab.LoadAllAssets();
-            }
-
-            if (clips == null)
-            {
-                Log("Failed to load clips");
-                yield break;
-            }
-
-            foreach (var o in clips)
-            {
-                var clip = (AudioClip) o;
-                if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
-                if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
-                else Clips[clip.name] = clip;
-            }
-            
+            var ab = ABManager.Load(ABManager.Bundle.Sound);
+            yield return null;
             AudioSource aud = GameObject.Find("Music").transform.Find("Main").GetComponent<AudioSource>();
-            aud.clip = Clips["MM_Aud"];
+            aud.clip = ab.LoadAsset<AudioClip>("MM_Aud");
             aud.Play();
+            Log("Finished setting MM music");
         }
-        IEnumerator LoadDep()
-        {
-            UObject[] obj = null;
-            Assembly asm = Assembly.GetExecutingAssembly();
-            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.ggArenaDep"))
-            {
-                var ab = AssetBundle.LoadFromStream(s);
-                yield return null;
-                obj = ab.LoadAllAssets();
-            }
 
-            if (obj == null)
-            {
-                Log("Failed to load scene dep");
-                yield break;
-            }
+        private void LoadBossBundles()
+        {
+            ABManager.Load(ABManager.Bundle.GDryya);
+            ABManager.Load(ABManager.Bundle.GHegemol);
+            ABManager.Load(ABManager.Bundle.GIsma);
+            ABManager.Load(ABManager.Bundle.GZemer);
+            ABManager.Load(ABManager.Bundle.GArenaIsma);
+        }
+        
+        private void LoadDep()
+        {
+
+            ABManager.Load(ABManager.Bundle.GArenaDep);
+            ABManager.Load(ABManager.Bundle.OWArenaDep);
+            ABManager.Load(ABManager.Bundle.WSArenaDep);
+            ABManager.Load(ABManager.Bundle.WSArena);
+            ABManager.Load(ABManager.Bundle.GArenaHub);
+            ABManager.Load(ABManager.Bundle.GArenaHub2);
+            ABManager.Load(ABManager.Bundle.Misc);
+            ABManager.Load(ABManager.Bundle.GArenaH);
+            ABManager.Load(ABManager.Bundle.GArenaD);
+            ABManager.Load(ABManager.Bundle.GArenaZ);
+            ABManager.Load(ABManager.Bundle.GArenaI);
+            ABManager.Load(ABManager.Bundle.OWArenaD);
+            ABManager.Load(ABManager.Bundle.OWArenaZ);
+            ABManager.Load(ABManager.Bundle.OWArenaH);
+
+            Log("Finished bundling");
         }
         private object SetVariableHook(Type t, string key, object obj)
         {
@@ -227,39 +234,13 @@ namespace FiveKnights
             return orig;
         }
 
-        private string LangGet(string key, string sheettitle)
+        private string LangGet(string key, string sheet)
         {
-            switch (key)
+            if (langStrings.ContainsKey(key, "Speech"))
             {
-                case "ISMA_NAME": return "Kindly Isma";
-                case "ISMA_DESC": return "Gentle god of moss and grove.";
-                case "DD_ISMA_NAME": return "Loyal Ogrim & Kindly Isma";
-                case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
-                case "HEG_NAME": return "Mighty Hegemol";
-                case "HEG_DESC": return "Something something...";
-                case "DRY_NAME": return "Fierce Dryya";
-                case "DRY_DESC": return "Protective god of Root and King.";
-                case "ZEM_NAME": return "Mysterious Ze'mer";
-                case "ZEM2_NAME": return "Mystic Ze'mer";
-                case "ZEM_DESC": return "Grieving god of lands beyond.";
-                case "ZEM2_DESC": return "Strange god of a sacred land.";
-                case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
-                case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
-                case "DRYYA_DIALOG_3_1": return "Protect...";
-                case "DRYYA_DIALOG_4_1": return "Kin...seeks to find her?";
-                case "DRYYA_DIALOG_5_1": return "Dryya Dialogue 5";
-                case "ISMA_DREAM_1_1": return "Something about Sacrifice";
-                case "ISMA_DREAM_2_1": return "Something about Grove";
-                case "ISMA_DREAM_3_1": return "Something about Ogrim";
-                case "FALSE_KNIGHT_D_1": return "Show me what you're made of!";
-                case "FALSE_KNIGHT_D_2": return "Is that all you got?";
-                case "FALSE_KNIGHT_D_3": return "Prove to me you're a champion!";
-                case "ZEM_DREAM_1_1": return "Shoutout to 56 (can't remove this can you)";
-                case "ZEM_DREAM_2_1": return "Shoutout to 56 (can't remove this can you)";
-                case "ZEM_DREAM_3_1": return "Shoutout to 56 (can't remove this can you)";
-                case "YN_THRONE": return "Answer the Champions' Call?";
-                default: return Language.Language.GetInternal(key, sheettitle);
+                return langStrings.Get(key, "Speech");
             }
+            return Language.Language.GetInternal(key, sheet);
         }
 
         private void SaveGame(SaveGameData data)
@@ -270,6 +251,7 @@ namespace FiveKnights
         private void AddComponent()
         {
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            //GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
         }
 
         public void Unload()
@@ -280,6 +262,8 @@ namespace FiveKnights
             ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
 
+            ABManager.UnloadAll();
+            
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
             if (x == null) return;
             UObject.Destroy(x);

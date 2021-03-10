@@ -119,7 +119,6 @@ namespace FiveKnights
             }
             if (onlyIsma)
             {
-                GameObject.Find("Burrow Effect").SetActive(false);
                 StartCoroutine(FixArena());
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitForSeconds(0.8f);
