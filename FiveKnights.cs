@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Reflection;
 using Modding;
@@ -9,9 +8,6 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using ModCommon;
-using On.HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
@@ -23,6 +19,7 @@ namespace FiveKnights
         
         public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
         private LanguageCtrl langStrings { get; set; }
 
         public static string OS
@@ -129,8 +126,8 @@ namespace FiveKnights
             Unload();
             langStrings = new LanguageCtrl();
             GameManager.instance.StartCoroutine(LoadMusic());
-            LoadDep();
-            LoadBossBundles();
+            GameManager.instance.StartCoroutine(LoadDep());
+            GameManager.instance.StartCoroutine(LoadBossBundles());
             
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
@@ -171,32 +168,51 @@ namespace FiveKnights
             Log("Finished setting MM music");
         }
 
-        private void LoadBossBundles()
+        private IEnumerator LoadBossBundles()
         {
             ABManager.Load(ABManager.Bundle.GDryya);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GHegemol);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GIsma);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GZemer);
-            ABManager.Load(ABManager.Bundle.GArenaIsma);
         }
         
-        private void LoadDep()
+        private IEnumerator LoadDep()
         {
 
             ABManager.Load(ABManager.Bundle.GArenaDep);
+            yield return null;
             ABManager.Load(ABManager.Bundle.OWArenaDep);
+            yield return null;
             ABManager.Load(ABManager.Bundle.WSArenaDep);
+            yield return null;
             ABManager.Load(ABManager.Bundle.WSArena);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaHub);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaHub2);
+            yield return null;
             ABManager.Load(ABManager.Bundle.Misc);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaH);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaD);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaZ);
+            yield return null;
             ABManager.Load(ABManager.Bundle.GArenaI);
+            yield return null;
             ABManager.Load(ABManager.Bundle.OWArenaD);
+            yield return null;
             ABManager.Load(ABManager.Bundle.OWArenaZ);
+            yield return null;
             ABManager.Load(ABManager.Bundle.OWArenaH);
+            yield return null;
+            ABManager.Load(ABManager.Bundle.OWArenaI);
+            yield return null;
+            ABManager.Load(ABManager.Bundle.GArenaIsma);
 
             Log("Finished bundling");
         }
@@ -250,8 +266,8 @@ namespace FiveKnights
 
         private void AddComponent()
         {
-            GameManager.instance.gameObject.AddComponent<ArenaFinder>();
-            //GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
+            //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
         }
 
         public void Unload()
@@ -265,8 +281,9 @@ namespace FiveKnights
             ABManager.UnloadAll();
             
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
-            if (x == null) return;
-            UObject.Destroy(x);
+            var y = GameManager.instance?.gameObject.GetComponent<OWArenaFinder>();
+            if (x != null) UObject.Destroy(x);
+            if (y != null) UObject.Destroy(y);
         }
     }
 }

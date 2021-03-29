@@ -33,8 +33,8 @@ namespace FiveKnights
         private string[] _commonAtt;
 
         private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
-        private const float LeftX = 11.2f;
-        private const float RightX = 45.7f;
+        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : 11.2f;
+        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : 45.7f;
 
         private const int Phase2HP = 1500;
         private const int Phase3HP = 1000;
@@ -68,6 +68,8 @@ namespace FiveKnights
 
         private void Awake()
         {
+            GroundY = OWArenaFinder.IsInOverWorld ? 108.8f : GroundY;
+            
             OnDestroy();
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
@@ -926,7 +928,7 @@ namespace FiveKnights
                 if (type == 3)
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                    wav.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["TestDist"];
                     wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
@@ -1124,7 +1126,7 @@ namespace FiveKnights
                 if (type == 3)
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                    wav.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["TestDist"];
                     wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
@@ -1269,7 +1271,7 @@ namespace FiveKnights
                 if (type == 3)
                 {
                     GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+                    wav.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["TestDist"];
                     wav.transform.position = new Vector3(MIDDLE, GroundY);
                     wav.SetActive(true);
                     wav.AddComponent<WaveIncrease>();
@@ -1453,9 +1455,19 @@ namespace FiveKnights
 
         private IEnumerator MusicControl()
         {
-            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
-            yield return new WaitForSecondsRealtime(14.12f);
-            WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
+            if (OWArenaFinder.IsInOverWorld)
+            {
+                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"]);
+                yield return new WaitForSecondsRealtime(14.12f);
+                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"]);
+            }
+            else
+            {
+                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
+                yield return new WaitForSecondsRealtime(14.12f);
+                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
+            }
+            
         }
         
         private IEnumerator EndPhase1()
@@ -1978,7 +1990,8 @@ namespace FiveKnights
             }
 
             FaceHero();
-            WDController.Instance.PlayMusic(null, 1f);
+            if (OWArenaFinder.IsInOverWorld ) OWBossManager.Instance.PlayMusic(null);
+            else WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _bc.enabled = false;
             _anim.enabled = true;

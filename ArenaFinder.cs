@@ -25,8 +25,6 @@ namespace FiveKnights
         public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
 
         public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
-        public static Dictionary<string, Material> Materials { get; private set; } = new Dictionary<string, Material>();
-
         public static Dictionary<string, Sprite> Sprites { get; private set;} = new Dictionary<string, Sprite>();
 
         public static int defeats;
@@ -418,8 +416,8 @@ namespace FiveKnights
         {
             FiveKnights.preloadedGO["hubfloor"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub2].LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            ArenaFinder.Materials["WaveEffectMaterial"] = misc.LoadAsset<Material>("WaveEffectMaterial");
-            ArenaFinder.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
+            FiveKnights.Materials["WaveEffectMaterial"] = misc.LoadAsset<Material>("WaveEffectMaterial");
+            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
             
             foreach (GameObject i in misc.LoadAllAssets<GameObject>())
             {
@@ -438,10 +436,10 @@ namespace FiveKnights
             }
 
             Texture tex = misc.LoadAsset<Texture>("sonar");
-            ArenaFinder.Materials["TestDist"] = new Material(ArenaFinder.Materials["WaveEffectMaterial"]);
-            ArenaFinder.Materials["TestDist"].SetTexture("_NoiseTex", tex);
-            ArenaFinder.Materials["TestDist"].SetFloat("_Intensity", 0.2f);
-            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = ArenaFinder.Materials["TestDist"];
+            FiveKnights.Materials["TestDist"] = new Material(FiveKnights.Materials["WaveEffectMaterial"]);
+            FiveKnights.Materials["TestDist"].SetTexture("_NoiseTex", tex);
+            FiveKnights.Materials["TestDist"].SetFloat("_Intensity", 0.2f);
+            FiveKnights.preloadedGO["WaveShad"].GetComponent<SpriteRenderer>().material = FiveKnights.Materials["TestDist"];
             Log("Loading hub bundle");
         }
 

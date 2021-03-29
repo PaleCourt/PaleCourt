@@ -89,15 +89,10 @@ namespace FiveKnights
             Log("Begin Isma");
             yield return null;
             offsetTime = 0f;
-            GameObject actor = null;
-            foreach (var i in FindObjectsOfType<GameObject>())
-            {
-                if (i.name.Contains("Audio Player Actor"))
-                {
-                    actor = i;
-                    break;
-                }
-            }
+            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
+            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
+            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
+            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
 
             if (actor == null)
             {
@@ -119,7 +114,6 @@ namespace FiveKnights
             }
             if (onlyIsma)
             {
-                StartCoroutine(FixArena());
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitForSeconds(0.8f);
             }
@@ -147,10 +141,10 @@ namespace FiveKnights
             whip.layer = 11;
             PlantG = new List<GameObject>();
             PlantF = new List<GameObject>();
-            if (onlyIsma) MusicControl();
+            if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
             StartCoroutine("Start2");
         }
-        
+
         private void MusicControl()
         {
             Log("Start music");
@@ -744,7 +738,7 @@ namespace FiveKnights
         {
             while (true)
             {
-                int oldHp = _hm.hp - 150;
+                int oldHp = _hm.hp - 300; //150
                 if (onlyIsma)
                 {
                     yield return new WaitWhile(() => _hm.hp > oldHp);
@@ -894,18 +888,18 @@ namespace FiveKnights
                 {
                     Animator i = anims[ind++];
                     i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r == start ? rot : r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                    i.GetComponentInChildren<LineRenderer>(true).enabled = true;
+                    //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
                 }
                 for (int r = start - 1; r > start - 4; r--)
                 {
                     Animator i = anims[ind++];
                     i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                    i.GetComponentInChildren<LineRenderer>(true).enabled = true;
+                    //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
-                    i.GetComponentInChildren<LineRenderer>(true).enabled = false;
+                    //i.GetComponentInChildren<LineRenderer>(true).enabled = false;
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
                     i.Play("ThornShot");
                 }
@@ -1011,7 +1005,7 @@ namespace FiveKnights
             Log("Started Isma Lone Death");
             yield return new WaitWhile(() => _attacking);
             _attacking = true;
-            _hm.hp = 200;
+            _hm.hp = 300;
             _healthPool = 100;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -1033,9 +1027,8 @@ namespace FiveKnights
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
-            WDController.Instance.PlayMusic(null, 1f);
+            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
-            //GameObject.Find("Main").GetComponent<AudioSource>().volume = 0f;
             _rb.gravityScale = 1.5f;
             float ismaXSpd = dir * 10f;
             _rb.velocity = new Vector2(ismaXSpd, 28f);
@@ -1051,7 +1044,7 @@ namespace FiveKnights
             _rb.gravityScale = 0f;
             _rb.velocity = new Vector2(0f,0f);
             yield return new WaitForSeconds(1f);
-            CustomWP.wonLastFight = true;
+            if (!OWArenaFinder.IsInOverWorld) CustomWP.wonLastFight = true;
             Destroy(this);
         }
 
@@ -1312,16 +1305,6 @@ namespace FiveKnights
             if (FastApproximately(xPos, heroX, 2f)) changeXPos -= 4f;
             xPos += changeXPos;
             gameObject.transform.position = new Vector3(xPos, GROUND_Y, 1f);
-        }
-
-        IEnumerator FixArena()
-        {
-            yield return null;
-            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("dung")))
-            {
-                Destroy(i);
-            }
-            Log("YA2");
         }
 
         private void PlayDeathFor(GameObject go)

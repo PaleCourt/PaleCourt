@@ -244,7 +244,7 @@ namespace FiveKnights
             roarLock.SendEvent("ROAR EXIT");
 
             _control.SetState("Intro Grab");
-            MusicControl();
+            if (!OWArenaFinder.IsInOverWorld) MusicControl();
         }
         
         private void MusicControl()

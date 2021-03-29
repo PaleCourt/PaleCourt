@@ -85,6 +85,7 @@
     <Compile Include="OWArenaFinder.cs" />
     <Compile Include="OWBossManager.cs" />
     <Compile Include="Pogoable.cs" />
+    <Compile Include="TChildCtrl.cs" />
     <Compile Include="Tink.cs" />
     <Compile Include="WaveIncrease.cs" />
     <Compile Include="CollisionCheck.cs" />
@@ -143,6 +144,7 @@
 	<EmbeddedResource Include="StreamingAssets\ggArenaIsma" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaHegemol" />
 	<EmbeddedResource Include="StreamingAssets\owArenaHegemol" />
+	<EmbeddedResource Include="StreamingAssets\owArenaIsma" />
 	<EmbeddedResource Include="StreamingAssets\ggArenaHub" />
 	<EmbeddedResource Include="StreamingAssets\workShopEntranceDep" />
 	<EmbeddedResource Include="StreamingAssets\workShopEntrance" />

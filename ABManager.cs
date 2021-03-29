@@ -18,7 +18,7 @@ namespace FiveKnights
             Sound, 
             GIsma, GDryya, GHegemol, GZemer, 
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
-            OWArenaD, OWArenaZ, OWArenaH,
+            OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
             Misc
         }
@@ -43,6 +43,7 @@ namespace FiveKnights
                 Bundle.OWArenaD => "owArenaDryya",
                 Bundle.OWArenaH => "owArenaHegemol",
                 Bundle.OWArenaZ => "owArenaZemer",
+                Bundle.OWArenaI => "owArenaIsma",
                 Bundle.OWArenaDep => "owArenaDep",
                 Bundle.WSArenaDep => "workShopEntranceDep",
                 Bundle.WSArena => "workShopEntrance",

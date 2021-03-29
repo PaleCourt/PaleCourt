@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using ModCommon.Util;
 using ModCommon;
 using Modding;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 
@@ -26,6 +28,12 @@ namespace FiveKnights
         private IEnumerator Start()
         {
             Instance = this;
+            var oldDung = GameObject.Find("White Defender");
+            if (oldDung!= null)
+            {
+                Destroy(oldDung);
+            }
+            
             _dd = Instantiate(FiveKnights.preloadedGO["WhiteDef"]);
             FiveKnights.preloadedGO["WD"] = _dd;
             _dd.SetActive(false);
@@ -37,16 +45,30 @@ namespace FiveKnights
             
             if (CustomWP.boss == CustomWP.Boss.Isma)
             {
+                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 CreateIsma();
+                Log("Made arena");
+                yield return new WaitWhile(() => HeroController.instance == null);
+                var bs  = GameObject.Find("Battle Scene").LocateMyFSM("Battle Scene");
+                bool hasStarted = false;
+                bs.InsertMethod("Battle Start", 5, () =>
+                {
+                    HeroController.instance.RegainControl();
+                    hasStarted = true;
+                    Destroy(bs);
+                });
+                yield return new WaitWhile(() => !hasStarted);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
+                ic.gameObject.SetActive(true);
+                PlayMusic(FiveKnights.Clips["LoneIsmaMusic"]);
                 yield return new WaitWhile(() => ic != null);
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
+                PlayMusic(null);
+
                 yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                WinRoutine("ISMA_OUTRO_1a","ISMA_OUTRO_1b", OWArenaFinder.PrevIsmScene);
+                
+                Log("Done with Isma boss");
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
@@ -69,26 +91,34 @@ namespace FiveKnights
                 PlayerData.instance.disablePause = true;
                 
                 yield return new WaitForSeconds(1.0f);
-                GameObject.Find("Dream Exit Particle Field").GetComponent<ParticleSystem>().Play();
+                /*GameObject.Find("Dream Exit Particle Field").GetComponent<ParticleSystem>().Play();
                 GameObject transDevice = Instantiate(_dd.transform.Find("Corpse White Defender(Clone)").gameObject);
                 transDevice.SetActive(true);
                 var fsm = transDevice.LocateMyFSM("Control");
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = false;
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = OWArenaFinder.PrevDryScene;
+                GameManager.instance.TimePasses();
+                GameManager.instance.ResetSemiPersistentItems();
+                HeroController.instance.EnterWithoutInput(true);
+                fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
+                fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = OWArenaFinder.PrevIsmScene;
                 fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door_dreamReturn";
                 fsm.GetAction<BeginSceneTransition>("New Scene", 6).visualization.Value = GameManager.SceneLoadVisualizations.Dream;
                 fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
                 fsm.GetAction<Wait>("Fade Out", 4).time.Value += 2f;
                 PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
                 fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-                fsm.SetState("Fade Out");
-                Log("Done with Dryya boss");
+                fsm.SetState("Fade Out");*/
+                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene);
+                Log("Done with Isma boss");
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Hegemol)
             {
                 HegemolController hegemolCtrl = CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+                yield return new WaitWhile(() => HeroController.instance == null);
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 432f);
+                PlayMusic(FiveKnights.Clips["HegemolMusic"]);
+                hegemolCtrl.gameObject.SetActive(false);
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -100,24 +130,56 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze)
             {
-                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
-                yield return null;
                 ZemerController zc = CreateZemer();
+                GameObject child = Instantiate(FiveKnights.preloadedGO["TChild"]);
+                var tChild = child.AddComponent<TChildCtrl>();
+                child.SetActive(true);
+
+                yield return new WaitWhile(() => !tChild.helpZemer);
                 GameObject zem = zc.gameObject;
+                zem.SetActive(true);
+
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-
+                Log("? idk dude");
+                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene);
                 Destroy(this);
             }
         }
 
+        private void WinRoutine(string msg1Key, string msg2Key, string area)
+        {
+            HeroController.instance.RelinquishControl();
+            GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
+            if (dreambye != null)
+            {
+                dreambye.GetComponent<ParticleSystem>().Play();
+            }
+            GameObject transDevice = Instantiate(_dd.transform.Find("Corpse White Defender(Clone)").gameObject);
+            transDevice.SetActive(true);
+            var fsm = transDevice.LocateMyFSM("Control");
+            GameObject text = fsm.GetAction<SetTextMeshProAlignment>("New Scene", 1).gameObject.GameObject.Value;
+            TextMeshPro tmp = text.GetComponent<TextMeshPro>();
+            fsm.GetAction<Wait>("Fade Out", 4).time.Value += 2f;
+            PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
+            fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
+            fsm.RemoveAction("Fade Out", 0);
+            fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
+            fsm.ChangeTransition("Outro Msg 1b", "CONVOFINISH", "New Scene");
+            tmp.color = Color.black;
+            tmp.alignment = TextAlignmentOptions.Center;
+            fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
+            fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = msg2Key;
+            fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
+            fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = area;
+            fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door_dreamReturn";
+            fsm.GetAction<BeginSceneTransition>("New Scene", 6).visualization.Value = GameManager.SceneLoadVisualizations.Default;
+            fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
+            HeroController.instance.EnterWithoutInput(true);
+            fsm.SetState("Fade Out");
+        }
+        
         public void PlayMusic(AudioClip clip)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
@@ -143,7 +205,7 @@ namespace FiveKnights
                 "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
                 "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
             };
-
+            FiveKnights.Clips["LoneIsmaMusic"] = snd.LoadAsset<AudioClip>("LoneIsmaMusic");
             IEnumerator LoadSlow()
             {
                 foreach (var i in arr)
@@ -152,20 +214,16 @@ namespace FiveKnights
                     yield return null;
                 }
             }
-            
+
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Sil_Isma_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }
+            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
 
             StartCoroutine(LoadSlow());
-            
             GameObject isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
-            
+
             FiveKnights.preloadedGO["Isma2"] = isma;
             
-            isma.SetActive(true);
+            isma.SetActive(false);
             
             foreach (SpriteRenderer i in isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
@@ -181,15 +239,28 @@ namespace FiveKnights
                 i.gameObject.layer = 11;
             }
             
+            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("dung")))
+            {
+                Destroy(i);
+            }
+            Destroy(GameObject.Find("throne"));
+            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Silhouette")))
+            {
+                Destroy(i);
+            }
+            
             foreach (LineRenderer lr in isma.GetComponentsInChildren<LineRenderer>(true))
             {
                 lr.material = new Material(Shader.Find("Sprites/Default"));
             }
+            var arena = Instantiate(FiveKnights.preloadedGO["IsmaArena"]);
+            arena.SetActive(true);
             
             var _sr = isma.GetComponent<SpriteRenderer>();
-            _sr.material = ArenaFinder.Materials["flash"];
+            _sr.material = FiveKnights.Materials["flash"];
             
             isma.AddComponent<IsmaController>();
+            isma.SetActive(false);
             
             Log("Done creating Isma");
         }
@@ -201,12 +272,13 @@ namespace FiveKnights
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
             
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            /*AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            ArenaFinder.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
             {
                 ArenaFinder.Sprites[i.name] = i;
-            }
-            
+            }*/
+
             Vector2 pos = new Vector2(457.6f, 112.5f);
             GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], pos, Quaternion.identity);
             dryya.SetActive(false);
@@ -228,7 +300,7 @@ namespace FiveKnights
             }
             
             GameObject hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
-            hegemol.SetActive(true);
+            hegemol.SetActive(false);
             Log("Adding HegemolController component");
             return hegemol.AddComponent<HegemolController>();
         }
@@ -254,14 +326,17 @@ namespace FiveKnights
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             ArenaFinder.Sprites["ZemParticPetal"] = misc.LoadAsset<Sprite>("petal-test");
             ArenaFinder.Sprites["ZemParticDung"] = misc.LoadAsset<Sprite>("dung-test");
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Zem_Sil_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }
-            
+            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
+
             GameObject zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
             zemer.SetActive(true);
             foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+
+            foreach (Transform i in FiveKnights.preloadedGO["TChild"].transform)
             {
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.layer = 22;
@@ -301,21 +376,25 @@ namespace FiveKnights
             zemer.GetComponent<SpriteRenderer>();
             var zc = zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");
-            
+            zemer.SetActive(false);
             return zc;
         }
 
         private void OnDestroy()
         {
-            Log("Destroy music");
             _ap?.StopMusic();
             _ap2?.StopMusic();
-            Log("Destroy music 2");
         }
 
         private void Log(object o)
         {
-            Modding.Logger.Log("[White Defender] " + o);
+            Modding.Logger.Log("[OWBossManager] " + o);
+        }
+
+        
+        private void Test()
+        {
+            
         }
     }
 }
