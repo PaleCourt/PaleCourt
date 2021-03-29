@@ -8,6 +8,8 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
+using SFCore.Utils;
+using UnityEngine.Audio;
 
 namespace FiveKnights
 {
@@ -15,8 +17,55 @@ namespace FiveKnights
     [UsedImplicitly]
     public class FiveKnights : Mod, ITogglableMod
     {
-        public FiveKnights() : base("Pale Court") { }
-        
+        private int paleCourtLogoId = -1;
+        public FiveKnights() : base("Pale Court")
+        {
+            #region Load Embedded Images
+
+            int ind = 0;
+            Assembly asm = Assembly.GetExecutingAssembly();
+            foreach (string res in asm.GetManifestResourceNames())
+            {
+                Log("looking at file " + res);
+                using Stream s = asm.GetManifestResourceStream(res);
+                if (s == null) continue;
+                if (res.EndsWith(".png"))
+                {
+                    byte[] buffer = new byte[s.Length];
+                    s.Read(buffer, 0, buffer.Length);
+                    s.Dispose();
+                    // Create texture from bytes
+                    var tex = new Texture2D(1, 1);
+                    tex.LoadImage(buffer, true);
+                    // Create sprite from texture
+                    SPRITES.Add(Path.GetFileNameWithoutExtension(res), Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
+
+                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                }
+            }
+
+            #endregion
+            #region Menu Customization
+
+            On.UIManager.Awake += OnUIManagerAwake;
+            On.SetVersionNumber.Start += OnSetVersionNumberStart;
+            SFCore.MenuStyleHelper.Initialize();
+            SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
+            SFCore.TitleLogoHelper.Initialize();
+            paleCourtLogoId = SFCore.TitleLogoHelper.AddLogo(SPRITES["LogoBlack"]);
+
+            #endregion
+            #region Enviroment Effects
+
+            SFCore.EnviromentParticleHelper.AddCustomDashEffectsHook += AddCustomDashEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomHardLandEffectsHook += AddCustomHardLandEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomJumpEffectsHook += AddCustomJumpEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomSoftLandEffectsHook += AddCustomSoftLandEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomRunEffectsHook += AddCustomRunEffectsHook;
+
+            #endregion
+        }
+
         public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
@@ -134,30 +183,122 @@ namespace FiveKnights
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
             ModHooks.Instance.NewGameHook += AddComponent;
             ModHooks.Instance.LanguageGetHook += LangGet;
-
-            int ind = 0;
-            Assembly asm = Assembly.GetExecutingAssembly();
-            foreach (string res in asm.GetManifestResourceNames())
-            {
-                Log("looking at file " + res);
-                using Stream s = asm.GetManifestResourceStream(res);
-                if (s == null) continue;
-                if (res.EndsWith(".png"))
-                {
-                    byte[] buffer = new byte[s.Length];
-                    s.Read(buffer, 0, buffer.Length);
-                    s.Dispose();
-                    // Create texture from bytes
-                    var tex = new Texture2D(1, 1);
-                    tex.LoadImage(buffer, true);
-                    // Create sprite from texture
-                    SPRITES.Add(Path.GetFileNameWithoutExtension(res), Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
-                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
-                }
-            }
         }
 
+
+        #region Menu Customization
+
+        private void OnSetVersionNumberStart(On.SetVersionNumber.orig_Start orig, SetVersionNumber self)
+        {
+            orig(self);
+            self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
+        }
+        private void OnUIManagerAwake(On.UIManager.orig_Awake orig, UIManager self)
+        {
+            orig(self);
+            self.transform.GetChild(1).GetChild(2).GetChild(2).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
+        }
+
+        private (string languageString, GameObject styleGo, int titleIndex, string unlockKey, string[] achievementKeys,
+            MenuStyles.MenuStyle.CameraCurves cameraCurves, AudioMixerSnapshot musicSnapshot) AddPCMenuStyle(
+                MenuStyles self)
+        {
+            Log("Start");
+
+            #region Setting up materials
+
+            var defaultSpriteMaterial = new Material(Shader.Find("Sprites/Default"));
+            defaultSpriteMaterial.SetColor(Shader.PropertyToID("_Color"), new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("PixelSnap"), 0);
+            defaultSpriteMaterial.SetFloat(Shader.PropertyToID("_EnableExternalAlpha"), 0.0f);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_Stencil"), 0);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+
+            #endregion
+
+            #region Loading assetbundle
+
+            LoadTitleScreen();
+
+            #endregion
+
+            GameObject pcStyleGo = GameObject.Instantiate(ABManager.AssetBundles[ABManager.Bundle.TitleScreen].LoadAsset<GameObject>("Pale_Court_Style_1"));
+            if (pcStyleGo == null)
+            {
+                pcStyleGo = new GameObject();
+            }
+
+            foreach (var t in pcStyleGo.GetComponentsInChildren<Transform>())
+            {
+                t.gameObject.SetActive(true);
+            }
+            foreach (var t in pcStyleGo.GetComponentsInChildren<SpriteRenderer>())
+            {
+                t.materials = new Material[] { defaultSpriteMaterial };
+            }
+
+            pcStyleGo.transform.SetParent(self.gameObject.transform);
+            pcStyleGo.transform.localPosition = new Vector3(0, -1.2f, 0);
+
+            var cameraCurves = new MenuStyles.MenuStyle.CameraCurves();
+            cameraCurves.saturation = 1f;
+            cameraCurves.redChannel = new AnimationCurve();
+            cameraCurves.redChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.redChannel.AddKey(new Keyframe(1f, 1f));
+            cameraCurves.greenChannel = new AnimationCurve();
+            cameraCurves.greenChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.greenChannel.AddKey(new Keyframe(1f, 1f));
+            cameraCurves.blueChannel = new AnimationCurve();
+            cameraCurves.blueChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.blueChannel.AddKey(new Keyframe(1f, 1f));
+            UObject.DontDestroyOnLoad(pcStyleGo);
+
+            #region Fader
+
+            // ToDo Make this part of the cursor
+
+            //GameObject fader1 = new GameObject("Fader");
+            //fader1.transform.SetParent(pcStyleGo.transform);
+            //fader1.transform.localPosition = new Vector3(-6.125f, -1.75f, 1f);
+            //fader1.transform.localScale = new Vector3(3, 5, 1);
+            //var sr = fader1.AddComponent<SpriteRenderer>();
+            //sr.sprite = SPRITES["Fader"];
+            //sr.material = defaultSpriteMaterial;
+
+            #endregion
+
+            return ("UI_MENU_STYLE_PALE_COURT", pcStyleGo, paleCourtLogoId, "", null, cameraCurves, null);
+        }
+
+        #endregion
+
+        #region Enviroment Effects
+
+        private GameObject ChangePsrTexture(GameObject o)
+        {
+            GameObject ret = GameObject.Instantiate(o, o.transform.parent);
+            foreach (var psr in ret.GetComponentsInChildren<ParticleSystemRenderer>())
+            {
+                psr.material.mainTexture = SPRITES["Petal"].texture;
+            }
+            return ret;
+        }
+        private (int enviromentType, GameObject dashEffects) AddCustomDashEffectsHook(DashEffect self) => (7, ChangePsrTexture(self.dashGrass));
+        private (int enviromentType, GameObject hardLandEffects) AddCustomHardLandEffectsHook(HardLandEffect self) => (7, ChangePsrTexture(self.grassObj));
+        private (int enviromentType, GameObject jumpEffects) AddCustomJumpEffectsHook(JumpEffects self) => (7, ChangePsrTexture(self.grassEffects));
+        private (int enviromentType, GameObject softLandEffects) AddCustomSoftLandEffectsHook(SoftLandEffect self) => (7, ChangePsrTexture(self.grassEffects));
+        private (int enviromentType, GameObject runEffects) AddCustomRunEffectsHook(GameObject self) => (7, ChangePsrTexture(self.transform.GetChild(1).gameObject));
+
+        #endregion
+
+        private void LoadTitleScreen()
+        {
+            ABManager.Load(ABManager.Bundle.TitleScreen);
+        }
+        
         private IEnumerator LoadMusic()
         {
             var ab = ABManager.Load(ABManager.Bundle.Sound);

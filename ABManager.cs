@@ -15,7 +15,7 @@ namespace FiveKnights
 
         public enum Bundle
         {
-            Sound, 
+            Sound, TitleScreen, 
             GIsma, GDryya, GHegemol, GZemer, 
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
@@ -28,6 +28,7 @@ namespace FiveKnights
             return bd switch
             {
                 Bundle.Sound => "soundbund",
+                Bundle.TitleScreen => "titleScreen",
                 Bundle.GIsma => "isma" + FiveKnights.OS,
                 Bundle.GDryya => "dryya" + FiveKnights.OS,
                 Bundle.GHegemol => "hegemol" + FiveKnights.OS,
