@@ -108,7 +108,7 @@ namespace FiveKnights
             _handle.transform.localPosition = new Vector3(0f, 0.75f * sizemod, 0f);
             _handle.transform.SetRotationZ(0f);
             _Msprite.transform.localScale = new Vector3(sizemod, sizemod, 1f);
-            //_Msprite.AddComponent<SpriteRenderer>().sprite = FiveKnights.SPRITES[6];
+            //_Msprite.AddComponent<SpriteRenderer>().sprite = FiveKnights.SPRITES["mace"];
             _mace.AddComponent<Mace>();
             _mace.AddComponent<DebugColliders>();
             _mace.PrintSceneHierarchyTree();

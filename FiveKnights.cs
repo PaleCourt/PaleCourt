@@ -37,7 +37,7 @@ namespace FiveKnights
         }
         
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static readonly List<Sprite> SPRITES = new List<Sprite>();
+        public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
         public static FiveKnights Instance;
         
         public SaveModSettings Settings = new SaveModSettings();
@@ -151,7 +151,7 @@ namespace FiveKnights
                     var tex = new Texture2D(1, 1);
                     tex.LoadImage(buffer, true);
                     // Create sprite from texture
-                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
+                    SPRITES.Add(Path.GetFileNameWithoutExtension(res), Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
 
                     Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
                 }

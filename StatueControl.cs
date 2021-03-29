@@ -36,7 +36,7 @@ namespace FiveKnights
                     _fakeStat = _fakeStatAlt2;
                     _fakeStat.SetActive(false);
                     _fakeStat = _fakeStatAlt;
-                    _sr.sprite = FiveKnights.SPRITES[2];
+                    _sr.sprite = SPRITES_DICT["Isma"];
                     _fakeStat.transform.position = new Vector3(82.2f, 96.5f, 2.0f);
                     _fakeStatAlt2.transform.position = new Vector3(82.2f, 90.9f, 2.0f);
                     _fakeStat.SetActive(true);
@@ -119,7 +119,7 @@ namespace FiveKnights
                 {
                     _fakeStat.SetActive(false);
                     _fakeStat = _fakeStatAlt;
-                    _sr.sprite = FiveKnights.SPRITES[2];
+                    _sr.sprite = SPRITES_DICT["Isma"];
                     _fakeStat.SetActive(true);
                 }
             }

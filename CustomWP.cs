@@ -253,13 +253,13 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
-                                        ArenaFinder.IsmaScene, FiveKnights.SPRITES[2], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
+                                        ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES[3], "DRY_NAME", "DRY_DESC", "statueStateDryya");
+                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRY_NAME", "DRY_DESC", "statueStateDryya");
             SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.ZemerScene, FiveKnights.SPRITES[4], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
+                                        ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.HegemolScene, FiveKnights.SPRITES[5], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
+                                        ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
         
         private Dictionary<string, StatueControl> StatueControls = new Dictionary<string, StatueControl>();
