@@ -83,41 +83,42 @@
     <Compile Include="AreaTitleCtrl.cs" />
     <Compile Include="AutoDestroy.cs" />
     <Compile Include="AudioSourceExtensions.cs" />
+    <Compile Include="Dryya\DryyaCorpse.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="LanguageCtrl.cs" />
     <Compile Include="OWArenaFinder.cs" />
     <Compile Include="OWBossManager.cs" />
     <Compile Include="Pogoable.cs" />
-    <Compile Include="TChildCtrl.cs" />
+    <Compile Include="Zemer\TChildCtrl.cs" />
     <Compile Include="Tink.cs" />
-    <Compile Include="WaveIncrease.cs" />
+    <Compile Include="Zemer\WaveIncrease.cs" />
     <Compile Include="CollisionCheck.cs" />
     <Compile Include="ArenaFinder.cs" />
-    <Compile Include="DryyaDeath.cs" />
+    <Compile Include="Dryya\DryyaDeath.cs" />
     <Compile Include="CustomWP.cs" />
-    <Compile Include="DryyaSetup.cs" />
-    <Compile Include="DungBall.cs" />
-    <Compile Include="DungPillar.cs" />
-    <Compile Include="DryyaController.cs" />
-    <Compile Include="ElegyBeam.cs" />
-    <Compile Include="EnemyPlantSpawn.cs" />
+    <Compile Include="Dryya\DryyaSetup.cs" />
+    <Compile Include="Ogrim\DungBall.cs" />
+    <Compile Include="Ogrim\DungPillar.cs" />
+    <Compile Include="Dryya\DryyaController.cs" />
+    <Compile Include="Dryya\ElegyBeam.cs" />
+    <Compile Include="Isma\EnemyPlantSpawn.cs" />
     <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
     <Compile Include="Flash.cs" />
     <Compile Include="FsmUtil.cs" />
-    <Compile Include="HegemolController.cs" />
-    <Compile Include="IsmaController.cs" />
+    <Compile Include="Hegemol\HegemolController.cs" />
+    <Compile Include="Isma\IsmaController.cs" />
     <Compile Include="MusicPlayer.cs" />
     <Compile Include="Parryable.cs" />
-    <Compile Include="Mace.cs" />
-    <Compile Include="PlantCtrl.cs" />
+    <Compile Include="Hegemol\Mace.cs" />
+    <Compile Include="Isma\PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SaveModSettings.cs" />
     <Compile Include="StatueControl.cs" />
-    <Compile Include="WDController.cs" />
+    <Compile Include="Ogrim\WDController.cs" />
     <Compile Include="YieldExtensions.cs" />
-    <Compile Include="ZemerController.cs" />
-    <Compile Include="ZemerControllerP2.cs" />
+    <Compile Include="Zemer\ZemerController.cs" />
+    <Compile Include="Zemer\ZemerControllerP2.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />
@@ -160,6 +161,7 @@
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\titleScreen" />
   </ItemGroup>
+  <ItemGroup />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />
     <Exec Command="echo Copying mod" />

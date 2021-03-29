@@ -1,23 +1,19 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using UnityEngine;
-using Modding;
-using ModCommon;
-using System.Collections;
-using System.Collections.Specialized;
 using System.Reflection;
+using FiveKnights.Ogrim;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using HutongGames.Utility;
-using JetBrains.Annotations;
+using ModCommon;
 using ModCommon.Util;
+using UnityEngine;
 using Bounds = UnityEngine.Bounds;
 using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
-namespace FiveKnights
+namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {

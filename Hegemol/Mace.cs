@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace FiveKnights
+namespace FiveKnights.Hegemol
 {
     public class Mace : MonoBehaviour
     {
