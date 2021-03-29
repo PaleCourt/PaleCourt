@@ -9,13 +9,6 @@ namespace FiveKnights
     // Using SFGrenade's code
     public class LanguageCtrl
     {
-        #region Language Strings
-        // Places
-        public const string PathOfPain_Key = "PathOfPainArea";
-        public const string Workshop_Key = "WorkshopArea";
-        public const string Credits_Key = "CreditsArea";
-        #endregion
-
         private Dictionary<string, Dictionary<string, Dictionary<string, string>>> jsonDict;
 
         public LanguageCtrl()
