@@ -44,6 +44,9 @@
     <Reference Include="SFCore">
       <HintPath>..\..\References\Mods\SFCore.dll</HintPath>
     </Reference>
+    <Reference Include="SFCore, Version=1.4.3.2, Culture=neutral, PublicKeyToken=null">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\SFCore.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -79,44 +82,44 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ABManager.cs" />
-    <Compile Include="AreaTitleCtrl.cs" />
-    <Compile Include="AutoDestroy.cs" />
-    <Compile Include="AudioSourceExtensions.cs" />
+    <Compile Include="BossManagement\ArenaFinder.cs" />
+    <Compile Include="BossManagement\CustomWP.cs" />
+    <Compile Include="BossManagement\FightController.cs" />
+    <Compile Include="BossManagement\OWArenaFinder.cs" />
+    <Compile Include="BossManagement\OWBossManager.cs" />
     <Compile Include="Dryya\DryyaCorpse.cs" />
-    <Compile Include="Extensions.cs" />
-    <Compile Include="LanguageCtrl.cs" />
-    <Compile Include="OWArenaFinder.cs" />
-    <Compile Include="OWBossManager.cs" />
-    <Compile Include="Pogoable.cs" />
+    <Compile Include="Misc\ABManager.cs" />
+    <Compile Include="Misc\AreaTitleCtrl.cs" />
+    <Compile Include="Misc\AudioSourceExtensions.cs" />
+    <Compile Include="Misc\AutoDestroy.cs" />
+    <Compile Include="Misc\CollisionCheck.cs" />
+    <Compile Include="Misc\Extensions.cs" />
+    <Compile Include="Misc\Flash.cs" />
+    <Compile Include="Misc\FsmUtil.cs" />
+    <Compile Include="Misc\LanguageCtrl.cs" />
+    <Compile Include="Misc\MusicPlayer.cs" />
+    <Compile Include="Misc\Parryable.cs" />
+    <Compile Include="Misc\Pogoable.cs" />
+    <Compile Include="Misc\SaveModSettings.cs" />
+    <Compile Include="Misc\StatueControl.cs" />
+    <Compile Include="Misc\Tink.cs" />
+    <Compile Include="Misc\YieldExtensions.cs" />
     <Compile Include="Zemer\TChildCtrl.cs" />
-    <Compile Include="Tink.cs" />
     <Compile Include="Zemer\WaveIncrease.cs" />
-    <Compile Include="CollisionCheck.cs" />
-    <Compile Include="ArenaFinder.cs" />
     <Compile Include="Dryya\DryyaDeath.cs" />
-    <Compile Include="CustomWP.cs" />
     <Compile Include="Dryya\DryyaSetup.cs" />
     <Compile Include="Ogrim\DungBall.cs" />
     <Compile Include="Ogrim\DungPillar.cs" />
     <Compile Include="Dryya\DryyaController.cs" />
     <Compile Include="Dryya\ElegyBeam.cs" />
     <Compile Include="Isma\EnemyPlantSpawn.cs" />
-    <Compile Include="FightController.cs" />
     <Compile Include="FiveKnights.cs" />
-    <Compile Include="Flash.cs" />
-    <Compile Include="FsmUtil.cs" />
     <Compile Include="Hegemol\HegemolController.cs" />
     <Compile Include="Isma\IsmaController.cs" />
-    <Compile Include="MusicPlayer.cs" />
-    <Compile Include="Parryable.cs" />
     <Compile Include="Hegemol\Mace.cs" />
     <Compile Include="Isma\PlantCtrl.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SaveModSettings.cs" />
-    <Compile Include="StatueControl.cs" />
     <Compile Include="Ogrim\WDController.cs" />
-    <Compile Include="YieldExtensions.cs" />
     <Compile Include="Zemer\ZemerController.cs" />
     <Compile Include="Zemer\ZemerControllerP2.cs" />
   </ItemGroup>
@@ -129,6 +132,11 @@
     <EmbeddedResource Include="assets\Hegemol.png" />
     <EmbeddedResource Include="assets\mace.png" />
     <EmbeddedResource Include="assets\Language.json" />
+    <EmbeddedResource Include="assets\ach_dryya.png" />
+    <EmbeddedResource Include="assets\ach_heg.png" />
+    <EmbeddedResource Include="assets\ach_isma.png" />
+    <EmbeddedResource Include="assets\ach_zem.png" />
+    <EmbeddedResource Include="assets\ach_panth.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\ismawin" />
@@ -150,6 +158,8 @@
     <EmbeddedResource Include="StreamingAssets\owArenaHegemol" />
     <EmbeddedResource Include="StreamingAssets\owArenaIsma" />
     <EmbeddedResource Include="StreamingAssets\ggArenaHub" />
+    <EmbeddedResource Include="StreamingAssets\owDung" />
+    <EmbeddedResource Include="StreamingAssets\rewardRoom" />
     <EmbeddedResource Include="StreamingAssets\workShopEntranceDep" />
     <EmbeddedResource Include="StreamingAssets\workShopEntrance" />
   </ItemGroup>
@@ -161,7 +171,6 @@
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\titleScreen" />
   </ItemGroup>
-  <ItemGroup />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />
     <Exec Command="echo Copying mod" />

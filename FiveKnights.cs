@@ -18,6 +18,28 @@ namespace FiveKnights
     public class FiveKnights : Mod, ITogglableMod
     {
         private int paleCourtLogoId = -1;
+        public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
+        private LanguageCtrl langStrings { get; set; }
+        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
+        public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
+        public static FiveKnights Instance;
+        public SaveModSettings Settings = new SaveModSettings();
+        public static string OS
+        {
+            get
+            {
+                return SystemInfo.operatingSystemFamily switch
+                {
+                    OperatingSystemFamily.Windows => "win",
+                    OperatingSystemFamily.Linux => "lin",
+                    OperatingSystemFamily.MacOSX => "mc",
+                    _ => null
+                };
+            }
+        }
+        
         public FiveKnights() : base("Pale Court")
         {
             #region Load Embedded Images
@@ -38,15 +60,14 @@ namespace FiveKnights
                     var tex = new Texture2D(1, 1);
                     tex.LoadImage(buffer, true);
                     // Create sprite from texture
-                    SPRITES.Add(Path.GetFileNameWithoutExtension(res), Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
+                    SPRITES.Add(res.Split('.')[2], Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
                     Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
                 }
             }
 
             #endregion
             #region Menu Customization
-
+            
             On.UIManager.Awake += OnUIManagerAwake;
             On.SetVersionNumber.Start += OnSetVersionNumberStart;
             SFCore.MenuStyleHelper.Initialize();
@@ -64,39 +85,35 @@ namespace FiveKnights
             SFCore.EnviromentParticleHelper.AddCustomRunEffectsHook += AddCustomRunEffectsHook;
 
             #endregion
+            #region Achievements
+
+            SFCore.AchievementHelper.Initialize();
+            
+            SFCore.AchievementHelper.AddAchievement("IsmaAchiev", SPRITES["ach_isma"], 
+                "ISMA_ACH_TITLE", "ISMA_ACH_DESC", false);
+            
+            SFCore.AchievementHelper.AddAchievement("DryyaAchiev", SPRITES["ach_dryya"], 
+                "DRYYA_ACH_TITLE", "DRYYA_ACH_DESC", false);
+            
+            SFCore.AchievementHelper.AddAchievement("HegAchiev", SPRITES["ach_heg"], 
+                "HEG_ACH_TITLE", "HEG_ACH_DESC", false);
+
+            SFCore.AchievementHelper.AddAchievement("ZemAchiev", SPRITES["ach_zem"], 
+                "ZEM_ACH_TITLE", "ZEM_ACH_DESC", false);
+            
+            SFCore.AchievementHelper.AddAchievement("PanthAchiev", SPRITES["ach_panth"], 
+                "PANTH_ACH_TITLE", "PANTH_ACH_DESC", false);
+            
+            #endregion
         }
 
-        public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
-        public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
-        public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
-        private LanguageCtrl langStrings { get; set; }
-
-        public static string OS
-        {
-            get
-            {
-                return SystemInfo.operatingSystemFamily switch
-                {
-                    OperatingSystemFamily.Windows => "win",
-                    OperatingSystemFamily.Linux => "lin",
-                    OperatingSystemFamily.MacOSX => "mc",
-                    _ => null
-                };
-            }
-        }
+        public override string GetVersion() => "1.0.0.0";
         
-        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
-        public static FiveKnights Instance;
-        
-        public SaveModSettings Settings = new SaveModSettings();
         public override ModSettings SaveSettings
         {
             get => Settings;
             set => Settings = (SaveModSettings) value;
         }
-
-        public override string GetVersion() => "0.0.0.0";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -135,6 +152,14 @@ namespace FiveKnights
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            MenuStyles.Instance.SetStyle(10, false);
+            
+            GameManager.instance.AwardAchievement("DryyaAchiev");
+            GameManager.instance.AwardAchievement("HegAchiev");
+            GameManager.instance.AwardAchievement("IsmaAchiev");
+            GameManager.instance.AwardAchievement("ZemAchiev");
+            GameManager.instance.AwardAchievement("PanthAchiev");
+
             Log("Storing GOs");
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
@@ -182,6 +207,7 @@ namespace FiveKnights
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
             ModHooks.Instance.NewGameHook += AddComponent;
+            
             ModHooks.Instance.LanguageGetHook += LangGet;
         }
 
@@ -393,9 +419,10 @@ namespace FiveKnights
 
         private string LangGet(string key, string sheet)
         {
-            if (langStrings.ContainsKey(key, "Speech"))
+            if (langStrings.ContainsKey(key, sheet))
             {
-                return langStrings.Get(key, "Speech");
+                Log($"get thing {langStrings.Get(key, sheet)}");
+                return langStrings.Get(key, sheet);
             }
             return Language.Language.GetInternal(key, sheet);
         }

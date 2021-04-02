@@ -2,6 +2,18 @@
   "DE": {
   },
   "EN": {
+    "Achievements": {
+      "DRYYA_ACH_TITLE": "Fierce Dryya",
+      "DRYYA_ACH_DESC": "Defeated dryya ruba dub dub stuffy",
+      "HEG_ACH_TITLE": "Mighty Hegemol",
+      "HEG_ACH_DESC": "Defeated hegemol ruba dub dub stuffy",
+      "ISMA_ACH_TITLE": "Kindly Isma",
+      "ISMA_ACH_DESC": "Defeated isma ruba dub dub stuffy",
+      "ZEM_ACH_TITLE": "Mysterious Zemer",
+      "ZEM_ACH_DESC": "Defeated zemer ruba dub dub stuffy",
+      "PANTH_ACH_TITLE": "WOAH",
+      "PANTH_ACH_DESC": "Defeated woah ruba dub dub stuffy"
+    },
     "Speech": {
       "ISMA_NAME": "Kindly Isma",
       "ISMA_DESC": "Gentle god of moss and grove.",
