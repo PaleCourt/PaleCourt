@@ -78,7 +78,8 @@ namespace FiveKnights
 
             #endregion
             #region Menu Customization
-            
+
+            LoadTitleScreen();
             On.UIManager.Awake += OnUIManagerAwake;
             On.SetVersionNumber.Start += OnSetVersionNumberStart;
             SFCore.MenuStyleHelper.Initialize();
@@ -127,6 +128,8 @@ namespace FiveKnights
             ModHooks.Instance.NewGameHook += AddComponent;
 
             ModHooks.Instance.LanguageGetHook += LangGet;
+
+            On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
 
             #endregion
         }
@@ -215,7 +218,8 @@ namespace FiveKnights
             
             Instance = this;
             Log("Initalizing.");
-
+            
+            //Unload();
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
         }
@@ -232,6 +236,29 @@ namespace FiveKnights
         {
             orig(self);
             self.transform.GetChild(1).GetChild(2).GetChild(2).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
+        }
+
+        private void OnAudioManagerApplyMusicCue(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
+        {
+            // Insert Custom Audio into main MusicCue
+            var infos = (MusicCue.MusicChannelInfo[]) musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(musicCue);
+
+            var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
+            var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
+            if (origAudio.name.Equals("Title"))
+            {
+                if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
+                {
+                    LoadMusic();
+                }
+
+                infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
+                audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+            }
+
+            musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
+
+            orig(self, musicCue, delayTime, transitionTime, applySnapshot);
         }
 
         private (string languageString, GameObject styleGo, int titleIndex, string unlockKey, string[] achievementKeys,
@@ -256,14 +283,14 @@ namespace FiveKnights
 
             #region Loading assetbundle
 
-            LoadTitleScreen();
+            //ABManager.ResetBundle(ABManager.Bundle.TitleScreen);
 
             #endregion
 
             GameObject pcStyleGo = GameObject.Instantiate(ABManager.AssetBundles[ABManager.Bundle.TitleScreen].LoadAsset<GameObject>("Pale_Court_Style_1"));
             if (pcStyleGo == null)
             {
-                pcStyleGo = new GameObject();
+                pcStyleGo = new GameObject("Pale_Court");
             }
 
             foreach (var t in pcStyleGo.GetComponentsInChildren<Transform>())
@@ -289,7 +316,6 @@ namespace FiveKnights
             cameraCurves.blueChannel = new AnimationCurve();
             cameraCurves.blueChannel.AddKey(new Keyframe(0f, 0f));
             cameraCurves.blueChannel.AddKey(new Keyframe(1f, 1f));
-            UObject.DontDestroyOnLoad(pcStyleGo);
 
             #region Fader
 
@@ -305,7 +331,7 @@ namespace FiveKnights
 
             #endregion
 
-            return ("UI_MENU_STYLE_PALE_COURT", pcStyleGo, paleCourtLogoId, "", null, cameraCurves, null);
+            return ("UI_MENU_STYLE_PALE_COURT", pcStyleGo, paleCourtLogoId, "", null, cameraCurves, Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Tension Only"));
         }
 
         #endregion
@@ -334,14 +360,9 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.TitleScreen);
         }
         
-        private IEnumerator LoadMusic()
+        private void LoadMusic()
         {
-            var ab = ABManager.Load(ABManager.Bundle.Sound);
-            yield return null;
-            AudioSource aud = GameObject.Find("Music").transform.Find("Main").GetComponent<AudioSource>();
-            aud.clip = ab.LoadAsset<AudioClip>("MM_Aud");
-            aud.Play();
-            Log("Finished setting MM music");
+            ABManager.Load(ABManager.Bundle.Sound);
         }
 
         private IEnumerator LoadBossBundles()
