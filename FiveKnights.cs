@@ -215,8 +215,7 @@ namespace FiveKnights
             
             Instance = this;
             Log("Initalizing.");
-            
-            GameManager.instance.StartCoroutine(LoadMusic());
+
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
         }
