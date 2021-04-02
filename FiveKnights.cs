@@ -8,6 +8,7 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using SFCore.Utils;
 using UnityEngine.Audio;
 
@@ -15,7 +16,7 @@ namespace FiveKnights
 {
 
     [UsedImplicitly]
-    public class FiveKnights : Mod, ITogglableMod
+    public class FiveKnights : Mod
     {
         private int paleCourtLogoId = -1;
         public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
@@ -59,9 +60,19 @@ namespace FiveKnights
                     // Create texture from bytes
                     var tex = new Texture2D(1, 1);
                     tex.LoadImage(buffer, true);
+                    // Name
+                    string resName = res.Split('.')[2];
+                    // Difference in sizes, make some sprites 1.5x the size, because that's apparently what the size in game is for all sprites
+                    float ppu = 100;
+                    List<string> biggerList = new List<string>()
+                    {
+                        "DlcList",
+                        "LogoBlack"
+                    };
+                    if (biggerList.Contains(resName)) ppu = 200f / 3f;
                     // Create sprite from texture
-                    SPRITES.Add(res.Split('.')[2], Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                    SPRITES.Add(resName, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu));
+                    Log("Created sprite from embedded image: " + resName + " at ind " + ++ind);
                 }
             }
 
@@ -103,7 +114,20 @@ namespace FiveKnights
             
             SFCore.AchievementHelper.AddAchievement("PanthAchiev", SPRITES["ach_panth"], 
                 "PANTH_ACH_TITLE", "PANTH_ACH_DESC", false);
-            
+
+            #endregion
+
+            #region Language & Hooks
+
+            langStrings = new LanguageCtrl();
+
+            ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
+            ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
+            ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
+            ModHooks.Instance.NewGameHook += AddComponent;
+
+            ModHooks.Instance.LanguageGetHook += LangGet;
+
             #endregion
         }
 
@@ -152,13 +176,8 @@ namespace FiveKnights
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            MenuStyles.Instance.SetStyle(10, false);
-            
-            GameManager.instance.AwardAchievement("DryyaAchiev");
-            GameManager.instance.AwardAchievement("HegAchiev");
-            GameManager.instance.AwardAchievement("IsmaAchiev");
-            GameManager.instance.AwardAchievement("ZemAchiev");
-            GameManager.instance.AwardAchievement("PanthAchiev");
+            var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
+            MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
 
             Log("Storing GOs");
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
@@ -197,18 +216,10 @@ namespace FiveKnights
             Instance = this;
             Log("Initalizing.");
 
-            Unload();
-            langStrings = new LanguageCtrl();
+            //Unload();
             GameManager.instance.StartCoroutine(LoadMusic());
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
-            
-            ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
-            ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
-            ModHooks.Instance.NewGameHook += AddComponent;
-            
-            ModHooks.Instance.LanguageGetHook += LangGet;
         }
 
 
@@ -421,8 +432,13 @@ namespace FiveKnights
         {
             if (langStrings.ContainsKey(key, sheet))
             {
-                Log($"get thing {langStrings.Get(key, sheet)}");
+                //Log($"get thing {langStrings.Get(key, sheet)}");
                 return langStrings.Get(key, sheet);
+            }
+            if (langStrings.ContainsKey(key, "Speech"))
+            {
+                //Log($"get thing {langStrings.Get(key, sheet)}");
+                return langStrings.Get(key, "Speech");
             }
             return Language.Language.GetInternal(key, sheet);
         }

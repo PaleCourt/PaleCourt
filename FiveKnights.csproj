@@ -44,9 +44,6 @@
     <Reference Include="SFCore">
       <HintPath>..\..\References\Mods\SFCore.dll</HintPath>
     </Reference>
-    <Reference Include="SFCore, Version=1.4.3.2, Culture=neutral, PublicKeyToken=null">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\SFCore.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
