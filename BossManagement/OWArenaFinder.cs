@@ -53,13 +53,18 @@ namespace FiveKnights
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
             
             yield return new WaitWhile(()=>!Input.GetKey(KeyCode.R));
-            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
+            
+            Platform.Current.EncryptedSharedData.SetBool("IsmaAchiev2", false);
+            yield return null;
+            GameManager.instance.AwardAchievement("IsmaAchiev2");
+
+            /*GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
             {
                 EntryGateName = "right1",
                 SceneName = PrevHegScene,
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
-            });
+            });*/
         }
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)

@@ -4,15 +4,15 @@
   "EN": {
     "Achievements": {
       "DRYYA_ACH_TITLE": "Fierce Dryya",
-      "DRYYA_ACH_DESC": "Defeated dryya ruba dub dub stuffy",
+      "DRYYA_ACH_DESC": "Defeat Dryya in her Queen's Garden.",
       "HEG_ACH_TITLE": "Mighty Hegemol",
-      "HEG_ACH_DESC": "Defeated hegemol ruba dub dub stuffy",
+      "HEG_ACH_DESC": "Defeat Hegemol in the bustling City.",
       "ISMA_ACH_TITLE": "Kindly Isma",
-      "ISMA_ACH_DESC": "Defeated isma ruba dub dub stuffy",
-      "ZEM_ACH_TITLE": "Mysterious Zemer",
-      "ZEM_ACH_DESC": "Defeated zemer ruba dub dub stuffy",
-      "PANTH_ACH_TITLE": "WOAH",
-      "PANTH_ACH_DESC": "Defeated woah ruba dub dub stuffy"
+      "ISMA_ACH_DESC": "Defeat Isma within her Grove.",
+      "ZEM_ACH_TITLE": "Mysterious Ze'mer",
+      "ZEM_ACH_DESC": "Defeat Ze'mer in her secret Mansion.",
+      "PANTH_ACH_TITLE": "Champion",
+      "PANTH_ACH_DESC": "Challenge the Pale Court and win your place at its heart."
     },
     "CP3": {
       "UI_MENU_STYLE_PALE_COURT": "Pale Court"

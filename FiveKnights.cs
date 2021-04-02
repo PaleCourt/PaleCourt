@@ -100,7 +100,7 @@ namespace FiveKnights
 
             SFCore.AchievementHelper.Initialize();
             
-            SFCore.AchievementHelper.AddAchievement("IsmaAchiev", SPRITES["ach_isma"], 
+            SFCore.AchievementHelper.AddAchievement("IsmaAchiev2", SPRITES["ach_isma"], 
                 "ISMA_ACH_TITLE", "ISMA_ACH_DESC", false);
             
             SFCore.AchievementHelper.AddAchievement("DryyaAchiev", SPRITES["ach_dryya"], 
@@ -215,8 +215,7 @@ namespace FiveKnights
             
             Instance = this;
             Log("Initalizing.");
-
-            //Unload();
+            
             GameManager.instance.StartCoroutine(LoadMusic());
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
@@ -432,12 +431,10 @@ namespace FiveKnights
         {
             if (langStrings.ContainsKey(key, sheet))
             {
-                //Log($"get thing {langStrings.Get(key, sheet)}");
                 return langStrings.Get(key, sheet);
             }
             if (langStrings.ContainsKey(key, "Speech"))
             {
-                //Log($"get thing {langStrings.Get(key, sheet)}");
                 return langStrings.Get(key, "Speech");
             }
             return Language.Language.GetInternal(key, sheet);
@@ -453,8 +450,8 @@ namespace FiveKnights
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
         }
-
-        public void Unload()
+        
+        private void Unload()
         {
             ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
             ModHooks.Instance.NewGameHook -= AddComponent;
@@ -462,8 +459,8 @@ namespace FiveKnights
             ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
 
-            ABManager.UnloadAll();
-            
+            //ABManager.UnloadAll();
+
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
             var y = GameManager.instance?.gameObject.GetComponent<OWArenaFinder>();
             if (x != null) UObject.Destroy(x);
