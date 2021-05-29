@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FiveKnights.BossManagement;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
 using UnityEngine;
@@ -22,6 +23,10 @@ namespace FiveKnights.Isma
         private const int MAX_TRAP = 5;
         private const int MAX_PILLAR = 6;
         private const float TIME_INC = 0.32f;
+        private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
+        private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
+        private readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
+        private readonly float GROUND_Y = 5.9f;
 
         private IEnumerator Start()
         {
@@ -36,14 +41,14 @@ namespace FiveKnights.Isma
             pos = gameObject.transform.position;
             _sr = gameObject.GetComponent<SpriteRenderer>();
             bool skip = false;
-            Vector2 gulkaB1 = new Vector2(61f,9.5f);
-            Vector2 gulkaB2 = new Vector2(89f, 19f);
-            Vector2 foolB1 = new Vector2(63f, 10f);
-            Vector2 foolB2 = new Vector2(88f, 10f);
+            Vector2 gulkaB1 = new Vector2(LEFT_X + 0.7f,GROUND_Y + 3.6f);
+            Vector2 gulkaB2 = new Vector2(RIGHT_X - 1.6f, GROUND_Y + 13.1f);
+            Vector2 foolB1 = new Vector2(LEFT_X - 0.3f, GROUND_Y + 4.1f);
+            Vector2 foolB2 = new Vector2(RIGHT_X - 2.6f, GROUND_Y + 4.1f);
             if (isPhase2)
             {
-                foolB1 = new Vector2(68.5f, 10f);
-                foolB2 = new Vector2(84f, 10f);
+                foolB1 = new Vector2(LEFT_X + 8.2f, GROUND_Y + 4.1f);
+                foolB2 = new Vector2(RIGHT_X - 6.6f, GROUND_Y + 4.1f);
             }
             if (!isPhase2 && (pos.x > gulkaB2.x || pos.x < gulkaB1.x) && pos.y > gulkaB1.y && pos.y < gulkaB2.y)
             {
@@ -152,8 +157,8 @@ namespace FiveKnights.Isma
         {
             GameObject gulk = Instantiate(FiveKnights.preloadedGO["Gulka"]);
             Animator anim = gulk.GetComponent<Animator>();
-            float rot = pos.x > 75f ? 90f : -90f;
-            gulk.transform.SetPosition2D(pos.x + (pos.x > 75f ? 0f : -0.3f), pos.y);
+            float rot = pos.x > MIDDDLE ? 90f : -90f;
+            gulk.transform.SetPosition2D(pos.x + (pos.x > MIDDDLE ? 0f : -0.3f), pos.y);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
             GameObject turret = Instantiate(FiveKnights.preloadedGO["PTurret"]);
@@ -260,7 +265,7 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => anim.IsPlaying());
             PlantP.Remove(plant.transform.GetPositionX());
             Destroy(plant);
-            Destroy(gameObject);
+            Destroy(gameObject); 
         }
 
         private static void Log(object obj)

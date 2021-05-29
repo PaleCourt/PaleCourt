@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using FiveKnights.BossManagement;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
 using FiveKnights.Isma;
@@ -53,15 +54,7 @@ namespace FiveKnights
                 CreateIsma();
                 Log("Made arena");
                 yield return new WaitWhile(() => HeroController.instance == null);
-                var bs  = GameObject.Find("Battle Scene").LocateMyFSM("Battle Scene");
-                bool hasStarted = false;
-                bs.InsertMethod("Battle Start", 5, () =>
-                {
-                    HeroController.instance.RegainControl();
-                    hasStarted = true;
-                    Destroy(bs);
-                });
-                yield return new WaitWhile(() => !hasStarted);
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110f);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
@@ -204,12 +197,15 @@ namespace FiveKnights
             Log("Creating Isma");
             
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            // List of Isma's voice lines
             string[] arr = new[]
             {
                 "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
                 "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
             };
+            // Get isma's music from bundle
             FiveKnights.Clips["LoneIsmaMusic"] = snd.LoadAsset<AudioClip>("LoneIsmaMusic");
+            // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {
                 foreach (var i in arr)
@@ -218,17 +214,18 @@ namespace FiveKnights
                     yield return null;
                 }
             }
-
+            // This is for the flash effect when getting hit, not sure if it's used anymore
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-
+            // Load voice lines 
             StartCoroutine(LoadSlow());
+            
+            // Load the one and only Isma
             GameObject isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
-
+            // Awful way to keep access to Isma
             FiveKnights.preloadedGO["Isma2"] = isma;
-            
             isma.SetActive(false);
-            
+            // Setting material of spriterenderers and adding their damage
             foreach (SpriteRenderer i in isma.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
@@ -242,27 +239,12 @@ namespace FiveKnights
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.layer = 11;
             }
-            
-            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("dung")))
-            {
-                Destroy(i);
-            }
-            Destroy(GameObject.Find("throne"));
-            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Silhouette")))
-            {
-                Destroy(i);
-            }
-            
-            foreach (LineRenderer lr in isma.GetComponentsInChildren<LineRenderer>(true))
-            {
-                lr.material = new Material(Shader.Find("Sprites/Default"));
-            }
-            var arena = Instantiate(FiveKnights.preloadedGO["IsmaArena"]);
-            arena.SetActive(true);
-            
+
+            // Have to move arena up a little
+            GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.15f, 0f);
             var _sr = isma.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];
-            
+
             isma.AddComponent<IsmaController>();
             isma.SetActive(false);
             

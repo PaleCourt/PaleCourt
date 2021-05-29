@@ -9,8 +9,12 @@ using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FiveKnights.BossManagement;
+using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using SFCore.Utils;
 using UnityEngine.Audio;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
@@ -160,6 +164,8 @@ namespace FiveKnights
                 ("Fungus1_12","green_grass_1 (1)"),
                 ("Fungus1_19", "Plant Trap"),
                 ("White_Palace_01","WhiteBench"),
+                // We want the tink effect from the spike
+                ("White_Palace_01","White_ Spikes"),
                 ("GG_Workshop","GG_Statue_ElderHu"),
                 ("GG_Lost_Kin", "Lost Kin"),
                 ("GG_Soul_Tyrant", "Dream Mage Lord"),
@@ -167,27 +173,28 @@ namespace FiveKnights
                 ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
                 ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
                 ("GG_White_Defender", "Boss Scene Controller"),
-                //("GG_White_Defender", "White Defender"),
                 ("GG_Atrium_Roof", "Land of Storms Doors"),
                 ("GG_White_Defender", "GG_Arena_Prefab/Godseeker Crowd"),
                 ("Dream_04_White_Defender","_SceneManager"),
                 ("Dream_04_White_Defender", "Battle Gate (1)"),
                 ("Dream_04_White_Defender", "Dream Entry"),
                 ("Dream_04_White_Defender", "White Defender"),
+                // Ensures falling into pits takes you out of dream
+                ("Dream_04_White_Defender", "Dream Fall Catcher")
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
-            MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
-
             Log("Storing GOs");
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
             preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
             preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
+
+            preloadedGO["TinkEff"] = preloadedObjects["White_Palace_01"]["White_ Spikes"];
+
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
@@ -206,7 +213,6 @@ namespace FiveKnights
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
-            //preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
             preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];
             preloadedGO["Godseeker"] = preloadedObjects["GG_White_Defender"]["GG_Arena_Prefab/Godseeker Crowd"];
             
@@ -214,12 +220,12 @@ namespace FiveKnights
             preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
             preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
             preloadedGO["BattleGate"] = preloadedObjects["Dream_04_White_Defender"]["Battle Gate (1)"];
+            preloadedGO["DreamFall"] = preloadedObjects["Dream_04_White_Defender"]["Dream Fall Catcher"];
             preloadedGO["isma_stat"] = null;
             
             Instance = this;
             Log("Initalizing.");
             
-            //Unload();
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
         }
@@ -245,19 +251,19 @@ namespace FiveKnights
 
             var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
             var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
-            if (origAudio.name.Equals("Title"))
+            if (origAudio != null && origAudio.name.Equals("Title"))
             {
                 if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
                 {
                     LoadMusic();
                 }
-
                 infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
                 audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                
+                var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
+                MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
             }
-
             musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
-
             orig(self, musicCue, delayTime, transitionTime, applySnapshot);
         }
 
@@ -467,24 +473,32 @@ namespace FiveKnights
 
         private void AddComponent()
         {
+            foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (i.PrintSceneHierarchyPath() != "Hollow Shade\\Slash")
+                    continue;
+                
+                FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
+
+                AudioClip aud = i
+                    .LocateMyFSM("nail_clash_tink")
+                    .GetAction<AudioPlayerOneShot>("Blocked Hit", 5)
+                    .audioClips[0];
+
+                var clashSndObj = new GameObject();
+                var clashSnd = clashSndObj.AddComponent<AudioSource>();
+
+                clashSnd.clip = aud;
+                clashSnd.pitch = Random.Range(0.85f, 1.15f);
+
+                Tink.TinkClip = aud;
+
+                FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
+                Log("Got the shade stuff brochacho");
+                break;
+            }
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
-        }
-        
-        private void Unload()
-        {
-            ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
-            ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.LanguageGetHook -= LangGet;
-            ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
-
-            //ABManager.UnloadAll();
-
-            var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
-            var y = GameManager.instance?.gameObject.GetComponent<OWArenaFinder>();
-            if (x != null) UObject.Destroy(x);
-            if (y != null) UObject.Destroy(y);
         }
     }
 }
