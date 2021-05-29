@@ -55,6 +55,7 @@ namespace FiveKnights
 
         public static AssetBundle Load(Bundle bd)
         {
+            if (AssetBundles.ContainsKey(bd)) return AssetBundles[bd];
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var ab = AssetBundle.LoadFromStream(s);
             AssetBundles[bd] = ab;

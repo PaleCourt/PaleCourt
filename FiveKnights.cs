@@ -138,6 +138,16 @@ namespace FiveKnights
             On.UIManager.Start += OnUIManagerStart;
 
             #endregion
+
+            #region Load Assetbundles
+
+            GameObject assetLoaderGo = new GameObject("Pale Court Asset Loader", typeof(NonBouncer));
+            GameObject.DontDestroyOnLoad(assetLoaderGo);
+            var nb = assetLoaderGo.GetComponent<NonBouncer>();
+            nb.StartCoroutine(LoadDep());
+            nb.StartCoroutine(LoadBossBundles());
+
+            #endregion
         }
 
         public override string GetVersion() => "1.0.0.0";
@@ -227,9 +237,6 @@ namespace FiveKnights
             
             Instance = this;
             Log("Initalizing.");
-            
-            GameManager.instance.StartCoroutine(LoadDep());
-            GameManager.instance.StartCoroutine(LoadBossBundles());
         }
 
         #region Make Text Readable
