@@ -15,6 +15,7 @@ using ModCommon;
 using SFCore.Utils;
 using UnityEngine.Audio;
 using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 namespace FiveKnights
 {
@@ -134,6 +135,7 @@ namespace FiveKnights
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
+            On.UIManager.Start += OnUIManagerStart;
 
             #endregion
         }
@@ -230,6 +232,20 @@ namespace FiveKnights
             GameManager.instance.StartCoroutine(LoadBossBundles());
         }
 
+        #region Make Text Readable
+
+        private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
+        {
+            foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            {
+                var outline = item.gameObject.AddComponent<Outline>();
+                outline.effectColor = Color.black;
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+            orig(self);
+        }
+
+        #endregion
 
         #region Menu Customization
 
