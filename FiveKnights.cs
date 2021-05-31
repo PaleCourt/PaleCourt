@@ -202,14 +202,14 @@ namespace FiveKnights
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
-            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             
+            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             preloadedGO["Grass0"] = preloadedObjects["Fungus1_12"]["simple_grass"];
             preloadedGO["Grass2"] = preloadedObjects["Fungus1_12"]["green_grass_2"];
             preloadedGO["Grass3"] = preloadedObjects["Fungus1_12"]["green_grass_3"];
             preloadedGO["Grass1"] = preloadedObjects["Fungus1_12"]["green_grass_1 (1)"];
-            
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
+
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
@@ -497,8 +497,86 @@ namespace FiveKnights
                 Log("Got the shade stuff brochacho");
                 break;
             }
+
+            PlantChanger();
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
+        }
+        
+        private void PlantChanger()
+        {
+            foreach (var trapType in new[] {"PTrap","PTurret"})
+            {
+                GameObject trap = FiveKnights.preloadedGO[trapType];       
+                UObject.DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
+                var newDD = FiveKnights.preloadedGO["WhiteDef"];
+                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
+                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
+                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
+                    BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    if (fi.Name.Contains("Origin"))
+                    {
+                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
+                        continue;
+                    }
+
+                    fi.SetValue(newHit, fi.GetValue(ddHit));
+                }
+                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
+                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
+                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
+                }
+                UObject.DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
+                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
+                }
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
+                }
+                
+                HealthManager hm = trap.GetComponent<HealthManager>();
+                HealthManager hornHP = newDD.GetComponent<HealthManager>();
+                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Where(x => x.Name.Contains("Prefab")))
+                {
+                    fi.SetValue(hm, fi.GetValue(hornHP));
+                }
+                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
+                {
+                    UObject.Destroy(i);
+                }
+                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+                if (trapType == "PTrap")
+                {
+                    UObject.Destroy(hello.transform.Find("Orange Puff").gameObject);
+                }
+                else
+                {
+                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
+                    {
+                        var j = i.main;
+                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
+                    }
+                }
+                newEff2.whiteWave = hello;
+                newEff2.uninfectedDeathPt = new GameObject();
+                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
+                FiveKnights.preloadedGO[trapType] = trap;
+                Log("Changed the plant");
+            }
         }
     }
 }

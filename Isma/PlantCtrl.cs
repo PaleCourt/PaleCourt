@@ -12,6 +12,7 @@ namespace FiveKnights.Isma
         private Animator _anim;
         private HealthManager _hm;
         public List<float> PlantX;
+        private const int PLANTHP = 35;
         public bool IsmaFight;
 
         private void Awake()
@@ -27,7 +28,7 @@ namespace FiveKnights.Isma
                 _hm = gameObject.AddComponent<HealthManager>();
                 SetupHM();
                 gameObject.AddComponent<Flash>();
-                _hm.hp = 75;
+                _hm.hp = PLANTHP;
             }
             DamageHero dh = gameObject.AddComponent<DamageHero>();
             dh.damageDealt = 1;

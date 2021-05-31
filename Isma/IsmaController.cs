@@ -754,118 +754,6 @@ namespace FiveKnights.Isma
 
         IEnumerator Agony()
         {
-            #region OldAgonyCode
-
-            /*while (true)
-            {
-                int oldHp = _hm.hp - 300; //150
-                if (onlyIsma)
-                {
-                    yield return new WaitWhile(() => _hm.hp > oldHp);
-                    yield return new WaitWhile(() => _attacking);
-                    _attacking = true;
-                }
-                else
-                {
-                    yield return new WaitWhile(() => _hm.hp > oldHp);
-                    yield return new WaitWhile(() => 
-                        !FastApproximately(dd.transform.GetPositionY(), -3, 0.2f));//!tk.IsPlaying("Dive In 2"));
-                    yield return new WaitWhile(() => _attacking);
-                    _attacking = true;
-                    float time = 1f;
-                    yield return new WaitWhile(() => 
-                        !FastApproximately(dd.transform.GetPositionY(), -3, 0.2f) && 
-                        (time -= Time.deltaTime) > 0f);
-                    if (time <= 0f)
-                    {
-                        _attacking = false;
-                        yield return null;
-                        continue;
-                    }
-                }
-                ToggleIsma(true);
-                Vector3 scIs = gameObject.transform.localScale;
-                gameObject.transform.localScale = new Vector3(Mathf.Abs(scIs.x), scIs.y, scIs.z);
-                gameObject.transform.SetPosition2D(MIDDDLE, GROUND_Y + 11.6f);
-                
-                GameObject fakeIsma = new GameObject();
-                fakeIsma.transform.position = gameObject.transform.position;
-                fakeIsma.transform.localScale = gameObject.transform.localScale;
-                GameObject thornorig = transform.Find("Thorn").gameObject;
-                GameObject thorn = Instantiate(thornorig);
-                Vector3 orig = thornorig.transform.position;
-                thorn.transform.position = new Vector3(orig.x-1f,orig.y-4f,orig.z);
-                thorn.transform.parent = fakeIsma.transform;
-
-                Animator tAnim = thorn.transform.Find("T1").gameObject.GetComponent<Animator>();
-                _anim.Play("AgonyLoopIntro");
-                yield return null;
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _ap.DoPlayRandomClip();
-                _anim.Play("AgonyLoop");
-                int j = onlyIsma ? 5 : 3;
-                _anim.speed = 1.7f;
-                do
-                {
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                    thorn.SetActive(true);
-                    Vector2 diff = tAnim.transform.position - _target.transform.position;
-                    float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
-                    int start = (int)(rot / 30f);
-                    Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
-                    int ind = 0;
-                    int off = !onlyIsma && _wallActive ? 2 : 3; //1,3
-                    for (int r = start; r < start + off; r++)
-                    {
-                        Animator i = anims[ind++];
-                        i.gameObject.layer = 17;
-                        i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r == start ? rot : r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                        //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
-                    }
-                    for (int r = start - 1; r > start-off-1; r--)
-                    {
-                        Animator i = anims[ind++];
-                        i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                        //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
-                    }
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
-                    foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                    {
-                        //LineRenderer lr = i.GetComponentInChildren<LineRenderer>(true);
-                        //if (!lr.enabled) continue;
-                        //lr.enabled = false;
-                        i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                        i.Play("AThornAnim");
-                    }
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
-                    _anim.enabled = false;
-                    yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
-                    _anim.enabled = true;
-                    yield return new WaitWhile(() => tAnim.IsPlaying());
-                    foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                    {
-                        i.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-                        i.Play("IdleThorn");
-                    }
-                    thorn.SetActive(false);
-                    yield return new WaitWhile(() => _anim.IsPlaying());
-                }
-                while (j-- >= 0 && !ddIsThrowing);
-
-                _anim.Play("AgonyLoopEnd");
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                _rb.velocity = new Vector2(20f, 0f);
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _anim.speed = 1f;
-                _rb.velocity = Vector2.zero;
-                ToggleIsma(false);
-                StartCoroutine(IdleTimer(IDLE_TIME));
-            }*/
-
-            #endregion
-
             yield return new WaitWhile(() => _hm.hp > WALL_HP);
             if (onlyIsma)
             {
@@ -938,7 +826,7 @@ namespace FiveKnights.Isma
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                    i.Play("AThornAnim");
+                    i.Play("NewAThornAnim");
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _anim.enabled = false;
@@ -948,7 +836,7 @@ namespace FiveKnights.Isma
                 {
                     i.enabled = false;
                 }
-                yield return new WaitForSeconds(0.35f);
+                yield return new WaitForSeconds(0.2f);
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.enabled = true;
@@ -1034,13 +922,23 @@ namespace FiveKnights.Isma
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
-                    //i.GetComponentInChildren<LineRenderer>(true).enabled = false;
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                    //i.Play("ThornShot");
-                    i.Play("AThornAnim");
+                    i.Play("NewAThornAnim");
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _anim.enabled = false;
+                
+                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 4);
+                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                {
+                    i.enabled = false;
+                }
+                yield return new WaitForSeconds(0.2f);
+                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                {
+                    i.enabled = true;
+                }
+                
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => tAnim.IsPlaying());
@@ -1491,7 +1389,7 @@ namespace FiveKnights.Isma
             {
                 if (fi.Name.Contains("Origin"))
                 {
-                    hitEff.effectOrigin = new Vector3(0f, 0.5f, 0f);
+                    hitEff.effectOrigin = new Vector3(0f, 1f, 0f);
                     continue;
                 }
                 fi.SetValue(hitEff, fi.GetValue(ogrimHitEffects));
@@ -1501,6 +1399,85 @@ namespace FiveKnights.Isma
             foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
+            }
+
+            //PlantChanger();
+        }
+
+        private void PlantChanger()
+        {
+            foreach (var trapType in new[] {"PTrap","PTurret"})
+            {
+                GameObject trap = FiveKnights.preloadedGO[trapType];       
+                DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
+                var newDD = FiveKnights.preloadedGO["WhiteDef"];
+                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
+                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
+                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
+                    BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    if (fi.Name.Contains("Origin"))
+                    {
+                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
+                        continue;
+                    }
+
+                    fi.SetValue(newHit, fi.GetValue(ddHit));
+                }
+                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
+                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
+                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
+                }
+                DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
+                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
+                }
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
+                }
+                
+                HealthManager hm = trap.GetComponent<HealthManager>();
+                HealthManager hornHP = newDD.GetComponent<HealthManager>();
+                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Where(x => x.Name.Contains("Prefab")))
+                {
+                    fi.SetValue(hm, fi.GetValue(hornHP));
+                }
+                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
+                {
+                    Destroy(i);
+                }
+                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+                if (trapType == "PTrap")
+                {
+                    Destroy(hello.transform.Find("Orange Puff").gameObject);
+                }
+                else
+                {
+                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
+                    {
+                        Log($"What am i {i.name} with color {i.main.startColor}");
+                        var j = i.main;
+                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
+                    }
+                }
+                newEff2.whiteWave = hello;
+                newEff2.uninfectedDeathPt = new GameObject();
+                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
+                FiveKnights.preloadedGO[trapType] = trap;
+                Log("Changed the plant");
             }
         }
 

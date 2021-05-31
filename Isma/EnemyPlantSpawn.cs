@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using FiveKnights.BossManagement;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
+using ModCommon.Util;
+using SFCore.Utils;
 using UnityEngine;
 
 namespace FiveKnights.Isma
@@ -203,10 +206,6 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => anim.IsPlaying());
             Destroy(fool);
             GameObject trap = Instantiate(FiveKnights.preloadedGO["PTrap"]);
-            foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
-            {
-                Destroy(i);
-            }
             plant = trap;
             PlantF.Add(trap);
             trap.transform.SetPosition2D(pos.x, 8.65f); //8.8
