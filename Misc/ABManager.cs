@@ -55,11 +55,22 @@ namespace FiveKnights
 
         public static AssetBundle Load(Bundle bd)
         {
+            if (AssetBundles.ContainsKey(bd)) return AssetBundles[bd];
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var ab = AssetBundle.LoadFromStream(s);
             AssetBundles[bd] = ab;
             s?.Dispose();
             return ab;
+        }
+        public static IEnumerator LoadAsync(Bundle bd)
+        {
+            using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
+            var request = AssetBundle.LoadFromStreamAsync(s);
+            yield return request;
+            var ab = AssetBundle.LoadFromStream(s);
+            AssetBundles[bd] = ab;
+            s?.Dispose();
+            yield break;
         }
 
         public static void ResetBundle(Bundle bd)

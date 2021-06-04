@@ -15,6 +15,7 @@ using ModCommon;
 using SFCore.Utils;
 using UnityEngine.Audio;
 using Random = UnityEngine.Random;
+using UnityEngine.UI;
 
 namespace FiveKnights
 {
@@ -135,6 +136,17 @@ namespace FiveKnights
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
+            On.UIManager.Start += OnUIManagerStart;
+
+            #endregion
+
+            #region Load Assetbundles
+
+            GameObject assetLoaderGo = new GameObject("Pale Court Asset Loader", typeof(NonBouncer));
+            GameObject.DontDestroyOnLoad(assetLoaderGo);
+            var nb = assetLoaderGo.GetComponent<NonBouncer>();
+            nb.StartCoroutine(LoadDep());
+            nb.StartCoroutine(LoadBossBundles());
 
             #endregion
         }
@@ -226,11 +238,22 @@ namespace FiveKnights
             
             Instance = this;
             Log("Initalizing.");
-            
-            GameManager.instance.StartCoroutine(LoadDep());
-            GameManager.instance.StartCoroutine(LoadBossBundles());
         }
 
+        #region Make Text Readable
+
+        private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
+        {
+            foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            {
+                var outline = item.gameObject.AddComponent<Outline>();
+                outline.effectColor = Color.black;
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+            orig(self);
+        }
+
+        #endregion
 
         #region Menu Customization
 
@@ -374,49 +397,30 @@ namespace FiveKnights
 
         private IEnumerator LoadBossBundles()
         {
-            ABManager.Load(ABManager.Bundle.GDryya);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GHegemol);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GIsma);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GZemer);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GDryya);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GHegemol);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GIsma);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GZemer);
         }
         
         private IEnumerator LoadDep()
         {
-
-            ABManager.Load(ABManager.Bundle.GArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.WSArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.WSArena);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaHub);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaHub2);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.Misc);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaH);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaD);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaZ);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaI);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaD);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaZ);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaH);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaI);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaIsma);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.WSArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.WSArena);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaHub);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaHub2);
+            yield return ABManager.LoadAsync(ABManager.Bundle.Misc);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaH);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaD);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaZ);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaI);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaD);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaZ);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaH);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaI);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaIsma);
 
             Log("Finished bundling");
         }
