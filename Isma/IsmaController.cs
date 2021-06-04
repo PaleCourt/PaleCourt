@@ -42,7 +42,7 @@ namespace FiveKnights.Isma
         private readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
         private readonly int NUM_AGONY_LOOPS = 4;
         private readonly float GROUND_Y = 5.9f;
-        private const int MAX_HP = 1800;
+        private const int MAX_HP = 1700;
         private const int WALL_HP = 1200;
         private const int SPIKE_HP = 800;
         private const float IDLE_TIME = 0.1f;
@@ -87,6 +87,38 @@ namespace FiveKnights.Isma
             _hitEffects.enabled = true;
             _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             EnemyPlantSpawn.isPhase2 = false;
+
+            GameObject seedFloor = new GameObject("SeedFloor");
+            seedFloor.SetActive(true);
+            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f); //5.4
+            var bc = seedFloor.AddComponent<BoxCollider2D>();
+            bc.isTrigger = true;
+            bc.offset = new Vector2(3.949066f, 0f);
+            bc.size = new Vector2(24.56163f, 1f);
+            seedFloor.AddComponent<EnemyPlantSpawn>();
+            seedFloor.layer = 8;
+            
+            GameObject seedSideL = new GameObject("SeedSideL");
+            seedSideL.SetActive(true);
+            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f); //5.4
+            var bcL = seedSideL.AddComponent<BoxCollider2D>();
+            bcL.isTrigger = true;
+            bcL.offset = new Vector2(0, 0.4677944f);
+            bcL.size = new Vector2(1, 7.96706f);
+            seedSideL.AddComponent<DebugColliders>();
+            seedSideL.AddComponent<EnemyPlantSpawn>();
+            seedSideL.layer = 8;
+            
+            GameObject seedSideR = new GameObject("SeedSideR");
+            seedSideR.SetActive(true);
+            seedSideR.transform.position = new Vector3(137.7f, 12.6f, 0f); //5.4
+            var bcR = seedSideR.AddComponent<BoxCollider2D>();
+            bcR.isTrigger = true;
+            bcR.offset = new Vector2(0, 0f);
+            bcR.size = new Vector2(1, 7.031467f);
+            seedSideR.AddComponent<DebugColliders>();
+            seedSideR.AddComponent<EnemyPlantSpawn>();
+            seedSideR.layer = 8;
         }
 
         private IEnumerator Start()
@@ -262,12 +294,15 @@ namespace FiveKnights.Isma
             _wallActive = true;
             if (onlyIsma)
             {
+                EnemyPlantSpawn spawner = GameObject.Find("SeedFloor").GetComponent<EnemyPlantSpawn>();
                 GameObject tur1 = new GameObject();
                 tur1.transform.position = new Vector2(LEFT_X + 10f, GROUND_Y + 14f);
-                tur1.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
+                StartCoroutine(spawner.Phase2Spawn(tur1));
+                //tur1.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
                 GameObject tur2 = new GameObject();
                 tur2.transform.position = new Vector2(RIGHT_X - 10f, GROUND_Y + 14f);
-                tur2.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
+                StartCoroutine(spawner.Phase2Spawn(tur2));
+                //tur2.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
             }
             else
             {
@@ -385,15 +420,18 @@ namespace FiveKnights.Isma
                     localSeed.SetActive(true);
                     localSeed.transform.rotation = Quaternion.Euler(0f, 0f, rot);
                     localSeed.transform.position = bomb.transform.position;
-                    //Vector3 scale = localSeed.transform.localScale * 1.4f;
                     Vector3 scale = localSeed.transform.localScale * 1.7f;
                     localSeed.transform.localScale = new Vector3(scale.x * -1f, scale.y, scale.z);
                     float spd = 30;
+                    
+                    localSeed.layer = 11;
+                    localSeed.name = "SeedEnemy";
+                    
                     localSeed.GetComponent<Rigidbody2D>().velocity = new Vector2(spd * Mathf.Cos(rot * Mathf.Deg2Rad), spd * Mathf.Sin(rot * Mathf.Deg2Rad));
-                    EnemyPlantSpawn eps = localSeed.AddComponent<EnemyPlantSpawn>();
+                    //EnemyPlantSpawn eps = localSeed.AddComponent<EnemyPlantSpawn>();
                     Destroy(localSeed.GetComponent<DamageHero>());
-                    eps.PlantG = PlantG;
-                    eps.PlantF = PlantF;
+                    //eps.PlantG = PlantG;
+                    //eps.PlantF = PlantF;
                 }
                 yield return new WaitWhile(() => anim.IsPlaying());
                 Destroy(bomb);
@@ -1495,6 +1533,7 @@ namespace FiveKnights.Isma
 
         private void Log(object o)
         {
+            if (!FiveKnights.isDebug) return;
             Modding.Logger.Log("[Isma] " + o);
         }
     }

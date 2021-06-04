@@ -240,8 +240,15 @@ namespace FiveKnights
                 i.gameObject.layer = 11;
             }
 
+            foreach (PolygonCollider2D i in isma.transform.Find("Whip")
+                .GetComponentsInChildren<PolygonCollider2D>(true))
+            {
+                i.gameObject.layer = 11;
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+            }
+
             // Have to move arena up a little
-            GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.15f, 0f);
+            GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.18f, 0f);
             var _sr = isma.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];
 
@@ -374,13 +381,8 @@ namespace FiveKnights
 
         private void Log(object o)
         {
+            if (!FiveKnights.isDebug) return;
             Modding.Logger.Log("[OWBossManager] " + o);
-        }
-
-        
-        private void Test()
-        {
-            
         }
     }
 }

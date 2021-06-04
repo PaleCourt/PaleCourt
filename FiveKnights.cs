@@ -23,6 +23,7 @@ namespace FiveKnights
     public class FiveKnights : Mod
     {
         private int paleCourtLogoId = -1;
+        public static bool isDebug = true;
         public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
@@ -572,7 +573,9 @@ namespace FiveKnights
                     }
                 }
                 newEff2.whiteWave = hello;
-                newEff2.uninfectedDeathPt = new GameObject();
+                GameObject fake = new GameObject();
+                UObject.DontDestroyOnLoad(fake);
+                newEff2.uninfectedDeathPt = fake;
                 ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
                 FiveKnights.preloadedGO[trapType] = trap;
                 Log("Changed the plant");

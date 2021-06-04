@@ -16,22 +16,76 @@ namespace FiveKnights.Isma
     {
         private SpriteRenderer _sr;
         public static bool isPhase2;
-        public List<GameObject> PlantG { get; set; }
-        public List<GameObject> PlantF { get; set; }
-        private List<float> PlantP = new List<float>();
-        public bool isSpecialTurret;
-        private GameObject plant;
-        private Vector2 pos;
-        private const int MAX_GULKA = 5;
-        private const int MAX_TRAP = 5;
-        private const int MAX_PILLAR = 6;
+        //public List<GameObject> PlantG { get; set; }
+        //public List<GameObject> PlantF { get; set; }
+        private static int FoolCount = 0;
+        private static int PillarCount = 0;
+        private static int TurretCount = 0;
+        //private List<float> PlantP = new List<float>();
+        //public bool isSpecialTurret;
+        //private GameObject plant;
+        //private Vector2 pos;
+        private const int MaxTurret = 5;
+        private const int MaxFool = 5;
+        private const int MaxPillar = 5;
         private const float TIME_INC = 0.32f;
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
         private readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
-        private readonly float GROUND_Y = 5.9f;
+        private readonly float GROUND_Y = 6.05f;
+        private const String FoolName = "FoolEnemy";
+        private const String SpecialName = "SpecialEnemy";
+        private const String TurretName = "TurretEnemy";
+        private const String PillarName = "PillarEnemy";
+        
+        private void Start()
+        {
+            On.HealthManager.Die += HealthManagerOnDie;
+        }
 
-        private IEnumerator Start()
+        private void HealthManagerOnDie(On.HealthManager.orig_Die orig, HealthManager self,
+            float? attackdirection, AttackTypes attacktype, bool ignoreevasion)
+        {
+            Log($"Oh no {self.name} just died!");
+            
+            if (self.name != SpecialName)
+            {
+                orig(self, attackdirection, attacktype, ignoreevasion);
+            }
+        }
+
+        private void OnTriggerEnter2D(Collider2D other)
+        {
+            if (other.name != "SeedEnemy") return;
+            if (name.Contains("Floor"))
+            {
+                Log($"Working with Fools {FoolCount}");
+                if (FoolCount >= MaxFool)
+                {
+                    Log("Oh no too many");
+                    Destroy(other.gameObject);
+                    return;
+                }
+                IsmaController.offsetTime += TIME_INC;
+                FoolCount++;
+                StartCoroutine(SpawnFool(other.transform.position));
+            }
+            else if (name.Contains("Side"))
+            {
+                Log($"Working with Gulka {TurretCount}");
+                if (TurretCount >= MaxTurret)
+                {
+                    Log("Oh no too many");
+                    Destroy(other.gameObject);
+                    return;
+                }
+                IsmaController.offsetTime += TIME_INC;
+                TurretCount += 1;
+                StartCoroutine(SpawnGulka(other.transform.position));
+            }
+        }
+
+        /*private IEnumerator Start()
         {
             if (isSpecialTurret)
             {
@@ -39,8 +93,10 @@ namespace FiveKnights.Isma
                 StartCoroutine(Phase2Spawn());
                 yield break;
             }
+            Log("Starting minion ctrl");
             CollisionCheck cc = gameObject.AddComponent<CollisionCheck>();
             yield return new WaitWhile(() => !cc.Hit);
+            Log("Starting minion ctrl 2");
             pos = gameObject.transform.position;
             _sr = gameObject.GetComponent<SpriteRenderer>();
             bool skip = false;
@@ -56,28 +112,29 @@ namespace FiveKnights.Isma
             if (!isPhase2 && (pos.x > gulkaB2.x || pos.x < gulkaB1.x) && pos.y > gulkaB1.y && pos.y < gulkaB2.y)
             {
                 foreach (GameObject i in PlantG.Where(x => Vector2.Distance(x.transform.position, pos) < 3f)) skip = true;
-                Log("PLANTG C " + PlantG.Count);
-                if (skip || PlantG.Count > MAX_GULKA) //A
+                if (skip || PlantG.Count > MAX_GULKA) 
                 {
+                    Log($"Found too many Gulka {PlantG.Count}");
                     Destroy(gameObject);
                     yield break;
                 }
+                Log($"Not phase 2 and spawning Gulka: {PlantG.Count}");
                 IsmaController.offsetTime += TIME_INC;
                 _sr.enabled = false;
                 StartCoroutine(SpawnGulka());
             }
             else if ((pos.x < foolB2.x && pos.x > foolB1.x) && pos.y < foolB2.y)
             {
-                Log("PLANTF C " + PlantF.Count);
                 if (PlantF.Count > MAX_TRAP) //B
                 {
+                    Log($"Found too many fools {PlantF.Count}");
                     Destroy(gameObject);
                     yield break;
                 }
                 _sr.enabled = false;
                 if (isPhase2)
                 {
-                    Log("PLANT P " + PlantP.Count);
+                    Log($"Phase 2 and spawning pillar: {PlantP.Count}");
                     if (PlantP.Count > MAX_PILLAR)
                     {
                         Destroy(gameObject);
@@ -87,6 +144,7 @@ namespace FiveKnights.Isma
                 }
                 else
                 {
+                    Log($"Not phase 2 and spawning Fool: {PlantF.Count}");
                     IsmaController.offsetTime += TIME_INC;
                     StartCoroutine(SpawnFool());
                 }
@@ -95,38 +153,42 @@ namespace FiveKnights.Isma
             {
                 Destroy(gameObject);
             }
-        }
+        }*/
 
-        IEnumerator PlantPillar()
+        IEnumerator PlantPillar(Vector2 pos)
         {
-            bool skip = false;
+            /*bool skip = false;
             foreach (float i in PlantP.Where(x => Math.Abs(pos.x - x) < 2f)) skip = true;
             if (skip)
             {
                 yield break;
-            }
+            }*/
             GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
-            PlantP.Add(pos.x);
+            pillar.name = PillarName;
+            //PlantP.Add(pos.x);
             pillar.transform.position = new Vector2(pos.x, 6.1f);
             pillar.AddComponent<PlantCtrl>().IsmaFight = true;
             yield return new WaitForSeconds(0.1f);
-            pillar.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
-            pillar.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
-            plant = pillar;
+            //pillar.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
+            //pillar.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
+            //plant = pillar;
             StartCoroutine(WallKill(pillar.GetComponent<HealthManager>()));
         }
 
-        private IEnumerator Phase2Spawn()
+        public IEnumerator Phase2Spawn(GameObject go)
         {
+            Vector2 pos = go.transform.position;
             yield return new WaitForSeconds(2f);
             GameObject gulk = Instantiate(FiveKnights.preloadedGO["Gulka"]);
+            gulk.name = SpecialName;
             Animator anim = gulk.GetComponent<Animator>();
             float rot = 180f;
             gulk.transform.SetPosition2D(pos);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
             GameObject turret = Instantiate(FiveKnights.preloadedGO["PTurret"]);
-            plant = turret;
+            turret.name = SpecialName;
+            //plant = turret;
             MeshRenderer mesh = turret.GetComponent<MeshRenderer>();
             PlayMakerFSM fsm = turret.LocateMyFSM("Plant Turret");
             mesh.enabled = false;
@@ -151,22 +213,23 @@ namespace FiveKnights.Isma
                 i.enabled = true;
             }
             fsm.SendEvent("SEE HERO");
-            turret.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
-            turret.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
+            //turret.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
             StartCoroutine(WallKill(turret.GetComponent<HealthManager>()));
         }
 
-        private IEnumerator SpawnGulka()
+        private IEnumerator SpawnGulka(Vector2 pos)
         {
             GameObject gulk = Instantiate(FiveKnights.preloadedGO["Gulka"]);
+            gulk.name = TurretName;
             Animator anim = gulk.GetComponent<Animator>();
             float rot = pos.x > MIDDDLE ? 90f : -90f;
             gulk.transform.SetPosition2D(pos.x + (pos.x > MIDDDLE ? 0f : -0.3f), pos.y);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
             GameObject turret = Instantiate(FiveKnights.preloadedGO["PTurret"]);
-            plant = turret;
-            PlantG.Add(turret);
+            turret.name = TurretName;
+            //plant = turret;
+            //PlantG.Add(turret);
             MeshRenderer mesh = turret.GetComponent<MeshRenderer>();
             PlayMakerFSM fsm = turret.LocateMyFSM("Plant Turret");
             mesh.enabled = false;
@@ -190,14 +253,14 @@ namespace FiveKnights.Isma
             {
                 i.enabled = true;
             }
-            turret.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
-            turret.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
+            //turret.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
             StartCoroutine(WallKill(turret.GetComponent<HealthManager>()));
         }
 
-        private IEnumerator SpawnFool()
+        private IEnumerator SpawnFool(Vector2 pos)
         {
             GameObject fool = Instantiate(FiveKnights.preloadedGO["Fool"]);
+            fool.name = FoolName;
             Animator anim = fool.GetComponent<Animator>();
             fool.transform.SetPosition2D(pos.x, 6.05f); //6.2
             fool.transform.localScale *= 1.4f;
@@ -206,8 +269,9 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => anim.IsPlaying());
             Destroy(fool);
             GameObject trap = Instantiate(FiveKnights.preloadedGO["PTrap"]);
-            plant = trap;
-            PlantF.Add(trap);
+            trap.name = FoolName;
+            //plant = trap;
+            //PlantF.Add(trap);
             trap.transform.SetPosition2D(pos.x, 8.65f); //8.8
             tk2dSpriteAnimator tk = trap.GetComponent<tk2dSpriteAnimator>();
             PlayMakerFSM fsm = trap.LocateMyFSM("Plant Trap Control");
@@ -218,21 +282,61 @@ namespace FiveKnights.Isma
             fsm.enabled = true;
             fsm.SetState("Init");
             fsm.GetAction<Wait>("Ready", 2).time = 0.4f;
-            //fsm.RemoveTransition("", "");
-
-            trap.GetComponent<HealthManager>().OnDeath -= EnemyPlantSpawn_OnDeath;
-            trap.GetComponent<HealthManager>().OnDeath += EnemyPlantSpawn_OnDeath;
             StartCoroutine(WallKill(trap.GetComponent<HealthManager>()));
         }
 
+        /*private void Update()
+        {
+            if (!IsmaController.killAllMinions) return;
+
+            isPhase2 = true;
+            Log("Checking if I am killing m ");
+            foreach (var hm in FindObjectsOfType<HealthManager>()
+                .Where(x => x.name.Contains("PlantEnemy")))
+            {
+                Log("Killing my bros");
+                hm.Die(new float?(0f), AttackTypes.Nail, true);
+            }
+        }*/
+
         private IEnumerator WallKill(HealthManager hm)
         {
-            yield return new WaitWhile(() => !IsmaController.killAllMinions);
+            yield return new WaitWhile(() => hm != null || !IsmaController.killAllMinions);
+
+            if (hm.name == SpecialName)
+            {
+                if (!IsmaController.eliminateMinions) 
+                    StartCoroutine(Phase2Spawn(hm.gameObject));
+            }
+            else if (hm.name == FoolName)
+            {
+                IsmaController.offsetTime -= TIME_INC;
+                FoolCount--;
+            }
+            else if (hm.name == TurretName)
+            {
+                IsmaController.offsetTime -= TIME_INC;
+                TurretCount--;
+            }
+            else if (hm.name == PillarName)
+            {
+                StartCoroutine(PillarDeath(hm.gameObject));
+            }
+
+            if (hm == null)
+            {
+                Log("No longer working");
+            }
+
+            Log("Passed first layer in wall kill");
+            //yield return null;
+            //yield return new WaitWhile(() => !IsmaController.killAllMinions);
+            //Log("Passed second layer in wall kill");
             isPhase2 = true;
             hm.Die(new float?(0f), AttackTypes.Nail, true);
         }
 
-        private void EnemyPlantSpawn_OnDeath()
+        /*private void EnemyPlantSpawn_OnDeath()
         {
             if (isSpecialTurret)
             {
@@ -241,7 +345,9 @@ namespace FiveKnights.Isma
             else if (plant.name.Contains("Trap"))
             {
                 IsmaController.offsetTime -= TIME_INC;
-                PlantF.Remove(plant);
+                FoolCount--;
+                Log("Killed a fool :(");
+                //PlantF.Remove(plant);
             }
             else if (plant.name.Contains("Turret"))
             {
@@ -254,21 +360,23 @@ namespace FiveKnights.Isma
                 return;
             }
             if(!isSpecialTurret) Destroy(gameObject);
-        }
+        }*/
 
-        private IEnumerator PillarDeath()
+        private IEnumerator PillarDeath(GameObject plant)
         {
             Animator anim = plant.GetComponent<Animator>();
             anim.Play("PlantDie");
             yield return null;
             yield return new WaitWhile(() => anim.IsPlaying());
-            PlantP.Remove(plant.transform.GetPositionX());
+            //PlantP.Remove(plant.transform.GetPositionX());
+            PillarCount--;
             Destroy(plant);
-            Destroy(gameObject); 
+            //Destroy(gameObject); 
         }
 
         private static void Log(object obj)
         {
+            if (!FiveKnights.isDebug) return;
             Modding.Logger.Log("[Enemy Plant] " + obj);
         }
     }
