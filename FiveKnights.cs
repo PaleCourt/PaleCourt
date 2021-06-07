@@ -21,7 +21,7 @@ namespace FiveKnights
 {
 
     [UsedImplicitly]
-    public class FiveKnights : Mod
+    public class FiveKnights : Mod, ILocalSettings<SaveModSettings>
     {
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
@@ -32,7 +32,7 @@ namespace FiveKnights
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
         public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
         public static FiveKnights Instance;
-        public SaveModSettings Settings = new SaveModSettings();
+        //public SaveModSettings Settings = new SaveModSettings();
         public static string OS
         {
             get
@@ -128,12 +128,12 @@ namespace FiveKnights
 
             langStrings = new LanguageCtrl();
 
-            ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
-            ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
-            ModHooks.Instance.NewGameHook += AddComponent;
+            ModHooks.SetPlayerVariableHook += SetVariableHook;
+            ModHooks.GetPlayerVariableHook += GetVariableHook;
+            ModHooks.AfterSavegameLoadHook += SaveGame;
+            ModHooks.NewGameHook += AddComponent;
 
-            ModHooks.Instance.LanguageGetHook += LangGet;
+            ModHooks.LanguageGetHook += LangGet;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
             On.UIManager.Start += OnUIManagerStart;
@@ -152,12 +152,6 @@ namespace FiveKnights
         }
 
         public override string GetVersion() => "1.0.0.0";
-        
-        public override ModSettings SaveSettings
-        {
-            get => Settings;
-            set => Settings = (SaveModSettings) value;
-        }
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -427,34 +421,34 @@ namespace FiveKnights
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
-                Settings.CompletionIsma = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionIsma = (BossStatue.Completion)obj;
             else if (key == "statueStateDryya")
-                Settings.CompletionDryya = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
-                Settings.CompletionZemer = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionZemer = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer2")
-                Settings.CompletionZemer2 = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionZemer2 = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
-                Settings.CompletionIsma2 = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
-                Settings.CompletionHegemol = (BossStatue.Completion)obj;
+                LocalSaveData.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                return Settings.CompletionIsma;
+                return LocalSaveData.CompletionIsma;
             if (key == "statueStateDryya")
-                return Settings.CompletionDryya;
+                return LocalSaveData.CompletionDryya;
             if (key == "statueStateZemer")
-                return Settings.CompletionZemer;
+                return LocalSaveData.CompletionZemer;
             if (key == "statueStateZemer2")
-                return Settings.CompletionZemer2;
+                return LocalSaveData.CompletionZemer2;
             if (key == "statueStateIsma2")
-                return Settings.CompletionIsma2;
+                return LocalSaveData.CompletionIsma2;
             if (key == "statueStateHegemol")
-                return Settings.CompletionHegemol;
+                return LocalSaveData.CompletionHegemol;
             return orig;
         }
 
@@ -585,5 +579,11 @@ namespace FiveKnights
                 Log("Changed the plant");
             }
         }
+
+        public SaveModSettings LocalSaveData { get; set; }
+        
+        public void OnLoadLocal(SaveModSettings s) => this.LocalSaveData = s;
+
+        public SaveModSettings OnSaveLocal() => this.LocalSaveData;
     }
 }

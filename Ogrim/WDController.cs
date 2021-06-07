@@ -37,7 +37,7 @@ namespace FiveKnights.Ogrim
             _assetBundles= new List<AssetBundle>();
             Unload();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
-            ModHooks.Instance.BeforePlayerDeadHook += BeforePlayerDied;
+            ModHooks.BeforePlayerDeadHook += BeforePlayerDied;
             On.MusicCue.GetChannelInfo += MusicCue_GetChannelInfo;
             string dret = PlayerData.instance.dreamReturnScene;
             PlayerData.instance.dreamReturnScene = (dret == "Waterways_13") ? dret : "White_Palace_09";
@@ -58,10 +58,10 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.Settings.CompletionIsma;
+                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionIsma;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.Settings.CompletionIsma = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionIsma = (BossStatue.Completion) box;
                 }
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -131,10 +131,10 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.Settings.CompletionIsma2;
+                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionIsma2;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.Settings.CompletionIsma2 = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionIsma2 = (BossStatue.Completion) box;
                 }
                 PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
                 pm.SendEvent("FADE OUT INSTANT");
@@ -169,10 +169,10 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.Settings.CompletionDryya;
+                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionDryya;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.Settings.CompletionDryya = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionDryya = (BossStatue.Completion) box;
                 }
                 yield return new WaitForSeconds(5.0f);
 
@@ -198,10 +198,10 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.Settings.CompletionHegemol;
+                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionHegemol;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.Settings.CompletionHegemol = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionHegemol = (BossStatue.Completion) box;
                 }
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -227,17 +227,17 @@ namespace FiveKnights.Ogrim
                     int lev = CustomWP.lev + 1;
                     if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
-                        var box = (object) FiveKnights.Instance.Settings.CompletionZemer;
+                        var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                         fi.SetValue(box, true);
-                        FiveKnights.Instance.Settings.CompletionZemer = (BossStatue.Completion) box;
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer = (BossStatue.Completion) box;
                     }
                     else
                     {
-                        var box = (object) FiveKnights.Instance.Settings.CompletionZemer2;
+                        var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer2;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                         fi.SetValue(box, true);
-                        FiveKnights.Instance.Settings.CompletionZemer2 = (BossStatue.Completion) box;
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer2 = (BossStatue.Completion) box;
                     }
                 }
                 var bsc = BossSceneController.Instance;
@@ -495,7 +495,7 @@ namespace FiveKnights.Ogrim
 
         private void Unload()
         {
-            ModHooks.Instance.BeforePlayerDeadHook -= BeforePlayerDied;
+            ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.MusicCue.GetChannelInfo -= MusicCue_GetChannelInfo;
 

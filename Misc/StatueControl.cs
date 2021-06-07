@@ -22,7 +22,7 @@ namespace FiveKnights
             canToggle = true;
             if (StatueName.Contains("Isma"))
             {
-                if (FiveKnights.Instance.Settings.AltStatueIsma)
+                if (FiveKnights.Instance.LocalSaveData.AltStatueIsma)
                 {
                     _fakeStat = _fakeStatAlt;
                     _fakeStat.SetActive(false);
@@ -45,7 +45,7 @@ namespace FiveKnights
             else
             {
                 _fakeStat = _fakeStatAlt;
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
+                _sr.flipX = FiveKnights.Instance.LocalSaveData.AltStatueZemer;
             }
             StatueName = StatueName.Contains("Isma") ? "Isma" : "Zemer";
         }
@@ -56,14 +56,14 @@ namespace FiveKnights
             if (StatueName == "Isma")
             {
                 StartCoroutine(SwapStatues(self));
-                FiveKnights.Instance.Settings.AltStatueIsma = !FiveKnights.Instance.Settings.AltStatueIsma;
-                _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
+                FiveKnights.Instance.LocalSaveData.AltStatueIsma = !FiveKnights.Instance.LocalSaveData.AltStatueIsma;
+                _bs.SetDreamVersion(FiveKnights.Instance.LocalSaveData.AltStatueIsma, false, false);
             }
             else if (StatueName == "Zemer")
             {
                 StartCoroutine(SwapStatues(self));
-                FiveKnights.Instance.Settings.AltStatueZemer = !FiveKnights.Instance.Settings.AltStatueZemer;
-                _bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
+                FiveKnights.Instance.LocalSaveData.AltStatueZemer = !FiveKnights.Instance.LocalSaveData.AltStatueZemer;
+                _bs.SetDreamVersion(FiveKnights.Instance.LocalSaveData.AltStatueZemer, false, false);
             }
             canToggle = false;
             self.switchSound.SpawnAndPlayOneShot(self.audioPlayerPrefab, transform.position);
@@ -109,7 +109,7 @@ namespace FiveKnights
             StartCoroutine(this.PlayAudioEventDelayed(_bs.statueUpSound, _bs.statueUpSoundDelay));
             if (StatueName.Contains("Isma"))
             {
-                if (FiveKnights.Instance.Settings.AltStatueIsma)
+                if (FiveKnights.Instance.LocalSaveData.AltStatueIsma)
                 {
                     _fakeStat.SetActive(false);
                     _fakeStat = _fakeStatAlt2;
@@ -125,7 +125,7 @@ namespace FiveKnights
             }
             else
             {
-                _sr.flipX = FiveKnights.Instance.Settings.AltStatueZemer;
+                _sr.flipX = FiveKnights.Instance.LocalSaveData.AltStatueZemer;
             }
 
             yield return this.StartCoroutine(this.PlayAnimWait(_fakeStat, "Up", time));

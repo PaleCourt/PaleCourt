@@ -634,8 +634,9 @@ namespace FiveKnights.BossManagement
 
             yield return null;
             yield return null;
-            
+            Log("Test");
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GIsma];
+            Log($"Test2 {(ab == null)}");
             //AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.OWArenaI];
             //FiveKnights.preloadedGO["IsmaArena"] = ab2.LoadAsset<GameObject>("new stuff isma 1");
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
@@ -655,6 +656,7 @@ namespace FiveKnights.BossManagement
                 }
                 else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
+            Log("Test3");
             /*foreach (SpriteRenderer spr in FiveKnights.preloadedGO["IsmaArena"].GetComponentsInChildren<SpriteRenderer>(true))
             {
                 spr.material = new Material(Shader.Find("Sprites/Default"));

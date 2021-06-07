@@ -11,7 +11,7 @@ using System.Linq;
 using System.Reflection;
 using GlobalEnums;
 using HutongGames.PlayMaker;
-using Vasi;
+
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;

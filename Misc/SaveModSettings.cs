@@ -4,7 +4,7 @@ using Modding;
 namespace FiveKnights
 {
     [Serializable]
-    public class SaveModSettings : ModSettings
+    public class SaveModSettings
     {
         public BossStatue.Completion CompletionIsma = new BossStatue.Completion
         {
