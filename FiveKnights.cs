@@ -234,7 +234,7 @@ namespace FiveKnights
                 ("Dream_04_White_Defender", "Dream Entry"),
                 ("Dream_04_White_Defender", "White Defender"),
                 // Ensures falling into pits takes you out of dream
-                ("Dream_04_White_Defender", "Dream Fall Catcher")
+                ("Dream_04_White_Defender", "Dream Fall Catcher"),
                 ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
                 ("Dream_Final_Boss", "Boss Control/Radiance"),
             };
@@ -284,10 +284,6 @@ namespace FiveKnights
 
             preloadedGO["isma_stat"] = null;
 
-            Instance = this;
-            Log("Initalizing.");
-        }
-
             #region Add Charms
             _charmHelper = new CharmHelper();
             _charmHelper.customCharms = 4;
@@ -333,6 +329,9 @@ namespace FiveKnights
             preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
+
+            Instance = this;
+            Log("Initalizing.");
         }
         #region Make Text Readable
 
