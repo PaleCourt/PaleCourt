@@ -35,6 +35,9 @@
     <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\References\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="FrogCore">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\FrogCore.dll</HintPath>
+    </Reference>
     <Reference Include="ModCommon, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\..\References\Mods\ModCommon.dll</HintPath>
     </Reference>
@@ -84,6 +87,14 @@
     <Compile Include="BossManagement\FightController.cs" />
     <Compile Include="BossManagement\OWArenaFinder.cs" />
     <Compile Include="BossManagement\OWBossManager.cs" />
+    <Compile Include="Charms\Amulets.cs" />
+    <Compile Include="Charms\Charms.cs" />
+    <Compile Include="Charms\Dung.cs" />
+    <Compile Include="Charms\DungCloud.cs" />
+    <Compile Include="Charms\Plume.cs" />
+    <Compile Include="Charms\RoyalAura.cs" />
+    <Compile Include="Charms\ShadeSlash.cs" />
+    <Compile Include="Charms\SmallShot.cs" />
     <Compile Include="Dryya\DryyaCorpse.cs" />
     <Compile Include="Misc\ABManager.cs" />
     <Compile Include="Misc\AreaTitleCtrl.cs" />
@@ -168,6 +179,26 @@
   <ItemGroup>
     <EmbeddedResource Include="StreamingAssets\titleScreen" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="assets\Abyssal_Bloom.png" />
+    <EmbeddedResource Include="assets\Boon_of_Hallownest.png" />
+    <EmbeddedResource Include="assets\Dagger.png" />
+    <EmbeddedResource Include="assets\Defenders_Crest.png" />
+    <EmbeddedResource Include="assets\journal_dryya.png" />
+    <EmbeddedResource Include="assets\journal_hegemol.png" />
+    <EmbeddedResource Include="assets\journal_icon_dryya.png" />
+    <EmbeddedResource Include="assets\journal_icon_hegemol.png" />
+    <EmbeddedResource Include="assets\journal_icon_isma.png" />
+    <EmbeddedResource Include="assets\journal_icon_zemer.png" />
+    <EmbeddedResource Include="assets\journal_isma.png" />
+    <EmbeddedResource Include="assets\journal_zemer.png" />
+    <EmbeddedResource Include="assets\Kings_Honour.png" />
+    <EmbeddedResource Include="assets\Mark_of_Purity.png" />
+    <EmbeddedResource Include="assets\Vessels_Lament.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="StreamingAssets\pureamulets" />
+  </ItemGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <Exec Command="@echo on" />
     <Exec Command="echo Copying mod" />
@@ -175,4 +206,5 @@
     <Exec Condition="Exists('D:\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;D:\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
   </Target>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions />
 </Project>

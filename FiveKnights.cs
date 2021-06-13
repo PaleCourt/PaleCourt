@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using SFCore.Utils;
+using SFCore;
 using UnityEngine.Audio;
+using FrogCore;
 
 namespace FiveKnights
 {
@@ -26,6 +28,9 @@ namespace FiveKnights
         public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
         public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
         public static FiveKnights Instance;
+        public CharmHelper _charmHelper;
+        public static Dictionary<string, JournalHelper> journalentries = new Dictionary<string, JournalHelper>();
+        public static readonly string[] CharmKeys = new string[] { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
         public SaveModSettings Settings = new SaveModSettings();
         public static string OS
         {
@@ -67,7 +72,15 @@ namespace FiveKnights
                     List<string> biggerList = new List<string>()
                     {
                         "DlcList",
-                        "LogoBlack"
+                        "LogoBlack",
+                        "journal_dryya",
+                        "journal_icon_dryya",
+                        "journal_hegemol",
+                        "journal_icon_hegemol",
+                        "journal_isma",
+                        "journal_icon_isma",
+                        "journal_zemer",
+                        "journal_icon_zemer",
                     };
                     if (biggerList.Contains(resName)) ppu = 200f / 3f;
                     // Create sprite from texture
@@ -125,13 +138,39 @@ namespace FiveKnights
             ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
             ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
             ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
+            ModHooks.Instance.BeforeSavegameSaveHook += SaveEntries;
             ModHooks.Instance.NewGameHook += AddComponent;
+            ModHooks.Instance.GetPlayerBoolHook += ModHooks_GetPlayerBool;
+            ModHooks.Instance.SetPlayerBoolHook += ModHooks_SetPlayerBool;
+            ModHooks.Instance.GetPlayerIntHook += ModHooks_GetPlayerInt;
+            On.Language.Language.DoSwitch += SwitchLanguage;
 
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
 
             #endregion
+        }
+
+        private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
+        {
+            foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
+            {
+                string name = keyValuePair.Key;
+                string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
+                JournalHelper journalHelper = keyValuePair.Value;
+                if (journalHelper.playerData.killsremaining != 0)
+                    journalHelper.playerData.killsremaining = 1;
+                journalHelper.playerData.Hidden = true;
+                if (langStrings.ContainsKey(prefix + "_LONGNAME", "Journal"))
+                    journalHelper.nameStrings.name = langStrings.Get(prefix + "_LONGNAME", "Journal");
+                if (langStrings.ContainsKey(prefix + "_DESC", "Journal"))
+                    journalHelper.nameStrings.desc = langStrings.Get(prefix + "_DESC", "Journal");
+                if (langStrings.ContainsKey(prefix + "_NOTE", "Journal"))
+                    journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
+                if (langStrings.ContainsKey(prefix + "_NAME", "Journal"))
+                    journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
+            }
         }
 
         public override string GetVersion() => "1.0.0.0";
@@ -149,6 +188,7 @@ namespace FiveKnights
                 ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
+                ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("GG_Failed_Champion","False Knight Dream"),
@@ -174,6 +214,8 @@ namespace FiveKnights
                 ("Dream_04_White_Defender", "Battle Gate (1)"),
                 ("Dream_04_White_Defender", "Dream Entry"),
                 ("Dream_04_White_Defender", "White Defender"),
+                ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
+                ("Dream_Final_Boss", "Boss Control/Radiance"),
             };
         }
 
@@ -191,6 +233,7 @@ namespace FiveKnights
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
+            preloadedGO["Blast"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/Focus Blasts/HK Prime Blast/Blast"];
             preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
@@ -214,14 +257,60 @@ namespace FiveKnights
             preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
             preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
             preloadedGO["BattleGate"] = preloadedObjects["Dream_04_White_Defender"]["Battle Gate (1)"];
+
+            preloadedGO["Knight Ball"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance/Death/Knight Split/Knight Ball"];
+            preloadedGO["Radiance"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance"];
+
             preloadedGO["isma_stat"] = null;
-            
+
             Instance = this;
             Log("Initalizing.");
+
+            #region Add Charms
+            _charmHelper = new CharmHelper();
+            _charmHelper.customCharms = 4;
+            _charmHelper.customSprites = new Sprite[] { SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"] };
+            #endregion
+            #region Add Entries
+            journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], Settings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], Settings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], Settings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], Settings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            #endregion
 
             //Unload();
             GameManager.instance.StartCoroutine(LoadDep());
             GameManager.instance.StartCoroutine(LoadBossBundles());
+            LoadCharms();
+
+            //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
+            preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
+            preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
+            preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
         }
 
 
@@ -245,7 +334,7 @@ namespace FiveKnights
 
             var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
             var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
-            if (origAudio.name.Equals("Title"))
+            if (origAudio && origAudio.name.Equals("Title"))
             {
                 if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
                 {
@@ -365,6 +454,11 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.Sound);
         }
 
+        private void LoadCharms()
+        {
+            ABManager.Load(ABManager.Bundle.Charms);
+        }
+
         private IEnumerator LoadBossBundles()
         {
             ABManager.Load(ABManager.Bundle.GDryya);
@@ -413,6 +507,23 @@ namespace FiveKnights
 
             Log("Finished bundling");
         }
+
+        private void SaveEntries(SaveGameData data)
+        {
+            foreach (JournalHelper journalHelper in journalentries.Values)
+            {
+                if (journalHelper.playerData.killsremaining > 0)
+                {
+                    journalHelper.playerData.killsremaining = 1;
+                }
+                journalHelper.playerData.Hidden = true;
+            }
+            Settings.IsmaEntryData = journalentries["Isma"].playerData;
+            Settings.ZemerEntryData = journalentries["Zemer"].playerData;
+            Settings.DryyaEntryData = journalentries["Dryya"].playerData;
+            Settings.HegemolEntryData = journalentries["Hegemol"].playerData;
+        }
+
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
@@ -447,8 +558,91 @@ namespace FiveKnights
             return orig;
         }
 
+        private bool ModHooks_GetPlayerBool(string target)
+        {
+            if (target.StartsWith("gotCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    return Settings.gotCharms[_charmHelper.charmIDs.IndexOf(charmNum)];
+                }
+            }
+            if (target.StartsWith("newCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    return Settings.newCharms[_charmHelper.charmIDs.IndexOf(charmNum)];
+                }
+            }
+            if (target.StartsWith("equippedCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    return Settings.equippedCharms[_charmHelper.charmIDs.IndexOf(charmNum)];
+                }
+            }
+            return PlayerData.instance.GetBoolInternal(target);
+        }
+        private void ModHooks_SetPlayerBool(string target, bool val)
+        {
+            if (target.StartsWith("gotCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    Settings.gotCharms[_charmHelper.charmIDs.IndexOf(charmNum)] = val;
+                    return;
+                }
+            }
+            if (target.StartsWith("newCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    Settings.newCharms[_charmHelper.charmIDs.IndexOf(charmNum)] = val;
+                    return;
+                }
+            }
+            if (target.StartsWith("equippedCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    Settings.equippedCharms[_charmHelper.charmIDs.IndexOf(charmNum)] = val;
+                    return;
+                }
+            }
+            PlayerData.instance.SetBoolInternal(target, val);
+        }
+
+        private int ModHooks_GetPlayerInt(string target)
+        {
+            if (target.StartsWith("charmCost_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    return Settings.charmCosts[_charmHelper.charmIDs.IndexOf(charmNum)];
+                }
+            }
+            return PlayerData.instance.GetIntInternal(target);
+        }
+
         private string LangGet(string key, string sheet)
         {
+            if (key.StartsWith("CHARM_DESC_") || key.StartsWith("CHARM_NAME_"))
+            {
+                int charmNum = int.Parse(key.Split('_')[2]);
+                if (_charmHelper.charmIDs.Contains(charmNum))
+                {
+                    key = key.Substring(0, 11) + CharmKeys[_charmHelper.charmIDs.IndexOf(charmNum)];
+                }
+                else if (charmNum == 10 && Settings.upgradedCharm_10)
+                    key = key.Substring(0, 11) + CharmKeys[4];
+            }
             if (langStrings.ContainsKey(key, sheet))
             {
                 //Log($"get thing {langStrings.Get(key, sheet)}");
@@ -469,8 +663,28 @@ namespace FiveKnights
 
         private void AddComponent()
         {
+            journalentries["Isma"].playerData = Settings.IsmaEntryData;
+            journalentries["Zemer"].playerData = Settings.ZemerEntryData;
+            journalentries["Dryya"].playerData = Settings.DryyaEntryData;
+            journalentries["Hegemol"].playerData = Settings.HegemolEntryData;
+            foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
+            {
+                string name = keyValuePair.Key;
+                string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
+                JournalHelper journalHelper = keyValuePair.Value;
+                if (journalHelper.playerData.killsremaining > 0)
+                {
+                    journalHelper.playerData.killsremaining = 1;
+                }
+                journalHelper.playerData.Hidden = true;
+                journalHelper.nameStrings.name = langStrings.Get(prefix + "_LONGNAME", "Journal");
+                journalHelper.nameStrings.desc = langStrings.Get(prefix + "_DESC", "Journal");
+                journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
+                journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
+            }
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<Amulets>();
         }
 
         public void Unload()
@@ -485,8 +699,10 @@ namespace FiveKnights
             
             var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
             var y = GameManager.instance?.gameObject.GetComponent<OWArenaFinder>();
+            var z = GameManager.instance?.gameObject.GetComponent<Amulets>();
             if (x != null) UObject.Destroy(x);
             if (y != null) UObject.Destroy(y);
+            if (z != null) UObject.Destroy(z);
         }
     }
 }

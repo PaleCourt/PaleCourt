@@ -152,7 +152,7 @@ namespace FiveKnights
             }
         }
 
-        private void WinRoutine(string msg1Key, string msg2Key, string area)
+        private void WinRoutine(string msg1Key, string msg2Key, string area, bool dungAnimation = true)
         {
             HeroController.instance.RelinquishControl();
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
@@ -170,7 +170,25 @@ namespace FiveKnights
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
             fsm.RemoveAction("Fade Out", 0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
-            fsm.ChangeTransition("Outro Msg 1b", "CONVOFINISH", "New Scene");
+            if (dungAnimation)
+            {
+                IEnumerator PlayDungAnimation()
+                {
+                    GameObject animObj = new GameObject("DungAnim", typeof(MeshRenderer), typeof(MeshFilter), typeof(tk2dSprite));
+                    animObj.transform.position = tmp.transform.position - new Vector3(0f, 2f, 0f);
+                    var dungAnim = animObj.AddComponent<tk2dSpriteAnimator>();
+                    dungAnim.Library = FiveKnights.preloadedGO["Crest Anim Prefab"].GetComponent<tk2dSpriteAnimation>();
+                    foreach (var clip in dungAnim.Library.clips)
+                        Log("Clip name " + clip.name);
+                    yield return dungAnim.PlayAnimWait(dungAnim.Library.clips[0].name);
+                }
+                FsmState state = fsm.CreateState("Dung Transformation");
+                state.Actions = new FsmStateAction[] { new InvokeCoroutine(PlayDungAnimation, true) };
+                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "Dung Transformation");
+                fsm.AddTransition("Dung Transformation", FsmEvent.Finished, "New Scene");
+            }
+            else
+                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;
             fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
@@ -182,6 +200,7 @@ namespace FiveKnights
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
             HeroController.instance.EnterWithoutInput(true);
             fsm.SetState("Fade Out");
+            //fsm.PrintPlayMakerFSM();
         }
         
         public void PlayMusic(AudioClip clip)
