@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using FiveKnights.BossManagement;
 using UnityEngine;
 
 namespace FiveKnights.Dryya

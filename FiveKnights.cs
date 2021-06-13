@@ -9,9 +9,14 @@ using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using FiveKnights.BossManagement;
+using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using SFCore.Utils;
 using SFCore;
 using UnityEngine.Audio;
+using Random = UnityEngine.Random;
+using UnityEngine.UI;
 using FrogCore;
 
 namespace FiveKnights
@@ -21,6 +26,7 @@ namespace FiveKnights
     public class FiveKnights : Mod
     {
         private int paleCourtLogoId = -1;
+        public static bool isDebug = true;
         public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
         public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
@@ -114,7 +120,7 @@ namespace FiveKnights
 
             SFCore.AchievementHelper.Initialize();
             
-            SFCore.AchievementHelper.AddAchievement("IsmaAchiev", SPRITES["ach_isma"], 
+            SFCore.AchievementHelper.AddAchievement("IsmaAchiev2", SPRITES["ach_isma"], 
                 "ISMA_ACH_TITLE", "ISMA_ACH_DESC", false);
             
             SFCore.AchievementHelper.AddAchievement("DryyaAchiev", SPRITES["ach_dryya"], 
@@ -148,12 +154,24 @@ namespace FiveKnights
             ModHooks.Instance.LanguageGetHook += LangGet;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
+            On.UIManager.Start += OnUIManagerStart;
+
+            #endregion
+
+            #region Load Assetbundles
+
+            GameObject assetLoaderGo = new GameObject("Pale Court Asset Loader", typeof(NonBouncer));
+            GameObject.DontDestroyOnLoad(assetLoaderGo);
+            var nb = assetLoaderGo.GetComponent<NonBouncer>();
+            nb.StartCoroutine(LoadDep());
+            nb.StartCoroutine(LoadBossBundles());
 
             #endregion
         }
 
         private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
+            orig(newLang);
             foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
             {
                 string name = keyValuePair.Key;
@@ -200,6 +218,8 @@ namespace FiveKnights
                 ("Fungus1_12","green_grass_1 (1)"),
                 ("Fungus1_19", "Plant Trap"),
                 ("White_Palace_01","WhiteBench"),
+                // We want the tink effect from the spike
+                ("White_Palace_01","White_ Spikes"),
                 ("GG_Workshop","GG_Statue_ElderHu"),
                 ("GG_Lost_Kin", "Lost Kin"),
                 ("GG_Soul_Tyrant", "Dream Mage Lord"),
@@ -207,13 +227,14 @@ namespace FiveKnights
                 ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
                 ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
                 ("GG_White_Defender", "Boss Scene Controller"),
-                //("GG_White_Defender", "White Defender"),
                 ("GG_Atrium_Roof", "Land of Storms Doors"),
                 ("GG_White_Defender", "GG_Arena_Prefab/Godseeker Crowd"),
                 ("Dream_04_White_Defender","_SceneManager"),
                 ("Dream_04_White_Defender", "Battle Gate (1)"),
                 ("Dream_04_White_Defender", "Dream Entry"),
                 ("Dream_04_White_Defender", "White Defender"),
+                // Ensures falling into pits takes you out of dream
+                ("Dream_04_White_Defender", "Dream Fall Catcher")
                 ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
                 ("Dream_Final_Boss", "Boss Control/Radiance"),
             };
@@ -221,15 +242,15 @@ namespace FiveKnights
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
-            MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
-
             Log("Storing GOs");
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
             preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
             preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
+
+            preloadedGO["TinkEff"] = preloadedObjects["White_Palace_01"]["White_ Spikes"];
+
             preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
             preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
             preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
@@ -238,18 +259,17 @@ namespace FiveKnights
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
-            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             
+            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
             preloadedGO["Grass0"] = preloadedObjects["Fungus1_12"]["simple_grass"];
             preloadedGO["Grass2"] = preloadedObjects["Fungus1_12"]["green_grass_2"];
             preloadedGO["Grass3"] = preloadedObjects["Fungus1_12"]["green_grass_3"];
             preloadedGO["Grass1"] = preloadedObjects["Fungus1_12"]["green_grass_1 (1)"];
-            
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
+
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
-            //preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
             preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];
             preloadedGO["Godseeker"] = preloadedObjects["GG_White_Defender"]["GG_Arena_Prefab/Godseeker Crowd"];
             
@@ -257,6 +277,7 @@ namespace FiveKnights
             preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
             preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
             preloadedGO["BattleGate"] = preloadedObjects["Dream_04_White_Defender"]["Battle Gate (1)"];
+            preloadedGO["DreamFall"] = preloadedObjects["Dream_04_White_Defender"]["Dream Fall Catcher"];
 
             preloadedGO["Knight Ball"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance/Death/Knight Split/Knight Ball"];
             preloadedGO["Radiance"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance"];
@@ -265,6 +286,7 @@ namespace FiveKnights
 
             Instance = this;
             Log("Initalizing.");
+        }
 
             #region Add Charms
             _charmHelper = new CharmHelper();
@@ -312,7 +334,20 @@ namespace FiveKnights
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
         }
+        #region Make Text Readable
 
+        private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
+        {
+            foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            {
+                var outline = item.gameObject.AddComponent<Outline>();
+                outline.effectColor = Color.black;
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+            orig(self);
+        }
+
+        #endregion
 
         #region Menu Customization
 
@@ -334,19 +369,19 @@ namespace FiveKnights
 
             var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
             var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
-            if (origAudio && origAudio.name.Equals("Title"))
+            if (origAudio != null && origAudio.name.Equals("Title"))
             {
                 if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
                 {
                     LoadMusic();
                 }
-
                 infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
                 audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                
+                var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
+                MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
             }
-
             musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
-
             orig(self, musicCue, delayTime, transitionTime, applySnapshot);
         }
 
@@ -461,49 +496,30 @@ namespace FiveKnights
 
         private IEnumerator LoadBossBundles()
         {
-            ABManager.Load(ABManager.Bundle.GDryya);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GHegemol);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GIsma);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GZemer);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GDryya);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GHegemol);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GIsma);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GZemer);
         }
         
         private IEnumerator LoadDep()
         {
-
-            ABManager.Load(ABManager.Bundle.GArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.WSArenaDep);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.WSArena);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaHub);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaHub2);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.Misc);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaH);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaD);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaZ);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaI);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaD);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaZ);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaH);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.OWArenaI);
-            yield return null;
-            ABManager.Load(ABManager.Bundle.GArenaIsma);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.WSArenaDep);
+            yield return ABManager.LoadAsync(ABManager.Bundle.WSArena);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaHub);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaHub2);
+            yield return ABManager.LoadAsync(ABManager.Bundle.Misc);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaH);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaD);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaZ);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaI);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaD);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaZ);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaH);
+            yield return ABManager.LoadAsync(ABManager.Bundle.OWArenaI);
+            yield return ABManager.LoadAsync(ABManager.Bundle.GArenaIsma);
 
             Log("Finished bundling");
         }
@@ -645,12 +661,10 @@ namespace FiveKnights
             }
             if (langStrings.ContainsKey(key, sheet))
             {
-                //Log($"get thing {langStrings.Get(key, sheet)}");
                 return langStrings.Get(key, sheet);
             }
             if (langStrings.ContainsKey(key, "Speech"))
             {
-                //Log($"get thing {langStrings.Get(key, sheet)}");
                 return langStrings.Get(key, "Speech");
             }
             return Language.Language.GetInternal(key, sheet);
@@ -682,27 +696,113 @@ namespace FiveKnights
                 journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
                 journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
             }
+            foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (i.PrintSceneHierarchyPath() != "Hollow Shade\\Slash")
+                    continue;
+                
+                FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
+
+                AudioClip aud = i
+                    .LocateMyFSM("nail_clash_tink")
+                    .GetAction<AudioPlayerOneShot>("Blocked Hit", 5)
+                    .audioClips[0];
+
+                var clashSndObj = new GameObject();
+                var clashSnd = clashSndObj.AddComponent<AudioSource>();
+
+                clashSnd.clip = aud;
+                clashSnd.pitch = Random.Range(0.85f, 1.15f);
+
+                Tink.TinkClip = aud;
+
+                FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
+                Log("Got the shade stuff brochacho");
+                break;
+            }
+
+            PlantChanger();
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
         }
-
-        public void Unload()
+        
+        private void PlantChanger()
         {
-            ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
-            ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.LanguageGetHook -= LangGet;
-            ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
+            foreach (var trapType in new[] {"PTrap","PTurret"})
+            {
+                GameObject trap = FiveKnights.preloadedGO[trapType];       
+                UObject.DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
+                var newDD = FiveKnights.preloadedGO["WhiteDef"];
+                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
+                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
+                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
+                    BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    if (fi.Name.Contains("Origin"))
+                    {
+                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
+                        continue;
+                    }
 
-            ABManager.UnloadAll();
-            
-            var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
-            var y = GameManager.instance?.gameObject.GetComponent<OWArenaFinder>();
-            var z = GameManager.instance?.gameObject.GetComponent<Amulets>();
-            if (x != null) UObject.Destroy(x);
-            if (y != null) UObject.Destroy(y);
-            if (z != null) UObject.Destroy(z);
+                    fi.SetValue(newHit, fi.GetValue(ddHit));
+                }
+                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
+                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
+                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
+                }
+                UObject.DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
+                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
+                }
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
+                }
+                
+                HealthManager hm = trap.GetComponent<HealthManager>();
+                HealthManager hornHP = newDD.GetComponent<HealthManager>();
+                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Where(x => x.Name.Contains("Prefab")))
+                {
+                    fi.SetValue(hm, fi.GetValue(hornHP));
+                }
+                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
+                {
+                    UObject.Destroy(i);
+                }
+                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+                if (trapType == "PTrap")
+                {
+                    UObject.Destroy(hello.transform.Find("Orange Puff").gameObject);
+                }
+                else
+                {
+                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
+                    {
+                        var j = i.main;
+                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
+                    }
+                }
+                newEff2.whiteWave = hello;
+                GameObject fake = new GameObject();
+                UObject.DontDestroyOnLoad(fake);
+                newEff2.uninfectedDeathPt = fake;
+                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
+                FiveKnights.preloadedGO[trapType] = trap;
+                Log("Changed the plant");
+            }
         }
     }
 }

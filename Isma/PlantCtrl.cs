@@ -12,11 +12,14 @@ namespace FiveKnights.Isma
         private Animator _anim;
         private HealthManager _hm;
         public List<float> PlantX;
+        private const int PLANTHP = 35;
         public bool IsmaFight;
 
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
+
+            transform.position -= new Vector3(0f, 0.2f, 0f);
         }
 
         private IEnumerator Start()
@@ -27,12 +30,10 @@ namespace FiveKnights.Isma
                 _hm = gameObject.AddComponent<HealthManager>();
                 SetupHM();
                 gameObject.AddComponent<Flash>();
-                _hm.hp = 75;
+                _hm.hp = PLANTHP;
             }
-            DamageHero dh = gameObject.AddComponent<DamageHero>();
-            dh.damageDealt = 1;
-            dh.enabled = false;
-            gameObject.layer = 11;
+            var bc = GetComponent<BoxCollider2D>();
+            gameObject.layer = 25;
             gameObject.SetActive(true);
             _anim.enabled = true;
             _anim.Play("PlantGrow");
@@ -42,7 +43,9 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.9f);
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            dh.enabled = true;
+            bc.isTrigger = false;
+            bc.enabled = true;
+            gameObject.AddComponent<ShadowGateColliderControl>().disableCollider = bc;
             yield return new WaitForSeconds(0.55f);
             if (!IsmaFight) StartCoroutine(Death());
         }
@@ -65,7 +68,6 @@ namespace FiveKnights.Isma
             {
                 fi.SetValue(hm2, fi.GetValue(wdHM));
             }
-            Modding.Logger.Log("HM SZTUFFF2");
         }
     }
 }

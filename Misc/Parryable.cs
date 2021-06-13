@@ -10,10 +10,7 @@ namespace FiveKnights
 
         private void OnTriggerEnter2D(Collider2D col)
         {
-            Log("Out " + ParryFlag);
-            Log("Out2 " + col.gameObject.layer);
             if (ParryFlag || col.gameObject.layer != 16) return;
-            Log("In " + col.name);
             ParryFlag = true;
             StartCoroutine(GameManager.instance.FreezeMoment(0.03f, 0.1f, 0.03f, 0f));
             HeroController.instance.NailParry();
@@ -51,7 +48,6 @@ namespace FiveKnights
             fx.transform.SetPosition2D(HeroController.instance.transform.position);
             fx.transform.position += pos;
             fx.SetActive(true);
-            Log("Trying to end parry1");
             StartCoroutine(DoNextFrame());
         }
 
@@ -59,9 +55,7 @@ namespace FiveKnights
         {
             yield return null;
             HeroController.instance.NailParryRecover();
-            Log("Time");
             yield return new WaitForSecondsRealtime(0.5f);
-            Log("Time2");
             ParryFlag = false;
         }
 
