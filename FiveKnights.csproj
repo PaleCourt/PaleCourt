@@ -343,6 +343,7 @@
     <Compile Include="BossManagement\OWArenaFinder.cs" />
     <Compile Include="BossManagement\OWBossManager.cs" />
     <Compile Include="Dryya\DryyaCorpse.cs" />
+    <Compile Include="Isma\ShadeOnlyPass.cs" />
     <Compile Include="Misc\ABManager.cs" />
     <Compile Include="Misc\AreaTitleCtrl.cs" />
     <Compile Include="Misc\AudioSourceExtensions.cs" />

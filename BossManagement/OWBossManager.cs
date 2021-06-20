@@ -16,6 +16,7 @@ using Modding;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
+using Logger = On.InControl.Logger;
 
 namespace FiveKnights
 {
@@ -52,6 +53,7 @@ namespace FiveKnights
             {
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 CreateIsma();
+
                 Log("Made arena");
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110f);
@@ -153,7 +155,10 @@ namespace FiveKnights
             {
                 dreambye.GetComponent<ParticleSystem>().Play();
             }
-            GameObject transDevice = Instantiate(_dd.transform.Find("Corpse White Defender(Clone)").gameObject);
+
+            var deathcomp = (EnemyDeathEffects) _dd.GetComponent<EnemyDeathEffectsUninfected>();
+            var corpsePrefab = deathcomp.GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+            GameObject transDevice = Instantiate(corpsePrefab);
             transDevice.SetActive(true);
             var fsm = transDevice.LocateMyFSM("Control");
             GameObject text = fsm.GetAction<SetTextMeshProAlignment>("New Scene", 1).gameObject.GameObject.Value;

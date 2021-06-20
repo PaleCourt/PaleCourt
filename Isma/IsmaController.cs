@@ -51,8 +51,6 @@ namespace FiveKnights.Isma
         private bool isDead;
         public static bool eliminateMinions;
         private bool isIsmaHitLast;
-        public static List<GameObject> PlantF { get; set; }
-        public static List<GameObject> PlantG { get; set; }
         public bool introDone;
         
         private readonly string[] _dnailDial =
@@ -90,7 +88,7 @@ namespace FiveKnights.Isma
 
             GameObject seedFloor = new GameObject("SeedFloor");
             seedFloor.SetActive(true);
-            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f); //5.4
+            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f);
             var bc = seedFloor.AddComponent<BoxCollider2D>();
             bc.isTrigger = true;
             bc.offset = new Vector2(3.949066f, 0f);
@@ -100,12 +98,11 @@ namespace FiveKnights.Isma
             
             GameObject seedSideL = new GameObject("SeedSideL");
             seedSideL.SetActive(true);
-            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f); //5.4
+            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f);
             var bcL = seedSideL.AddComponent<BoxCollider2D>();
             bcL.isTrigger = true;
             bcL.offset = new Vector2(0, 0.4677944f);
             bcL.size = new Vector2(1, 7.96706f);
-            seedSideL.AddComponent<DebugColliders>();
             seedSideL.AddComponent<EnemyPlantSpawn>();
             seedSideL.layer = 8;
             
@@ -116,7 +113,6 @@ namespace FiveKnights.Isma
             bcR.isTrigger = true;
             bcR.offset = new Vector2(0, 0f);
             bcR.size = new Vector2(1, 7.031467f);
-            seedSideR.AddComponent<DebugColliders>();
             seedSideR.AddComponent<EnemyPlantSpawn>();
             seedSideR.layer = 8;
         }
@@ -176,8 +172,6 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.IsPlaying());
             GameObject whip = transform.Find("Whip").gameObject;
             whip.layer = 11;
-            PlantG = new List<GameObject>();
-            PlantF = new List<GameObject>();
             if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
             StartCoroutine("Start2");
         }
@@ -1425,97 +1419,14 @@ namespace FiveKnights.Isma
             EnemyHitEffectsUninfected ogrimHitEffects = dd.GetComponent<EnemyHitEffectsUninfected>();
             foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
-                if (fi.Name.Contains("Origin"))
-                {
-                    hitEff.effectOrigin = new Vector3(0f, 1f, 0f);
-                    continue;
-                }
-                fi.SetValue(hitEff, fi.GetValue(ogrimHitEffects));
+                fi.SetValue(hitEff,
+                    fi.Name.Contains("Origin") ? new Vector3(-0.2f, 1.3f, 0f) : fi.GetValue(ogrimHitEffects));
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
             foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
-            }
-
-            //PlantChanger();
-        }
-
-        private void PlantChanger()
-        {
-            foreach (var trapType in new[] {"PTrap","PTurret"})
-            {
-                GameObject trap = FiveKnights.preloadedGO[trapType];       
-                DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
-                var newDD = FiveKnights.preloadedGO["WhiteDef"];
-                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
-                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
-                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public))
-                {
-                    if (fi.Name.Contains("Origin"))
-                    {
-                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
-                        continue;
-                    }
-
-                    fi.SetValue(newHit, fi.GetValue(ddHit));
-                }
-                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
-                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
-                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
-                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
-                                                                             BindingFlags.NonPublic |
-                                                                             BindingFlags.Public | BindingFlags.Static))
-                {
-                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
-                }
-                DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
-                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
-                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
-                {
-                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
-                }
-                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
-                                                                             BindingFlags.NonPublic |
-                                                                             BindingFlags.Public | BindingFlags.Static)
-                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
-                {
-                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
-                }
-                
-                HealthManager hm = trap.GetComponent<HealthManager>();
-                HealthManager hornHP = newDD.GetComponent<HealthManager>();
-                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                    .Where(x => x.Name.Contains("Prefab")))
-                {
-                    fi.SetValue(hm, fi.GetValue(hornHP));
-                }
-                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
-                {
-                    Destroy(i);
-                }
-                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
-                if (trapType == "PTrap")
-                {
-                    Destroy(hello.transform.Find("Orange Puff").gameObject);
-                }
-                else
-                {
-                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
-                    {
-                        Log($"What am i {i.name} with color {i.main.startColor}");
-                        var j = i.main;
-                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
-                    }
-                }
-                newEff2.whiteWave = hello;
-                newEff2.uninfectedDeathPt = new GameObject();
-                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
-                FiveKnights.preloadedGO[trapType] = trap;
-                Log("Changed the plant");
             }
         }
 

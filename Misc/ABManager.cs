@@ -55,7 +55,7 @@ namespace FiveKnights
 
         public static AssetBundle Load(Bundle bd)
         {
-            if (AssetBundles.ContainsKey(bd)) return AssetBundles[bd];
+            if (AssetBundles.ContainsKey(bd) && AssetBundles[bd] != null) return AssetBundles[bd];
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var ab = AssetBundle.LoadFromStream(s);
             AssetBundles[bd] = ab;
@@ -67,10 +67,8 @@ namespace FiveKnights
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var request = AssetBundle.LoadFromStreamAsync(s);
             yield return request;
-            var ab = AssetBundle.LoadFromStream(s);
-            AssetBundles[bd] = ab;
+            AssetBundles[bd] = request.assetBundle;
             s?.Dispose();
-            yield break;
         }
 
         public static void ResetBundle(Bundle bd)

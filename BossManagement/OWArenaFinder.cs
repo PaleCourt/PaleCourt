@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using HutongGames.PlayMaker.Actions;
 using ModCommon;
@@ -25,11 +26,13 @@ namespace FiveKnights.BossManagement
         
         public static readonly string PrevDryScene = "Fungus3_48";
 
-        public static readonly string PrevZemScene = "Fungus3_49";
+        public static readonly string PrevZemScene = "Room_Mansion";
         
         public static readonly string PrevHegScene = "Fungus2_21";
 
         public static readonly string PrevIsmScene = "Waterways_13";
+
+        private static Dictionary<string, Shader> ParticleMatToShader = new Dictionary<string, Shader>();
         
         public static bool IsInOverWorld
         {
@@ -41,7 +44,7 @@ namespace FiveKnights.BossManagement
         
         private string _currScene;
         private string _prevScene;
-        
+
         private IEnumerator Start()
         {
             Instance = this;
@@ -51,7 +54,7 @@ namespace FiveKnights.BossManagement
             On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
             
-            yield return new WaitWhile(()=>!Input.GetKey(KeyCode.R));
+            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
 
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
             {
@@ -60,6 +63,7 @@ namespace FiveKnights.BossManagement
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
             });
+
         }
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
@@ -161,7 +165,7 @@ namespace FiveKnights.BossManagement
             }
             else if (self.sceneName == PrevZemScene)
             {
-                CreateGateway("door_dreamReturn", new Vector2(22f, 6.4f), Vector2.zero, 
+                CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
                     null, null, false, false, true, 
                     GameManager.SceneLoadVisualizations.Dream);
             }
@@ -232,15 +236,14 @@ namespace FiveKnights.BossManagement
                     Destroy(i);
                 }
                 CreateDreamGateway("Dream Enter", "door1", 
-                    new Vector2(22, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
+                    new Vector2(25.1f, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, ZemerScene, PrevZemScene);
-                Log("Done with zemer idiocy");
             }
             else if (_currScene == PrevHegScene)
             {
                 if (_prevScene == HegemolScene)
                 {
-                    Log("Redoing Zemer content");
+                    Log("Redoing Hegemol content");
                     ABManager.ResetBundle(ABManager.Bundle.GHegemol);
                     ABManager.ResetBundle(ABManager.Bundle.OWArenaH);
                     ABManager.ResetBundle(ABManager.Bundle.Sound);
@@ -290,11 +293,45 @@ namespace FiveKnights.BossManagement
                     new Vector2(0f, 4f), IsmaScene, PrevIsmScene);
             }
         }
-
+        
+        IEnumerator ShaderFixer()
+        {
+            yield return new WaitForSeconds(0.5f);
+            foreach (var i in FindObjectsOfType<ParticleSystemRenderer>(true))
+            {
+                string matName = i.material.name;
+                string badShader = "Hidden/InternalErrorShader";
+                if (i.material.shader.name == badShader)
+                {
+                    if (i.material.name.Contains("Particle_Lift_Dust"))
+                    {
+                        i.material.shader = Shader.Find("Sprites/Lit");
+                    }
+                    else if (!ParticleMatToShader.ContainsKey(matName))
+                    {
+                        Log($"Did not have shader of mat {matName}");
+                    }
+                    else
+                    {
+                        Log($"Changing material {matName} to have shader {ParticleMatToShader[matName]}");
+                        i.material.shader = ParticleMatToShader[matName];
+                    }
+                }
+                else
+                {
+                    if (ParticleMatToShader.ContainsKey(i.material.name) && 
+                        ParticleMatToShader[i.material.name].name != badShader) continue;
+                    ParticleMatToShader.Add(i.material.name, i.material.shader);   
+                }
+            }
+        }
+        
         private void USceneManagerOnactiveSceneChanged(Scene arg0, Scene arg1)
         {
             _currScene = arg1.name;
             _prevScene = arg0.name;
+
+            StartCoroutine(ShaderFixer());
             
             if (_currScene == DryyaScene)
             {
@@ -634,9 +671,7 @@ namespace FiveKnights.BossManagement
 
             yield return null;
             yield return null;
-            Log("Test");
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GIsma];
-            Log($"Test2 {(ab == null)}");
             //AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.OWArenaI];
             //FiveKnights.preloadedGO["IsmaArena"] = ab2.LoadAsset<GameObject>("new stuff isma 1");
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
