@@ -1,6 +1,6 @@
-﻿using System;
+﻿using SFCore.Utils;
+using System;
 using System.Collections;
-using ModCommon.Util;
 using UnityEngine;
 
 namespace FiveKnights

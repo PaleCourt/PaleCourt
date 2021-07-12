@@ -5,9 +5,9 @@ using System.Linq;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
+using SFCore.Utils;
 using UnityEngine;
+using Vasi;
 using Logger = Modding.Logger;
 using Random = System.Random;
 

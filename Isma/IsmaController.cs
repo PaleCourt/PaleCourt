@@ -7,10 +7,10 @@ using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
+using SFCore.Utils;
 using TMPro;
 using UnityEngine;
+using Vasi;
 
 namespace FiveKnights.Isma
 {
@@ -105,7 +105,7 @@ namespace FiveKnights.Isma
             bcL.isTrigger = true;
             bcL.offset = new Vector2(0, 0.4677944f);
             bcL.size = new Vector2(1, 7.96706f);
-            seedSideL.AddComponent<DebugColliders>();
+            //seedSideL.AddComponent<DebugColliders>();
             seedSideL.AddComponent<EnemyPlantSpawn>();
             seedSideL.layer = 8;
             
@@ -116,7 +116,7 @@ namespace FiveKnights.Isma
             bcR.isTrigger = true;
             bcR.offset = new Vector2(0, 0f);
             bcR.size = new Vector2(1, 7.031467f);
-            seedSideR.AddComponent<DebugColliders>();
+            //seedSideR.AddComponent<DebugColliders>();
             seedSideR.AddComponent<EnemyPlantSpawn>();
             seedSideR.layer = 8;
         }
@@ -1143,7 +1143,7 @@ namespace FiveKnights.Isma
 
             foreach (FsmTransition i in _ddFsm.GetState("Idle").Transitions)
             {
-                _ddFsm.ChangeTransition("Idle", i.EventName, "Timer");
+                SFCore.Utils.FsmUtil.ChangeTransition(_ddFsm, "Idle", i.EventName, "Timer");
             }
             _ddFsm.SetState("Idle");
             yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Idle");

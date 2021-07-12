@@ -5,10 +5,9 @@ using UnityEngine;
 using Modding;
 using HutongGames.PlayMaker.Actions;
 using System.Collections;
-using ModCommon;
-using ModCommon.Util;
 using UnityEngine.UI;
 using Object = System.Object;
+using SFCore.Utils;
 
 namespace FiveKnights
 {
@@ -26,7 +25,7 @@ namespace FiveKnights
             Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.Instance.TakeHealthHook += Instance_TakeHealthHook;
+            ModHooks.TakeHealthHook += Instance_TakeHealthHook;
             boss = Boss.None;
 
             
@@ -351,22 +350,22 @@ namespace FiveKnights
             switch (name)
             {
                 case "ISMA_NAME":
-                    bs.StatueState = FiveKnights.Instance.Settings.CompletionIsma;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionIsma;
                     SetStatue2(statue, "GG_White_Defender", "statueStateIsma2","DD_ISMA_NAME", "DD_ISMA_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.Settings.CompletionIsma2;
-                    bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueIsma, false, false);
+                    bs.DreamStatueState = FiveKnights.Instance._saveSettings.CompletionIsma2;
+                    bs.SetDreamVersion(FiveKnights.Instance._saveSettings.AltStatueIsma, false, false);
                     break;
                 case "DRY_NAME":
-                    bs.StatueState = FiveKnights.Instance.Settings.CompletionDryya;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionDryya;
                     break;
                 case "ZEM_NAME":
-                    bs.StatueState = FiveKnights.Instance.Settings.CompletionZemer;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionZemer;
                     SetStatue2(statue, sceneName, "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.Settings.CompletionZemer2;
-                    bs.SetDreamVersion(FiveKnights.Instance.Settings.AltStatueZemer, false, false);
+                    bs.DreamStatueState = FiveKnights.Instance._saveSettings.CompletionZemer2;
+                    bs.SetDreamVersion(FiveKnights.Instance._saveSettings.AltStatueZemer, false, false);
                     break;
                 case "HEG_NAME":
-                    bs.StatueState = FiveKnights.Instance.Settings.CompletionHegemol;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionHegemol;
                     break;
             }
             bs.bossScene = scene;
@@ -476,7 +475,7 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.Instance.TakeHealthHook -= Instance_TakeHealthHook;
+            ModHooks.TakeHealthHook -= Instance_TakeHealthHook;
             
         }
         

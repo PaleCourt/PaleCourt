@@ -6,8 +6,7 @@ using System.Linq;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
+using SFCore.Utils;
 using Modding;
 using UnityEngine;
 using Random = UnityEngine.Random;
@@ -86,22 +85,22 @@ namespace FiveKnights
             On.HeroController.TakeDamage += On_HeroController_TakeDamage;
             On.HeroController.AddHealth += On_HeroController_AddHealth;
             On.HeroController.MaxHealth += On_HeroController_MaxHealth;
-            On.CharmIconList.Awake += CharmIconList_Awake;
-            ModHooks.Instance.CharmUpdateHook += ModHooks_CharmUpdate;
+            On.CharmIconList.GetSprite += CharmIconList_GetSprite;
+            ModHooks.CharmUpdateHook += ModHooks_CharmUpdate;
         }
 
-        private void CharmIconList_Awake(On.CharmIconList.orig_Awake orig, CharmIconList self)
+        private Sprite CharmIconList_GetSprite(On.CharmIconList.orig_GetSprite orig, CharmIconList self, int id)
         {
-            orig(self);
-            if (FiveKnights.Instance.Settings.upgradedCharm_10)
+            if (FiveKnights.Instance._saveSettings.upgradedCharm_10)
             {
-                Log("Upgraded Defender's Crest");
-                CharmIconList.Instance.spriteList[10] = FiveKnights.SPRITES["Kings_Honour"];
+                //Log("Upgraded Defender's Crest");
+                self.spriteList[10] = FiveKnights.SPRITES["Kings_Honour"];
             }
             else
             {
-                CharmIconList.Instance.spriteList[10] = FiveKnights.SPRITES["Defenders_Crest"];
+                self.spriteList[10] = FiveKnights.SPRITES["Defenders_Crest"];
             }
+            return orig(self, id);
         }
 
         public void On_HeroController_Awake(On.HeroController.orig_Awake orig, HeroController self)
@@ -148,7 +147,7 @@ namespace FiveKnights
 
             _radControl = Instantiate(FiveKnights.preloadedGO["Radiance"].LocateMyFSM("Control"), self.transform);
 
-            _pd.CalculateNotchesUsed();
+            //_pd.CalculateNotchesUsed();
 
             Log("Waiting for Audio Player Actor...");
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
@@ -162,31 +161,31 @@ namespace FiveKnights
             ModifyFury();
 
 #if DEBUG
-            FiveKnights.Instance.Settings.upgradedCharm_10 = true;
+            FiveKnights.Instance._saveSettings.upgradedCharm_10 = true;
 
-            FiveKnights.Instance.Settings.gotCharms[0] = true;
-            FiveKnights.Instance.Settings.gotCharms[1] = true;
-            FiveKnights.Instance.Settings.gotCharms[2] = true;
-            FiveKnights.Instance.Settings.gotCharms[3] = true;
+            FiveKnights.Instance._saveSettings.gotCharms[0] = true;
+            FiveKnights.Instance._saveSettings.gotCharms[1] = true;
+            FiveKnights.Instance._saveSettings.gotCharms[2] = true;
+            FiveKnights.Instance._saveSettings.gotCharms[3] = true;
 
             /*PureAmulets.Settings.newCharm_41 = true;
             PureAmulets.Settings.newCharm_42 = true;
             PureAmulets.Settings.newCharm_43 = true;
             PureAmulets.Settings.newCharm_44 = true;*/
 
-            Log("Got Charm 41: " + FiveKnights.Instance.Settings.gotCharms[0]);
-            Log("Got Charm 42: " + FiveKnights.Instance.Settings.gotCharms[1]);
-            Log("Got Charm 43: " + FiveKnights.Instance.Settings.gotCharms[2]);
-            Log("Got Charm 44: " + FiveKnights.Instance.Settings.gotCharms[3]);
-            Log("New Charm 41: " + FiveKnights.Instance.Settings.newCharms[0]);
-            Log("New Charm 42: " + FiveKnights.Instance.Settings.newCharms[1]);
-            Log("New Charm 43: " + FiveKnights.Instance.Settings.newCharms[2]);
-            Log("New Charm 44: " + FiveKnights.Instance.Settings.newCharms[3]);
-            Log("Equipped Charm 41: " + FiveKnights.Instance.Settings.equippedCharms[0]);
-            Log("Equipped Charm 42: " + FiveKnights.Instance.Settings.equippedCharms[1]);
-            Log("Equipped Charm 43: " + FiveKnights.Instance.Settings.equippedCharms[2]);
-            Log("Equipped Charm 44: " + FiveKnights.Instance.Settings.equippedCharms[3]);
-            Log("Upgraded Charm 10: " + FiveKnights.Instance.Settings.upgradedCharm_10);
+            Log("Got Charm 41: " + FiveKnights.Instance._saveSettings.gotCharms[0]);
+            Log("Got Charm 42: " + FiveKnights.Instance._saveSettings.gotCharms[1]);
+            Log("Got Charm 43: " + FiveKnights.Instance._saveSettings.gotCharms[2]);
+            Log("Got Charm 44: " + FiveKnights.Instance._saveSettings.gotCharms[3]);
+            Log("New Charm 41: " + FiveKnights.Instance._saveSettings.newCharms[0]);
+            Log("New Charm 42: " + FiveKnights.Instance._saveSettings.newCharms[1]);
+            Log("New Charm 43: " + FiveKnights.Instance._saveSettings.newCharms[2]);
+            Log("New Charm 44: " + FiveKnights.Instance._saveSettings.newCharms[3]);
+            Log("Equipped Charm 41: " + FiveKnights.Instance._saveSettings.equippedCharms[0]);
+            Log("Equipped Charm 42: " + FiveKnights.Instance._saveSettings.equippedCharms[1]);
+            Log("Equipped Charm 43: " + FiveKnights.Instance._saveSettings.equippedCharms[2]);
+            Log("Equipped Charm 44: " + FiveKnights.Instance._saveSettings.equippedCharms[3]);
+            Log("Upgraded Charm 10: " + FiveKnights.Instance._saveSettings.upgradedCharm_10);
 #endif
         }
 
@@ -345,7 +344,7 @@ namespace FiveKnights
                 17,
                 () =>
                 {
-                    Color color = FiveKnights.Instance.Settings.equippedCharms[3] ? Color.black : furyColor;
+                    Color color = FiveKnights.Instance._saveSettings.equippedCharms[3] ? Color.black : furyColor;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 17).color.Value = color;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 18).color.Value = color;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 19).color.Value = color;
@@ -357,7 +356,7 @@ namespace FiveKnights
         {
             Log("Charm Update");
 
-            if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.Settings.upgradedCharm_10)
+            if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance._saveSettings.upgradedCharm_10)
             {
                 StartCoroutine(FindAndAddComponentToDung());
                 /*if (_royalAura != null) Destroy(_royalAura);
@@ -374,7 +373,7 @@ namespace FiveKnights
                 if (_royalAura != null) Destroy(_royalAura);
             }
 
-            if (FiveKnights.Instance.Settings.equippedCharms[0])
+            if (FiveKnights.Instance._saveSettings.equippedCharms[0])
             {
                 ChangeSlashScale(3, true);
             }
@@ -383,7 +382,7 @@ namespace FiveKnights
                 ChangeSlashScale(1.6f);
             }
 
-            if (FiveKnights.Instance.Settings.equippedCharms[1])
+            if (FiveKnights.Instance._saveSettings.equippedCharms[1])
             {
                 _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
                 _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2 Blasts");
@@ -404,7 +403,7 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
             }
 
-            if (FiveKnights.Instance.Settings.equippedCharms[2])
+            if (FiveKnights.Instance._saveSettings.equippedCharms[2])
             {
                 _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Q1 Land Plumes");
                 _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land Plumes");
@@ -421,7 +420,7 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2");
             }
 
-            if (!FiveKnights.Instance.Settings.equippedCharms[3])
+            if (!FiveKnights.Instance._saveSettings.equippedCharms[3])
             {
                 ResetHeroControllerProperties();
             }
@@ -821,7 +820,7 @@ namespace FiveKnights
 
             if (_pd.health == oldHealth) return;
 
-            if (!FiveKnights.Instance.Settings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
 
             if (_pd.health <= 1)
             {
@@ -840,7 +839,7 @@ namespace FiveKnights
         {
             orig(self, amount);
 
-            if (!FiveKnights.Instance.Settings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
 
             if (_pd.health > _pd.maxHealth / 2)
             {
@@ -859,100 +858,88 @@ namespace FiveKnights
         {
             orig(self);
 
-            if (!FiveKnights.Instance.Settings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
 
             Log("Reset HeroController Properties");
             ResetHeroControllerProperties();
             On.HeroController.Attack -= On_HeroController_Attack;
         }
 
-        private static readonly string[] CUSTOM_BACKBOARDS = new[]
-        {
-            "BB 1",
-            "BB 12",
-            "BB 23",
-            "BB 34"
-        };
+        //private static readonly string[] CUSTOM_BACKBOARDS = new[]
+        //{
+        //    "BB 1",
+        //    "BB 12",
+        //    "BB 23",
+        //    "BB 34"
+        //};
 
-        private static string BackboardToCharm(string name)
-        {
-            return name switch
-            {
-                "BB 1" => "41",
-                "BB 12" => "42",
-                "BB 23" => "43",
-                "BB 34" => "44",
-                _ => throw new ArgumentException("Backboard does not match custom charm!")
-            };
-        }
+        //private static string BackboardToCharm(string name)
+        //{
+        //    return name switch
+        //    {
+        //        "BB 1" => "41",
+        //        "BB 12" => "42",
+        //        "BB 23" => "43",
+        //        "BB 34" => "44",
+        //        _ => throw new ArgumentException("Backboard does not match custom charm!")
+        //    };
+        //}
 
-        private void On_InvCharmBackboard_OnEnable(On.InvCharmBackboard.orig_OnEnable orig, InvCharmBackboard self)
-        {
-            if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
-            {
-                orig(self);
+        //private void On_InvCharmBackboard_OnEnable(On.InvCharmBackboard.orig_OnEnable orig, InvCharmBackboard self)
+        //{
+        //    if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
+        //    {
+        //        orig(self);
 
-                return;
-            }
+        //        return;
+        //    }
 
-            self.charmObject.transform.localPosition = self.transform.localPosition - new Vector3(0, 0, 1f / 1000f);
+        //    self.charmObject.transform.localPosition = self.transform.localPosition - new Vector3(0, 0, 1f / 1000f);
 
-            string charm = BackboardToCharm(self.gameObject.name);
+        //    string charm = BackboardToCharm(self.gameObject.name);
 
-            bool got_charm = PlayerData.instance.GetBool($"gotCharm_{charm}");
-            bool new_charm = PlayerData.instance.GetBool($"newCharm_{charm}");
-            bool blanked = self.GetAttr<InvCharmBackboard, bool>("blanked");
+        //    bool got_charm = PlayerData.instance.GetBool($"gotCharm_{charm}");
+        //    bool new_charm = PlayerData.instance.GetBool($"newCharm_{charm}");
+        //    bool blanked = self.GetAttr<InvCharmBackboard, bool>("blanked");
 
-            if (got_charm && new_charm)
-                self.newOrb.SetActive(true);
+        //    if (got_charm && new_charm)
+        //        self.newOrb.SetActive(true);
 
-            if (got_charm && !blanked)
-            {
-                self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.blankSprite;
-                self.SetAttr("blanked", true);
-            }
+        //    if (got_charm && !blanked)
+        //    {
+        //        self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.blankSprite;
+        //        self.SetAttr("blanked", true);
+        //    }
 
-            if (got_charm || !blanked)
-                return;
+        //    if (got_charm || !blanked)
+        //        return;
 
-            self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.activeSprite;
-            self.SetAttr("blanked", false);
-        }
+        //    self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.activeSprite;
+        //    self.SetAttr("blanked", false);
+        //}
 
-        private void On_InvCharmBackboard_SelectCharm
-        (
-            On.InvCharmBackboard.orig_SelectCharm orig,
-            InvCharmBackboard self
-        )
-        {
-            if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
-            {
-                orig(self);
+        //private void On_InvCharmBackboard_SelectCharm
+        //(
+        //    On.InvCharmBackboard.orig_SelectCharm orig,
+        //    InvCharmBackboard self
+        //)
+        //{
+        //    if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
+        //    {
+        //        orig(self);
 
-                return;
-            }
+        //        return;
+        //    }
 
-            string charm = BackboardToCharm(self.gameObject.name);
+        //    string charm = BackboardToCharm(self.gameObject.name);
 
-            if (!PlayerData.instance.GetBool("newCharm_{charm}"))
-                return;
+        //    if (!PlayerData.instance.GetBool("newCharm_{charm}"))
+        //        return;
 
-            PlayerData.instance.SetBool($"newCharm_{charm}", false);
+        //    PlayerData.instance.SetBool($"newCharm_{charm}", false);
 
-            self.newOrb.GetComponent<SimpleFadeOut>().FadeOut();
-        }
-
-        private void On_PlayerData_CalculateNotchesUsed(On.PlayerData.orig_CalculateNotchesUsed orig, PlayerData pd)
-        {
-            int count = pd.GetInt("charmSlotsFilled");
-
-            if (FiveKnights.Instance.Settings.equippedCharms[0]) count += Charms.charmCost_41;
-            if (FiveKnights.Instance.Settings.equippedCharms[1]) count += Charms.charmCost_42;
-            if (FiveKnights.Instance.Settings.equippedCharms[2]) count += Charms.charmCost_43;
-            if (FiveKnights.Instance.Settings.equippedCharms[3]) count += Charms.charmCost_44;
-
-            pd.SetInt("charmSlotsFilled", count);
-        }
+        //    self.newOrb.GetComponent<SimpleFadeOut>().FadeOut();
+        //}
 
         private IEnumerator FindAndAddComponentToDung()
         {
@@ -1073,7 +1060,7 @@ namespace FiveKnights
             blastCollider.offset = Vector3.up;
             blastCollider.isTrigger = true;
             Log("Adding DebugColliders");
-            _blast.AddComponent<DebugColliders>();
+            //_blast.AddComponent<DebugColliders>();
             Log("Adding DamageEnemies");
             DamageEnemies damageEnemies = _blast.AddComponent<DamageEnemies>();
             damageEnemies.damageDealt = 50;
@@ -1256,16 +1243,16 @@ namespace FiveKnights
             // Insert testing methods for testing states
             nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
             {
-                nailArts.SetState(FiveKnights.Instance.Settings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
+                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
             });
             nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
             {
-                nailArts.SetState(FiveKnights.Instance.Settings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
+                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
             });
             nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
             {
-                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.Settings.equippedCharms[3]}, health: {_pd.health <= 10}");
-                nailArts.SetState(FiveKnights.Instance.Settings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
+                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance._saveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
+                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
             });
 
             Log("17");
@@ -1303,7 +1290,7 @@ namespace FiveKnights
             }
 #endif
 
-            HeroController.instance.gameObject.PrintSceneHierarchyTree();
+            HeroController.instance.gameObject.scene.Log();
 
             Log("19");
         }
@@ -1314,8 +1301,8 @@ namespace FiveKnights
             On.HeroController.TakeDamage -= On_HeroController_TakeDamage;
             On.HeroController.AddHealth -= On_HeroController_AddHealth;
             On.HeroController.MaxHealth -= On_HeroController_MaxHealth;
-            On.CharmIconList.Awake -= CharmIconList_Awake;
-            ModHooks.Instance.CharmUpdateHook -= ModHooks_CharmUpdate;
+            //On.CharmIconList.Awake -= CharmIconList_Awake;
+            ModHooks.CharmUpdateHook -= ModHooks_CharmUpdate;
         }
 
         private static void Log(object message) => Modding.Logger.Log("[Amulets] " + message);

@@ -1,8 +1,8 @@
 using System;
 using System.Collections;
 using JetBrains.Annotations;
-using ModCommon;
 using UnityEngine;
+using Vasi;
 
 namespace FiveKnights
 {

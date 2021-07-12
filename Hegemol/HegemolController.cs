@@ -7,8 +7,7 @@ using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
+using SFCore.Utils;
 using UnityEngine;
 using Bounds = UnityEngine.Bounds;
 using Object = UnityEngine.Object;
@@ -107,8 +106,8 @@ namespace FiveKnights.Hegemol
             _Msprite.transform.localScale = new Vector3(sizemod, sizemod, 1f);
             //_Msprite.AddComponent<SpriteRenderer>().sprite = FiveKnights.SPRITES["mace"];
             _mace.AddComponent<Mace>();
-            _mace.AddComponent<DebugColliders>();
-            _mace.PrintSceneHierarchyTree();
+            //_mace.AddComponent<DebugColliders>();
+            _mace.transform.Log();
             _mace.SetActive(false);
 
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;

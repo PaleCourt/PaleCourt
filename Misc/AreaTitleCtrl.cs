@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using ModCommon;
+﻿using SFCore.Utils;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 

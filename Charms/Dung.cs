@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Linq;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
 using UnityEngine;
+using SFCore.Utils;
 
 namespace FiveKnights
 {
@@ -21,7 +20,7 @@ namespace FiveKnights
         {
             Log("Dung Start");
 
-            gameObject.PrintSceneHierarchyTree();
+            gameObject.transform.Log();
 
             yield return new WaitWhile(() => this == null);
 
@@ -56,9 +55,9 @@ namespace FiveKnights
             dungPSR.material.color = Color.white;
 
             Log("Print Dung Hierarchy Tree");
-            dung.PrintSceneHierarchyTree();
+            dung.transform.Log();
             Log("Print Dung Trail Hierarchy Tree");
-            dungTrail.PrintSceneHierarchyTree();
+            dungTrail.transform.Log();
         }
 
         private void Log(object message) => Modding.Logger.Log("[Dung] " + message);

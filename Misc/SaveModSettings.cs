@@ -5,8 +5,8 @@ using FrogCore;
 
 namespace FiveKnights
 {
-    [Serializable]
-    public class SaveModSettings : ModSettings
+    //[Serializable]
+    public class SaveModSettings
     {
         public BossStatue.Completion CompletionIsma = new BossStatue.Completion
         {
@@ -88,15 +88,15 @@ namespace FiveKnights
         //public bool equippedCharm_43 = false;
         //public bool equippedCharm_44 = false;
 
-        public List<bool> newCharms = new List<bool>() { true, true, true, true };
+        public bool[] newCharms = new bool[] { true, true, true, true };
 
-        public List<bool> gotCharms = new List<bool>() { true, true, true, true };
+        public bool[] gotCharms = new bool[] { true, true, true, true };
 
-        public List<bool> equippedCharms = new List<bool>() { false, false, false, false };
+        public bool[] equippedCharms = new bool[] { false, false, false, false };
 
         public bool upgradedCharm_10 = true;
 
-        public List<int> charmCosts = new List<int>()
+        public int[] charmCosts = new int[]
         {
             Charms.charmCost_41,
             Charms.charmCost_42,
