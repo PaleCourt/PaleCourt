@@ -5,7 +5,7 @@ using FiveKnights.Hegemol;
 using FiveKnights.Isma;
 using FiveKnights.Zemer;
 using HutongGames.PlayMaker.Actions;
-using ModCommon.Util;
+using SFCore.Utils;
 using Modding;
 using UnityEngine;
 using ReflectionHelper = Modding.ReflectionHelper;
@@ -58,10 +58,9 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionIsma;
-                    var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
-                    fi.SetValue(box, true);
-                    FiveKnights.Instance.LocalSaveData.CompletionIsma = (BossStatue.Completion) box;
+                    var box = FiveKnights.Instance.LocalSaveData.CompletionIsma;
+                    box.SetAttr($"completedTier{lev}", true);
+                    FiveKnights.Instance.LocalSaveData.CompletionIsma = box;
                 }
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -131,10 +130,13 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionIsma2;
+                    var box = FiveKnights.Instance.LocalSaveData.CompletionIsma2;
+                    box.SetAttr($"completedTier{lev}", true);
+                    FiveKnights.Instance.LocalSaveData.CompletionIsma2 = box;
+                    /*var box = (object) FiveKnights.Instance.LocalSaveData.CompletionIsma2;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.LocalSaveData.CompletionIsma2 = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionIsma2 = (BossStatue.Completion) box;*/
                 }
                 PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
                 pm.SendEvent("FADE OUT INSTANT");
@@ -169,10 +171,13 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionDryya;
+                    var box = FiveKnights.Instance.LocalSaveData.CompletionDryya;
+                    box.SetAttr($"completedTier{lev}", true);
+                    FiveKnights.Instance.LocalSaveData.CompletionDryya = box;
+                    /*var box = (object) FiveKnights.Instance.LocalSaveData.CompletionDryya;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.LocalSaveData.CompletionDryya = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionDryya = (BossStatue.Completion) box;*/
                 }
                 yield return new WaitForSeconds(5.0f);
 
@@ -198,10 +203,13 @@ namespace FiveKnights.Ogrim
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.LocalSaveData.CompletionHegemol;
+                    var box = FiveKnights.Instance.LocalSaveData.CompletionHegemol;
+                    box.SetAttr($"completedTier{lev}", true);
+                    FiveKnights.Instance.LocalSaveData.CompletionHegemol = box;
+                    /*var box = (object) FiveKnights.Instance.LocalSaveData.CompletionHegemol;
                     var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
-                    FiveKnights.Instance.LocalSaveData.CompletionHegemol = (BossStatue.Completion) box;
+                    FiveKnights.Instance.LocalSaveData.CompletionHegemol = (BossStatue.Completion) box;*/
                 }
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -227,17 +235,23 @@ namespace FiveKnights.Ogrim
                     int lev = CustomWP.lev + 1;
                     if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
-                        var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer;
+                        var box = FiveKnights.Instance.LocalSaveData.CompletionZemer;
+                        box.SetAttr($"completedTier{lev}", true);
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer = box;
+                        /*var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                         fi.SetValue(box, true);
-                        FiveKnights.Instance.LocalSaveData.CompletionZemer = (BossStatue.Completion) box;
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer = (BossStatue.Completion) box;*/
                     }
                     else
                     {
-                        var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer2;
+                        var box = FiveKnights.Instance.LocalSaveData.CompletionZemer2;
+                        box.SetAttr($"completedTier{lev}", true);
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer2 = box;
+                        /*var box = (object) FiveKnights.Instance.LocalSaveData.CompletionZemer2;
                         var fi = ReflectionHelper.GetField(typeof(BossStatue.Completion), $"completedTier{lev}");
                         fi.SetValue(box, true);
-                        FiveKnights.Instance.LocalSaveData.CompletionZemer2 = (BossStatue.Completion) box;
+                        FiveKnights.Instance.LocalSaveData.CompletionZemer2 = (BossStatue.Completion) box;*/
                     }
                 }
                 var bsc = BossSceneController.Instance;

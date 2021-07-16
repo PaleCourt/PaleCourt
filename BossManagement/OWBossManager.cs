@@ -10,9 +10,8 @@ using FiveKnights.Isma;
 using FiveKnights.Zemer;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using ModCommon.Util;
-using ModCommon;
 using Modding;
+using SFCore.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
@@ -245,10 +244,10 @@ namespace FiveKnights
                 i.gameObject.layer = 11;
             }
 
-            foreach (PolygonCollider2D i in isma.transform.Find("Whip")
-                .GetComponentsInChildren<PolygonCollider2D>(true))
+            foreach (BoxCollider2D i in isma.transform.Find("Whip")
+                .GetComponentsInChildren<BoxCollider2D>(true))
             {
-                i.gameObject.layer = 11;
+                i.gameObject.layer = 17;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
             }
 

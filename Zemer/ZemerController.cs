@@ -6,8 +6,7 @@ using System.Reflection;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using ModCommon.Util;
+using SFCore.Utils;
 using UnityEngine;
 
 namespace FiveKnights.Zemer
@@ -39,6 +38,7 @@ namespace FiveKnights.Zemer
         private bool _blockedHit;
         private const float DashDelay = 0.18f;
         private const float TurnDelay = 0.05f;
+        private const float WalkSpeed = 12f;
         private bool _countering;
         private MusicPlayer _ap;
 
@@ -140,8 +140,8 @@ namespace FiveKnights.Zemer
             yield return new WaitForSeconds(0.4f);
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            _anim.Play("ZWalk");
-            _rb.velocity = new Vector2(7f, 0f);
+            _anim.Play("ZWalkRight");
+            _rb.velocity = new Vector2(WalkSpeed, 0f);
             yield return new WaitWhile(() => transform.GetPositionX() < RightX - 15f);
             _rb.velocity = Vector2.zero;
             doingIntro = false;
@@ -337,7 +337,7 @@ namespace FiveKnights.Zemer
                 _anim.speed = 1.38f;
                 _anim.Play(animName);
                 yield return null;
-                _rb.velocity = new Vector2(signX * 7f, 0f);
+                _rb.velocity = new Vector2(signX * WalkSpeed, 0f);
                 yield return new WaitWhile
                 (
                     () => 

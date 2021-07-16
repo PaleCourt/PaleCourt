@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
+using SFCore.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = Modding.Logger;
@@ -32,16 +33,11 @@ namespace FiveKnights.BossManagement
 
         public static readonly string PrevIsmScene = "Waterways_13";
 
-        private static Dictionary<string, Shader> ParticleMatToShader = new Dictionary<string, Shader>();
+        private static Dictionary<string, Shader> ParticleMatToShader = new();
         
-        public static bool IsInOverWorld
-        {
-            get => Instance != null && (Instance._currScene == DryyaScene ||
-                                        Instance._currScene == IsmaScene  ||
-                                        Instance._currScene == ZemerScene ||
-                                        Instance._currScene == HegemolScene );
-        }
-        
+        public static bool IsInOverWorld =>
+            Instance != null && (Instance._currScene is DryyaScene or IsmaScene or ZemerScene or HegemolScene );
+
         private string _currScene;
         private string _prevScene;
 
@@ -53,7 +49,7 @@ namespace FiveKnights.BossManagement
             On.GameManager.RefreshTilemapInfo += GameManagerOnRefreshTilemapInfo;
             On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
-            
+
             yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
 
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
@@ -68,12 +64,7 @@ namespace FiveKnights.BossManagement
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
-            if (_currScene == ZemerScene || _currScene == DryyaScene || 
-                _currScene == IsmaScene || _currScene == HegemolScene)
-            {
-                return "DREAM_WORLD";
-            }
-            return orig(self);
+            return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? "DREAM_WORLD" : orig(self);
         }
 
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
@@ -102,78 +93,88 @@ namespace FiveKnights.BossManagement
         private void GameManagerOnRefreshTilemapInfo(On.GameManager.orig_RefreshTilemapInfo orig, GameManager self, string targetscene)
         {
             orig(self, targetscene);
-            if (targetscene == DryyaScene || targetscene == ZemerScene || 
-                targetscene == HegemolScene || targetscene == IsmaScene)
-            {
-                self.sceneWidth = 500;
-                self.sceneHeight = 500;
-                self.tilemap.width = 500;
-                self.tilemap.height = 500;
-                FindObjectOfType<GameMap>().SetManualTilemap(0, 0, 500, 500);
-            }
+            if (targetscene != DryyaScene && targetscene != ZemerScene && targetscene != HegemolScene &&
+                targetscene != IsmaScene) return;
+            self.sceneWidth = 500;
+            self.sceneHeight = 500;
+            self.tilemap.width = 500;
+            self.tilemap.height = 500;
+            FindObjectOfType<GameMap>().SetManualTilemap(0, 0, 500, 500);
         }
 
         private void GameManagerOnEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additivegatesearch)
         {
-            if (self.sceneName == DryyaScene)
+            switch (self.sceneName)
             {
-                CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
-                    null, null, true, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == IsmaScene)
-            {
-                if (GameObject.Find("door1") != null)
+                case DryyaScene:
                 {
-                    Destroy(GameObject.Find("door1"));
+                    CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
+                        null, null, true, false, true, 
+                        GameManager.SceneLoadVisualizations.Dream);
+                    break;
                 }
-                CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
-                    null, null, true, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == ZemerScene)
-            {
-                if (GameObject.Find("door1") != null)
+                case IsmaScene:
                 {
-                    Destroy(GameObject.Find("door1"));
+                    if (GameObject.Find("door1") != null)
+                    {
+                        Destroy(GameObject.Find("door1"));
+                    }
+                    CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
+                        null, null, true, false, true, 
+                        GameManager.SceneLoadVisualizations.Dream);
+                    break;
                 }
-                CreateGateway("door1", new Vector2(165.86f, 105.92f), Vector2.zero, 
-                    null, null, true, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == HegemolScene)
-            {
-                if (GameObject.Find("door1") != null)
+                case ZemerScene:
                 {
-                    Destroy(GameObject.Find("door1"));
+                    if (GameObject.Find("door1") != null)
+                    {
+                        Destroy(GameObject.Find("door1"));
+                    }
+                    CreateGateway("door1", new Vector2(165.86f, 105.92f), Vector2.zero, 
+                        null, null, true, false, true, 
+                        GameManager.SceneLoadVisualizations.Dream);
+                    break;
                 }
-                CreateGateway("door1", new Vector2(165.86f, 105.92f), Vector2.zero, 
-                    null, null, true, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == PrevDryScene)
-            {
-                CreateGateway("door_dreamReturn", new Vector2(39.2f, 94.4f), Vector2.zero, 
-                    null, null, false, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == PrevIsmScene)
-            {
-                CreateGateway("door_dreamReturn", new Vector2(95.7f, 18.4f), Vector2.zero, 
-                    null, null, false, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == PrevZemScene)
-            {
-                CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
-                    null, null, false, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
-            }
-            else if (self.sceneName == PrevHegScene)
-            {
-                CreateGateway("door_dreamReturn", new Vector2(22f, 6.4f), Vector2.zero, 
-                    null, null, false, false, true, 
-                    GameManager.SceneLoadVisualizations.Dream);
+                case HegemolScene:
+                {
+                    if (GameObject.Find("door1") != null)
+                    {
+                        Destroy(GameObject.Find("door1"));
+                    }
+                    CreateGateway("door1", new Vector2(165.86f, 105.92f), Vector2.zero, 
+                        null, null, true, false, true, 
+                        GameManager.SceneLoadVisualizations.Dream);
+                    break;
+                }
+                default:
+                {
+                    if (self.sceneName == PrevDryScene)
+                    {
+                        CreateGateway("door_dreamReturn", new Vector2(39.2f, 94.4f), Vector2.zero, 
+                            null, null, false, false, true, 
+                            GameManager.SceneLoadVisualizations.Dream);
+                    }
+                    else if (self.sceneName == PrevIsmScene)
+                    {
+                        CreateGateway("door_dreamReturn", new Vector2(95.7f, 18.4f), Vector2.zero, 
+                            null, null, false, false, true, 
+                            GameManager.SceneLoadVisualizations.Dream);
+                    }
+                    else if (self.sceneName == PrevZemScene)
+                    {
+                        CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
+                            null, null, false, false, true, 
+                            GameManager.SceneLoadVisualizations.Dream);
+                    }
+                    else if (self.sceneName == PrevHegScene)
+                    {
+                        CreateGateway("door_dreamReturn", new Vector2(22f, 6.4f), Vector2.zero, 
+                            null, null, false, false, true, 
+                            GameManager.SceneLoadVisualizations.Dream);
+                    }
+
+                    break;
+                }
             }
 
             orig(self, additivegatesearch);
@@ -230,11 +231,11 @@ namespace FiveKnights.BossManagement
                 }
                 
                 StartCoroutine(LoadZemerBundle());
-                foreach (var i in FindObjectsOfType<GameObject>()
+                /*foreach (var i in FindObjectsOfType<GameObject>()
                     .Where(x => x.name == "Dream Dialogue"))
                 {
                     Destroy(i);
-                }
+                }*/
                 CreateDreamGateway("Dream Enter", "door1", 
                     new Vector2(25.1f, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, ZemerScene, PrevZemScene);
@@ -333,57 +334,55 @@ namespace FiveKnights.BossManagement
 
             StartCoroutine(ShaderFixer());
             
-            if (_currScene == DryyaScene)
+            switch (_currScene)
             {
-                Log("Trying to enter fight dryya");
-                CustomWP.boss = CustomWP.Boss.Dryya;
-                PlayerData.instance.dreamReturnScene = arg0.name;
-                FixBlur();
-                FixCameraDryya();
-                AddBattleGate(422.5f,new Vector3(421.91f, 99.5f));
-                DreamEntry();
-                GameManager.instance.gameObject.AddComponent<OWBossManager>();
-            }
-            else if (_currScene == IsmaScene)
-            {
-                Log("Trying to enter fight isma");
+                case DryyaScene:
+                    Log("Trying to enter fight dryya");
+                    CustomWP.boss = CustomWP.Boss.Dryya;
+                    PlayerData.instance.dreamReturnScene = arg0.name;
+                    FixBlur();
+                    FixCameraDryya();
+                    AddBattleGate(422.5f,new Vector3(421.91f, 99.5f));
+                    DreamEntry();
+                    GameManager.instance.gameObject.AddComponent<OWBossManager>();
+                    break;
+                case IsmaScene:
+                    Log("Trying to enter fight isma");
 
-                CustomWP.boss = CustomWP.Boss.Isma;
-                PlayerData.instance.dreamReturnScene = arg0.name;
-                FixBlur();
-                FixCameraIsma();
-                AddBattleGate(110f,new Vector3(104.5f, 8.5f));
-                DreamEntry();
-                FixIsmaSprites();
-                // Falling off pit doesn't send you back anymore so this is here to patch that
-                FixPitDeath();
-                GameManager.instance.gameObject.AddComponent<OWBossManager>();
-            }
-            else if (_currScene == ZemerScene)
-            {
-                Log("Trying to enter fight zemer");
-                CustomWP.boss = CustomWP.Boss.Ze;
-                PlayerData.instance.dreamReturnScene = PrevZemScene;
-                FixBlur();
-                FixZemerArena();
-                AddBattleGate(243f, new Vector2(238.4f, 107f));
-                DreamEntry();
-                GameManager.instance.gameObject.AddComponent<OWBossManager>();
-            }
-            else if (_currScene == HegemolScene)
-            {
-                Log("Trying to enter fight hegemol");
-                CustomWP.boss = CustomWP.Boss.Hegemol;
-                PlayerData.instance.dreamReturnScene = PrevHegScene;
-                FixBlur();
-                FixHegemolArena();
-                AddBattleGate(432f, new Vector2(419.48f, 156.8f));
-                DreamEntry();
-                GameManager.instance.gameObject.AddComponent<OWBossManager>();
-            }
-            else
-            {
-                ArenaBundleManage();
+                    CustomWP.boss = CustomWP.Boss.Isma;
+                    PlayerData.instance.dreamReturnScene = arg0.name;
+                    FixBlur();
+                    FixCameraIsma();
+                    AddBattleGate(110f,new Vector3(104.5f, 8.5f));
+                    DreamEntry();
+                    FixIsmaSprites();
+                    // Falling off pit doesn't send you back anymore so this is here to patch that
+                    FixPitDeath();
+                    GameManager.instance.gameObject.AddComponent<OWBossManager>();
+                    break;
+                case ZemerScene:
+                    Log("Trying to enter fight zemer");
+                    CustomWP.boss = CustomWP.Boss.Ze;
+                    PlayerData.instance.dreamReturnScene = PrevZemScene;
+                    FixBlur();
+                    FixZemerArena();
+                    AddBattleGate(243f, new Vector2(238.4f, 107f));
+                    DreamEntry();
+                    GameManager.instance.gameObject.AddComponent<OWBossManager>();
+                    break;
+                case HegemolScene:
+                    Log("Trying to enter fight hegemol");
+                    CustomWP.boss = CustomWP.Boss.Hegemol;
+                    PlayerData.instance.dreamReturnScene = PrevHegScene;
+                    FixBlur();
+                    FixHegemolArena();
+                    AddBattleGate(432f, new Vector2(419.48f, 156.8f));
+                    DreamEntry();
+                    GameManager.instance.gameObject.AddComponent<OWBossManager>();
+                    break;
+                default:
+                    ArenaBundleManage();
+                    break;
             }
         }
 
@@ -766,36 +765,34 @@ namespace FiveKnights.BossManagement
                                         Vector2 particSize, Vector2 particOff, string toScene, string returnScene)
         {
             Log("Creating Dream Gateway");
-            GameObject dreamEnter = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal"]);
+            GameObject dreamEnter = Instantiate(FiveKnights.preloadedGO["DPortal"]);
             dreamEnter.name = gateName;
             dreamEnter.SetActive(true);
             dreamEnter.transform.position = pos;
             dreamEnter.transform.localScale = Vector3.one;
             dreamEnter.transform.eulerAngles = Vector3.zero;
-
-            dreamEnter.GetComponent<BoxCollider2D>().size = hitSize;
-            dreamEnter.GetComponent<BoxCollider2D>().offset = Vector2.zero;
-
+                
+            var bc = dreamEnter.GetComponent<BoxCollider2D>();
+            bc.size = hitSize;
+            bc.offset = Vector2.zero;
             foreach (var pfsm in dreamEnter.GetComponents<PlayMakerFSM>())
             {
-                if (pfsm.FsmName == "Control")
-                {
-                    pfsm.FsmVariables.GetFsmString("Return Scene").Value = returnScene;
-                    pfsm.FsmVariables.GetFsmString("To Scene").Value = toScene;
-                    pfsm.GetAction<BeginSceneTransition>("Change Scene", 4).entryGateName = toGate;
-                }
+                if (pfsm.FsmName != "Control") continue;
+                pfsm.FsmVariables.GetFsmString("Return Scene").Value = returnScene;
+                pfsm.FsmVariables.GetFsmString("To Scene").Value = toScene;
+                pfsm.GetAction<BeginSceneTransition>("Change Scene", 4).entryGateName = toGate;
             }
 
             var pt = dreamEnter.transform.Find("Attack Pt");
             pt.position += new Vector3(particOff.x, particOff.y);
 
-            GameObject dreamPT = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal2"]);
-            dreamPT.SetActive(true);
-            dreamPT.transform.position = new Vector3(pos.x + particOff.x, pos.y + particOff.y, -0.002f);
-            dreamPT.transform.localScale = Vector3.one;
-            dreamPT.transform.eulerAngles = Vector3.zero;
+            GameObject dreamPt = Instantiate(FiveKnights.preloadedGO["DPortal2"]);
+            dreamPt.SetActive(true);
+            dreamPt.transform.position = new Vector3(pos.x + particOff.x, pos.y + particOff.y, -0.002f);
+            dreamPt.transform.localScale = Vector3.one;
+            dreamPt.transform.eulerAngles = Vector3.zero;
 
-            var shape = dreamPT.GetComponent<ParticleSystem>().shape;
+            var shape = dreamPt.GetComponent<ParticleSystem>().shape;
             shape.scale = new Vector3(particSize.x, particSize.y, 0.001f);
 
             Log("Done Creating Dream Gateway");
@@ -803,7 +800,11 @@ namespace FiveKnights.BossManagement
 
         private void OnDestroy()
         {
-            Log("Ending");
+            USceneManager.activeSceneChanged -= USceneManagerOnactiveSceneChanged;
+            On.GameManager.EnterHero -= GameManagerOnEnterHero;
+            On.GameManager.RefreshTilemapInfo -= GameManagerOnRefreshTilemapInfo;
+            On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
+            On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;
         }
 
         private void Log(object o)

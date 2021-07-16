@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
 using UnityEngine;
 using Random = UnityEngine.Random;
 

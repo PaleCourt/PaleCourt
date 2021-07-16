@@ -1,5 +1,5 @@
 ﻿using System.Collections;
-using ModCommon;
+using FiveKnights.Misc;
 using TMPro;
 using UnityEngine;
 
