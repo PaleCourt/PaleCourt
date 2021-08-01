@@ -13,7 +13,7 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 110;//1650;
+        private int _hp = 1650;
 
         private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
         private PlayMakerFSM _mageLord;

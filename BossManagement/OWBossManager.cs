@@ -11,10 +11,10 @@ using FiveKnights.Zemer;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Modding;
-using SFCore.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
+using Vasi;
 using Logger = On.InControl.Logger;
 
 namespace FiveKnights
@@ -52,11 +52,13 @@ namespace FiveKnights
             {
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 CreateIsma();
-
+                GameObject ogrim = GameObject.Find("Ogrim");
+                Log($"Found ogrim? {ogrim != null}");
                 Log("Made arena");
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110f);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+                ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
                 PlayMusic(FiveKnights.Clips["LoneIsmaMusic"]);
@@ -128,19 +130,26 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze)
             {
+                ZemerController.WaitForTChild = true;
                 ZemerController zc = CreateZemer();
+                GameObject zem = zc.gameObject;
+                zem.SetActive(true);
                 GameObject child = Instantiate(FiveKnights.preloadedGO["TChild"]);
                 var tChild = child.AddComponent<TChildCtrl>();
                 child.SetActive(true);
 
+                yield return null;
+                zem.GetComponent<HealthManager>().IsInvincible = true;
+                
                 yield return new WaitWhile(() => !tChild.helpZemer);
-                GameObject zem = zc.gameObject;
-                zem.SetActive(true);
+                ZemerController.WaitForTChild = false;
+                zem.GetComponent<HealthManager>().IsInvincible = false;
+                /*GameObject zem = zc.gameObject;
+                zem.SetActive(true);*/
 
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
-                Log("? idk dude");
                 WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene);
                 Destroy(this);
             }
@@ -154,9 +163,10 @@ namespace FiveKnights
             {
                 dreambye.GetComponent<ParticleSystem>().Play();
             }
-
             var deathcomp = (EnemyDeathEffects) _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            var corpsePrefab = deathcomp.GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+            
+            var corpsePrefab = Mirror.GetField<EnemyDeathEffects, GameObject>(deathcomp, "corpsePrefab");
+            //deathcomp.GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
             GameObject transDevice = Instantiate(corpsePrefab);
             transDevice.SetActive(true);
             var fsm = transDevice.LocateMyFSM("Control");
@@ -165,9 +175,9 @@ namespace FiveKnights
             fsm.GetAction<Wait>("Fade Out", 4).time.Value += 2f;
             PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-            fsm.RemoveAction("Fade Out", 0);
+            fsm.GetState("Fade Out").RemoveAction(0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
-            fsm.ChangeTransition("Outro Msg 1b", "CONVOFINISH", "New Scene");
+            fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;
             fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
@@ -185,12 +195,14 @@ namespace FiveKnights
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
-            channelInfo.SetAttr("clip", clip);
+            Mirror.SetField(channelInfo, "clip", clip);
+            //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
-            musicCue.SetAttr("channelInfos", channelInfos);
+            Mirror.SetField(musicCue, "channelInfos", channelInfos);
+            //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);

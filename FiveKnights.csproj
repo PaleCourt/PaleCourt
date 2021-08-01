@@ -38,6 +38,7 @@
     <Compile Include="BossManagement\OWArenaFinder.cs" />
     <Compile Include="BossManagement\OWBossManager.cs" />
     <Compile Include="Dryya\DryyaCorpse.cs" />
+    <Compile Include="Isma\OgrimBG.cs" />
     <Compile Include="Isma\ShadeOnlyPass.cs" />
     <Compile Include="Misc\ABManager.cs" />
     <Compile Include="Misc\AreaTitleCtrl.cs" />
@@ -101,18 +102,17 @@
     <EmbeddedResource Include="StreamingAssets\soundbund" />
     <EmbeddedResource Include="StreamingAssets\miscbund" />
     <EmbeddedResource Include="StreamingAssets\ggArenaZemer" />
-    <EmbeddedResource Include="StreamingAssets\owArenaZemer" />
+    <EmbeddedResource Include="StreamingAssets\owarenazemer" />
     <EmbeddedResource Include="StreamingAssets\ggArenaDryya" />
-    <EmbeddedResource Include="StreamingAssets\owArenaDryya" />
+    <EmbeddedResource Include="StreamingAssets\owarenadryya" />
     <EmbeddedResource Include="StreamingAssets\ggArenaDep" />
-    <EmbeddedResource Include="StreamingAssets\owArenaDep" />
+    <EmbeddedResource Include="StreamingAssets\owarenadep" />
     <EmbeddedResource Include="StreamingAssets\ggArenaIsma" />
     <EmbeddedResource Include="StreamingAssets\ggArenaHegemol" />
-    <EmbeddedResource Include="StreamingAssets\owArenaHegemol" />
-    <EmbeddedResource Include="StreamingAssets\owArenaIsma" />
+    <EmbeddedResource Include="StreamingAssets\owarenahegemol" />
+    <EmbeddedResource Include="StreamingAssets\owarenaisma" />
     <EmbeddedResource Include="StreamingAssets\ggArenaHub" />
-    <EmbeddedResource Include="StreamingAssets\owDung" />
-    <EmbeddedResource Include="StreamingAssets\rewardRoom" />
+    <EmbeddedResource Include="StreamingAssets\rewardroom" />
     <EmbeddedResource Include="StreamingAssets\workShopEntranceDep" />
     <EmbeddedResource Include="StreamingAssets\workShopEntrance" />
   </ItemGroup>

@@ -151,7 +151,7 @@ namespace FiveKnights
             #endregion
         }
 
-        public override string GetVersion() => "1.0.0.0";
+        public override string GetVersion() => "0.5.0.0";
 
         public override List<(string, string)> GetPreloadNames()
         {

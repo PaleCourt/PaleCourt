@@ -2,9 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
-using SFCore.Utils;
+using HutongGames.PlayMaker;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = Modding.Logger;
@@ -55,7 +54,7 @@ namespace FiveKnights.BossManagement
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
             {
                 EntryGateName = "left1",
-                SceneName = PrevIsmScene,
+                SceneName = PrevZemScene,
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
             });
@@ -69,6 +68,12 @@ namespace FiveKnights.BossManagement
 
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
         {
+            if (_currScene == ZemerScene && self.name == "CLA2")
+            {
+                Log($"Cancelled @ pos {HeroController.instance.transform.position.x}");
+                HeroController.instance.superDash.SendEvent("SLOPE CANCEL");
+            }
+
             if (_currScene == DryyaScene)
             {
                 self.cameraYMin = 103f;
@@ -352,7 +357,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Isma;
                     PlayerData.instance.dreamReturnScene = arg0.name;
                     FixBlur();
-                    FixCameraIsma();
+                    //FixCameraIsma();
                     AddBattleGate(110f,new Vector3(104.5f, 8.5f));
                     DreamEntry();
                     FixIsmaSprites();
@@ -365,7 +370,6 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Ze;
                     PlayerData.instance.dreamReturnScene = PrevZemScene;
                     FixBlur();
-                    FixZemerArena();
                     AddBattleGate(243f, new Vector2(238.4f, 107f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
@@ -396,6 +400,7 @@ namespace FiveKnights.BossManagement
                 de.transform.position = i.transform.position;
                 Destroy(i);
                 de.SetActive(true);
+                de.name = "Dream Entry";
                 HeroController.instance.FaceRight();
             }
         }
@@ -440,6 +445,10 @@ namespace FiveKnights.BossManagement
                 Log("pref 2 is not null");
                 o.GetComponent<SceneManager>().borderPrefab = pref;
             }
+            Log($"Lantern needed? {o.GetComponent<SceneManager>().noLantern}");
+            Log($"Darkness needed? {o.GetComponent<SceneManager>().darknessLevel}");
+            o.GetComponent<SceneManager>().noLantern = true;
+            o.GetComponent<SceneManager>().darknessLevel = 0;
             o.SetActive(true);
                 
             Material[] blurPlaneMaterials = new Material[1];
@@ -484,7 +493,7 @@ namespace FiveKnights.BossManagement
         }
 
         private void CreateCameraLock(string n, Vector2 pos, Vector2 scl, Vector2 cSize, Vector2 cOff,
-                                      Vector2 min, Vector2 max)
+                                      Vector2 min, Vector2 max, bool preventLookDown=false)
         {
             GameObject parentlock = new GameObject(n);
             BoxCollider2D lockCol = parentlock.AddComponent<BoxCollider2D>();
@@ -497,27 +506,9 @@ namespace FiveKnights.BossManagement
             cla.cameraXMin = min.x;
             cla.cameraXMax = max.x;
             cla.cameraYMin = cla.cameraYMax = min.y;
+            cla.preventLookDown = preventLookDown;
             parentlock.SetActive(true);
             lockCol.enabled = cla.enabled = true;
-        }
-        
-        private void FixZemerArena()
-        {
-            foreach (var i in FindObjectsOfType<CameraLockArea>())
-            {
-                Destroy(i);
-            }
-            CreateCameraLock("CLA1", new Vector2(197.4f, 113.8f),new Vector2(3.41f, 1f),
-                new Vector2(27.399f, 22.142f), new Vector2(-1.71f, 1.216f), 
-                new Vector2(163f, 110f), new Vector2(225f, 110f));
-
-            CreateCameraLock("CLA2", new Vector2(256.2f, 113.8f),new Vector2(3.41f, 1f),
-                new Vector2(11.331f, 22.14f), new Vector2(0.389f, 1.216f), 
-                new Vector2(253f, 110f), new Vector2(262f, 110f));
-
-            GameObject floor = GameObject.Find("plattaform");
-            floor.layer = (int) GlobalEnums.PhysLayers.TERRAIN;
-            Log("Fixed floor");
         }
 
         private void FixCameraIsma()
@@ -528,11 +519,11 @@ namespace FiveKnights.BossManagement
             }
             CreateCameraLock("CLA1", new Vector2(50.24f,9.5f),new Vector2(108.83f, 25f),
                 new Vector2(1f, 1f), new Vector2(0f, 0f), 
-                new Vector2(0f, 12f), new Vector2(88.8f, 12f));
+                new Vector2(0f, 12f), new Vector2(88.8f, 12f), true);
 
             CreateCameraLock("CLA2", new Vector2(122.3f, 9.5f),new Vector2(35.6f, 25f),
                 new Vector2(1f, 1f), new Vector2(0f, 0f), 
-                new Vector2(119f, 12f), new Vector2(125f, 12f));
+                new Vector2(119f, 12f), new Vector2(125f, 12f), true);
                 
             
             Log("Fixed floor");
@@ -589,11 +580,11 @@ namespace FiveKnights.BossManagement
             }
             CreateCameraLock("CLA1", new Vector2(325f, 156.1f),new Vector2(5f, 1.5f),
                 new Vector2(35.469f, 27.22f), new Vector2(0.707f, 2.554f), 
-                new Vector2(263, 160f), new Vector2(402f, 160f));
+                new Vector2(263, 160f), new Vector2(402f, 160f), true);
 
             CreateCameraLock("CLA2", new Vector2(437.5f, 174f),new Vector2(5f, 1f),
                 new Vector2(10f, 45f), new Vector2(1f,1.4f), 
-                new Vector2(434.7f, 160f), new Vector2(442.7f, 160f));
+                new Vector2(434.7f, 160f), new Vector2(442.7f, 160f), true);
             
             Log("Fixed floor");
         }

@@ -41,6 +41,7 @@ namespace FiveKnights.Zemer
         private const float WalkSpeed = 12f;
         private bool _countering;
         private MusicPlayer _ap;
+        public static bool WaitForTChild = false;
 
         private readonly string[] _dnailDial =
         {
@@ -99,9 +100,12 @@ namespace FiveKnights.Zemer
             Destroy(GameObject.Find("World Edge v2"));
             if (!WDController.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
             else yield return new WaitForSeconds(1.7f);
-            StartCoroutine(MusicControl());
+            //StartCoroutine(MusicControl());
             gameObject.SetActive(true);
-            gameObject.transform.position = new Vector2(RightX - 10f, GroundY + 0.5f);
+            gameObject.transform.position = OWArenaFinder.IsInOverWorld ? 
+                    new Vector2(254f, GroundY + 0.5f) : 
+                    new Vector2(RightX - 10f, GroundY + 0.5f);
+            
             FaceHero();
             AssignFields();
             _bc.enabled = false;
@@ -112,10 +116,13 @@ namespace FiveKnights.Zemer
             _sr.enabled = true;
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            gameObject.transform.position = new Vector2(RightX - 10f, GroundY);
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            gameObject.transform.position = new Vector2(OWArenaFinder.IsInOverWorld ? 254 : RightX - 10f, GroundY);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
             _anim.enabled = false;
             yield return new WaitForSeconds(0.3f);
+            
+            yield return new WaitWhile(() => WaitForTChild);
+            StartCoroutine(MusicControl());
             
             GameObject area = null;
             foreach (GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
@@ -157,7 +164,6 @@ namespace FiveKnights.Zemer
                 OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"]);
                 yield return new WaitForSecondsRealtime(7.04f);
                 OWBossManager.Instance.PlayMusic(null);
-                Log("Start p2");
                 OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"]);
             }
             else
@@ -165,7 +171,6 @@ namespace FiveKnights.Zemer
                 WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"], 1f);
                 yield return new WaitForSecondsRealtime(7.04f);
                 WDController.Instance.PlayMusic(null, 1f);
-                Log("Start p2");
                 WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"], 1f);
             }
         }
@@ -457,13 +462,11 @@ namespace FiveKnights.Zemer
         // Put these IEnumerators outside so that they can be started in OnBlockedHit
         private IEnumerator Countered()
         {
-            _anim.Play("ZCAtt");
             _hm.IsInvincible = false;
             On.HealthManager.Hit -= OnBlockedHit;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
-            PlayAudioClip("Slash", 0.85f, 1.15f);
-            yield return new WaitWhile(() => _anim.IsPlaying());
-
+            yield return _anim.PlayToEndWithActions("ZCAtt",
+                (3, () => PlayAudioClip("Slash", 0.85f, 1.15f))
+            );
             _anim.Play("ZIdle");
             yield return new WaitForSeconds(0.25f);
             _countering = false;
