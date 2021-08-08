@@ -520,10 +520,10 @@ namespace FiveKnights
                 }
                 journalHelper.playerData.Hidden = true;
             }
-            _saveSettings.IsmaEntryData = journalentries["Isma"].playerData;
-            _saveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
-            _saveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
-            _saveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
+            //_saveSettings.IsmaEntryData = journalentries["Isma"].playerData;
+            //_saveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
+            //_saveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
+            //_saveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
         }
 
         private object SetVariableHook(Type t, string key, object obj)

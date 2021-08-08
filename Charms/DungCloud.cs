@@ -48,6 +48,6 @@ namespace FiveKnights
             GameObject pt = GameObject.Find("Pt Normal");
         }
 
-        private void Log(object message) => Modding.Logger.Log("[Dung Cloud] " + message);
+        private void Log(object message) => Modding.Logger.Log("[FiveKnights][Dung Cloud] " + message);
     }
 }

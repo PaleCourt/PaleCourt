@@ -15,7 +15,8 @@
     <HollowKnightRefs>E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Copy Condition="Exists('$(HollowKnightRefs)')" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/" />
+    <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />
+    <Copy Condition="Exists('$(HollowKnightRefs)')" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
   </Target>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -289,13 +290,13 @@
       <HintPath>$(HollowKnightRefs)/UnityEngine.XRModule.dll</HintPath>
     </Reference>
     <Reference Include="Vasi">
-      <HintPath>$(HollowKnightRefs)/Mods/Vasi.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/Vasi/Vasi.dll</HintPath>
     </Reference>
     <Reference Include="SFCore">
-      <HintPath>$(HollowKnightRefs)/Mods/SFCore.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/SFCore/SFCore.dll</HintPath>
     </Reference>
     <Reference Include="FrogCore">
-      <HintPath>$(HollowKnightRefs)/Mods/FrogCore.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Reflection;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -136,7 +137,7 @@ namespace FiveKnights
             _knightBallAnim = _knightBall.GetComponent<tk2dSpriteAnimator>();
             _hcAnim = self.GetComponent<tk2dSpriteAnimator>();
 
-            CloneAndParentVoidAttacks();
+            CloneAndParentVoidAttacks(self);
 
             _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), self.transform);
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
@@ -461,6 +462,8 @@ namespace FiveKnights
             foreach (string child in new[] { "Cyclone Slash", "Dash Slash", "Great Slash" })
             {
                 attacks.FindGameObjectInChildren(child).GetComponent<tk2dSprite>().color = color;
+                foreach (var item in attacks.FindGameObjectInChildren(child).GetComponentsInChildren<tk2dSprite>())
+                    item.color = color;
             }
         }
 
@@ -588,6 +591,18 @@ namespace FiveKnights
 
         private int _shadeSlashNum = 1;
 
+        private static void AddFsm(GameObject o, HeroController _hc)
+        {
+            // for hitbox viewing experience
+            var tempFsm = o.AddComponent<PlayMakerFSM>();
+            var fsm = _hc.gameObject.Find("AltSlash").LocateMyFSM("damages_enemy");
+            foreach (var fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic |
+                                                              BindingFlags.Public))
+            {
+                fi.SetValue(tempFsm, fi.GetValue(fsm));
+            }
+        }
+
         private void TendrilAttack()
         {
             var rb = _hc.GetComponent<Rigidbody2D>();
@@ -616,18 +631,25 @@ namespace FiveKnights
                 GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), _knightBall.transform);
                 shadeSlash.layer = 17;
                 shadeSlash.tag = "Nail Attack";
+                shadeSlash.transform.localPosition = new Vector3(0f, 0f, 0f);
+                shadeSlash.transform.localScale = new Vector3(1f, 1f, 1f);
+                shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
 
+                AddFsm(shadeSlash, _hc);
+
                 slashPoly.points = new[]
                 {
-                    new Vector2(0.0f, -1.25f),
-                    new Vector2(2.0f, -1.25f),
-                    new Vector2(2.0f, 1.0f),
-                    new Vector2(0.0f, 1.0f),
+                    new Vector2(0.0f, -2.0f),
+                    new Vector2(3.5f, -2.0f),
+                    new Vector2(3.5f, 0.0f),
+                    new Vector2(3.0f, 1.0f),
+                    new Vector2(0.0f, 2.0f),
+                    new Vector2(-3f, 0.0f), // to have parts of the player covered with a hitbox
                 };
 
-                slashPoly.offset = new Vector2(1.0f, 0.0f);
+                slashPoly.offset = new Vector2(0.0f, 0.0f);
                 slashPoly.isTrigger = true;
 
                 var damageEnemies = shadeSlash.AddComponent<DamageEnemies>();
@@ -637,6 +659,8 @@ namespace FiveKnights
                 damageEnemies.damageDealt = 75;
 
                 shadeSlash.AddComponent<ShadeSlash>().audioPlayer = _audioPlayerActor;
+
+                shadeSlash.SetActive(true);
 
                 yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
 
@@ -687,7 +711,9 @@ namespace FiveKnights
                 GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), _hc.transform);
                 shadeSlash.layer = 17;
                 shadeSlash.tag = "Nail Attack";
-                shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -1.0f, 0f);
+                shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
+                shadeSlash.transform.localScale = new Vector3(2, 2, 2);
+                shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
                 shadeSlash.AddComponent<MeshRenderer>();
@@ -695,24 +721,36 @@ namespace FiveKnights
                 var slashSprite = shadeSlash.AddComponent<tk2dSprite>();
                 var slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
 
+                AddFsm(shadeSlash, _hc);
+
                 if (up)
                     slashPoly.points = new[]
                     {
-                        new Vector2(-1.25f, 0.0f),
-                        new Vector2(-1.25f, 2.0f),
-                        new Vector2(1.0f, 2.0f),
-                        new Vector2(1.0f, 0.0f),
+                        new Vector2(-1f, 0f),
+                        new Vector2(-0.75f, 1.5f),
+                        new Vector2(-0.5f, 2.0f),
+                        new Vector2(0f, 2.25f),
+                        new Vector2(0.5f, 2.0f),
+                        new Vector2(0.75f, 1.5f),
+                        new Vector2(1f, 0f),
+                        new Vector2(0f, 0.5f)
                     };
                 else
                     slashPoly.points = new[]
                     {
-                        new Vector2(-1.25f, 0.0f),
-                        new Vector2(-1.25f, -2.0f),
-                        new Vector2(1.0f, -2.0f),
-                        new Vector2(1.0f, 0.0f),
+                        new Vector2(-1f, -0f),
+                        new Vector2(-1.25f, -0.5f),
+                        new Vector2(-0.875f, -1.5f),
+                        new Vector2(-0.5f, -1.9f),
+                        new Vector2(0f, -2.2f),
+                        new Vector2(0.5f, -2.0f),
+                        new Vector2(0.875f, -1.5f),
+                        new Vector2(1.25f, -0.5f),
+                        new Vector2(1f, -0f),
+                        new Vector2(0f, 0.5f)
                     };
 
-                slashPoly.offset = new Vector2(0.0f, up ? 1.0f : -1.0f);
+                slashPoly.offset = new Vector2(0.0f, up ? -1f : 0.75f);
                 slashPoly.isTrigger = true;
 
                 slashSprite.Collection = _hc.GetComponent<tk2dSprite>().Collection;
@@ -726,12 +764,15 @@ namespace FiveKnights
 
                 shadeSlash.AddComponent<ShadeSlash>().audioPlayer = _audioPlayerActor;
 
-                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect" + (_pd.equippedCharm_13 && up ? " M" : "")));
+                shadeSlash.SetActive(true);
+
+                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect" + (_pd.GetBool("equippedCharm_13") ? " M" : "")));
 
                 Destroy(shadeSlash);
 
-                if (!up)
-                    yield return new WaitWhile(() => _hcAnim.Playing);
+                //if (!up)
+                //    yield return new WaitWhile(() => _hcAnim.Playing);
+                yield return new WaitWhile(() => _hcAnim.Playing);
 
                 _hc.StartAnimationControl();
                 _hc.RegainControl();
@@ -762,6 +803,8 @@ namespace FiveKnights
                 shadeSlash.layer = 17;
                 shadeSlash.tag = "Nail Attack";
                 shadeSlash.transform.localPosition = new Vector3(0f, 1.0f, 0f);
+                shadeSlash.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
                 shadeSlash.AddComponent<MeshRenderer>();
@@ -769,12 +812,15 @@ namespace FiveKnights
                 var slashSprite = shadeSlash.AddComponent<tk2dSprite>();
                 var slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
 
+                AddFsm(shadeSlash, _hc);
+
                 slashPoly.points = new[]
                 {
-                    new Vector2(-1.25f, 0.0f),
-                    new Vector2(-1.25f, 2.0f),
-                    new Vector2(1.0f, 2.0f),
-                    new Vector2(1.0f, 0.0f),
+                    new Vector2(-1.5f, 2.0f),
+                    new Vector2(1.0f, 1.5f),
+                    new Vector2(3.0f, -1.0f),
+                    new Vector2(1.0f, -2.0f),
+                    new Vector2(-1.5f, -1.0f),
                 };
 
                 slashPoly.offset = new Vector2(1.0f, 0.0f);
@@ -790,6 +836,8 @@ namespace FiveKnights
                 damageEnemies.damageDealt = 75;
 
                 shadeSlash.AddComponent<ShadeSlash>().audioPlayer = _audioPlayerActor;
+
+                shadeSlash.SetActive(true);
 
                 yield return new WaitForSeconds(slashAnim.PlayAnimGetTime("Slash Effect"));
 
@@ -1125,24 +1173,20 @@ namespace FiveKnights
             AudioPlayerOneShotSingle(GetAudioClip(), pitchMin, pitchMax, time, volume);
         }
 
-        private void CloneAndParentVoidAttacks()
+        private void CloneAndParentVoidAttacks(HeroController self)
         {
-            Log("1");
-            GameObject attacks = HeroController.instance.gameObject.FindGameObjectInChildren("Attacks");
+            GameObject attacks = self.gameObject.FindGameObjectInChildren("Attacks");
 
-            Log("2");
-            Shader shader = HeroController.instance.GetComponent<tk2dSprite>().Collection.spriteDefinitions[0].material.shader;
+            Shader shader = self.GetComponent<tk2dSprite>().Collection.spriteDefinitions[0].material.shader;
 
-            Log("3");
             GameObject collectionPrefab = FiveKnights.preloadedGO["Bloom Sprite Prefab"];
             tk2dSpriteCollection collection = collectionPrefab.GetComponent<tk2dSpriteCollection>();
             GameObject animationPrefab = FiveKnights.preloadedGO["Bloom Anim Prefab"];
             tk2dSpriteAnimation animation = animationPrefab.GetComponent<tk2dSpriteAnimation>();
 
-            Log("7");
             // Knight sprites and animations
-            var heroSprite = HeroController.instance.GetComponent<tk2dSprite>();
-            var knightAnim = HeroController.instance.GetComponent<tk2dSpriteAnimator>();
+            var heroSprite = self.GetComponent<tk2dSprite>();
+            var knightAnim = self.GetComponent<tk2dSpriteAnimator>();
             tk2dSpriteCollectionData collectionData = heroSprite.Collection;
             List<tk2dSpriteDefinition> knightSpriteDefs = collectionData.spriteDefinitions.ToList();
             foreach (tk2dSpriteDefinition def in collection.spriteCollection.spriteDefinitions)
@@ -1171,17 +1215,14 @@ namespace FiveKnights
             greatSlashVoid.GetComponent<tk2dSpriteAnimator>().DefaultClipId = knightAnim.GetClipIdByName("Great Slash Effect Void");
 
 
-            Log("8");
             // Nail Arts FSM
-            PlayMakerFSM nailArts = HeroController.instance.gameObject.LocateMyFSM("Nail Arts");
+            PlayMakerFSM nailArts = self.gameObject.LocateMyFSM("Nail Arts");
 
-            Log("9");
             // Create states to test for activated Abyssal Bloom
             nailArts.CreateState("Bloom Activated CSlash?");
             nailArts.CreateState("Bloom Activated DSlash?");
             nailArts.CreateState("Bloom Activated GSlash?");
 
-            Log("10");
             // Clone Cyclone Slash states
             nailArts.CopyState("Cyclone Start", "Cyclone Start Void");
             nailArts.CopyState("Hover Start", "Hover Start Void");
@@ -1191,19 +1232,16 @@ namespace FiveKnights
             nailArts.CopyState("Cyclone Extend", "Cyclone Extend Void");
             nailArts.CopyState("Cyclone End", "Cyclone End Void");
 
-            Log("11");
             // Clone Dash Slash states
             nailArts.CopyState("Dash Slash", "Dash Slash Void");
             nailArts.CopyState("DSlash Move End", "DSlash Move End Void");
             nailArts.CopyState("D Slash End", "D Slash End Void");
 
-            Log("12");
             // Clone Great Slash states
             nailArts.CopyState("G Slash", "G Slash Void");
             nailArts.CopyState("Stop Move", "Stop Move Void");
             nailArts.CopyState("G Slash End", "G Slash End Void");
 
-            Log("13");
             // Change transitions for Cyclone Slash Void
             nailArts.ChangeTransition("Flash", "FINISHED", "Bloom Activated CSlash?");
             nailArts.ChangeTransition("Cyclone Start Void", "FINISHED", "Activate Slash Void");
@@ -1216,21 +1254,18 @@ namespace FiveKnights
             nailArts.ChangeTransition("Cyclone Extend Void", "END", "Cyclone End Void");
             nailArts.ChangeTransition("Cyclone Extend Void", "WAIT", "Cyclone Spin Void");
 
-            Log("14");
             // Change transitions for Dash Slash Void
             nailArts.ChangeTransition("Left 2", "FINISHED", "Bloom Activated DSlash?");
             nailArts.ChangeTransition("Right 2", "FINISHED", "Bloom Activated DSlash?");
             nailArts.ChangeTransition("Dash Slash Void", "FINISHED", "DSlash Move End Void");
             nailArts.ChangeTransition("DSlash Move End Void", "FINISHED", "D Slash End Void");
 
-            Log("15");
             // Change transitions for Great Slash Void
             nailArts.ChangeTransition("Left", "FINISHED", "Bloom Activated GSlash?");
             nailArts.ChangeTransition("Right", "FINISHED", "Bloom Activated GSlash?");
             nailArts.ChangeTransition("G Slash Void", "FINISHED", "Stop Move Void");
             nailArts.ChangeTransition("Stop Move Void", "FINISHED", "G Slash End Void");
 
-            Log("16");
             // Change Knight animation clips
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Cyclone Start Void").clipName = "NA Cyclone Start Void";
             nailArts.GetAction<Tk2dPlayAnimation>("Cyclone Spin Void").clipName = "NA Cyclone Void";
@@ -1239,7 +1274,6 @@ namespace FiveKnights
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Dash Slash Void").clipName = "NA Dash Slash Void";
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("G Slash Void").clipName = "NA Big Slash Void";
 
-            Log("16a");
             // Insert testing methods for testing states
             nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
             {
@@ -1255,7 +1289,6 @@ namespace FiveKnights
                 nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
             });
 
-            Log("17");
             // Insert activation and deactivation of void nail arts
             nailArts.InsertMethod("Activate Slash Void", 0, () =>
             {
@@ -1276,7 +1309,6 @@ namespace FiveKnights
             });
             nailArts.InsertMethod("G Slash End Void", 0, () => greatSlashVoid.SetActive(false));
 
-            Log("18");
             // Remove activating old nail art effects
             nailArts.RemoveAction<ActivateGameObject>("Activate Slash Void");
             nailArts.RemoveAction<ActivateGameObject>("Dash Slash Void");
@@ -1290,9 +1322,8 @@ namespace FiveKnights
             }
 #endif
 
-            HeroController.instance.gameObject.scene.Log();
+            //self.gameObject.scene.Log();
 
-            Log("19");
         }
 
         private void OnDestroy()
@@ -1305,6 +1336,6 @@ namespace FiveKnights
             ModHooks.CharmUpdateHook -= ModHooks_CharmUpdate;
         }
 
-        private static void Log(object message) => Modding.Logger.Log("[Amulets] " + message);
+        private static void Log(object message) => Modding.Logger.Log("[FiveKnights][Amulets] " + message);
     }
 }

@@ -54,6 +54,6 @@ namespace FiveKnights
             return Physics2D.Raycast(pos + Vector2.up, Vector2.down, rayLength, CollisionMask);
         }
 
-        private void Log(object message) => Modding.Logger.Log("[Plume] " + message);
+        private void Log(object message) => Modding.Logger.Log("[FiveKnights][Plume] " + message);
     }
 }

@@ -60,6 +60,6 @@ namespace FiveKnights
             dungTrail.transform.Log();
         }
 
-        private void Log(object message) => Modding.Logger.Log("[Dung] " + message);
+        private void Log(object message) => Modding.Logger.Log("[FiveKnights][Dung] " + message);
     }
 }

@@ -41,6 +41,6 @@ namespace FiveKnights
             _cooledDown = true;
         }
 
-        private void Log(object message) => Modding.Logger.Log("[Royal Aura] " + message);
+        private void Log(object message) => Modding.Logger.Log("[FiveKnights][Royal Aura] " + message);
     }
 }
