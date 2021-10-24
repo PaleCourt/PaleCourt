@@ -17,7 +17,7 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 1700; //2400;
+        private const int Health = 800; //1700; //2400; // 800 is 2400/3, did this because of the new phases
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
@@ -167,7 +167,10 @@ namespace FiveKnights.Hegemol
             {
                 new InvokeCoroutine(new Func<IEnumerator>(PhaseChange), false)
             };
-            _control.GetState("Check Direction").Transitions = new FsmTransition[0];
+            _control.GetState("Check Direction").Transitions = new FsmTransition[] 
+	    {
+	        new FsmTransition() { ToFsmState = _control.GetState("Idle"), FsmEvent = FsmEvent.Finished }
+	    };
 
             AddIntro();
             AddDig();
@@ -718,6 +721,7 @@ namespace FiveKnights.Hegemol
 	    else
 	    {
 	        phase++;
+		_hm.hp = Health;
 	        yield return DoGroundPunch();
             }
 	}
