@@ -22,6 +22,8 @@ namespace FiveKnights.Hegemol
         private const float RightX = 91.0f;
         private const float GroundX = 7.4f;
         private const float DigInWalkSpeed = 8.0f;
+	private const int Phases = 3;
+	private int phase = 1;
 
         private GameObject _mace;
         private GameObject _ogrim;
@@ -163,13 +165,13 @@ namespace FiveKnights.Hegemol
             _control.AddTransition("Intro Greet", "FINISHED", "Idle");
             _control.GetState("Check Direction").Actions = new FsmStateAction[]
             {
-                new InvokeCoroutine(new Func<IEnumerator>(Die), false)
+                new InvokeCoroutine(new Func<IEnumerator>(PhaseChange), false)
             };
             _control.GetState("Check Direction").Transitions = new FsmTransition[0];
 
             AddIntro();
             AddDig();
-            AddGroundPunch();
+            //AddGroundPunch();
 
             yield return new WaitForSeconds(2.0f);
 
@@ -487,6 +489,69 @@ namespace FiveKnights.Hegemol
             _control.InsertCoroutine("Grabbed 2", 0, Grabbed);
         }
 
+        private IEnumerator DoGroundPunch()
+        {
+            IEnumerator TossAntic()
+            {
+                _anim.Play("Toss Antic");
+                _rb.velocity = Vector2.zero;
+                
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss Antic"));
+            }
+	    
+	    yield return TossAntic();
+            
+            IEnumerator Toss()
+            {
+                _anim.Play("Toss");
+
+                yield return new WaitWhile(() => _anim.IsPlaying("Toss"));
+            }
+	    
+	    yield return Toss()
+            
+            IEnumerator PunchAntic();
+            {
+                _anim.Play("Punch Antic");
+                _mace.GetComponent<Mace>().SpinSpeed = 500f * transform.localScale.x;
+                _mace.transform.localScale = new Vector3(transform.position.x, 1f, 1f);
+                _mace.transform.position = new Vector3(transform.position.x, transform.position.y, _mace.transform.position.z);
+                _mace.SetActive(true);
+                _mace.SetActiveChildren(true);
+
+                yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
+            }
+	    
+	    yield return PunchAntic();
+            
+            IEnumerator Punching()
+            {
+                _anim.Play("Punching");
+                
+                yield return new WaitForSeconds(5.0f);
+            }
+	    
+	    yield return Punching();
+
+            IEnumerator Grab()
+            {
+                _anim.Play("Grab");
+
+                yield return new WaitWhile(() => _anim.CurrentFrame < 3);
+            }
+	    
+	    yield return Grab();
+
+            IEnumerator Grabbed()
+            {
+                _mace.SetActive(false);
+                _mace.SetActiveChildren(false);
+                yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
+            }
+	    
+	    yield return Grabbed();
+        }
+
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
         {
             self.GetAttr<EnemyHitEffectsArmoured, SpriteFlash>("spriteFlash").flashFocusHeal();
@@ -645,6 +710,17 @@ namespace FiveKnights.Hegemol
                 //HegemolDeath();
             }
         }
+	
+	private IEnumerator PhaseChange()
+	{
+	    if (phase > Phases)
+	        yield return Die();
+	    else
+	    {
+	        phase++;
+	        yield return DoGroundPunch();
+            }
+	}
 
         private void HegemolDeath()
         {
