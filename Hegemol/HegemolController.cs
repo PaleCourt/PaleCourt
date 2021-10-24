@@ -681,7 +681,7 @@ namespace FiveKnights.Hegemol
             float xLeft = pos.x + 5 * scaleX - 2;
             float xRight = pos.x + 5 * scaleX + 2;
             float pillarSpacing = 2;
-            while (xLeft >= LeftX || xRight <= RightX)
+            while (xLeft >= (OWArenaController.IsInOverworld ? OWLeftX : LeftX) || xRight <= (OWArenaController.IsInOverworld ? OWRightX : RightX))
             {
                 _audio.Play("Dung Pillar", 0.9f, 1.1f);
                 
