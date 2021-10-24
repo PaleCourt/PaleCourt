@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
 using HutongGames.PlayMaker;
 using UnityEngine;
@@ -60,7 +61,6 @@ namespace FiveKnights.BossManagement
             });
 
         }
-
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? "DREAM_WORLD" : orig(self);
@@ -371,6 +371,8 @@ namespace FiveKnights.BossManagement
                     PlayerData.instance.dreamReturnScene = PrevZemScene;
                     FixBlur();
                     AddBattleGate(243f, new Vector2(238.4f, 107f));
+                    AddSuperDashCancel();
+                    FixPitDeath();
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -565,13 +567,33 @@ namespace FiveKnights.BossManagement
                 .Where(x => x.name == "Dream Fall Catcher"))
             {
                 GameObject newDeath = Instantiate(FiveKnights.preloadedGO["DreamFall"]);
+                BoxCollider2D newBott = newDeath.GetComponentInChildren<BoxCollider2D>();
+                BoxCollider2D oldBott = i.GetComponentInChildren<BoxCollider2D>();
                 newDeath.transform.position = i.transform.position;
+                newBott.size = oldBott.size;
+                newBott.offset = oldBott.offset;
+                newBott.transform.position = oldBott.transform.position;
+                newDeath.AddComponent<DebugColliders>();
                 newDeath.SetActive(true);
+                newBott.gameObject.SetActive(true);
+                var fsm = newDeath.LocateMyFSM("Control");
+                fsm.GetAction<FloatCompare>("Detect", 1).float2 = 
+                    newDeath.transform.GetPositionY() + newBott.size.y;
                 Destroy(i);
+
             }
 
         }
 
+        private void AddSuperDashCancel()
+        {
+            foreach (GameObject i in FindObjectsOfType<GameObject>()
+                .Where(x => x.name == "Superdash Cancel"))
+            {
+                i.AddComponent<SuperDashCancel>();
+            }
+        }
+        
         private void FixHegemolArena()
         {
             foreach (var i in FindObjectsOfType<CameraLockArea>())
