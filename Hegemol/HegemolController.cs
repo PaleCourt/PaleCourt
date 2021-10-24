@@ -326,22 +326,25 @@ namespace FiveKnights.Hegemol
                 _anim.Play("Dig Out");
                 _audio.Play("Mace Swing");
                 _rb.velocity = Vector2.zero;
+		
+		if (!OWArenaController.IsInOverworld)
+		{
+                    Vector2 pos = transform.position + transform.localScale.x * Vector3.right * 5.0f + Vector3.down * 5.0f;
+                    float valMin = 15.0f;
+                    float valMax = 40.0f;
 
-                Vector2 pos = transform.position + transform.localScale.x * Vector3.right * 5.0f + Vector3.down * 5.0f;
-                float valMin = 15.0f;
-                float valMax = 40.0f;
+                    GameObject dungBall1 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                    dungBall1.SetActive(true);
+                    dungBall1.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
 
-                GameObject dungBall1 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
-                dungBall1.SetActive(true);
-                dungBall1.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
-
-                GameObject dungBall2 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
-                dungBall2.SetActive(true);
-                dungBall2.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+                    GameObject dungBall2 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                    dungBall2.SetActive(true);
+                    dungBall2.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
                 
-                GameObject dungBall3 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
-                dungBall3.SetActive(true);
-                dungBall3.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+                    GameObject dungBall3 = Instantiate(FiveKnights.preloadedGO["ball"], pos, Quaternion.identity);
+                    dungBall3.SetActive(true);
+                    dungBall3.GetComponent<Rigidbody2D>().velocity = new Vector2(transform.localScale.x * Random.Range(valMin, valMax), 2 * Random.Range(valMin, valMax));
+		}
 
                 GameObject hitter = Instantiate(new GameObject("Hitter"), transform);
                 hitter.SetActive(true);
