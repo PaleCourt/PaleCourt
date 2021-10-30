@@ -349,6 +349,8 @@ namespace FiveKnights.BossManagement
                     FixCameraDryya();
                     AddBattleGate(422.5f,new Vector3(421.91f, 99.5f));
                     DreamEntry();
+                    AddSuperDashCancel();
+                    FixPitDeath();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
                 case IsmaScene:
@@ -362,6 +364,7 @@ namespace FiveKnights.BossManagement
                     DreamEntry();
                     FixIsmaSprites();
                     // Falling off pit doesn't send you back anymore so this is here to patch that
+                    AddSuperDashCancel();
                     FixPitDeath();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -382,6 +385,8 @@ namespace FiveKnights.BossManagement
                     PlayerData.instance.dreamReturnScene = PrevHegScene;
                     FixBlur();
                     FixHegemolArena();
+                    AddSuperDashCancel();
+                    FixPitDeath();
                     AddBattleGate(432f, new Vector2(419.48f, 156.8f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
@@ -450,10 +455,21 @@ namespace FiveKnights.BossManagement
             Log($"Lantern needed? {o.GetComponent<SceneManager>().noLantern}");
             Log($"Darkness needed? {o.GetComponent<SceneManager>().darknessLevel}");
             o.GetComponent<SceneManager>().noLantern = true;
-            o.GetComponent<SceneManager>().darknessLevel = 0;
+            o.GetComponent<SceneManager>().darknessLevel = -1;
             o.SetActive(true);
-                
-            Material[] blurPlaneMaterials = new Material[1];
+
+
+            /*
+            foreach (var i in FindObjectsOfType<GameObject>()
+                .Where(x => x.name.Contains("BlurPlane")))
+            {
+                var mat = i.GetComponent<MeshRenderer>().materials[0];
+                mat.SetFloat(Shader.PropertyToID("_Size"), 25f);
+                Modding.Logger.Log(mat.GetFloat(Shader.PropertyToID("_Size")));
+                i.transform.position += Vector3.forward * 5f;
+            }*/
+
+            /*Material[] blurPlaneMaterials = new Material[1];
             blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
             blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
             blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
@@ -468,7 +484,7 @@ namespace FiveKnights.BossManagement
                 .Where(x => x.name.Contains("BlurPlane")))
             {
                 i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
-            }
+            }*/
         }
 
         private void FixCameraDryya()
@@ -573,7 +589,6 @@ namespace FiveKnights.BossManagement
                 newBott.size = oldBott.size;
                 newBott.offset = oldBott.offset;
                 newBott.transform.position = oldBott.transform.position;
-                newDeath.AddComponent<DebugColliders>();
                 newDeath.SetActive(true);
                 newBott.gameObject.SetActive(true);
                 var fsm = newDeath.LocateMyFSM("Control");
@@ -588,8 +603,9 @@ namespace FiveKnights.BossManagement
         private void AddSuperDashCancel()
         {
             foreach (GameObject i in FindObjectsOfType<GameObject>()
-                .Where(x => x.name == "Superdash Cancel"))
+                .Where(x => x.name.Contains("Superdash Cancel")))
             {
+                Log("Found one " + i.name);
                 i.AddComponent<SuperDashCancel>();
             }
         }
