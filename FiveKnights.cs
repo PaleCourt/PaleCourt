@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections;
 using System.Reflection;
 using Modding;
@@ -9,19 +8,35 @@ using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
-using ModCommon;
-using On.HutongGames.PlayMaker.Actions;
+using System.Linq;
+using FiveKnights.BossManagement;
+using HutongGames.PlayMaker.Actions;
+using SFCore.Utils;
+using SFCore;
+using UnityEngine.Audio;
+using Random = UnityEngine.Random;
+using UnityEngine.UI;
+using FrogCore;
+using SFCore.Generics;
 
 namespace FiveKnights
 {
 
     [UsedImplicitly]
-    public class FiveKnights : Mod, ITogglableMod
+    public class FiveKnights : SaveSettingsMod<SaveModSettings>
     {
-        public FiveKnights() : base("Pale Court") { }
-        public static Dictionary<string, AudioClip> Clips { get; private set; }
-        public static Dictionary<string, AudioClip> IsmaClips { get; private set; }
-
+        private int paleCourtLogoId = -1;
+        public static bool isDebug = true;
+        public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
+        public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
+        private LanguageCtrl langStrings { get; set; }
+        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
+        public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
+        public static FiveKnights Instance;
+        public List<int> charmIDs;
+        public static Dictionary<string, JournalHelper> journalentries = new Dictionary<string, JournalHelper>();
+        public static readonly string[] CharmKeys = new string[] { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
         public static string OS
         {
             get
@@ -36,91 +51,9 @@ namespace FiveKnights
             }
         }
         
-        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static readonly List<Sprite> SPRITES = new List<Sprite>();
-        public static FiveKnights Instance;
-        
-        public SaveModSettings Settings = new SaveModSettings();
-        public override ModSettings SaveSettings
+        public FiveKnights() : base("Pale Court")
         {
-            get => Settings;
-            set => Settings = (SaveModSettings) value;
-        }
-
-        public override string GetVersion() => "0.0.0.0";
-
-        public override List<(string, string)> GetPreloadNames()
-        {
-            return new List<(string, string)>
-            {
-                ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
-                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
-                ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
-                ("GG_Failed_Champion","False Knight Dream"),
-                ("White_Palace_09","White Palace Lift"),
-                ("White_Palace_09","White King Corpse/Throne Sit"),
-                ("Fungus1_12","Plant Turret"),
-                ("Fungus1_19", "Plant Trap"),
-                ("White_Palace_01","WhiteBench"),
-                ("GG_Workshop","GG_Statue_ElderHu"),
-                ("GG_Lost_Kin", "Lost Kin"),
-                ("GG_Soul_Tyrant", "Dream Mage Lord"),
-                ("GG_Workshop","GG_Statue_ElderHu"),
-                ("GG_Workshop","GG_Statue_TraitorLord"),
-                ("White_Palace_03_hub","doorWarp"),
-                ("White_Palace_03_hub","dream_beam_animation"),
-                ("White_Palace_03_hub","dream_nail_base"),
-                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
-                ("Abyss_05","Dusk Knight/Idle Pt"),
-                ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
-                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
-                ("Fungus3_13","BlurPlane"),
-                ("Fungus3_34","_Scenery/fung_lamp2 (1)/Active/haze2 (1)"),
-                ("GG_White_Defender", "Boss Scene Controller"),
-                ("GG_White_Defender", "_SceneManager"),
-                ("GG_White_Defender", "White Defender"),
-            };
-        }
-
-        public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
-        {
-            Log("Storing GOs");
-            preloadedGO["Warp"] = preloadedObjects["White_Palace_03_hub"]["doorWarp"];
-            preloadedGO["WarpAnim"] = preloadedObjects["White_Palace_03_hub"]["dream_beam_animation"];
-            preloadedGO["WarpBase"] = preloadedObjects["White_Palace_03_hub"]["dream_nail_base"];
-            preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
-            preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
-            preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
-            preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
-            preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
-            preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
-            preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
-            preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
-            preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
-            preloadedGO["lift"] = preloadedObjects["White_Palace_09"]["White Palace Lift"];
-            preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
-            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
-            preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
-            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
-            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
-            preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
-            preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
-            preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
-            preloadedGO["WhiteDef"] = preloadedObjects["GG_White_Defender"]["White Defender"];
-            preloadedGO["isma_stat"] = null;
-            
-            Instance = this;
-            Log("Initalizing.");
-
-            Unload();
-            GameManager.instance.StartCoroutine(LoadMusic());
-            GameManager.instance.StartCoroutine(LoadDep());
-            
-            ModHooks.Instance.SetPlayerVariableHook += SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook += GetVariableHook;
-            ModHooks.Instance.AfterSavegameLoadHook += SaveGame;
-            ModHooks.Instance.NewGameHook += AddComponent;
-            ModHooks.Instance.LanguageGetHook += LangGet;
+            #region Load Embedded Images
 
             int ind = 0;
             Assembly asm = Assembly.GetExecutingAssembly();
@@ -137,129 +70,590 @@ namespace FiveKnights
                     // Create texture from bytes
                     var tex = new Texture2D(1, 1);
                     tex.LoadImage(buffer, true);
+                    // Name
+                    string resName = res.Split('.')[2];
+                    // Difference in sizes, make some sprites 1.5x the size, because that's apparently what the size in game is for all sprites
+                    float ppu = 100;
+                    List<string> biggerList = new List<string>()
+                    {
+                        "DlcList",
+                        "LogoBlack",
+                        "journal_dryya",
+                        "journal_icon_dryya",
+                        "journal_hegemol",
+                        "journal_icon_hegemol",
+                        "journal_isma",
+                        "journal_icon_isma",
+                        "journal_zemer",
+                        "journal_icon_zemer",
+                    };
+                    if (biggerList.Contains(resName)) ppu = 200f / 3f;
                     // Create sprite from texture
-                    SPRITES.Add(Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f)));
-
-                    Log("Created sprite from embedded image: " + res + " at ind " + ++ind);
+                    SPRITES.Add(resName, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu));
+                    Log("Created sprite from embedded image: " + resName + " at ind " + ++ind);
                 }
             }
-        }
 
-        IEnumerator LoadMusic()
-        {
-            UObject[] clips = null;
-            Assembly asm = Assembly.GetExecutingAssembly();
-            Clips = new Dictionary<string, AudioClip>();
-            IsmaClips = new Dictionary<string, AudioClip>();
-            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.soundbund"))
-            {
-                var ab = AssetBundle.LoadFromStream(s);
-                yield return null;
-                clips = ab.LoadAllAssets();
-            }
+            #endregion
+            #region Menu Customization
 
-            if (clips == null)
-            {
-                Log("Failed to load clips");
-                yield break;
-            }
+            LoadTitleScreen();
+            On.UIManager.Awake += OnUIManagerAwake;
+            On.SetVersionNumber.Start += OnSetVersionNumberStart;
+            SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
+            paleCourtLogoId = SFCore.TitleLogoHelper.AddLogo(SPRITES["LogoBlack"]);
 
-            foreach (var o in clips)
-            {
-                var clip = (AudioClip) o;
-                if (clip.name.Contains("IsmaAud")) IsmaClips[clip.name] = clip;
-                if (clip.name == "Aud_Isma") Clips["IsmaMusic"] = clip;
-                else Clips[clip.name] = clip;
-            }
+            #endregion
+            #region Enviroment Effects
+
+            SFCore.EnviromentParticleHelper.AddCustomDashEffectsHook += AddCustomDashEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomHardLandEffectsHook += AddCustomHardLandEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomJumpEffectsHook += AddCustomJumpEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomSoftLandEffectsHook += AddCustomSoftLandEffectsHook;
+            SFCore.EnviromentParticleHelper.AddCustomRunEffectsHook += AddCustomRunEffectsHook;
+
+            #endregion
+            #region Achievements
+
+            SFCore.AchievementHelper.AddAchievement("IsmaAchiev2", SPRITES["ach_isma"], 
+                "ISMA_ACH_TITLE", "ISMA_ACH_DESC", false);
             
-            AudioSource aud = GameObject.Find("Music").transform.Find("Main").GetComponent<AudioSource>();
-            aud.clip = Clips["MM_Aud"];
-            aud.Play();
+            SFCore.AchievementHelper.AddAchievement("DryyaAchiev", SPRITES["ach_dryya"], 
+                "DRYYA_ACH_TITLE", "DRYYA_ACH_DESC", false);
+            
+            SFCore.AchievementHelper.AddAchievement("HegAchiev", SPRITES["ach_heg"], 
+                "HEG_ACH_TITLE", "HEG_ACH_DESC", false);
+
+            SFCore.AchievementHelper.AddAchievement("ZemAchiev", SPRITES["ach_zem"], 
+                "ZEM_ACH_TITLE", "ZEM_ACH_DESC", false);
+            
+            SFCore.AchievementHelper.AddAchievement("PanthAchiev", SPRITES["ach_panth"], 
+                "PANTH_ACH_TITLE", "PANTH_ACH_DESC", false);
+
+            #endregion
+            
+            #region Language & Hooks
+
+            langStrings = new LanguageCtrl();
+
+            ModHooks.SetPlayerVariableHook += SetVariableHook;
+            ModHooks.GetPlayerVariableHook += GetVariableHook;
+            ModHooks.AfterSavegameLoadHook += SaveGame;
+            ModHooks.BeforeSavegameSaveHook += SaveEntries;
+            ModHooks.NewGameHook += AddComponent;
+            ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
+            ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
+            ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
+            On.Language.Language.DoSwitch += SwitchLanguage;
+
+            ModHooks.LanguageGetHook += LangGet;
+
+            On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
+            On.UIManager.Start += OnUIManagerStart;
+
+            #endregion
+            #region Load Assetbundles
+
+            //GameObject assetLoaderGo = new GameObject("Pale Court Asset Loader", typeof(NonBouncer));
+            //GameObject.DontDestroyOnLoad(assetLoaderGo);
+            //var nb = assetLoaderGo.GetComponent<NonBouncer>();
+            LoadDep();
+            LoadBossBundles();
+            LoadCharms();
+
+            #endregion
         }
-        IEnumerator LoadDep()
+
+        private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
-            UObject[] obj = null;
-            Assembly asm = Assembly.GetExecutingAssembly();
-            using (Stream s = asm.GetManifestResourceStream("FiveKnights.StreamingAssets.ggArenaDep"))
+            orig(newLang);
+            foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
             {
-                var ab = AssetBundle.LoadFromStream(s);
-                yield return null;
-                obj = ab.LoadAllAssets();
+                string name = keyValuePair.Key;
+                string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
+                JournalHelper journalHelper = keyValuePair.Value;
+                if (journalHelper.playerData.killsremaining != 0)
+                    journalHelper.playerData.killsremaining = 1;
+                journalHelper.playerData.Hidden = true;
+                if (langStrings.ContainsKey(prefix + "_LONGNAME", "Journal"))
+                    journalHelper.nameStrings.name = langStrings.Get(prefix + "_LONGNAME", "Journal");
+                if (langStrings.ContainsKey(prefix + "_DESC", "Journal"))
+                    journalHelper.nameStrings.desc = langStrings.Get(prefix + "_DESC", "Journal");
+                if (langStrings.ContainsKey(prefix + "_NOTE", "Journal"))
+                    journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
+                if (langStrings.ContainsKey(prefix + "_NAME", "Journal"))
+                    journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
+            }
+        }
+
+        public override string GetVersion() => "1.0.0.0";
+
+        public override List<(string, string)> GetPreloadNames()
+        {
+            return new List<(string, string)>
+            {
+                ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
+                ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
+                ("Abyss_05", "Dusk Knight/Dream Enter 2"),
+                ("Abyss_05","Dusk Knight/Idle Pt"),
+                ("GG_Failed_Champion","False Knight Dream"),
+                ("White_Palace_09","White King Corpse/Throne Sit"),
+                ("Fungus1_12","Plant Turret"),
+                ("Fungus1_12","simple_grass"),
+                ("Fungus1_12","green_grass_2"),
+                ("Fungus1_12","green_grass_3"),
+                ("Fungus1_12","green_grass_1 (1)"),
+                ("Fungus1_19", "Plant Trap"),
+                ("White_Palace_01","WhiteBench"),
+                // We want the tink effect from the spike
+                ("White_Palace_01","White_ Spikes"),
+                ("GG_Workshop","GG_Statue_ElderHu"),
+                ("GG_Lost_Kin", "Lost Kin"),
+                ("GG_Soul_Tyrant", "Dream Mage Lord"),
+                ("GG_Workshop","GG_Statue_TraitorLord"),
+                ("Room_Mansion","Heart Piece Folder/Heart Piece/Plink"),
+                ("Fungus3_23_boss","Battle Scene/Wave 3/Mantis Traitor Lord"),
+                ("GG_White_Defender", "Boss Scene Controller"),
+                ("GG_Atrium_Roof", "Land of Storms Doors"),
+                ("GG_White_Defender", "GG_Arena_Prefab/Godseeker Crowd"),
+                ("Dream_04_White_Defender","_SceneManager"),
+                ("Dream_04_White_Defender", "Battle Gate (1)"),
+                ("Dream_04_White_Defender", "Dream Entry"),
+                ("Dream_04_White_Defender", "White Defender"),
+                // Ensures falling into pits takes you out of dream
+                ("Dream_04_White_Defender", "Dream Fall Catcher"),
+                ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
+                ("Dream_Final_Boss", "Boss Control/Radiance"),
+            };
+        }
+
+        public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
+        {
+            Log("Storing GOs");
+            preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
+            preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
+            preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
+            preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
+            preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
+
+            preloadedGO["TinkEff"] = preloadedObjects["White_Palace_01"]["White_ Spikes"];
+
+            preloadedGO["Slash"] = preloadedObjects["GG_Hive_Knight"]["Battle Scene/Hive Knight/Slash 1"];
+            preloadedGO["PV"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime"];
+            preloadedGO["CounterFX"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/HK Prime/Counter Flash"];
+            preloadedGO["Blast"] = preloadedObjects["GG_Hollow_Knight"]["Battle Scene/Focus Blasts/HK Prime Blast/Blast"];
+            preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
+            preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
+            preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
+            preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
+            
+            preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
+            preloadedGO["Grass0"] = preloadedObjects["Fungus1_12"]["simple_grass"];
+            preloadedGO["Grass2"] = preloadedObjects["Fungus1_12"]["green_grass_2"];
+            preloadedGO["Grass3"] = preloadedObjects["Fungus1_12"]["green_grass_3"];
+            preloadedGO["Grass1"] = preloadedObjects["Fungus1_12"]["green_grass_1 (1)"];
+            preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
+
+            preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
+            preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
+            preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
+            preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];
+            preloadedGO["Godseeker"] = preloadedObjects["GG_White_Defender"]["GG_Arena_Prefab/Godseeker Crowd"];
+            
+            preloadedGO["WhiteDef"] = preloadedObjects["Dream_04_White_Defender"]["White Defender"];
+            preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
+            preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
+            preloadedGO["BattleGate"] = preloadedObjects["Dream_04_White_Defender"]["Battle Gate (1)"];
+            preloadedGO["DreamFall"] = preloadedObjects["Dream_04_White_Defender"]["Dream Fall Catcher"];
+
+            preloadedGO["Knight Ball"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance/Death/Knight Split/Knight Ball"];
+            preloadedGO["Radiance"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance"];
+
+            preloadedGO["isma_stat"] = null;
+
+            //#region Add Entries
+            //journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], _saveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            //{
+            //    name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
+            //    desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
+            //    note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
+            //    shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
+            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            //journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], _saveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            //{
+            //    name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
+            //    desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
+            //    note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
+            //    shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
+            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            //journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], _saveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            //{
+            //    name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
+            //    desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
+            //    note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
+            //    shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
+            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            //journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], _saveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            //{
+            //    name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
+            //    desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
+            //    note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
+            //    shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
+            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            //#endregion
+
+            //Unload();
+
+            #region Add Charms
+
+            charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
+
+            #endregion
+
+            //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
+            preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
+            preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
+            preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
+
+            Instance = this;
+            Log("Initalizing.");
+        }
+        #region Make Text Readable
+
+        private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
+        {
+            foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            {
+                var outline = item.gameObject.AddComponent<Outline>();
+                outline.effectColor = Color.black;
+                outline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+            orig(self);
+        }
+
+        #endregion
+
+        #region Menu Customization
+
+        private void OnSetVersionNumberStart(On.SetVersionNumber.orig_Start orig, SetVersionNumber self)
+        {
+            orig(self);
+            self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
+        }
+        private void OnUIManagerAwake(On.UIManager.orig_Awake orig, UIManager self)
+        {
+            orig(self);
+            self.transform.GetChild(1).GetChild(2).GetChild(2).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
+        }
+
+        private void OnAudioManagerApplyMusicCue(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
+        {
+            // Insert Custom Audio into main MusicCue
+            var infos = (MusicCue.MusicChannelInfo[]) musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(musicCue);
+
+            var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
+            var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
+            if (origAudio != null && origAudio.name.Equals("Title"))
+            {
+                if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
+                {
+                    LoadMusic();
+                }
+                infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
+                audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                
+                var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
+                MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
+            }
+            musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
+            orig(self, musicCue, delayTime, transitionTime, applySnapshot);
+        }
+
+        private (string languageString, GameObject styleGo, int titleIndex, string unlockKey, string[] achievementKeys,
+            MenuStyles.MenuStyle.CameraCurves cameraCurves, AudioMixerSnapshot musicSnapshot) AddPCMenuStyle(
+                MenuStyles self)
+        {
+            Log("Start");
+
+            #region Setting up materials
+
+            var defaultSpriteMaterial = new Material(Shader.Find("Sprites/Default"));
+            defaultSpriteMaterial.SetColor(Shader.PropertyToID("_Color"), new Color(1.0f, 1.0f, 1.0f, 1.0f));
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("PixelSnap"), 0);
+            defaultSpriteMaterial.SetFloat(Shader.PropertyToID("_EnableExternalAlpha"), 0.0f);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_Stencil"), 0);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            defaultSpriteMaterial.SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+
+            #endregion
+
+            #region Loading assetbundle
+
+            //ABManager.ResetBundle(ABManager.Bundle.TitleScreen);
+
+            #endregion
+
+            GameObject pcStyleGo = GameObject.Instantiate(ABManager.AssetBundles[ABManager.Bundle.TitleScreen].LoadAsset<GameObject>("Pale_Court_Style_1"));
+            if (pcStyleGo == null)
+            {
+                pcStyleGo = new GameObject("Pale_Court");
             }
 
-            if (obj == null)
+            foreach (var t in pcStyleGo.GetComponentsInChildren<Transform>())
             {
-                Log("Failed to load scene dep");
-                yield break;
+                t.gameObject.SetActive(true);
             }
+            foreach (var t in pcStyleGo.GetComponentsInChildren<SpriteRenderer>())
+            {
+                t.materials = new Material[] { defaultSpriteMaterial };
+            }
+
+            pcStyleGo.transform.SetParent(self.gameObject.transform);
+            pcStyleGo.transform.localPosition = new Vector3(0, -1.2f, 0);
+
+            var cameraCurves = new MenuStyles.MenuStyle.CameraCurves();
+            cameraCurves.saturation = 1f;
+            cameraCurves.redChannel = new AnimationCurve();
+            cameraCurves.redChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.redChannel.AddKey(new Keyframe(1f, 1f));
+            cameraCurves.greenChannel = new AnimationCurve();
+            cameraCurves.greenChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.greenChannel.AddKey(new Keyframe(1f, 1f));
+            cameraCurves.blueChannel = new AnimationCurve();
+            cameraCurves.blueChannel.AddKey(new Keyframe(0f, 0f));
+            cameraCurves.blueChannel.AddKey(new Keyframe(1f, 1f));
+
+            #region Fader
+
+            // ToDo Make this part of the cursor
+
+            //GameObject fader1 = new GameObject("Fader");
+            //fader1.transform.SetParent(pcStyleGo.transform);
+            //fader1.transform.localPosition = new Vector3(-6.125f, -1.75f, 1f);
+            //fader1.transform.localScale = new Vector3(3, 5, 1);
+            //var sr = fader1.AddComponent<SpriteRenderer>();
+            //sr.sprite = SPRITES["Fader"];
+            //sr.material = defaultSpriteMaterial;
+
+            #endregion
+
+            return ("UI_MENU_STYLE_PALE_COURT", pcStyleGo, paleCourtLogoId, "", null, cameraCurves, Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Tension Only"));
         }
+
+        #endregion
+
+        #region Enviroment Effects
+
+        private GameObject ChangePsrTexture(GameObject o)
+        {
+            GameObject ret = GameObject.Instantiate(o, o.transform.parent);
+            foreach (var psr in ret.GetComponentsInChildren<ParticleSystemRenderer>())
+            {
+                psr.material.mainTexture = SPRITES["Petal"].texture;
+            }
+            return ret;
+        }
+        private (int enviromentType, GameObject dashEffects) AddCustomDashEffectsHook(DashEffect self) => (7, ChangePsrTexture(self.dashGrass));
+        private (int enviromentType, GameObject hardLandEffects) AddCustomHardLandEffectsHook(HardLandEffect self) => (7, ChangePsrTexture(self.grassObj));
+        private (int enviromentType, GameObject jumpEffects) AddCustomJumpEffectsHook(JumpEffects self) => (7, ChangePsrTexture(self.grassEffects));
+        private (int enviromentType, GameObject softLandEffects) AddCustomSoftLandEffectsHook(SoftLandEffect self) => (7, ChangePsrTexture(self.grassEffects));
+        private (int enviromentType, GameObject runEffects) AddCustomRunEffectsHook(GameObject self) => (7, ChangePsrTexture(self.transform.GetChild(1).gameObject));
+
+        #endregion
+
+        private void LoadTitleScreen()
+        {
+            ABManager.Load(ABManager.Bundle.TitleScreen);
+        }
+        
+        private void LoadMusic()
+        {
+            ABManager.Load(ABManager.Bundle.Sound);
+        }
+
+        private void LoadCharms()
+        {
+            ABManager.Load(ABManager.Bundle.Charms);
+        }
+
+        private void LoadBossBundles()
+        {
+            ABManager.Load(ABManager.Bundle.GDryya);
+            ABManager.Load(ABManager.Bundle.GHegemol);
+            ABManager.Load(ABManager.Bundle.GIsma);
+            ABManager.Load(ABManager.Bundle.GZemer);
+        }
+        
+        private void LoadDep()
+        {
+            ABManager.Load(ABManager.Bundle.GArenaDep);
+            ABManager.Load(ABManager.Bundle.OWArenaDep);
+            ABManager.Load(ABManager.Bundle.WSArenaDep);
+            ABManager.Load(ABManager.Bundle.WSArena);
+            ABManager.Load(ABManager.Bundle.GArenaHub);
+            ABManager.Load(ABManager.Bundle.GArenaHub2);
+            ABManager.Load(ABManager.Bundle.Misc);
+            ABManager.Load(ABManager.Bundle.GArenaH);
+            ABManager.Load(ABManager.Bundle.GArenaD);
+            ABManager.Load(ABManager.Bundle.GArenaZ);
+            ABManager.Load(ABManager.Bundle.GArenaI);
+            ABManager.Load(ABManager.Bundle.OWArenaD);
+            ABManager.Load(ABManager.Bundle.OWArenaZ);
+            ABManager.Load(ABManager.Bundle.OWArenaH);
+            ABManager.Load(ABManager.Bundle.OWArenaI);
+            ABManager.Load(ABManager.Bundle.GArenaIsma);
+
+            Log("Finished bundling");
+        }
+
+        private void SaveEntries(SaveGameData data)
+        {
+            foreach (JournalHelper journalHelper in journalentries.Values)
+            {
+                if (journalHelper.playerData.killsremaining > 0)
+                {
+                    journalHelper.playerData.killsremaining = 1;
+                }
+                journalHelper.playerData.Hidden = true;
+            }
+            //_saveSettings.IsmaEntryData = journalentries["Isma"].playerData;
+            //_saveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
+            //_saveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
+            //_saveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
+        }
+
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
-                Settings.CompletionIsma = (BossStatue.Completion)obj;
+                _saveSettings.CompletionIsma = (BossStatue.Completion)obj;
             else if (key == "statueStateDryya")
-                Settings.CompletionDryya = (BossStatue.Completion)obj;
+                _saveSettings.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
-                Settings.CompletionZemer = (BossStatue.Completion)obj;
+                _saveSettings.CompletionZemer = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer2")
-                Settings.CompletionZemer2 = (BossStatue.Completion)obj;
+                _saveSettings.CompletionZemer2 = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
-                Settings.CompletionIsma2 = (BossStatue.Completion)obj;
+                _saveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
-                Settings.CompletionHegemol = (BossStatue.Completion)obj;
+                _saveSettings.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                return Settings.CompletionIsma;
+                return _saveSettings.CompletionIsma;
             if (key == "statueStateDryya")
-                return Settings.CompletionDryya;
+                return _saveSettings.CompletionDryya;
             if (key == "statueStateZemer")
-                return Settings.CompletionZemer;
+                return _saveSettings.CompletionZemer;
             if (key == "statueStateZemer2")
-                return Settings.CompletionZemer2;
+                return _saveSettings.CompletionZemer2;
             if (key == "statueStateIsma2")
-                return Settings.CompletionIsma2;
+                return _saveSettings.CompletionIsma2;
             if (key == "statueStateHegemol")
-                return Settings.CompletionHegemol;
+                return _saveSettings.CompletionHegemol;
             return orig;
         }
 
-        private string LangGet(string key, string sheettitle)
+        private bool ModHooks_GetPlayerBool(string target, bool orig)
         {
-            switch (key)
+            if (target.StartsWith("gotCharm_"))
             {
-                case "ISMA_NAME": return "Kindly Isma";
-                case "ISMA_DESC": return "Gentle god of moss and grove.";
-                case "DD_ISMA_NAME": return "Loyal Ogrim & Kindly Isma";
-                case "DD_ISMA_DESC": return "Loyal defender gods of land and beast.";
-                case "HEG_NAME": return "Mighty Hegemol";
-                case "HEG_DESC": return "Something something...";
-                case "DRY_NAME": return "Fierce Dryya";
-                case "DRY_DESC": return "Protective god of Root and King.";
-                case "ZEM_NAME": return "Mysterious Ze'mer";
-                case "ZEM2_NAME": return "Mystic Ze'mer";
-                case "ZEM_DESC": return "Grieving god of lands beyond.";
-                case "ZEM2_DESC": return "Strange god of a sacred land.";
-                case "DRYYA_DIALOG_1_1": return "Must defend the Queen...";
-                case "DRYYA_DIALOG_2_1": return "Allow none to enter the glade...";
-                case "DRYYA_DIALOG_3_1": return "Protect...";
-                case "DRYYA_DIALOG_4_1": return "Kin...seeks to find her?";
-                case "DRYYA_DIALOG_5_1": return "Dryya Dialogue 5";
-                case "ISMA_DREAM_1_1": return "Something about Sacrifice";
-                case "ISMA_DREAM_2_1": return "Something about Grove";
-                case "ISMA_DREAM_3_1": return "Something about Ogrim";
-                case "FALSE_KNIGHT_D_1": return "Show me what you're made of!";
-                case "FALSE_KNIGHT_D_2": return "Is that all you got?";
-                case "FALSE_KNIGHT_D_3": return "Prove to me you're a champion!";
-                case "ZEM_DREAM_1_1": return "Shoutout to 56 (can't remove this can you)";
-                case "ZEM_DREAM_2_1": return "Shoutout to 56 (can't remove this can you)";
-                case "ZEM_DREAM_3_1": return "Shoutout to 56 (can't remove this can you)";
-                case "YN_THRONE": return "Answer the Champions' Call?";
-                default: return Language.Language.GetInternal(key, sheettitle);
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    return _saveSettings.gotCharms[charmIDs.IndexOf(charmNum)];
+                }
             }
+            if (target.StartsWith("newCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    return _saveSettings.newCharms[charmIDs.IndexOf(charmNum)];
+                }
+            }
+            if (target.StartsWith("equippedCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    return _saveSettings.equippedCharms[charmIDs.IndexOf(charmNum)];
+                }
+            }
+            return orig;
+        }
+        private bool ModHooks_SetPlayerBool(string target, bool orig)
+        {
+            if (target.StartsWith("gotCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    _saveSettings.gotCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    return orig;
+                }
+            }
+            if (target.StartsWith("newCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    _saveSettings.newCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    return orig;
+                }
+            }
+            if (target.StartsWith("equippedCharm_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    _saveSettings.equippedCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    return orig;
+                }
+            }
+            return orig;
+        }
+
+        private int ModHooks_GetPlayerInt(string target, int orig)
+        {
+            if (target.StartsWith("charmCost_"))
+            {
+                int charmNum = int.Parse(target.Split('_')[1]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    return _saveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
+                }
+            }
+            return orig;
+        }
+
+        private string LangGet(string key, string sheet, string orig)
+        {
+            if (key.StartsWith("CHARM_DESC_") || key.StartsWith("CHARM_NAME_"))
+            {
+                int charmNum = int.Parse(key.Split('_')[2]);
+                if (charmIDs.Contains(charmNum))
+                {
+                    key = key.Substring(0, 11) + CharmKeys[charmIDs.IndexOf(charmNum)];
+                }
+                else if (charmNum == 10 && _saveSettings.upgradedCharm_10)
+                    key = key.Substring(0, 11) + CharmKeys[4];
+            }
+            if (langStrings.ContainsKey(key, sheet))
+            {
+                return langStrings.Get(key, sheet);
+            }
+            if (langStrings.ContainsKey(key, "Speech"))
+            {
+                return langStrings.Get(key, "Speech");
+            }
+            return orig;
         }
 
         private void SaveGame(SaveGameData data)
@@ -269,20 +663,132 @@ namespace FiveKnights
 
         private void AddComponent()
         {
-            GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            //journalentries["Isma"].playerData = _saveSettings.IsmaEntryData;
+            //journalentries["Zemer"].playerData = _saveSettings.ZemerEntryData;
+            //journalentries["Dryya"].playerData = _saveSettings.DryyaEntryData;
+            //journalentries["Hegemol"].playerData = _saveSettings.HegemolEntryData;
+            //foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
+            //{
+            //    string name = keyValuePair.Key;
+            //    string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
+            //    JournalHelper journalHelper = keyValuePair.Value;
+            //    if (journalHelper.playerData.killsremaining > 0)
+            //    {
+            //        journalHelper.playerData.killsremaining = 1;
+            //    }
+            //    journalHelper.playerData.Hidden = true;
+            //    journalHelper.nameStrings.name = langStrings.Get(prefix + "_LONGNAME", "Journal");
+            //    journalHelper.nameStrings.desc = langStrings.Get(prefix + "_DESC", "Journal");
+            //    journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
+            //    journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
+            //}
+            foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
+            {
+                if (!(i.name == "Slash" && i.transform.parent != null && i.transform.parent.gameObject.name == "Hollow Shade"))
+                    continue;
+                
+                FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
+
+                AudioClip aud = i
+                    .LocateMyFSM("nail_clash_tink")
+                    .GetAction<AudioPlayerOneShot>("Blocked Hit", 5)
+                    .audioClips[0];
+
+                var clashSndObj = new GameObject();
+                var clashSnd = clashSndObj.AddComponent<AudioSource>();
+
+                clashSnd.clip = aud;
+                clashSnd.pitch = Random.Range(0.85f, 1.15f);
+
+                Tink.TinkClip = aud;
+
+                FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
+                Log("Got the shade stuff brochacho");
+                break;
+            }
+
+            PlantChanger();
+            //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<Amulets>();
         }
-
-        public void Unload()
+        
+        private void PlantChanger()
         {
-            ModHooks.Instance.AfterSavegameLoadHook -= SaveGame;
-            ModHooks.Instance.NewGameHook -= AddComponent;
-            ModHooks.Instance.LanguageGetHook -= LangGet;
-            ModHooks.Instance.SetPlayerVariableHook -= SetVariableHook;
-            ModHooks.Instance.GetPlayerVariableHook -= GetVariableHook;
+            foreach (var trapType in new[] {"PTrap","PTurret"})
+            {
+                GameObject trap = FiveKnights.preloadedGO[trapType];       
+                UObject.DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
+                var newDD = FiveKnights.preloadedGO["WhiteDef"];
+                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
+                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
+                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
+                    BindingFlags.NonPublic | BindingFlags.Public))
+                {
+                    if (fi.Name.Contains("Origin"))
+                    {
+                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
+                        continue;
+                    }
 
-            var x = GameManager.instance?.gameObject.GetComponent<ArenaFinder>();
-            if (x == null) return;
-            UObject.Destroy(x);
+                    fi.SetValue(newHit, fi.GetValue(ddHit));
+                }
+                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
+                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
+                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
+                }
+                UObject.DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
+                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
+                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
+                }
+                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
+                                                                             BindingFlags.NonPublic |
+                                                                             BindingFlags.Public | BindingFlags.Static)
+                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
+                {
+                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
+                }
+                
+                HealthManager hm = trap.GetComponent<HealthManager>();
+                HealthManager hornHP = newDD.GetComponent<HealthManager>();
+                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+                    .Where(x => x.Name.Contains("Prefab")))
+                {
+                    fi.SetValue(hm, fi.GetValue(hornHP));
+                }
+                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
+                {
+                    UObject.Destroy(i);
+                }
+                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
+                if (trapType == "PTrap")
+                {
+                    UObject.Destroy(hello.transform.Find("Orange Puff").gameObject);
+                }
+                else
+                {
+                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
+                    {
+                        var j = i.main;
+                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
+                    }
+                }
+                newEff2.whiteWave = hello;
+                GameObject fake = new GameObject();
+                UObject.DontDestroyOnLoad(fake);
+                newEff2.uninfectedDeathPt = fake;
+                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
+                FiveKnights.preloadedGO[trapType] = trap;
+                Log("Changed the plant");
+            }
         }
     }
 }

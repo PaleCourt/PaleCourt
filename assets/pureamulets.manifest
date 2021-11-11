@@ -1,0 +1,34 @@
+ManifestFileVersion: 0
+CRC: 1214666460
+Hashes:
+  AssetFileHash:
+    serializedVersion: 2
+    Hash: 85a687b7f577980b8b1237a47131aa77
+  TypeTreeHash:
+    serializedVersion: 2
+    Hash: 461668bcab301517c6a7ac2ce5ab4c44
+HashAppended: 0
+ClassTypes:
+- Class: 1
+  Script: {instanceID: 0}
+- Class: 4
+  Script: {instanceID: 0}
+- Class: 21
+  Script: {instanceID: 0}
+- Class: 28
+  Script: {instanceID: 0}
+- Class: 48
+  Script: {instanceID: 0}
+- Class: 114
+  Script: {fileID: 11500000, guid: ecaffc43a5d2b1d47858e3fb687e7271, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: 84c7a4b4ee15890498f818262bca0312, type: 3}
+- Class: 114
+  Script: {fileID: 11500000, guid: d546f34a90531a14eaba82a43b05b86b, type: 3}
+- Class: 115
+  Script: {instanceID: 0}
+Assets:
+- Assets/Sprites/AbyssalBloom.prefab
+- Assets/Animations/CrestAnim.prefab
+- Assets/Animations/BloomAnim.prefab
+Dependencies: []
