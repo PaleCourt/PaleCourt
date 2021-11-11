@@ -45,7 +45,7 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.IsPlaying());
             bc.isTrigger = false;
             bc.enabled = true;
-            gameObject.AddComponent<ShadowGateColliderControl>().disableCollider = bc;
+            gameObject.AddComponent<ShadeOnlyPass>().disableCollider = bc;
             yield return new WaitForSeconds(0.55f);
             if (!IsmaFight) StartCoroutine(Death());
         }

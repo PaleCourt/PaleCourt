@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
+using SFCore.Utils;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
@@ -13,7 +14,7 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 110;//1650;
+        private int _hp = 1650;
 
         private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
         private PlayMakerFSM _mageLord;

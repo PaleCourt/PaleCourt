@@ -1491,6 +1491,7 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _bc.enabled = true;
                 
+                Log($"Do or not do phase? {DoPhase}");
                 if (DoPhase)
                 {
                     _bc.enabled = false;

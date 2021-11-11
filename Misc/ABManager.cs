@@ -41,11 +41,11 @@ namespace FiveKnights
                 Bundle.GArenaD => "ggArenaDryya",
                 Bundle.GArenaI => "ggArenaIsma",
                 Bundle.GArenaZ => "ggArenaZemer",
-                Bundle.OWArenaD => "owArenaDryya",
-                Bundle.OWArenaH => "owArenaHegemol",
-                Bundle.OWArenaZ => "owArenaZemer",
-                Bundle.OWArenaI => "owArenaIsma",
-                Bundle.OWArenaDep => "owArenaDep",
+                Bundle.OWArenaD => "owarenadryya",
+                Bundle.OWArenaH => "owarenahegemol",
+                Bundle.OWArenaZ => "owarenazemer",
+                Bundle.OWArenaI => "owarenaisma",
+                Bundle.OWArenaDep => "owarenadep",
                 Bundle.WSArenaDep => "workShopEntranceDep",
                 Bundle.WSArena => "workShopEntrance",
                 Bundle.Misc => "miscbund",
@@ -56,7 +56,7 @@ namespace FiveKnights
 
         public static AssetBundle Load(Bundle bd)
         {
-            if (AssetBundles.ContainsKey(bd)) return AssetBundles[bd];
+            if (AssetBundles.ContainsKey(bd) && AssetBundles[bd] != null) return AssetBundles[bd];
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var ab = AssetBundle.LoadFromStream(s);
             AssetBundles[bd] = ab;
@@ -68,10 +68,8 @@ namespace FiveKnights
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
             var request = AssetBundle.LoadFromStreamAsync(s);
             yield return request;
-            var ab = AssetBundle.LoadFromStream(s);
-            AssetBundles[bd] = ab;
+            AssetBundles[bd] = request.assetBundle;
             s?.Dispose();
-            yield break;
         }
 
         public static void ResetBundle(Bundle bd)

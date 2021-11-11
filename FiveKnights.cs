@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using SFCore;
@@ -100,7 +101,9 @@ namespace FiveKnights
             LoadTitleScreen();
             On.UIManager.Awake += OnUIManagerAwake;
             On.SetVersionNumber.Start += OnSetVersionNumberStart;
+            //SFCore.MenuStyleHelper.Initialize();
             SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
+            //SFCore.TitleLogoHelper.Initialize();
             paleCourtLogoId = SFCore.TitleLogoHelper.AddLogo(SPRITES["LogoBlack"]);
 
             #endregion
@@ -261,7 +264,6 @@ namespace FiveKnights
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
             preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];
             preloadedGO["Godseeker"] = preloadedObjects["GG_White_Defender"]["GG_Arena_Prefab/Godseeker Crowd"];
-            
             preloadedGO["WhiteDef"] = preloadedObjects["Dream_04_White_Defender"]["White Defender"];
             preloadedGO["DreamEntry"] = preloadedObjects["Dream_04_White_Defender"]["Dream Entry"];
             preloadedGO["SMTest"] = preloadedObjects["Dream_04_White_Defender"]["_SceneManager"];
@@ -318,6 +320,8 @@ namespace FiveKnights
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
 
             Instance = this;
+            UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
+            PlantChanger();
             Log("Initalizing.");
         }
         #region Make Text Readable
@@ -687,7 +691,7 @@ namespace FiveKnights
                 if (!(i.name == "Slash" && i.transform.parent != null && i.transform.parent.gameObject.name == "Hollow Shade"))
                     continue;
                 
-                FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
+                preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
 
                 AudioClip aud = i
                     .LocateMyFSM("nail_clash_tink")
@@ -702,12 +706,11 @@ namespace FiveKnights
 
                 Tink.TinkClip = aud;
 
-                FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
-                Log("Got the shade stuff brochacho");
+                preloadedGO["ClashTink"] = clashSndObj;
                 break;
             }
 
-            PlantChanger();
+            //PlantChanger();
             //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
@@ -717,9 +720,9 @@ namespace FiveKnights
         {
             foreach (var trapType in new[] {"PTrap","PTurret"})
             {
-                GameObject trap = FiveKnights.preloadedGO[trapType];       
+                GameObject trap = preloadedGO[trapType];
                 UObject.DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
-                var newDD = FiveKnights.preloadedGO["WhiteDef"];
+                var newDD = preloadedGO["WhiteDef"];
                 var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
                 var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
                 foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
@@ -733,22 +736,27 @@ namespace FiveKnights
 
                     fi.SetValue(newHit, fi.GetValue(ddHit));
                 }
+                
                 var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
                 var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
                 var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
+                
                 foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
                                                                              BindingFlags.NonPublic |
                                                                              BindingFlags.Public | BindingFlags.Static))
                 {
                     fi.SetValue(newEff2, fi.GetValue(oldEff3));
                 }
+                
                 UObject.DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
+                
                 foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
                     .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
                     .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
                 {
                     fi.SetValue(newEff2, fi.GetValue(oldEff2));
                 }
+                
                 foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
                                                                              BindingFlags.NonPublic |
                                                                              BindingFlags.Public | BindingFlags.Static)
@@ -758,6 +766,7 @@ namespace FiveKnights
                 }
                 
                 HealthManager hm = trap.GetComponent<HealthManager>();
+                
                 HealthManager hornHP = newDD.GetComponent<HealthManager>();
                 foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                     .Where(x => x.Name.Contains("Prefab")))
@@ -769,7 +778,7 @@ namespace FiveKnights
                     UObject.Destroy(i);
                 }
                 GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
-                if (trapType == "PTrap")
+                if (trapType == "PTrap" && hello.transform.Find("Orange Puff") != null)
                 {
                     UObject.Destroy(hello.transform.Find("Orange Puff").gameObject);
                 }
@@ -787,8 +796,13 @@ namespace FiveKnights
                 newEff2.uninfectedDeathPt = fake;
                 ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
                 FiveKnights.preloadedGO[trapType] = trap;
-                Log("Changed the plant");
             }
         }
+
+        public SaveModSettings LocalSaveData { get; set; }
+        
+        public void OnLoadLocal(SaveModSettings s) => this.LocalSaveData = s;
+
+        public SaveModSettings OnSaveLocal() => this.LocalSaveData;
     }
 }

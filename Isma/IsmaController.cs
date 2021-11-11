@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker;
@@ -51,8 +52,6 @@ namespace FiveKnights.Isma
         private bool isDead;
         public static bool eliminateMinions;
         private bool isIsmaHitLast;
-        public static List<GameObject> PlantF { get; set; }
-        public static List<GameObject> PlantG { get; set; }
         public bool introDone;
         
         private readonly string[] _dnailDial =
@@ -90,7 +89,7 @@ namespace FiveKnights.Isma
 
             GameObject seedFloor = new GameObject("SeedFloor");
             seedFloor.SetActive(true);
-            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f); //5.4
+            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f);
             var bc = seedFloor.AddComponent<BoxCollider2D>();
             bc.isTrigger = true;
             bc.offset = new Vector2(3.949066f, 0f);
@@ -100,7 +99,7 @@ namespace FiveKnights.Isma
             
             GameObject seedSideL = new GameObject("SeedSideL");
             seedSideL.SetActive(true);
-            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f); //5.4
+            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f);
             var bcL = seedSideL.AddComponent<BoxCollider2D>();
             bcL.isTrigger = true;
             bcL.offset = new Vector2(0, 0.4677944f);
@@ -166,7 +165,7 @@ namespace FiveKnights.Isma
             else transform.position = new Vector3(LEFT_X + (RIGHT_X-LEFT_X)/1.5f, GROUND_Y, 1f);
             float dir = FaceHero();
             _bc.enabled = false;
-            _anim.Play("Apear"); //Yes I know it's "appear," I don't feel like changing the assetbundle buddo
+            _anim.Play("Apear"); // Yes I know it's "appear," I don't feel like changing the assetbundle buddo
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y + 8f);
             _rb.velocity = new Vector2(0f, -40f);
             yield return new WaitWhile(() => gameObject.transform.GetPositionY() > GROUND_Y);
@@ -174,10 +173,8 @@ namespace FiveKnights.Isma
             _rb.velocity = new Vector2(0f, 0f);
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
             yield return new WaitWhile(() => _anim.IsPlaying());
-            GameObject whip = transform.Find("Whip").gameObject;
-            whip.layer = 11;
-            PlantG = new List<GameObject>();
-            PlantF = new List<GameObject>();
+            //GameObject whip = transform.Find("Whip").gameObject;
+            //whip.layer = 11;
             if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
             StartCoroutine("Start2");
         }
@@ -596,6 +593,9 @@ namespace FiveKnights.Isma
             StartCoroutine(AirFist());
         }
 
+        private const float WhipYOffset = 2.21f;
+        private const float WhipXOffset = 1.13f;
+        
         private void WhipAttack()
         {
             IEnumerator WhipAttack()
@@ -617,31 +617,33 @@ namespace FiveKnights.Isma
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.7f);
                 _anim.enabled = true;
-                GameObject fist = transform.Find("Arm").gameObject;
-                GameObject whiporig = transform.Find("Whip").gameObject;
-                GameObject whipPar = new GameObject();
-                whipPar.transform.position = gameObject.transform.position;
-                whipPar.transform.localScale = gameObject.transform.localScale;
-                GameObject whip = Instantiate(whiporig);
-                Vector3 orig = whiporig.transform.localScale;
-                whip.transform.localScale = new Vector3(orig.x * gameObject.transform.localScale.x, orig.y,orig.z);
-                whip.transform.parent = whipPar.transform;
-                Animator anim = whip.GetComponent<Animator>();
-                yield return null;
-                yield return new WaitWhile(() => _anim.IsPlaying());
+                transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+                var oldWhip = transform.Find("Whip").gameObject;
+                var whip = Instantiate(oldWhip);
+                whip.transform.position = oldWhip.transform.position;
+                whip.transform.localScale = oldWhip.transform.lossyScale;
                 whip.SetActive(true);
-                anim.Play("Whip");
-                yield return new WaitWhile(() => anim.GetCurrentFrame() < 1);
-                _anim.Play("GFist");
-                fist.SetActive(true);
-                yield return new WaitWhile(() => anim.GetCurrentFrame() < 13);
-                _anim.Play("GFist2");
-                fist.SetActive(false);
-                yield return new WaitWhile(() => anim.GetCurrentFrame() < 14);
-                _anim.Play("GFist3");
-                yield return new WaitWhile(() => anim.IsPlaying());
-                anim.Play("Idle");
-                whip.SetActive(false);
+                
+                yield return _anim.PlayToEndWithActions("GFistCopy",
+           (0, () => { whip.Find("W1").SetActive(true); }),
+                    (1, () => { whip.Find("W2").SetActive(true); whip.Find("W1").SetActive(false); }),
+                    (2, () => { whip.Find("W3").SetActive(true); whip.Find("W2").SetActive(false); }),
+                    (3, () => { whip.Find("W4").SetActive(true); whip.Find("W3").SetActive(false); }),
+                    (4, () => { whip.Find("W5").SetActive(true); whip.Find("W4").SetActive(false); }),
+                    (5, () => { whip.Find("W6").SetActive(true); whip.Find("W5").SetActive(false); }),
+                    (6, () => { whip.Find("W7").SetActive(true); whip.Find("W6").SetActive(false); }),
+                    (7, () => { whip.Find("W8").SetActive(true); whip.Find("W7").SetActive(false); }),
+                    (8, () => { whip.Find("W9").SetActive(true); whip.Find("W8").SetActive(false); }),
+                    (9, () => { whip.Find("W12").SetActive(true); whip.Find("W9").SetActive(false); }),
+                    (10, () => { whip.Find("W13").SetActive(true); whip.Find("W12").SetActive(false); }),
+                    (11, () => { whip.Find("W14").SetActive(true); whip.Find("W13").SetActive(false); }),
+                    (12, () => { whip.Find("W15").SetActive(true); whip.Find("W14").SetActive(false); }),
+                    (13, () => { whip.Find("W16").SetActive(true); whip.Find("W15").SetActive(false); }),
+                    (14, () => { whip.Find("W17").SetActive(true); whip.Find("W16").SetActive(false); }),
+                    (15, () => { whip.Find("W17").SetActive(false); })
+                );
+                
+                transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
                 _anim.Play("GFistEnd");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
@@ -680,33 +682,36 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.1f);
             dir = FaceHero();
             transform.position = new Vector3(transform.position.x, GROUND_Y, transform.position.z);
-            GameObject fist = transform.Find("Arm").gameObject;
-            GameObject whiporig = transform.Find("Whip").gameObject;
-            GameObject whipPar = new GameObject();
-            whipPar.transform.position = gameObject.transform.position;
-            whipPar.transform.localScale = gameObject.transform.localScale;
-            GameObject whip = Instantiate(whiporig);
-            Vector3 orig = whiporig.transform.localScale;
-            whip.transform.localScale = new Vector3(orig.x * gameObject.transform.localScale.x, orig.y, orig.z);
-            whip.transform.parent = whipPar.transform;
-            Animator anim = whip.GetComponent<Animator>();
-            _anim.Play("GFistAntic2");
-            yield return null;
-            yield return new WaitWhile(() => _anim.IsPlaying());
+            Log("Start play");
+            transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+            
+            var oldWhip = transform.Find("Whip").gameObject;
+            var whip = Instantiate(oldWhip);
+            whip.transform.position = oldWhip.transform.position;
+            whip.transform.localScale = oldWhip.transform.lossyScale;
             whip.SetActive(true);
-            anim.Play("Whip");
-            yield return new WaitWhile(() => anim.GetCurrentFrame() < 1);
-            _anim.Play("GFist");
-            fist.SetActive(true);
-            yield return new WaitWhile(() => anim.GetCurrentFrame() < 13);
-            _anim.Play("GFist2");
-            fist.SetActive(false);
-            yield return new WaitWhile(() => anim.GetCurrentFrame() < 14);
-            _anim.Play("GFist3");
-            yield return new WaitWhile(() => anim.IsPlaying());
-            anim.Play("Idle");
-            whip.SetActive(false);
+            
+            yield return _anim.PlayToEndWithActions("GFistCopy",
+       (0, () => { whip.Find("W1").SetActive(true); }),
+                (1, () => { whip.Find("W2").SetActive(true); whip.Find("W1").SetActive(false); }),
+                (2, () => { whip.Find("W3").SetActive(true); whip.Find("W2").SetActive(false); }),
+                (3, () => { whip.Find("W4").SetActive(true); whip.Find("W3").SetActive(false); }),
+                (4, () => { whip.Find("W5").SetActive(true); whip.Find("W4").SetActive(false); }),
+                (5, () => { whip.Find("W6").SetActive(true); whip.Find("W5").SetActive(false); }),
+                (6, () => { whip.Find("W7").SetActive(true); whip.Find("W6").SetActive(false); }),
+                (7, () => { whip.Find("W8").SetActive(true); whip.Find("W7").SetActive(false); }),
+                (8, () => { whip.Find("W9").SetActive(true); whip.Find("W8").SetActive(false); }),
+                (9, () => { whip.Find("W12").SetActive(true); whip.Find("W9").SetActive(false); }),
+                (10, () => { whip.Find("W13").SetActive(true); whip.Find("W12").SetActive(false); }),
+                (11, () => { whip.Find("W14").SetActive(true); whip.Find("W13").SetActive(false); }),
+                (12, () => { whip.Find("W15").SetActive(true); whip.Find("W14").SetActive(false); }),
+                (13, () => { whip.Find("W16").SetActive(true); whip.Find("W15").SetActive(false); }),
+                (14, () => { whip.Find("W17").SetActive(true); whip.Find("W16").SetActive(false); }),
+                (15, () => { whip.Find("W17").SetActive(false); })
+            );
+           
             _anim.Play("GFistEnd");
+            transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
             _anim.enabled = false;
@@ -1425,97 +1430,14 @@ namespace FiveKnights.Isma
             EnemyHitEffectsUninfected ogrimHitEffects = dd.GetComponent<EnemyHitEffectsUninfected>();
             foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance | BindingFlags.Public))
             {
-                if (fi.Name.Contains("Origin"))
-                {
-                    hitEff.effectOrigin = new Vector3(0f, 1f, 0f);
-                    continue;
-                }
-                fi.SetValue(hitEff, fi.GetValue(ogrimHitEffects));
+                fi.SetValue(hitEff,
+                    fi.Name.Contains("Origin") ? new Vector3(-0.2f, 1.3f, 0f) : fi.GetValue(ogrimHitEffects));
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
             foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
-            }
-
-            //PlantChanger();
-        }
-
-        private void PlantChanger()
-        {
-            foreach (var trapType in new[] {"PTrap","PTurret"})
-            {
-                GameObject trap = FiveKnights.preloadedGO[trapType];       
-                DestroyImmediate(trap.GetComponent<InfectedEnemyEffects>());
-                var newDD = FiveKnights.preloadedGO["WhiteDef"];
-                var ddHit = newDD.GetComponent<EnemyHitEffectsUninfected>();
-                var newHit = trap.AddComponent<EnemyHitEffectsUninfected>();
-                foreach (FieldInfo fi in typeof(EnemyHitEffectsUninfected).GetFields(BindingFlags.Instance |
-                    BindingFlags.NonPublic | BindingFlags.Public))
-                {
-                    if (fi.Name.Contains("Origin"))
-                    {
-                        newHit.effectOrigin = new Vector3(0f, 0.5f, 0f);
-                        continue;
-                    }
-
-                    fi.SetValue(newHit, fi.GetValue(ddHit));
-                }
-                var newEff2 = trap.AddComponent<EnemyDeathEffectsUninfected>();
-                var oldEff2 = newDD.GetComponent<EnemyDeathEffectsUninfected>();
-                var oldEff3 = trap.GetComponent<EnemyDeathEffects>();
-                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
-                                                                             BindingFlags.NonPublic |
-                                                                             BindingFlags.Public | BindingFlags.Static))
-                {
-                    fi.SetValue(newEff2, fi.GetValue(oldEff3));
-                }
-                DestroyImmediate(trap.GetComponent<EnemyDeathEffects>());
-                foreach (FieldInfo fi in typeof(EnemyDeathEffectsUninfected)
-                    .GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
-                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
-                {
-                    fi.SetValue(newEff2, fi.GetValue(oldEff2));
-                }
-                foreach (FieldInfo fi in typeof(EnemyDeathEffects).GetFields(BindingFlags.Instance |
-                                                                             BindingFlags.NonPublic |
-                                                                             BindingFlags.Public | BindingFlags.Static)
-                    .Where(x => x.Name.IndexOf("corpse", StringComparison.OrdinalIgnoreCase) < 0))
-                {
-                    fi.SetValue((EnemyDeathEffects) newEff2, fi.GetValue((EnemyDeathEffects) oldEff2));
-                }
-                
-                HealthManager hm = trap.GetComponent<HealthManager>();
-                HealthManager hornHP = newDD.GetComponent<HealthManager>();
-                foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
-                    .Where(x => x.Name.Contains("Prefab")))
-                {
-                    fi.SetValue(hm, fi.GetValue(hornHP));
-                }
-                foreach (PersistentBoolItem i in trap.GetComponentsInChildren<PersistentBoolItem>(true))
-                {
-                    Destroy(i);
-                }
-                GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
-                if (trapType == "PTrap")
-                {
-                    Destroy(hello.transform.Find("Orange Puff").gameObject);
-                }
-                else
-                {
-                    foreach (var i in hello.GetComponentsInChildren<ParticleSystem>(true))
-                    {
-                        Log($"What am i {i.name} with color {i.main.startColor}");
-                        var j = i.main;
-                        j.startColor = new Color(0.16f, 0.5f, 0.003f);
-                    }
-                }
-                newEff2.whiteWave = hello;
-                newEff2.uninfectedDeathPt = new GameObject();
-                ((EnemyDeathEffects) newEff2).SetAttr("corpsePrefab", (GameObject) null);
-                FiveKnights.preloadedGO[trapType] = trap;
-                Log("Changed the plant");
             }
         }
 
