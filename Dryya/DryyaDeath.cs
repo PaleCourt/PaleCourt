@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using FiveKnights.Ogrim;
 using UnityEngine;
-using Logger = Modding.Logger;
 
 namespace FiveKnights.Dryya
 {

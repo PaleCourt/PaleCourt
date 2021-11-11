@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using Logger = Modding.Logger;
-using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace FiveKnights.Ogrim
 {

@@ -1,8 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using FiveKnights.BossManagement;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
@@ -10,13 +7,11 @@ using FiveKnights.Isma;
 using FiveKnights.Zemer;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
-using SFCore.Utils;
-using Modding;
+//using SFCore.Utils;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using Vasi;
-using Logger = On.InControl.Logger;
 
 namespace FiveKnights
 {

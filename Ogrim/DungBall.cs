@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using FiveKnights.Isma;
 using UnityEngine;
-using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace FiveKnights.Ogrim
 {

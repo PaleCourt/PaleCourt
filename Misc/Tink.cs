@@ -1,5 +1,4 @@
 using UnityEngine;
-using Logger = Modding.Logger;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights 

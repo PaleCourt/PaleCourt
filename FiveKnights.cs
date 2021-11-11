@@ -1,16 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Reflection;
 using Modding;
 using JetBrains.Annotations;
 using UnityEngine;
-using USceneManager = UnityEngine.SceneManagement.SceneManager;
 using UObject = UnityEngine.Object;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FiveKnights.BossManagement;
-using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using SFCore;
@@ -276,28 +273,28 @@ namespace FiveKnights
             preloadedGO["isma_stat"] = null;
 
             //#region Add Entries
-            //journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], _saveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            //journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
             //{
             //    name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
             //    desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
             //    note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
             //    shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
             //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], _saveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            //journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
             //{
             //    name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
             //    desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
             //    note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
             //    shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
             //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], _saveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            //journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
             //{
             //    name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
             //    desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
             //    note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
             //    shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
             //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], _saveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            //journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
             //{
             //    name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
             //    desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
@@ -524,43 +521,43 @@ namespace FiveKnights
                 }
                 journalHelper.playerData.Hidden = true;
             }
-            //_saveSettings.IsmaEntryData = journalentries["Isma"].playerData;
-            //_saveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
-            //_saveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
-            //_saveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
+            //SaveSettings.IsmaEntryData = journalentries["Isma"].playerData;
+            //SaveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
+            //SaveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
+            //SaveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
         }
 
         private object SetVariableHook(Type t, string key, object obj)
         {
             if (key == "statueStateIsma")
-                _saveSettings.CompletionIsma = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma = (BossStatue.Completion)obj;
             else if (key == "statueStateDryya")
-                _saveSettings.CompletionDryya = (BossStatue.Completion)obj;
+                SaveSettings.CompletionDryya = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer")
-                _saveSettings.CompletionZemer = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer = (BossStatue.Completion)obj;
             else if (key == "statueStateZemer2")
-                _saveSettings.CompletionZemer2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer2 = (BossStatue.Completion)obj;
             else if (key == "statueStateIsma2")
-                _saveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
-                _saveSettings.CompletionHegemol = (BossStatue.Completion)obj;
+                SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
             return obj;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                return _saveSettings.CompletionIsma;
+                return SaveSettings.CompletionIsma;
             if (key == "statueStateDryya")
-                return _saveSettings.CompletionDryya;
+                return SaveSettings.CompletionDryya;
             if (key == "statueStateZemer")
-                return _saveSettings.CompletionZemer;
+                return SaveSettings.CompletionZemer;
             if (key == "statueStateZemer2")
-                return _saveSettings.CompletionZemer2;
+                return SaveSettings.CompletionZemer2;
             if (key == "statueStateIsma2")
-                return _saveSettings.CompletionIsma2;
+                return SaveSettings.CompletionIsma2;
             if (key == "statueStateHegemol")
-                return _saveSettings.CompletionHegemol;
+                return SaveSettings.CompletionHegemol;
             return orig;
         }
 
@@ -571,7 +568,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return _saveSettings.gotCharms[charmIDs.IndexOf(charmNum)];
+                    return SaveSettings.gotCharms[charmIDs.IndexOf(charmNum)];
                 }
             }
             if (target.StartsWith("newCharm_"))
@@ -579,7 +576,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return _saveSettings.newCharms[charmIDs.IndexOf(charmNum)];
+                    return SaveSettings.newCharms[charmIDs.IndexOf(charmNum)];
                 }
             }
             if (target.StartsWith("equippedCharm_"))
@@ -587,7 +584,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return _saveSettings.equippedCharms[charmIDs.IndexOf(charmNum)];
+                    return SaveSettings.equippedCharms[charmIDs.IndexOf(charmNum)];
                 }
             }
             return orig;
@@ -599,7 +596,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    _saveSettings.gotCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    SaveSettings.gotCharms[charmIDs.IndexOf(charmNum)] = orig;
                     return orig;
                 }
             }
@@ -608,7 +605,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    _saveSettings.newCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    SaveSettings.newCharms[charmIDs.IndexOf(charmNum)] = orig;
                     return orig;
                 }
             }
@@ -617,7 +614,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    _saveSettings.equippedCharms[charmIDs.IndexOf(charmNum)] = orig;
+                    SaveSettings.equippedCharms[charmIDs.IndexOf(charmNum)] = orig;
                     return orig;
                 }
             }
@@ -631,7 +628,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return _saveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
+                    return SaveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
                 }
             }
             return orig;
@@ -646,7 +643,7 @@ namespace FiveKnights
                 {
                     key = key.Substring(0, 11) + CharmKeys[charmIDs.IndexOf(charmNum)];
                 }
-                else if (charmNum == 10 && _saveSettings.upgradedCharm_10)
+                else if (charmNum == 10 && SaveSettings.upgradedCharm_10)
                     key = key.Substring(0, 11) + CharmKeys[4];
             }
             if (langStrings.ContainsKey(key, sheet))
@@ -667,10 +664,10 @@ namespace FiveKnights
 
         private void AddComponent()
         {
-            //journalentries["Isma"].playerData = _saveSettings.IsmaEntryData;
-            //journalentries["Zemer"].playerData = _saveSettings.ZemerEntryData;
-            //journalentries["Dryya"].playerData = _saveSettings.DryyaEntryData;
-            //journalentries["Hegemol"].playerData = _saveSettings.HegemolEntryData;
+            //journalentries["Isma"].playerData = SaveSettings.IsmaEntryData;
+            //journalentries["Zemer"].playerData = SaveSettings.ZemerEntryData;
+            //journalentries["Dryya"].playerData = SaveSettings.DryyaEntryData;
+            //journalentries["Hegemol"].playerData = SaveSettings.HegemolEntryData;
             //foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
             //{
             //    string name = keyValuePair.Key;
@@ -798,11 +795,5 @@ namespace FiveKnights
                 FiveKnights.preloadedGO[trapType] = trap;
             }
         }
-
-        public SaveModSettings LocalSaveData { get; set; }
-        
-        public void OnLoadLocal(SaveModSettings s) => this.LocalSaveData = s;
-
-        public SaveModSettings OnSaveLocal() => this.LocalSaveData;
     }
 }

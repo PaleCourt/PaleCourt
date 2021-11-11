@@ -1,6 +1,4 @@
-﻿using System;
-using GlobalEnums;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace FiveKnights
 {

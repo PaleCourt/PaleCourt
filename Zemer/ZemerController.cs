@@ -8,7 +8,6 @@ using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
-using Vasi;
 
 namespace FiveKnights.Zemer
 {

@@ -9,8 +9,6 @@ using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
-using Bounds = UnityEngine.Bounds;
-using Object = UnityEngine.Object;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights.Hegemol
@@ -148,7 +146,7 @@ namespace FiveKnights.Hegemol
             AddGroundPunch();
 
             _control.Fsm.GetFsmFloat("Run Speed").Value = 20.0f;
-	    _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverworld ? (OWLeftX + OWRightX) / 2 : (LeftX + RightX) / 2;
+	    _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (LeftX + RightX) / 2;
 
             _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
@@ -327,7 +325,7 @@ namespace FiveKnights.Hegemol
                 _audio.Play("Mace Swing");
                 _rb.velocity = Vector2.zero;
 		
-		if (!OWArenaController.IsInOverworld)
+		if (!OWArenaFinder.IsInOverWorld)
 		{
                     Vector2 pos = transform.position + transform.localScale.x * Vector3.right * 5.0f + Vector3.down * 5.0f;
                     float valMin = 15.0f;
@@ -684,7 +682,7 @@ namespace FiveKnights.Hegemol
             float xLeft = pos.x + 5 * scaleX - 2;
             float xRight = pos.x + 5 * scaleX + 2;
             float pillarSpacing = 2;
-            while (xLeft >= (OWArenaController.IsInOverworld ? OWLeftX : LeftX) || xRight <= (OWArenaController.IsInOverworld ? OWRightX : RightX))
+            while (xLeft >= (OWArenaFinder.IsInOverWorld ? OWLeftX : LeftX) || xRight <= (OWArenaFinder.IsInOverWorld ? OWRightX : RightX))
             {
                 _audio.Play("Dung Pillar", 0.9f, 1.1f);
                 

@@ -1,6 +1,5 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using System.Reflection;
+﻿using UnityEngine;
+using SFCore.Utils;
 
 namespace FiveKnights.Misc
 {
@@ -19,20 +18,6 @@ namespace FiveKnights.Misc
             }
 
             return found;
-        }
-
-        public static GameObject FindGameObjectInChildren(this GameObject gameObject, string name)
-        {
-            if (gameObject == null)
-                return null;
-
-            foreach (var t in gameObject.GetComponentsInChildren<Transform>(true))
-            {
-                if (t.name == name)
-                    return t.gameObject;
-            }
-
-            return null;
         }
 
         public static GameObject FindGameObjectNameContainsInChildren(this GameObject gameObject, string name)

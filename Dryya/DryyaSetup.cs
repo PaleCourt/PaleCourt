@@ -6,7 +6,6 @@ using FiveKnights.BossManagement;
 using SFCore.Utils;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
-using SFCore.Utils;
 using UnityEngine;
 using Random = UnityEngine.Random;
 

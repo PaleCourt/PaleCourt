@@ -1,7 +1,4 @@
-﻿using System;
-using UnityEngine;
-using System.Collections;
-using Modding;
+﻿using UnityEngine;
 
 namespace FiveKnights
 {

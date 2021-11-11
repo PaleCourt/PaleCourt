@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,7 +10,6 @@ using SFCore.Utils;
 using Modding;
 using UnityEngine;
 using Random = UnityEngine.Random;
-using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
 namespace FiveKnights
 {
@@ -92,7 +90,7 @@ namespace FiveKnights
 
         private Sprite CharmIconList_GetSprite(On.CharmIconList.orig_GetSprite orig, CharmIconList self, int id)
         {
-            if (FiveKnights.Instance._saveSettings.upgradedCharm_10)
+            if (FiveKnights.Instance.SaveSettings.upgradedCharm_10)
             {
                 //Log("Upgraded Defender's Crest");
                 self.spriteList[10] = FiveKnights.SPRITES["Kings_Honour"];
@@ -162,31 +160,31 @@ namespace FiveKnights
             ModifyFury();
 
 #if DEBUG
-            FiveKnights.Instance._saveSettings.upgradedCharm_10 = true;
+            FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
-            FiveKnights.Instance._saveSettings.gotCharms[0] = true;
-            FiveKnights.Instance._saveSettings.gotCharms[1] = true;
-            FiveKnights.Instance._saveSettings.gotCharms[2] = true;
-            FiveKnights.Instance._saveSettings.gotCharms[3] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[1] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[2] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[3] = true;
 
             /*PureAmulets.Settings.newCharm_41 = true;
             PureAmulets.Settings.newCharm_42 = true;
             PureAmulets.Settings.newCharm_43 = true;
             PureAmulets.Settings.newCharm_44 = true;*/
 
-            Log("Got Charm 41: " + FiveKnights.Instance._saveSettings.gotCharms[0]);
-            Log("Got Charm 42: " + FiveKnights.Instance._saveSettings.gotCharms[1]);
-            Log("Got Charm 43: " + FiveKnights.Instance._saveSettings.gotCharms[2]);
-            Log("Got Charm 44: " + FiveKnights.Instance._saveSettings.gotCharms[3]);
-            Log("New Charm 41: " + FiveKnights.Instance._saveSettings.newCharms[0]);
-            Log("New Charm 42: " + FiveKnights.Instance._saveSettings.newCharms[1]);
-            Log("New Charm 43: " + FiveKnights.Instance._saveSettings.newCharms[2]);
-            Log("New Charm 44: " + FiveKnights.Instance._saveSettings.newCharms[3]);
-            Log("Equipped Charm 41: " + FiveKnights.Instance._saveSettings.equippedCharms[0]);
-            Log("Equipped Charm 42: " + FiveKnights.Instance._saveSettings.equippedCharms[1]);
-            Log("Equipped Charm 43: " + FiveKnights.Instance._saveSettings.equippedCharms[2]);
-            Log("Equipped Charm 44: " + FiveKnights.Instance._saveSettings.equippedCharms[3]);
-            Log("Upgraded Charm 10: " + FiveKnights.Instance._saveSettings.upgradedCharm_10);
+            Log("Got Charm 41: " + FiveKnights.Instance.SaveSettings.gotCharms[0]);
+            Log("Got Charm 42: " + FiveKnights.Instance.SaveSettings.gotCharms[1]);
+            Log("Got Charm 43: " + FiveKnights.Instance.SaveSettings.gotCharms[2]);
+            Log("Got Charm 44: " + FiveKnights.Instance.SaveSettings.gotCharms[3]);
+            Log("New Charm 41: " + FiveKnights.Instance.SaveSettings.newCharms[0]);
+            Log("New Charm 42: " + FiveKnights.Instance.SaveSettings.newCharms[1]);
+            Log("New Charm 43: " + FiveKnights.Instance.SaveSettings.newCharms[2]);
+            Log("New Charm 44: " + FiveKnights.Instance.SaveSettings.newCharms[3]);
+            Log("Equipped Charm 41: " + FiveKnights.Instance.SaveSettings.equippedCharms[0]);
+            Log("Equipped Charm 42: " + FiveKnights.Instance.SaveSettings.equippedCharms[1]);
+            Log("Equipped Charm 43: " + FiveKnights.Instance.SaveSettings.equippedCharms[2]);
+            Log("Equipped Charm 44: " + FiveKnights.Instance.SaveSettings.equippedCharms[3]);
+            Log("Upgraded Charm 10: " + FiveKnights.Instance.SaveSettings.upgradedCharm_10);
 #endif
         }
 
@@ -345,7 +343,7 @@ namespace FiveKnights
                 17,
                 () =>
                 {
-                    Color color = FiveKnights.Instance._saveSettings.equippedCharms[3] ? Color.black : furyColor;
+                    Color color = FiveKnights.Instance.SaveSettings.equippedCharms[3] ? Color.black : furyColor;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 17).color.Value = color;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 18).color.Value = color;
                     fury.GetAction<Tk2dSpriteSetColor>("Activate", 19).color.Value = color;
@@ -357,7 +355,7 @@ namespace FiveKnights
         {
             Log("Charm Update");
 
-            if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance._saveSettings.upgradedCharm_10)
+            if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10)
             {
                 StartCoroutine(FindAndAddComponentToDung());
                 /*if (_royalAura != null) Destroy(_royalAura);
@@ -374,7 +372,7 @@ namespace FiveKnights
                 if (_royalAura != null) Destroy(_royalAura);
             }
 
-            if (FiveKnights.Instance._saveSettings.equippedCharms[0])
+            if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
             {
                 ChangeSlashScale(3, true);
             }
@@ -383,7 +381,7 @@ namespace FiveKnights
                 ChangeSlashScale(1.6f);
             }
 
-            if (FiveKnights.Instance._saveSettings.equippedCharms[1])
+            if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
             {
                 _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
                 _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2 Blasts");
@@ -404,7 +402,7 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
             }
 
-            if (FiveKnights.Instance._saveSettings.equippedCharms[2])
+            if (FiveKnights.Instance.SaveSettings.equippedCharms[2])
             {
                 _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Q1 Land Plumes");
                 _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land Plumes");
@@ -421,7 +419,7 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2");
             }
 
-            if (!FiveKnights.Instance._saveSettings.equippedCharms[3])
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3])
             {
                 ResetHeroControllerProperties();
             }
@@ -868,7 +866,7 @@ namespace FiveKnights
 
             if (_pd.health == oldHealth) return;
 
-            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
 
             if (_pd.health <= 1)
             {
@@ -887,7 +885,7 @@ namespace FiveKnights
         {
             orig(self, amount);
 
-            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
 
             if (_pd.health > _pd.maxHealth / 2)
             {
@@ -906,7 +904,7 @@ namespace FiveKnights
         {
             orig(self);
 
-            if (!FiveKnights.Instance._saveSettings.equippedCharms[3]) return;
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
 
             Log("Reset HeroController Properties");
             ResetHeroControllerProperties();
@@ -1277,16 +1275,16 @@ namespace FiveKnights
             // Insert testing methods for testing states
             nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
             {
-                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
             });
             nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
             {
-                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
             });
             nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
             {
-                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance._saveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
-                nailArts.SetState(FiveKnights.Instance._saveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
+                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
             });
 
             // Insert activation and deactivation of void nail arts

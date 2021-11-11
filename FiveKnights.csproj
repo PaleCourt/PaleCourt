@@ -13,7 +13,6 @@
     <FileVersion>1.0.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
-    <Nullable>enable</Nullable>
     <HollowKnightRefs>E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -48,6 +47,9 @@
     <Reference Include="MonoMod.Utils">
       <HintPath>$(HollowKnightRefs)/MonoMod.Utils.dll</HintPath>
     </Reference>
+    <Reference Include="mscorlib">
+      <HintPath>$(HollowKnightRefs)/mscorlib.dll</HintPath>
+    </Reference>
     <Reference Include="netstandard">
       <HintPath>$(HollowKnightRefs)/netstandard.dll</HintPath>
     </Reference>
@@ -56,6 +58,12 @@
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
+    </Reference>
+    <Reference Include="System">
+      <HintPath>$(HollowKnightRefs)/System.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>$(HollowKnightRefs)/System.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.ComponentModel.Composition">
       <HintPath>$(HollowKnightRefs)/System.ComponentModel.Composition.dll</HintPath>
@@ -300,6 +308,9 @@
     <Reference Include="FrogCore">
       <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>
     </Reference>
+    <Reference Include="Vasi">
+      <HintPath>$(HollowKnightRefs)/Mods/Vasi/Vasi.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="assets\WHegemol_full_2.png" />
@@ -358,11 +369,4 @@
     <EmbeddedResource Include="assets\Vessels_Lament.png" />
     <EmbeddedResource Include="StreamingAssets\pureamulets" />
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="@echo on" />
-    <Exec Command="echo Copying mod" />
-    <Exec Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\PaleCourt\&quot;" />
-    <Exec Condition="Exists('D:\Steam\steamapps\common\Hollow Knight')" Command="xcopy /y &quot;$(TargetPath)&quot; &quot;D:\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\&quot;" />
-  </Target>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
