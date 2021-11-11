@@ -7,6 +7,7 @@ using FiveKnights.BossManagement;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
+using Vasi;
 
 namespace FiveKnights.Isma
 {

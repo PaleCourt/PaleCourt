@@ -45,9 +45,9 @@ namespace FiveKnights
 
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
-                if (i.PrintSceneHierarchyPath() != "Hollow Shade\\Slash")
+                if (!(i.name == "Slash" && i.transform.parent != null && i.transform.parent.gameObject.name == "Hollow Shade"))
                     continue;
-                
+
                 FiveKnights.preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
 
                 AudioClip aud = i

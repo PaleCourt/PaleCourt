@@ -7,6 +7,7 @@ using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
+using Vasi;
 using Logger = Modding.Logger;
 using Random = System.Random;
 

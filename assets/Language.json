@@ -53,6 +53,36 @@
       "HEG_OUTRO_1b": "hahaha insane party trick leads to my death in soviet russia :)",
       "ZEM_OUTRO_1a": "Yo dungo zemer and stuffy stuff grubber dub rub.",
       "ZEM_OUTRO_1b": "hahaha insane party trick leads to my death in soviet russia :)"
+    },
+    "UI": {
+      "CHARM_NAME_PURITY": "Mark of Purity",
+      "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Tremendously increases the range of the bearer's nail, allowing them to strike foes from further away.",
+      "CHARM_NAME_LAMENT": "Vessel's Lament",
+      "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
+      "CHARM_NAME_BOON": "Boon of Hallownest",
+      "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
+      "CHARM_NAME_BLOOM": "Abyssal Bloom",
+      "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>As the bearer weakens this charm’s strength will increase and become overpowering near death.",
+      "CHARM_NAME_HONOUR": "King's Honour",
+      "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
+    },
+    "Journal": {
+      "ENTRY_ISMA_NAME": "Isma",
+      "ENTRY_ISMA_LONGNAME": "Kindly Isma",
+      "ENTRY_ISMA_DESC": "Champion from a brighter age. Had an affinity for plant life and all things living, but when the kingdom crumbled, she retreated to her Grove, where she perished.",
+      "ENTRY_ISMA_NOTE": "<br>Ah, Isma… where do I begin? Such a kindly figure she is. She cares for everyone, and even in battle, I would sense some sorrow when we would prevail. While my oath forbids it, I must pay her a visit… someday…<br> - Ogrim of the Five Knights",
+      "ENTRY_HEG_NAME": "Hegemol",
+      "ENTRY_HEG_LONGNAME": "Mighty Hegemol",
+      "ENTRY_HEG_DESC": "Champion from a brighter age. Guarded the entrance to the kingdom's capital, but mysteriously disappeared after an unknown encounter.",
+      "ENTRY_HEG_NOTE": "<br>I can still hear your jolly chortle, Hegemol. For such a towering bug, you were so quiet! But your jokes were simply unrivaled. After all this time, I never got to see your face...what was hiding in your armour, dear friend?<br> - Ogrim of the Five Knights",
+      "ENTRY_DRY_NAME": "Dryya",
+      "ENTRY_DRY_LONGNAME": "Fierce Dryya",
+      "ENTRY_DRY_DESC": "Champion from a brighter age. Fiercely guarded the Queen's retreat, but was eventually overrun by a traitorous tribe.",
+      "ENTRY_DRY_NOTE": "<br>What a ferocious combatant Dryya was! It was almost like watching an elegant dance when she confronted the kingdom’s foes. While she put on a hard front, I’m thankful I was able to witness her soft side.<br> - Ogrim of the Five Knights",
+      "ENTRY_ZEM_NAME": "Ze'mer",
+      "ENTRY_ZEM_LONGNAME": "Mysterious Ze'mer",
+      "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
+      "ENTRY_ZEM_NOTE": "<br>Ze'mer… what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
     }
   },
   "ES": {

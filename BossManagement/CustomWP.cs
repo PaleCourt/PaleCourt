@@ -8,6 +8,7 @@ using HutongGames.PlayMaker.Actions;
 using System.Collections;
 using UnityEngine.UI;
 using Object = System.Object;
+using SFCore.Utils;
 
 namespace FiveKnights
 {
@@ -350,22 +351,22 @@ namespace FiveKnights
             switch (name)
             {
                 case "ISMA_NAME":
-                    bs.StatueState = FiveKnights.Instance.LocalSaveData.CompletionIsma;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionIsma;
                     SetStatue2(statue, "GG_White_Defender", "statueStateIsma2","DD_ISMA_NAME", "DD_ISMA_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.LocalSaveData.CompletionIsma2;
-                    bs.SetDreamVersion(FiveKnights.Instance.LocalSaveData.AltStatueIsma, false, false);
+                    bs.DreamStatueState = FiveKnights.Instance._saveSettings.CompletionIsma2;
+                    bs.SetDreamVersion(FiveKnights.Instance._saveSettings.AltStatueIsma, false, false);
                     break;
                 case "DRY_NAME":
-                    bs.StatueState = FiveKnights.Instance.LocalSaveData.CompletionDryya;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionDryya;
                     break;
                 case "ZEM_NAME":
-                    bs.StatueState = FiveKnights.Instance.LocalSaveData.CompletionZemer;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionZemer;
                     SetStatue2(statue, sceneName, "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.LocalSaveData.CompletionZemer2;
-                    bs.SetDreamVersion(FiveKnights.Instance.LocalSaveData.AltStatueZemer, false, false);
+                    bs.DreamStatueState = FiveKnights.Instance._saveSettings.CompletionZemer2;
+                    bs.SetDreamVersion(FiveKnights.Instance._saveSettings.AltStatueZemer, false, false);
                     break;
                 case "HEG_NAME":
-                    bs.StatueState = FiveKnights.Instance.LocalSaveData.CompletionHegemol;
+                    bs.StatueState = FiveKnights.Instance._saveSettings.CompletionHegemol;
                     break;
             }
             bs.bossScene = scene;

@@ -13,6 +13,7 @@ using SFCore.Utils;
 using Logger = Modding.Logger;
 using UObject = UnityEngine.Object;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
+using SFCore.Utils;
 
 namespace FiveKnights
 {
