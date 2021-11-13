@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
@@ -173,7 +174,7 @@ namespace FiveKnights
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
             fsm.GetState("Fade Out").RemoveAction(0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
-            if (dungAnimation)
+            /*if (dungAnimation)
             {
                 IEnumerator PlayDungAnimation()
                 {
@@ -191,7 +192,9 @@ namespace FiveKnights
                 fsm.AddTransition("Dung Transformation", FsmEvent.Finished, "New Scene");
             }
             else
-                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
+                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");*/
+            fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
+            
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;
             fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
@@ -203,9 +206,8 @@ namespace FiveKnights
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
             HeroController.instance.EnterWithoutInput(true);
             fsm.SetState("Fade Out");
-            //fsm.PrintPlayMakerFSM();
         }
-        
+
         public void PlayMusic(AudioClip clip)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
