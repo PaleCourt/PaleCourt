@@ -115,7 +115,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 432f);
                 PlayMusic(FiveKnights.Clips["HegemolMusic"]);
-                hegemolCtrl.gameObject.SetActive(false);
+                hegemolCtrl.gameObject.SetActive(true);
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 var bsc = BossSceneController.Instance;
                 GameObject transition = Instantiate(bsc.transitionPrefab);

@@ -6,7 +6,6 @@ namespace FiveKnights.Misc
     {
         private void OnTriggerEnter2D(Collider2D other)
         {
-            Modding.Logger.Log("Killing self");
             HeroController.instance.CancelSuperDash();
             Destroy(this);
         }
