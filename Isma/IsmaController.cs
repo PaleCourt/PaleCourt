@@ -84,6 +84,7 @@ namespace FiveKnights.Isma
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
             _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathEff.SetJournalEntry(FiveKnights.journalentries["Isma"]);
             EnemyPlantSpawn.isPhase2 = false;
 
             GameObject seedFloor = new GameObject("SeedFloor");
@@ -1046,6 +1047,7 @@ namespace FiveKnights.Isma
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _rb.velocity = new Vector2(0f, 0f);
+            _deathEff.RecordJournalEntry();
             yield return new WaitWhile(() => !FastApproximately(transform.GetPositionY(), dd.transform.GetPositionY(), 1.6f) && dd.transform.GetPositionY() > 4f);
             if (dd.transform.GetPositionY() < 4f) //In case we don't catch ogrim
             {
@@ -1222,6 +1224,7 @@ namespace FiveKnights.Isma
             //Time.timeScale = 0.5f;
             Vector3 scDD2 = dd.transform.localScale;
             float side2 = Mathf.Sign(gameObject.transform.localScale.x);
+            _deathEff.RecordJournalEntry();
 
             dd.transform.localScale = new Vector3(side2 * Mathf.Abs(scDD2.x), scDD2.y, scDD2.z);
             
