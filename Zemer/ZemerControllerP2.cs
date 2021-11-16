@@ -114,6 +114,7 @@ namespace FiveKnights.Zemer
             _spinType = 1;
 
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
+            _deathEff.SetJournalEntry(FiveKnights.journalentries["Zemer"]);
             _target = HeroController.instance.gameObject;
             
             yield return EndPhase1();
@@ -1494,6 +1495,7 @@ namespace FiveKnights.Zemer
                 if (DoPhase)
                 {
                     _bc.enabled = false;
+                    _deathEff.RecordWithoutNotes();
                     yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
@@ -1998,6 +2000,7 @@ namespace FiveKnights.Zemer
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
             _rb.gravityScale = 0f;
+            _deathEff.RecordJournalEntry();
             _anim.Play("ZKnocked");
             PlayAudioClip("ZAudP2Death1",_voice);
             yield return null;
