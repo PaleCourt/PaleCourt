@@ -153,7 +153,7 @@ namespace FiveKnights.Hegemol
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
-            _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Toss Antic", 1);
+            //_control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Toss Antic", 1);
             _control.GetAction<SetGravity2dScale>("Start Fall", 12).gravityScale.Value = 3.0f;
             _control.InsertMethod("Start Fall", _control.GetState("Start Fall").Actions.Length, () => _anim.Play("Intro Fall"));
             _control.GetAction<Tk2dPlayAnimation>("State 1").clipName.Value = "Intro Land";
