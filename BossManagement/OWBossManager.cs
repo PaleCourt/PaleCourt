@@ -325,7 +325,7 @@ namespace FiveKnights
                 ArenaFinder.Sprites[i.name] = i;
             }
             
-            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
+            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(438.4f, 23), Quaternion.identity);
             hegemol.SetActive(false);
             Log("Adding HegemolController component");
             return hegemol.AddComponent<HegemolController>();
