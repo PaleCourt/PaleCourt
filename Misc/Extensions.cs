@@ -156,5 +156,25 @@ namespace FiveKnights
         {
             return Math.Abs(self - rhs) <= threshold;
         }
+
+        public static bool RecordWithoutNotes(this EnemyDeathEffects deathEffects, bool withoutnotes = true, int defaultkills = 2)
+        {
+            try
+            {
+                string pd = "kills" + ReflectionHelper.GetAttr<EnemyDeathEffects, string>(deathEffects, "playerDataName");
+                int kills = PlayerData.instance.GetInt(pd);
+                if (kills > 0 && withoutnotes)
+                    PlayerData.instance.SetInt(pd, defaultkills);
+                else
+                    PlayerData.instance.SetInt(pd, 1);
+                deathEffects.RecordJournalEntry();
+                return kills > 0 && withoutnotes;
+            }
+            catch(Exception e)
+            {
+                FiveKnights.Instance.Log(e);
+                return withoutnotes;
+            }
+        }
     }
 }
