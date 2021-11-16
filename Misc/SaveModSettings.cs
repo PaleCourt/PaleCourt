@@ -101,7 +101,7 @@ namespace FiveKnights
             Charms.charmCost_44,
         };
         
-        public bool UnlockedGodhome() => IsmaEntryData.hasKilled && ZemerEntryData.hasKilled && DryyaEntryData.hasKilled && HegemolEntryData.hasKilled;
+        public bool UnlockedGodhome() => Cheats || (IsmaEntryData.hasKilled && ZemerEntryData.hasKilled && DryyaEntryData.hasKilled && HegemolEntryData.hasKilled);
         public JournalHelper.JournalPlayerData GetJournalForBoss(CustomWP.Boss boss)
         {
             switch (boss)
