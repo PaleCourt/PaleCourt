@@ -202,6 +202,7 @@ namespace FiveKnights.Dryya
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathEffects.SetJournalEntry(FiveKnights.journalentries["Dryya"]);
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
