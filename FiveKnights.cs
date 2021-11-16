@@ -272,36 +272,36 @@ namespace FiveKnights
 
             preloadedGO["isma_stat"] = null;
 
-            //#region Add Entries
-            //journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
-            //{
-            //    name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
-            //    desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
-            //    note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
-            //    shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
-            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
-            //{
-            //    name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
-            //    desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
-            //    note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
-            //    shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
-            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
-            //{
-            //    name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
-            //    desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
-            //    note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
-            //    shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
-            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
-            //{
-            //    name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
-            //    desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
-            //    note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
-            //    shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
-            //}, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            //#endregion
+            #region Add Entries
+            journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            #endregion
 
             //Unload();
 
