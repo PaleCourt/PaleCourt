@@ -279,7 +279,7 @@ namespace FiveKnights
                 CustomWP.Instance = null;
             }
             
-            if (arg1.name == "GG_Workshop")
+            if (arg1.name == "GG_Workshop" && FiveKnights.Instance.SaveSettings.UnlockedGodhome())
             {
                 StartCoroutine(CameraFixer());
                 Arena();
