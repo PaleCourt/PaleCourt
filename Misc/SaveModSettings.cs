@@ -102,26 +102,6 @@ namespace FiveKnights
         };
         
         public bool UnlockedGodhome() => Cheats || (IsmaEntryData.hasKilled && ZemerEntryData.hasKilled && DryyaEntryData.hasKilled && HegemolEntryData.hasKilled);
-        public JournalHelper.JournalPlayerData GetJournalForBoss(CustomWP.Boss boss)
-        {
-            switch (boss)
-            {
-                    case CustomWP.Boss.Mystic
-                    case CustomWP.Boss.Ze
-                        return ZemerEntryData;
-                    case CustomWP.Boss.Ogrim
-                    case CustomWP.Boss.Isma
-                        return IsmaEntryData;
-                    case CustomWP.Boss.Dryya
-                        return DryyaEntryData;
-                    case CustomWP.Boss.Hegemol
-                        return HegemolEntryData;
-                    case CustomWP.Boss.All
-                    case CustomWP.Boss.None
-                    default:
-                        return null;
-            }
-        }
         public const bool Cheats = true;
     }
 }
