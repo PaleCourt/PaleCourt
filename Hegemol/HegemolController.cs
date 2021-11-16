@@ -68,6 +68,8 @@ namespace FiveKnights.Hegemol
             while (HeroController.instance == null) yield return null;
 
             _hm.hp = Health;
+	    
+	    GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
 
             //_mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
             //_mace.AddComponent<Mace>();
@@ -655,6 +657,8 @@ namespace FiveKnights.Hegemol
             yield return new WaitForSeconds(0.4f);
 
             _anim.Play("Leave Antic");
+	    
+	    GetComponent<EnemyDeathEffects>().RecordJournalEntry();
             
             yield return new WaitForSeconds(0.2f);
 
