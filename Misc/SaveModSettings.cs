@@ -100,5 +100,27 @@ namespace FiveKnights
             Charms.charmCost_43,
             Charms.charmCost_44,
         };
+        
+        public bool UnlockedGodhome() => IsmaEntryData.hasKilled && ZemerEntryData.hasKilled && DryyaEntryData.hasKilled && HegemolEntryData.hasKilled;
+        public JournalHelper.JournalPlayerData GetJournalForBoss(CustomWP.Boss boss)
+        {
+            switch (boss)
+            {
+                    case CustomWP.Boss.All
+                    case CustomWP.Boss.None
+                        return null;
+                    case CustomWP.Boss.Mystic
+                    case CustomWP.Boss.Ze
+                        return ZemerEntryData;
+                    case CustomWP.Boss.Ogrim
+                    case CustomWP.Boss.Isma
+                        return IsmaEntryData;
+                    case CustomWP.Boss.Dryya
+                        return DryyaEntryData;
+                    case CustomWP.Boss.Hegemol
+                        return HegemolEntryData;
+            }
+        }
+        public const bool Cheats = true;
     }
 }
