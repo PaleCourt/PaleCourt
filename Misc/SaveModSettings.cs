@@ -106,9 +106,6 @@ namespace FiveKnights
         {
             switch (boss)
             {
-                    case CustomWP.Boss.All
-                    case CustomWP.Boss.None
-                        return null;
                     case CustomWP.Boss.Mystic
                     case CustomWP.Boss.Ze
                         return ZemerEntryData;
@@ -119,6 +116,10 @@ namespace FiveKnights
                         return DryyaEntryData;
                     case CustomWP.Boss.Hegemol
                         return HegemolEntryData;
+                    case CustomWP.Boss.All
+                    case CustomWP.Boss.None
+                    default:
+                        return null;
             }
         }
         public const bool Cheats = true;
