@@ -424,6 +424,7 @@ namespace FiveKnights
             statue.transform.Find("Spotlight").gameObject.SetActive(true);
             statue.SetActive(true);
             wonLastFight = false;
+            sr.enabled = false;
             return statue;
         }
 
