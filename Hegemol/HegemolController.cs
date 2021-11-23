@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
+using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;

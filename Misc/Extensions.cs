@@ -1,6 +1,8 @@
 using System;
 using System.Collections;
+using FrogCore.Ext;
 using JetBrains.Annotations;
+using Modding;
 using UnityEngine;
 
 namespace FiveKnights
@@ -161,7 +163,7 @@ namespace FiveKnights
         {
             try
             {
-                string pd = "kills" + ReflectionHelper.GetAttr<EnemyDeathEffects, string>(deathEffects, "playerDataName");
+                string pd = "kills" + ReflectionHelper.GetField<EnemyDeathEffects, string>(deathEffects, "playerDataName");
                 int kills = PlayerData.instance.GetInt(pd);
                 if (kills > 0 && withoutnotes)
                     PlayerData.instance.SetInt(pd, defaultkills);

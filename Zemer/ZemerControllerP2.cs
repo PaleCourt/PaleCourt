@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
+using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;

@@ -101,7 +101,7 @@ namespace FiveKnights
             Charms.charmCost_44,
         };
         
-        public bool UnlockedGodhome() => Cheats || (IsmaEntryData.hasKilled && ZemerEntryData.hasKilled && DryyaEntryData.hasKilled && HegemolEntryData.hasKilled);
+        public bool UnlockedGodhome() => Cheats || (IsmaEntryData.haskilled && ZemerEntryData.haskilled && DryyaEntryData.haskilled && HegemolEntryData.haskilled);
         public const bool Cheats = true;
     }
 }
