@@ -35,7 +35,6 @@ namespace FiveKnights.Dryya
         private GameObject _cheekySlashCollider3;
         private List<GameObject> _slashes;
         private GameObject _stabFlash;
-        private GameObject _dagger;
 
         private string[] _dreamNailDialogue =
         {
@@ -79,7 +78,6 @@ namespace FiveKnights.Dryya
             };
             
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
-            _dagger = gameObject.FindGameObjectInChildren("Dagger");
             _ogrim = FiveKnights.preloadedGO["WD"];
             _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             AddComponents();
@@ -273,9 +271,10 @@ namespace FiveKnights.Dryya
 
         private IEnumerator SpawnDaggers()
         {
-            GameObject dagger1 = GameObject.Instantiate(_dagger, transform.position, Quaternion.Euler(0f, 0f, 1f));
-            GameObject dagger2 = GameObject.Instantiate(_dagger, transform.position, Quaternion.Euler(0f, 0f, 2f));
-            GameObject dagger3 = GameObject.Instantiate(_dagger, transform.position, Quaternion.Euler(0f, 0f, 3f));
+            GameObject dagger = FiveKnights.preloadedGO["Dagger"];
+            GameObject dagger1 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 1f));
+            GameObject dagger2 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 2f));
+            GameObject dagger3 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 3f));
             yield return new WaitForSeconds(10f);
             GameObject.Destroy(dagger1);
             GameObject.Destroy(dagger2);

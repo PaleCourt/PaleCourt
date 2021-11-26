@@ -593,16 +593,19 @@ namespace FiveKnights.Ogrim
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
-                
+                var r5 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dagger");
+
                 yield return r1;
                 yield return r2;
                 yield return r3;
                 yield return r4;
+                yield return r5;
 
                 FiveKnights.preloadedGO["Dryya"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
                 FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
                 FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
+                FiveKnights.preloadedGO["Dagger"] = r5.asset as GameObject;;
             }
             else
             {
@@ -610,6 +613,7 @@ namespace FiveKnights.Ogrim
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
                 FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
+                FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
 
             Log("Finished Loading Dryya Bundle");
