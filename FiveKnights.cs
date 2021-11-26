@@ -166,7 +166,6 @@ namespace FiveKnights
 
         private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
-            orig(newLang);
             foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
             {
                 string name = keyValuePair.Key;
@@ -184,6 +183,7 @@ namespace FiveKnights
                 if (langStrings.ContainsKey(prefix + "_NAME", "Journal"))
                     journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
             }
+            orig(newLang);
         }
 
         public override string GetVersion() => "1.0.0.0";

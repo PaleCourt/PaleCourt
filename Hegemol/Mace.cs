@@ -16,7 +16,7 @@ namespace FiveKnights.Hegemol
         
         private void OnEnable()
         {
-            _rb.velocity = Vector3.up * LaunchSpeed;
+            _rb.velocity = new Vector3(0f, LaunchSpeed, 0f);
             transform.rotation = Quaternion.Euler(0f, 0f, 0f);
         }
 

@@ -628,17 +628,21 @@ namespace FiveKnights.Ogrim
             {
                 var r1 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteCollection");
                 var r2 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteAnimation");
-                
+                var r3 = hegemolBundle.LoadAssetAsync<GameObject>("Mace");
+
                 yield return r1;
                 yield return r2;
-                
+                yield return r3;
+
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = r2.asset as GameObject;
+                FiveKnights.preloadedGO["Mace"] = r3.asset as GameObject;
             }
             else
             {
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
 
             }
             Log("Finished Loading Hegemol Bundle");
