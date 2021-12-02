@@ -45,6 +45,9 @@ namespace FiveKnights.Hegemol
             
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
+            gameObject.transform.position = OWArenaFinder.IsInOverWorld ?
+                    new Vector2(OWRightX, (CustomWP.boss == CustomWP.Boss.All) ? 11.4f : 29.4f) :
+                    new Vector2((CustomWP.boss == CustomWP.Boss.All) ? RightX - 10f : 45.7f, (CustomWP.boss == CustomWP.Boss.All) ? 11.4f : 29.4f);
             PlayMakerFSM control = _pv.LocateMyFSM("Control");
             control.RemoveTransition("Pause", "Set Phase HP");
 
@@ -146,7 +149,7 @@ namespace FiveKnights.Hegemol
             AddGroundPunch();
 
             _control.Fsm.GetFsmFloat("Run Speed").Value = 20.0f;
-	    _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (LeftX + RightX) / 2;
+	    _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (CustomWP.boss == CustomWP.Boss.All) ? (LeftX + RightX) / 2 : (11.2f + 45.7f) / 2;
 
             _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
             _control.InsertCoroutine("S Attack Recover", 0, DungWave);
@@ -682,7 +685,7 @@ namespace FiveKnights.Hegemol
             float xLeft = pos.x + 5 * scaleX - 2;
             float xRight = pos.x + 5 * scaleX + 2;
             float pillarSpacing = 2;
-            while (xLeft >= (OWArenaFinder.IsInOverWorld ? OWLeftX : LeftX) || xRight <= (OWArenaFinder.IsInOverWorld ? OWRightX : RightX))
+            while (xLeft >= (OWArenaFinder.IsInOverWorld ? OWLeftX : (CustomWP.boss == CustomWP.Boss.All) ? LeftX : 11.2f) || xRight <= (OWArenaFinder.IsInOverWorld ? OWRightX : (CustomWP.boss == CustomWP.Boss.All) ? RightX : 45.7f))
             {
                 _audio.Play("Dung Pillar", 0.9f, 1.1f);
                 

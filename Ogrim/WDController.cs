@@ -28,7 +28,7 @@ namespace FiveKnights.Ogrim
         private IEnumerator Start()
         {
             Instance = this;
-            if (CustomWP.boss == CustomWP.Boss.All)
+            if (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender");
             }
