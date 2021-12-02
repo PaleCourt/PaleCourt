@@ -28,6 +28,10 @@ namespace FiveKnights.Ogrim
         private IEnumerator Start()
         {
             Instance = this;
+            if (CustomWP.boss == CustomWP.Boss.All)
+            {
+                dd = GameObject.Find("White Defender");
+            }
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -75,58 +79,10 @@ namespace FiveKnights.Ogrim
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
                 FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["IsmaMusic"] = snd.LoadAsset<AudioClip>("Aud_Isma");
-                
-                dd = GameObject.Find("White Defender");
+
                 yield return LoadIsmaBundle();
-                alone = false;
-                _hm.hp = 950;
-                _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
-                _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
-                yield return new WaitForSeconds(1f);
-                GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-                yield return new WaitWhile(() => _hm.hp > 600);
-                _fsm.ChangeTransition("Rage Roar", "FINISHED", "Music");
-                _fsm.ChangeTransition("Music", "FINISHED", "Set Rage");
-                var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
-                var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
-                _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
-                {
-                    snapshot = ac1,
-                    transitionTime = 0
-                });
-                _fsm.AddAction("Rage Roar", new ApplyMusicCue()
-                {
-                    musicCue = ac2,
-                    transitionTime = 0,
-                    delayTime = 0
-                });
-                HIT_FLAG = false;
-                yield return new WaitWhile(() => !HIT_FLAG);
-                PlayerData.instance.isInvincible = true;
-                HeroController.instance.RelinquishControl();
-                GameManager.instance.playerData.disablePause = true;
-                _fsm.SetState("Stun Set");
-                yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
-                _fsm.enabled = false;
-                FightController.Instance.CreateIsma();
-                IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
-                yield return new WaitWhile(() => !ic.introDone);
-                _ap.Volume = 1f;
-                _ap.UpdateMusic();
-                _fsm.enabled = true;
-                _fsm.SetState("Stun Recover");
-                yield return null;
-                yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-                _fsm.SetState("Rage Roar");
-                PlayerData.instance.isInvincible = false;
-                GameManager.instance.playerData.disablePause = false;
-                HeroController.instance.RegainControl();
-                PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
-                yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
-                burrow.SendEvent("BURROW END");
-                yield return new WaitWhile(() => ic != null);
-                _ap.StopMusic();
-                _ap2.StopMusic();
+                yield return OgrimIsmaFight();
+                
                 if (CustomWP.wonLastFight)
                 {
                     int lev = CustomWP.lev + 1;
@@ -278,62 +234,12 @@ namespace FiveKnights.Ogrim
                     }
                 }
 
-                alone = false;
-                _hm.hp = 950;
-                _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
-                _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
-                yield return new WaitForSeconds(1f);
-                GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-                yield return new WaitWhile(() => _hm.hp > 600);
-                _fsm.ChangeTransition("Rage Roar", "FINISHED", "Music");
-                _fsm.ChangeTransition("Music", "FINISHED", "Set Rage");
-                var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
-                var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
-                _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
-                {
-                    snapshot = ac1,
-                    transitionTime = 0
-                });
-                _fsm.AddAction("Rage Roar", new ApplyMusicCue()
-                {
-                    musicCue = ac2,
-                    transitionTime = 0,
-                    delayTime = 0
-                });
-                HIT_FLAG = false;
-                yield return new WaitWhile(() => !HIT_FLAG);
-                PlayerData.instance.isInvincible = true;
-                HeroController.instance.RelinquishControl();
-                GameManager.instance.playerData.disablePause = true;
-                _fsm.SetState("Stun Set");
-                yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
-                _fsm.enabled = false;
-                FightController.Instance.CreateIsma();
-                IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
-                yield return new WaitWhile(() => !ic.introDone);
-                _ap.Volume = 1f;
-                _ap.UpdateMusic();
-                _fsm.enabled = true;
-                _fsm.SetState("Stun Recover");
-                yield return null;
-                yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-                _fsm.SetState("Rage Roar");
-                PlayerData.instance.isInvincible = false;
-                GameManager.instance.playerData.disablePause = false;
-                HeroController.instance.RegainControl();
-                PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
-                yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
-                burrow.SendEvent("BURROW END");
-                yield return new WaitWhile(() => ic != null);
-                PlayMusic(null, 1f);
-                dd.SetActive(false);
-                _ap.StopMusic();
-                _ap2.StopMusic();
-                
+                yield return OgrimIsmaFight();
                 
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
+                DryyaSetup dc = FightController.Instance.CreateDryya();
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
                 yield return new WaitForSeconds(0.1f);
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_2"];
@@ -342,12 +248,13 @@ namespace FiveKnights.Ogrim
                 yield return new WaitForSeconds(0.1f);
                 Destroy(dryyaSilhouette);
                 yield return new WaitForSeconds(0.5f);
-                DryyaSetup dc = FightController.Instance.CreateDryya();
+                
                 yield return new WaitWhile(() => dc != null);
                 
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
+                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
                 for (int i = 0; i <= 5; i++)
                 {
                     sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_"+i];
@@ -360,12 +267,23 @@ namespace FiveKnights.Ogrim
                 sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_7"];
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
-                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 
                 yield return new WaitForSeconds(0.5f);
+
+                GameObject zemSil = GameObject.Find("Silhouette Zemer");
+                zemSil.transform.localScale *= 1.2f;
                 ZemerController zc = FightController.Instance.CreateZemer();
+                sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
+                yield return new WaitForSeconds(0.1f);
+                sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
+                yield return new WaitForSeconds(0.1f);
+                sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
+                yield return new WaitForSeconds(0.1f);
                 GameObject zem = zc.gameObject;
+
+                yield return new WaitForSeconds(0.5f);
+                Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
@@ -389,6 +307,74 @@ namespace FiveKnights.Ogrim
 
                 Destroy(this);
             }
+        }
+
+        private IEnumerator OgrimIsmaFight()
+        {
+            dd = GameObject.Find("White Defender");
+            _hm = dd.GetComponent<HealthManager>();
+            _fsm = dd.LocateMyFSM("Dung Defender");
+            _tk = dd.GetComponent<tk2dSpriteAnimator>();
+            yield return LoadIsmaBundle();
+            alone = false;
+            _hm.hp = 950;
+            _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
+            _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
+            yield return new WaitForSeconds(1f);
+            GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
+            Log("HP TEST START");
+            yield return new WaitWhile(() => _hm.hp > 600);
+            Log("HP TEST END");
+            _fsm.ChangeTransition("Rage Roar", "FINISHED", "Music");
+            _fsm.ChangeTransition("Music", "FINISHED", "Set Rage");
+            var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
+            var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
+            _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
+            {
+                snapshot = ac1,
+                transitionTime = 0
+            });
+            _fsm.AddAction("Rage Roar", new ApplyMusicCue()
+            {
+                musicCue = ac2,
+                transitionTime = 0,
+                delayTime = 0
+            });
+            HIT_FLAG = false;
+            yield return new WaitWhile(() => !HIT_FLAG);
+            PlayerData.instance.isInvincible = true;
+            HeroController.instance.RelinquishControl();
+            GameManager.instance.playerData.disablePause = true;
+            _fsm.SetState("Stun Set");
+            Log("Log Mid Isma Intro");
+            yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
+            Log("Log A");
+            _fsm.enabled = false;
+            FightController.Instance.CreateIsma();
+            IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            yield return new WaitWhile(() => !ic.introDone);
+            Log("Log B");
+            //_ap.Volume = 1f;
+            Log("Log C");
+            _ap?.UpdateMusic();
+            Log("Log D");
+            _fsm.enabled = true;
+            Log("Log E");
+            _fsm.SetState("Stun Recover");
+            Log("Log End Isma Intro");
+            yield return null;
+            yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
+            Log("Log Stun Recovery");
+            _fsm.SetState("Rage Roar");
+            PlayerData.instance.isInvincible = false;
+            GameManager.instance.playerData.disablePause = false;
+            HeroController.instance.RegainControl();
+            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+            yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
+            burrow.SendEvent("BURROW END");
+            yield return new WaitWhile(() => ic != null);
+            _ap?.StopMusic();
+            _ap2?.StopMusic();
         }
 
         public void BeforePlayerDied()
@@ -520,7 +506,9 @@ namespace FiveKnights.Ogrim
             List<GameObject> gos;
             
             if (CustomWP.boss == CustomWP.Boss.All)
-            {
+            {  
+                // TODO: REMOVE BELOW DEBUG STATEMENT
+                FiveKnights.Instance.SaveSettings.gotCharms[3] = false;
                 var r1 = ab.LoadAssetAsync<GameObject>("Isma");
                 var r2 =  ab.LoadAssetAsync<GameObject>("Gulka");
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");

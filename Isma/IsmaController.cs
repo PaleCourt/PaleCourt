@@ -1017,8 +1017,8 @@ namespace FiveKnights.Isma
             float xSpd = _target.transform.GetPositionX() > dd.transform.GetPositionX() ? -10f : 10f;
             WDController.Instance.PlayMusic(null, 1f);
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
-            GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
-            GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
             PlayDeathFor(dd);
             eliminateMinions = true;
             killAllMinions = true;
@@ -1206,8 +1206,8 @@ namespace FiveKnights.Isma
             yield return null;
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
             Log("1 dada ");
-            GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
-            GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
             Log("2 dada");
             WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
