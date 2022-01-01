@@ -1,11 +1,14 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
 using FiveKnights.Isma;
 using FiveKnights.Zemer;
+using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 //using SFCore.Utils;
@@ -110,6 +113,40 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Hegemol)
             {
+                var water = GameObject.Find("waterfall");
+                foreach (Transform f in water.transform)
+                {
+                    f.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("UI/BlendModes/LinearDodge"));
+                }
+
+                // Awful garbage code, end me
+                var mobs = GameObject.Find("BG_Mobs");
+                foreach (Transform grp in mobs.transform)
+                {
+                    foreach (Transform m in grp)
+                    {
+                        GameObject mob = m.gameObject;
+                        switch (grp.name)
+                        {
+                            case "Carriage":
+                                mob.AddComponent<Carriage>();
+                                break;
+                            case "Husk":
+                                mob.AddComponent<HuskCitizen>();
+                                break;
+                            case "HuskCart":
+                                mob.AddComponent<HuskCart>();
+                                break;
+                            case "Maggot":
+                                mob.AddComponent<Maggot>();
+                                break;
+                            case "MineCart":
+                                mob.AddComponent<MineBugCart>();
+                                break;
+                        }
+                    }
+                }
+                
                 HegemolController hegemolCtrl = CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitWhile(() => HeroController.instance == null);

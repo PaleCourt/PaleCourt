@@ -171,7 +171,7 @@ namespace FiveKnights.BossManagement
                     }
                     else if (self.sceneName == PrevHegScene)
                     {
-                        CreateGateway("door_dreamReturn", new Vector2(22f, 6.4f), Vector2.zero, 
+                        CreateGateway("door_dreamReturn", new Vector2(114.1f, 12.4f), Vector2.zero, 
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }

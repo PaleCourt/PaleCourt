@@ -111,7 +111,7 @@ namespace FiveKnights.Hegemol
             //_Msprite.AddComponent<SpriteRenderer>().sprite = FiveKnights.SPRITES["mace"];
             _mace.AddComponent<Mace>();
             //_mace.AddComponent<DebugColliders>();
-            _mace.transform.Log();
+            //_mace.transform.Log();
             _mace.SetActive(false);
 
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
