@@ -16,6 +16,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.Audio;
 using Vasi;
+using ModCommon;
 
 namespace FiveKnights
 {
@@ -61,7 +62,9 @@ namespace FiveKnights
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
-                PlayMusic(FiveKnights.Clips["LoneIsmaMusic"]);
+                PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
+                yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
+                PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null);
 
@@ -198,9 +201,7 @@ namespace FiveKnights
                 dreambye.GetComponent<ParticleSystem>().Play();
             }
             var deathcomp = (EnemyDeathEffects) _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            
             var corpsePrefab = Mirror.GetField<EnemyDeathEffects, GameObject>(deathcomp, "corpsePrefab");
-            //deathcomp.GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
             GameObject transDevice = Instantiate(corpsePrefab);
             transDevice.SetActive(true);
             var fsm = transDevice.LocateMyFSM("Control");
@@ -211,6 +212,7 @@ namespace FiveKnights
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
             fsm.GetState("Fade Out").RemoveAction(0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
+            
             /*if (dungAnimation)
             {
                 IEnumerator PlayDungAnimation()
@@ -231,11 +233,17 @@ namespace FiveKnights
             else
                 fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");*/
             fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
-            
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;
+
             fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
+            fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
+
+
             fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = msg2Key;
+            fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
+            
+            
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = area;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door_dreamReturn";
@@ -274,7 +282,8 @@ namespace FiveKnights
                 "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
             };
             // Get isma's music from bundle
-            FiveKnights.Clips["LoneIsmaMusic"] = snd.LoadAsset<AudioClip>("LoneIsmaMusic");
+            FiveKnights.Clips["LoneIsmaIntro"] = snd.LoadAsset<AudioClip>("LoneIsmaIntro");
+            FiveKnights.Clips["LoneIsmaLoop"] = snd.LoadAsset<AudioClip>("LoneIsmaLoop");
             // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {

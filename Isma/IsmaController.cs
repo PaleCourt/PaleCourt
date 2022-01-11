@@ -41,11 +41,12 @@ namespace FiveKnights.Isma
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
         private readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
-        private readonly int NUM_AGONY_LOOPS = 4;
+        // I did this dumb b/c this is actually going to loop 3 times
+        private readonly int NUM_AGONY_LOOPS = 1;
         private readonly float GROUND_Y = 5.9f;
-        private const int MAX_HP = 1700;
-        private const int WALL_HP = 1200;
-        private const int SPIKE_HP = 800;
+        private const int MAX_HP = 1500;
+        private const int WALL_HP = 1000;
+        private const int SPIKE_HP = 600;
         private const float IDLE_TIME = 0.1f;
         public static float offsetTime;
         public static bool killAllMinions;
@@ -87,38 +88,12 @@ namespace FiveKnights.Isma
             _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             _deathEff.SetJournalEntry(FiveKnights.journalentries["Isma"]);
             EnemyPlantSpawn.isPhase2 = false;
+            EnemyPlantSpawn.FoolCount = EnemyPlantSpawn.PillarCount = EnemyPlantSpawn.TurretCount = 0;
 
-            GameObject seedFloor = new GameObject("SeedFloor");
-            seedFloor.SetActive(true);
-            seedFloor.transform.position = new Vector3(116.1f, 5f, 0f);
-            var bc = seedFloor.AddComponent<BoxCollider2D>();
-            bc.isTrigger = true;
-            bc.offset = new Vector2(3.949066f, 0f);
-            bc.size = new Vector2(24.56163f, 1f);
-            seedFloor.AddComponent<EnemyPlantSpawn>();
-            seedFloor.layer = 8;
-            
-            GameObject seedSideL = new GameObject("SeedSideL");
-            seedSideL.SetActive(true);
-            seedSideL.transform.position = new Vector3(104.7f, 12.6f, 0f);
-            var bcL = seedSideL.AddComponent<BoxCollider2D>();
-            bcL.isTrigger = true;
-            bcL.offset = new Vector2(0, 0.4677944f);
-            bcL.size = new Vector2(1, 7.96706f);
-            //seedSideL.AddComponent<DebugColliders>();
-            seedSideL.AddComponent<EnemyPlantSpawn>();
-            seedSideL.layer = 8;
-            
-            GameObject seedSideR = new GameObject("SeedSideR");
-            seedSideR.SetActive(true);
-            seedSideR.transform.position = new Vector3(137.7f, 12.6f, 0f); //5.4
-            var bcR = seedSideR.AddComponent<BoxCollider2D>();
-            bcR.isTrigger = true;
-            bcR.offset = new Vector2(0, 0f);
-            bcR.size = new Vector2(1, 7.031467f);
-            //seedSideR.AddComponent<DebugColliders>();
-            seedSideR.AddComponent<EnemyPlantSpawn>();
-            seedSideR.layer = 8;
+            foreach (Transform sidecols in GameObject.Find("SeedCols").transform)
+            {
+                sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
+            }
         }
 
         private IEnumerator Start()
@@ -1080,68 +1055,6 @@ namespace FiveKnights.Isma
             Destroy(this);
         }
 
-        private IEnumerator IsmaLoneDeath()
-        {
-            Log("Started Isma Lone Death");
-            yield return new WaitWhile(() => _attacking);
-            _attacking = true;
-            _hm.hp = 300;
-            _healthPool = 100;
-            Coroutine c = StartCoroutine(LoopedAgony());
-            Log("Test");
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-            while (_healthPool > 0)
-            {
-                yield return new WaitForEndOfFrame();
-            }
-            Log("Test1");
-            //_sr.sortingOrder = 0;
-            eliminateMinions = true;
-            killAllMinions = true;
-            if (c != null) StopCoroutine(c);
-            _anim.speed = 1f;
-            foreach (SpriteRenderer i in gameObject.GetComponentsInChildren<SpriteRenderer>())
-            {
-                if (i.name.Contains("Isma")) continue;
-                i.gameObject.SetActive(false);
-            }
-            Destroy(fakeIsma);
-            Log("Test2");
-            float dir = FaceHero(true);
-            _anim.enabled = true;
-            yield return null;
-            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
-            else OWBossManager.Instance.PlayMusic(null);
-            PlayDeathFor(gameObject);
-            _bc.enabled = false;
-            _rb.gravityScale = 1.5f;
-            float ismaXSpd = dir * 10f;
-            _rb.velocity = new Vector2(ismaXSpd, 28f);
-            float side = Mathf.Sign(gameObject.transform.localScale.x);
-            _anim.Play("LoneDeath");
-            _anim.speed *= 0.7f;
-            _anim.enabled = true;
-            yield return null;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-            _anim.enabled = false;
-            yield return new WaitWhile(() => transform.position.y > GROUND_Y + 2.5f);
-            _anim.enabled = true;
-            _rb.gravityScale = 0f;
-            _rb.velocity = new Vector2(0f,0f);
-            yield return _anim.WaitToFrame(5);
-            _anim.enabled = false;
-            yield return new WaitForSeconds(1f);
-            _anim.speed = 1f;
-            _anim.enabled = true;
-            yield return _anim.WaitToFrame(7);
-            _rb.velocity = new Vector2(-side * 25f, 25f);
-            yield return new WaitForSeconds(0.2f);
-            _sr.enabled = false;
-            yield return new WaitForSeconds(0.75f);
-            if (!OWArenaFinder.IsInOverWorld) CustomWP.wonLastFight = true;
-            Destroy(this);
-        }
-
         private IEnumerator IsmaDeath()
         {
             Log("Started Isma Death");
@@ -1280,6 +1193,71 @@ namespace FiveKnights.Isma
             Destroy(this);
         }
 
+        private IEnumerator IsmaLoneDeath()
+        {
+            Log("Started Isma Lone Death");
+            yield return new WaitWhile(() => _attacking);
+            _attacking = true;
+            _hm.hp = 300;
+            _healthPool = 100;
+            Coroutine c = StartCoroutine(LoopedAgony());
+            Log("Test");
+            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            while (_healthPool > 0)
+            {
+                _sr.enabled = true;
+                _bc.enabled = true;
+                yield return new WaitForEndOfFrame();
+            }
+            Log("Test1");
+            //_sr.sortingOrder = 0;
+            eliminateMinions = true;
+            killAllMinions = true;
+            if (c != null) StopCoroutine(c);
+            _anim.speed = 1f;
+            foreach (SpriteRenderer i in gameObject.GetComponentsInChildren<SpriteRenderer>())
+            {
+                if (i.name.Contains("Isma")) continue;
+                i.gameObject.SetActive(false);
+            }
+            Destroy(fakeIsma);
+            Log("Test2");
+            float dir = FaceHero(true);
+            _anim.enabled = true;
+            yield return null;
+            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
+            else OWBossManager.Instance.PlayMusic(null);
+            PlayDeathFor(gameObject);
+            _bc.enabled = false;
+            _rb.gravityScale = 1.5f;
+            float ismaXSpd = dir * 10f;
+            _rb.velocity = new Vector2(ismaXSpd, 28f);
+            float side = Mathf.Sign(gameObject.transform.localScale.x);
+            _anim.Play("LoneDeath");
+            _anim.speed *= 0.7f;
+            _anim.enabled = true;
+            yield return null;
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            _anim.enabled = false;
+            yield return new WaitWhile(() => transform.position.y > GROUND_Y + 2.5f);
+            transform.position = new Vector3(transform.position.x, GROUND_Y + 2.35f, transform.position.z);
+            _anim.enabled = true;
+            _rb.gravityScale = 0f;
+            _rb.velocity = new Vector2(0f,0f);
+            yield return _anim.WaitToFrame(5);
+            _anim.enabled = false;
+            yield return new WaitForSeconds(1f);
+            _anim.speed = 1f;
+            _anim.enabled = true;
+            yield return _anim.WaitToFrame(7);
+            _rb.velocity = new Vector2(-side * 25f, 25f);
+            yield return new WaitForSeconds(0.2f);
+            _sr.enabled = false;
+            yield return new WaitForSeconds(0.75f);
+            if (!OWArenaFinder.IsInOverWorld) CustomWP.wonLastFight = true;
+            Destroy(this);
+        }
+        
         private IEnumerator ChangeIntroText(GameObject area, string mainTxt, string subTxt, string supTxt, bool right)
         {
             area.SetActive(true);

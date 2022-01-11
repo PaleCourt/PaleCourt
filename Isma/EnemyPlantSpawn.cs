@@ -2,7 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
+using SFCore.Utils;
 using UnityEngine;
 
 namespace FiveKnights.Isma
@@ -11,10 +13,10 @@ namespace FiveKnights.Isma
     {
         private SpriteRenderer _sr;
         public static bool isPhase2;
-        private static int FoolCount = 0;
-        private static int PillarCount = 0;
-        private static int TurretCount = 0;
-        private const int MaxTurret = 5;
+        public static int FoolCount = 0;
+        public static int PillarCount = 0;
+        public static int TurretCount = 0;
+        private const int MaxTurret = 3;
         private const int MaxFool = 5;
         private const int MaxPillar = 5;
         private const float TIME_INC = 0.32f;
@@ -86,6 +88,10 @@ namespace FiveKnights.Isma
             turret.name = SpecialName;
             MeshRenderer mesh = turret.GetComponent<MeshRenderer>();
             PlayMakerFSM fsm = turret.LocateMyFSM("Plant Turret");
+            
+            // stop spike ball from doing damage to enemy
+            var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
+            ball.layer = 11;
 
             fsm.GetAction<SetInvincible>("Wake", 2).Invincible = true; 
             hm.IsInvincible = true;
@@ -210,9 +216,7 @@ namespace FiveKnights.Isma
                 Animator anim = initFool.GetComponent<Animator>();
                 initFool.transform.SetPosition2D(xPos, 6.05f); //6.2
                 initFool.transform.localScale *= 1.4f;
-                anim.Play("SpawnFool");
-                yield return null;
-                yield return new WaitWhile(() => anim.IsPlaying());
+                yield return anim.PlayBlocking("SpawnFool");
                 Destroy(initFool);
                 finalFool.transform.SetPosition2D(xPos, 8.65f); //8.8
                 tk2dSpriteAnimator tk = finalFool.GetComponent<tk2dSpriteAnimator>();
@@ -220,7 +224,13 @@ namespace FiveKnights.Isma
                 fsm.enabled = false;
                 finalFool.SetActive(true);
                 tk.Play("Retract");
-                yield return new WaitWhile(() => tk.IsPlaying("Retract"));
+                // Doing this to stop them from doing damage when they first spawn
+                yield return new WaitWhile(() =>
+                {
+                    var f = finalFool.GetComponent<BoxCollider2D>();
+                    if (f != null) f.enabled = false;
+                    return tk.IsPlaying("Retract");
+                });
                 fsm.enabled = true;
                 fsm.SetState("Init");
                 fsm.GetAction<Wait>("Ready", 2).time = 0.4f;
@@ -287,6 +297,11 @@ namespace FiveKnights.Isma
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
                 PlayMakerFSM fsm = finalGulka.LocateMyFSM("Plant Turret");
+                
+                // stop spike ball from doing damage to enemy
+                var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
+                ball.layer = 11;
+
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();
                 foreach (MeshRenderer i in finalGulka.GetComponentsInChildren<MeshRenderer>(true))

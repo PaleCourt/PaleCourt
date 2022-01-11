@@ -648,15 +648,15 @@ namespace FiveKnights
                 else if (charmNum == 10 && SaveSettings.upgradedCharm_10)
                     key = key.Substring(0, 11) + CharmKeys[4];
             }
-            if (langStrings.ContainsKey(key, sheet))
+            if (key is "ISMA_OUTRO_1a" or "ISMA_OUTRO_1b")
             {
-                return langStrings.Get(key, sheet);
+                Log($"--------------------\nKey: {key}\nSheet: {sheet}\n--------------------");
+                Log("FOUND AN OUTRO??");
+                return "YUCKSSS dang wow wooo adasd asd sads ads ad !!!. ";
             }
-            if (langStrings.ContainsKey(key, "Speech"))
-            {
-                return langStrings.Get(key, "Speech");
-            }
-            return orig;
+            //Log(langStrings.ContainsKey(key, sheet));
+            if (langStrings.ContainsKey(key, sheet)) Log(langStrings.Get(key, sheet));
+            return langStrings.ContainsKey(key, sheet) ? langStrings.Get(key, sheet) : orig;
         }
 
         private void SaveGame(SaveGameData data)

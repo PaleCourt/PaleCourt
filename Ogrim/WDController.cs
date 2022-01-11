@@ -46,8 +46,9 @@ namespace FiveKnights.Ogrim
             //Be sure to do CustomWP.Instance.wonLastFight = true; on win
             if (CustomWP.boss == CustomWP.Boss.Isma)
             {
-                FiveKnights.Clips["LoneIsmaMusic"] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("LoneIsmaMusic");
-                
+                FiveKnights.Clips["LoneIsmaLoop"] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("LoneIsmaLoop");
+                FiveKnights.Clips["LoneIsmaIntro"] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("LoneIsmaIntro");
+
                 yield return LoadIsmaBundle();
                 dd.SetActive(false);
                 FightController.Instance.CreateIsma();

@@ -68,7 +68,6 @@ namespace FiveKnights.BossManagement
         {
             if (_currScene == ZemerScene && self.name == "CLA2")
             {
-                Log($"Cancelled @ pos {HeroController.instance.transform.position.x}");
                 HeroController.instance.superDash.SendEvent("SLOPE CANCEL");
             }
 
@@ -317,7 +316,7 @@ namespace FiveKnights.BossManagement
                     }
                     else
                     {
-                        Log($"Changing material {matName} to have shader {ParticleMatToShader[matName]}");
+                        //Log($"Changing material {matName} to have shader {ParticleMatToShader[matName]}");
                         i.material.shader = ParticleMatToShader[matName];
                     }
                 }
@@ -834,7 +833,7 @@ namespace FiveKnights.BossManagement
             On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;
         }
 
-        private void Log(object o)
+        private static void Log(object o)
         {
             Logger.Log($"[OverWorldArena] {o}");
         }
