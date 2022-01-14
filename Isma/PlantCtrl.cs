@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using DebugColliders = ModCommon.DebugColliders;
 
 namespace FiveKnights.Isma
 {
@@ -45,6 +46,28 @@ namespace FiveKnights.Isma
             bc.isTrigger = false;
             bc.enabled = true;
             gameObject.AddComponent<ShadeOnlyPass>().disableCollider = bc;
+
+            if (IsmaFight)
+            {
+                GameObject bnc = new GameObject("PillarPogo")
+                {
+                    layer = 11,
+                    transform =
+                    {
+                        position = gameObject.transform.position,
+                        rotation = gameObject.transform.rotation,
+                        localScale = gameObject.transform.localScale,
+                        parent = gameObject.transform
+                    }
+                };
+                var col = bnc.AddComponent<BoxCollider2D>();
+                col.isTrigger = true;
+                col.size = bc.size;
+                col.offset = bc.offset;
+                bnc.SetActive(true);
+                bnc.transform.parent = gameObject.transform;
+            }
+            
             yield return new WaitForSeconds(0.55f);
             if (!IsmaFight) StartCoroutine(Death());
         }

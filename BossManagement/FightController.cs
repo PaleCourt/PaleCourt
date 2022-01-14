@@ -120,6 +120,15 @@ namespace FiveKnights
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.layer = 11;
             }
+            
+            foreach (Transform par in _isma.transform.Find("Thorn"))
+            {
+                foreach (Transform i in par)
+                {
+                    i.gameObject.layer = 11;
+                    i.gameObject.AddComponent<DamageHero>().damageDealt = 1;   
+                }
+            }
 
             var _sr = _isma.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];

@@ -90,7 +90,8 @@ namespace FiveKnights.Isma
             _deathEff.SetJournalEntry(FiveKnights.journalentries["Isma"]);
             EnemyPlantSpawn.isPhase2 = false;
             EnemyPlantSpawn.FoolCount = EnemyPlantSpawn.PillarCount = EnemyPlantSpawn.TurretCount = 0;
-
+            killAllMinions = eliminateMinions = false;
+            
             foreach (Transform sidecols in GameObject.Find("SeedCols").transform)
             {
                 sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
@@ -501,12 +502,12 @@ namespace FiveKnights.Isma
                 float yOff = 0.5f;
                 float xOff = 0.8f;
                 Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
-                float rot = GetRot(arm, predPos, dir) is < -50f or > 40f
+                float rot = GetRot(arm, predPos, dir) is < -60f or > 50f
                     ? GetRot(arm, _target.transform.position, dir)
                     : GetRot(arm, predPos, dir);
                 float rotD = rot * Mathf.Rad2Deg;
 
-                if (rotD is < -50f or > 40f)
+                if (rotD is < -60f or > 50f)
                 {
                     yield return EndAirFist(spike, new GameObject(), dir, 0.1f);
                     if (UnityEngine.Random.Range(0, 3) == 0) this.AirFist();
@@ -828,28 +829,43 @@ namespace FiveKnights.Isma
                 _anim.PlayAt("AgonyLoop", 0);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
-                Vector2 diff = tAnim.transform.position - _target.transform.position;
-                float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
-                int start = (int)(rot / 30f);
-                Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
-                int ind = 0;
-                int off = !onlyIsma && _wallActive ? 2 : 3; //1,3
-                for (int r = start; r < start + off; r++)
-                {
-                    Animator i = anims[ind++];
-                    i.gameObject.layer = 17;
-                    i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r == start ? rot : r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                }
-                for (int r = start - 1; r > start-off-1; r--)
-                {
-                    Animator i = anims[ind++];
-                    i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                }
+
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+                
+                
+                Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
+                Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
+                float predTime = 0.2f;
+                float yOff = 0f;
+                float xOff = 1f;
+                Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
+                Vector2 diff = tAnim.transform.position - predPos;
+                float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
+                float smallOff = 4;
+                float rotStart = rot;
+                float[] arr = 
+                {
+                    rot, 
+                    rotStart + UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart + 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart - UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart - 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y)
+                };
+                for(int i = 0; i < arr.Length; i++)
+                {
+                    float currRot = arr[i];
+                    Animator t1 = anims[i * 2];
+                    Animator t2 = anims[i * 2 + 1];
+                    t1.gameObject.layer = t2.gameObject.layer = 17;
+                    t1.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot - smallOff);
+                    t2.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot + smallOff);
+                }
+
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
                     i.Play("NewAThornAnim");
+                    i.speed = agonyAnimSpd;
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _anim.enabled = false;
@@ -890,7 +906,9 @@ namespace FiveKnights.Isma
         }
 
         private GameObject fakeIsma;
-        
+        private float agonyAnimSpd = 1.3f;
+        private Vector2 agonySpread = new Vector2(25f, 40f);
+
         private IEnumerator LoopedAgony()
         {
             ToggleIsma(true);
@@ -923,30 +941,42 @@ namespace FiveKnights.Isma
                 _ap.DoPlayRandomClip();
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
-                Vector2 diff = tAnim.transform.position - _target.transform.position;
-                float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
-                int start = (int)(rot / 30f);
-                //float rot = _wallActive ? 60f : -30f;
-                Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
-                int ind = 0;
-                for (int r = start; r < start + 3; r++)
-                {
-                    Animator i = anims[ind++];
-                    i.gameObject.layer = 17;
-                    i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r == start ? rot : r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                    //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
-                }
-                for (int r = start - 1; r > start - 4; r--)
-                {
-                    Animator i = anims[ind++];
-                    i.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, r * 30f + UnityEngine.Random.Range(0, 5) * 6);
-                    //i.GetComponentInChildren<LineRenderer>(true).enabled = true;
-                }
+
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+                
+                Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
+                Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
+                float predTime = 0.2f;
+                float yOff = 0f;
+                float xOff = 1f;
+                Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
+                Vector2 diff = tAnim.transform.position - predPos;
+                float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
+                float smallOff = 4;
+                float rotStart = rot;
+                float[] arr = 
+                {
+                    rot, 
+                    rotStart + UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart + 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart - UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
+                    rotStart - 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y)
+                };
+                for(int i = 0; i < arr.Length; i++)
+                {
+                    float currRot = arr[i];
+                    Animator t1 = anims[i * 2];
+                    Animator t2 = anims[i * 2 + 1];
+                    t1.gameObject.layer = t2.gameObject.layer = 17;
+                    t1.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot - smallOff);
+                    t2.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot + smallOff);
+                }
+
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
                     i.Play("NewAThornAnim");
+                    i.speed = agonyAnimSpd;
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _anim.enabled = false;
@@ -1203,6 +1233,7 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _attacking);
             _attacking = true;
             _hm.hp = 800;
+            _hm.isDead = false;
             _healthPool = 300;
             Coroutine c = StartCoroutine(LoopedAgony());
             Log("Test");
@@ -1244,13 +1275,20 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
             yield return new WaitWhile(() => transform.position.y > GROUND_Y + 2.5f);
-            transform.position = new Vector3(transform.position.x, GROUND_Y + 2.35f, transform.position.z);
+            transform.position = new Vector3(transform.position.x, GROUND_Y + 2.25f, transform.position.z);
+            var sc = transform.localScale;
+            transform.localScale = new Vector3(sc.x * -1f, sc.y, sc.z);
             _anim.enabled = true;
             _rb.gravityScale = 0f;
             _rb.velocity = new Vector2(0f,0f);
-            yield return _anim.WaitToFrame(5);
-            _anim.enabled = false;
+            yield return _anim.WaitToFrame(4);
+            _anim.speed = 1f;
+            _anim.PlayAt("IsmaTired", 0);
             yield return new WaitForSeconds(1f);
+            transform.position = new Vector3(transform.position.x, GROUND_Y + 2.35f, transform.position.z);
+            sc = transform.localScale;
+            transform.localScale = new Vector3(sc.x * -1f, sc.y, sc.z);
+            _anim.PlayAt("LoneDeath", 5);
             _anim.speed = 1f;
             _anim.enabled = true;
             yield return _anim.WaitToFrame(7);

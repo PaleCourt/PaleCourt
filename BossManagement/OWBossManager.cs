@@ -250,6 +250,7 @@ namespace FiveKnights
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).visualization.Value = GameManager.SceneLoadVisualizations.Default;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
             HeroController.instance.EnterWithoutInput(true);
+            HeroController.instance.MaxHealth();
             fsm.SetState("Fade Out");
         }
 
@@ -276,7 +277,7 @@ namespace FiveKnights
             
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             // List of Isma's voice lines
-            string[] arr = new[]
+            string[] arr =
             {
                 "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
                 "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
@@ -325,6 +326,15 @@ namespace FiveKnights
                 i.gameObject.layer = 11;
             }
 
+            foreach (Transform par in isma.transform.Find("Thorn"))
+            {
+                foreach (Transform i in par)
+                {
+                    i.gameObject.layer = 11;
+                    i.gameObject.AddComponent<DamageHero>().damageDealt = 1;   
+                }
+            }
+
             foreach (BoxCollider2D i in isma.transform.Find("Whip")
                 .GetComponentsInChildren<BoxCollider2D>(true))
             {
@@ -334,8 +344,8 @@ namespace FiveKnights
 
             // Have to move arena up a little
             GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.18f, 0f);
-            var _sr = isma.GetComponent<SpriteRenderer>();
-            _sr.material = FiveKnights.Materials["flash"];
+            var sr = isma.GetComponent<SpriteRenderer>();
+            sr.material = FiveKnights.Materials["flash"];
 
             isma.AddComponent<IsmaController>();
             isma.SetActive(false);

@@ -57,7 +57,7 @@ namespace FiveKnights.Isma
                     SpawnFool(other.transform.position);
                 }
             }
-            else if (name.Contains("Side"))
+            else if (name.Contains("Side") && !isPhase2)
             {
                 Log($"Working with Gulka {TurretCount}");
                 if (TurretCount >= MaxTurret)
@@ -158,6 +158,7 @@ namespace FiveKnights.Isma
 
             private IEnumerator PillarDeath()
             {
+                if (transform.Find("PillarPogo") != null) Destroy(transform.Find("PillarPogo").gameObject);
                 Animator anim = GetComponent<Animator>();
                 anim.Play("PlantDie");
                 yield return null;
