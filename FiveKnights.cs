@@ -15,7 +15,9 @@ using UnityEngine.Audio;
 using Random = UnityEngine.Random;
 using UnityEngine.UI;
 using FrogCore;
+using ModCommon;
 using SFCore.Generics;
+using TMPro;
 
 namespace FiveKnights
 {
@@ -147,6 +149,7 @@ namespace FiveKnights
             On.Language.Language.DoSwitch += SwitchLanguage;
 
             ModHooks.LanguageGetHook += LangGet;
+            On.DialogueBox.SetConversation += DialogueBoxOnSetConversation;
 
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
             On.UIManager.Start += OnUIManagerStart;
@@ -232,7 +235,6 @@ namespace FiveKnights
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            
             Log("Storing GOs");
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
@@ -323,6 +325,7 @@ namespace FiveKnights
             PlantChanger();
             Log("Initalizing.");
         }
+
         #region Make Text Readable
 
         private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
@@ -648,15 +651,22 @@ namespace FiveKnights
                 else if (charmNum == 10 && SaveSettings.upgradedCharm_10)
                     key = key.Substring(0, 11) + CharmKeys[4];
             }
-            if (key is "ISMA_OUTRO_1a" or "ISMA_OUTRO_1b")
-            {
-                Log($"--------------------\nKey: {key}\nSheet: {sheet}\n--------------------");
-                Log("FOUND AN OUTRO??");
-                return "YUCKSSS dang wow wooo adasd asd sads ads ad !!!. ";
-            }
-            //Log(langStrings.ContainsKey(key, sheet));
-            if (langStrings.ContainsKey(key, sheet)) Log(langStrings.Get(key, sheet));
             return langStrings.ContainsKey(key, sheet) ? langStrings.Get(key, sheet) : orig;
+        }
+        
+        private void DialogueBoxOnSetConversation(On.DialogueBox.orig_SetConversation orig, DialogueBox self, string convname, string sheetname)
+        {
+            if (langStrings.ContainsKey(convname, sheetname))
+            {
+                self.currentConversation = convname;
+                self.currentPage = 1;
+                self.GetComponent<TextMeshPro>().text = langStrings.Get(convname, sheetname);
+                self.GetComponent<TextMeshPro>().ForceMeshUpdate();
+            }
+            else
+            {
+                orig(self, convname, sheetname);
+            }
         }
 
         private void SaveGame(SaveGameData data)

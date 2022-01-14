@@ -318,6 +318,12 @@ namespace FiveKnights
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.layer = 11;
             }
+            
+            foreach (Transform i in isma.transform.Find("Arm2").Find("TentArm"))
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 11;
+            }
 
             foreach (BoxCollider2D i in isma.transform.Find("Whip")
                 .GetComponentsInChildren<BoxCollider2D>(true))

@@ -115,11 +115,12 @@ namespace FiveKnights
                 i.gameObject.layer = 11;
             }
             
-            foreach (LineRenderer lr in _isma.GetComponentsInChildren<LineRenderer>(true))
+            foreach (Transform i in _isma.transform.Find("Arm2").Find("TentArm"))
             {
-                lr.material = new Material(Shader.Find("Sprites/Default"));
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 11;
             }
-            
+
             var _sr = _isma.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];
             

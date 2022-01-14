@@ -8,6 +8,7 @@ using FiveKnights.Ogrim;
 using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
+using Modding;
 using SFCore.Utils;
 using TMPro;
 using UnityEngine;
@@ -131,6 +132,7 @@ namespace FiveKnights.Isma
             }
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
+            On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
@@ -473,10 +475,11 @@ namespace FiveKnights.Isma
                 float distance = UnityEngine.Random.Range(10, 12);
                 float ismaX = heroX - MIDDDLE > 0f ? heroX - distance : heroX + distance;
                 if (_wallActive) ismaX = _rand.Next((int)LEFT_X + 10, (int)RIGHT_X - 8);
-                // if (_wallActive) ismaX = _rand.Next((int)LEFT_X + 7, (int)RIGHT_X - 5);
                 transform.position = new Vector2(ismaX, UnityEngine.Random.Range(10, 16));
                 ToggleIsma(true);
                 float dir = FaceHero();
+                
+                GameObject arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
                 _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _ap.DoPlayRandomClip();
@@ -485,70 +488,72 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(0f, 0f);
                 GameObject spike = transform.Find("SpikeArm").gameObject;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                GameObject arm = transform.Find("Arm2").gameObject;
-                Vector2 diff = arm.transform.position - _target.transform.position;
-                float offset2 = 0f;
-                if ((dir > 0 && diff.x > 0) || (dir < 0 && diff.x < 0)) offset2 += 180f;
-                float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
-                SpriteRenderer armSpr = arm.GetComponent<SpriteRenderer>();
-                GameObject stripStr = arm.transform.Find("StripStart").gameObject;
-                stripStr.SetActive(false);
-                GameObject rstrip = arm.transform.Find("StripEnd").gameObject;
-                GameObject rfist = arm.transform.Find("SpikeFistB").gameObject;
-                GameObject strip = Instantiate(rstrip, rstrip.transform.position, rstrip.transform.rotation);
-                GameObject fist = Instantiate(rfist, rfist.transform.position, rfist.transform.rotation);
-                SpriteRenderer stpSR = strip.GetComponent<SpriteRenderer>();
-                strip.SetActive(false);
-                fist.SetActive(false);
-                CollisionCheck afc = fist.AddComponent<CollisionCheck>();
-                Vector3 strSC = strip.transform.localScale;
-                Vector3 fstSc = fist.transform.localScale;
-                strip.transform.localScale = new Vector3(dir * strSC.x, strSC.y, strSC.z) * 1.6f;
-                fist.transform.localScale = new Vector3(dir * fstSc.x, fstSc.y, fstSc.z) * 1.7f;
 
                 _anim.Play("AFist");
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 0);
                 spike.SetActive(true);
                 _anim.enabled = false;
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.4f);
+                
+                Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
+                float predTime = 0.4f;
+                float yOff = 0.5f;
+                float xOff = 0.8f;
+                Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
+                float rot = GetRot(arm, predPos, dir) is < -50f or > 40f
+                    ? GetRot(arm, _target.transform.position, dir)
+                    : GetRot(arm, predPos, dir);
+                float rotD = rot * Mathf.Rad2Deg;
+
+                if (rotD is < -50f or > 40f)
+                {
+                    yield return EndAirFist(spike, new GameObject(), dir, 0.1f);
+                    if (UnityEngine.Random.Range(0, 3) == 0) this.AirFist();
+                    else StartCoroutine(IdleTimer(IDLE_TIME));
+                    yield break;
+                }
+                
+                arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
+                GameObject parArm = arm.transform.Find("TentArm").gameObject;
+                parArm.SetActive(false);
+                GameObject tentArm = Instantiate(parArm, parArm.transform.position, parArm.transform.rotation);
+                tentArm.SetActive(false);
+                Vector3 tentArmScale = tentArm.transform.localScale;
+                tentArm.transform.localScale = new Vector3(dir * tentArmScale.x, tentArmScale.y, tentArmScale.z) * 1.35f;
+                
+                yield return new WaitForSeconds(0.1f);
                 spike.SetActive(false);
                 _anim.enabled = true;
-
                 arm.SetActive(true);
-                armSpr.enabled = true;
-                stripStr.SetActive(true);
-                strip.SetActive(true);
-                fist.SetActive(true);
-                int i = 0;
-                float stp = 0.35f;
-                while (!afc.Hit)
-                {
-                    stpSR.size = new Vector2(stpSR.size.x + stp, 0.42f);
-                    Vector2 pos = strip.transform.position;
-                    float offset = stpSR.size.x * strip.transform.localScale.x - dir * 0.5f;
-                    fist.transform.position = new Vector3(pos.x + offset * Mathf.Cos(rot),
-                        pos.y + offset * Mathf.Sin(rot), -0.2f);
-                    i++;
-                    yield return new WaitForSeconds(0.01f);
-                }
+                tentArm.SetActive(true);
 
-                while (i > 0)
-                {
-                    stpSR.size = new Vector2(stpSR.size.x - stp, 0.42f);
-                    Vector2 pos = strip.transform.position;
-                    float offset = stpSR.size.x * strip.transform.localScale.x - dir * 0.5f;
-                    fist.transform.position = new Vector3(pos.x + offset * Mathf.Cos(rot),
-                        pos.y + offset * Mathf.Sin(rot), -0.2f);
-                    i--;
-                    yield return new WaitForSeconds(0.01f);
-                }
+                Animator tentAnim = tentArm.GetComponent<Animator>();
+                tentAnim.speed = 1f;
+                yield return tentAnim.PlayToFrameAt("NewArmAttack", 0, 12);
+                tentAnim.enabled = false;
+                yield return new WaitForSeconds(0.25f);
+                tentAnim.enabled = true;
+                tentAnim.speed = 1.8f;
+                yield return tentAnim.PlayToEnd();
+                tentAnim.speed = 1f;
 
-                armSpr.enabled = false;
-                stripStr.SetActive(false);
-                Destroy(strip);
-                Destroy(fist);
+                yield return EndAirFist(spike, tentArm, dir);
+                StartCoroutine(IdleTimer(IDLE_TIME));
+            }
+
+            float GetRot(GameObject arm, Vector3 pos, float dir)
+            {
+                Vector2 diff = arm.transform.position - pos;
+                float offset2 = 0f;
+                if ((dir > 0 && diff.x > 0) || (dir < 0 && diff.x < 0)) offset2 += 180f;
+                return Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
+            }
+
+            IEnumerator EndAirFist(GameObject spike, GameObject tentArm, float dir, float spd=0.4f)
+            {
+                _anim.enabled = true;
+                Destroy(tentArm);
                 spike.SetActive(true);
                 _anim.Play("AFist2");
                 yield return new WaitForSeconds(0.05f);
@@ -557,13 +562,12 @@ namespace FiveKnights.Isma
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
-                yield return new WaitForSeconds(0.4f);
+                yield return new WaitForSeconds(spd);
                 _anim.enabled = true;
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _rb.velocity = Vector2.zero;
                 ToggleIsma(false);
-                StartCoroutine(IdleTimer(IDLE_TIME));
             }
 
             StartCoroutine(AirFist());
@@ -1198,8 +1202,8 @@ namespace FiveKnights.Isma
             Log("Started Isma Lone Death");
             yield return new WaitWhile(() => _attacking);
             _attacking = true;
-            _hm.hp = 300;
-            _healthPool = 100;
+            _hm.hp = 800;
+            _healthPool = 300;
             Coroutine c = StartCoroutine(LoopedAgony());
             Log("Test");
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -1291,10 +1295,24 @@ namespace FiveKnights.Isma
             }
             orig(self);
         }
+        
+        private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, 
+            int upwardrecursionamount, bool burst)
+        {
+            int damage = Mirror.GetField<SpellFluke, int>(self, "damage");
+            DoTakeDamage(tar, damage, 0);
+            orig(self, tar, upwardrecursionamount, burst);
+        }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("Isma"))
+            DoTakeDamage(self.gameObject, hitInstance.DamageDealt, hitInstance.Direction);
+            orig(self, hitInstance);
+        }
+        
+        private void DoTakeDamage(GameObject tar, int damage, float dir)
+        {
+            if (tar.name.Contains("Isma"))
             {
                 if (onlyIsma && waitForHitStart)
                 {
@@ -1308,16 +1326,15 @@ namespace FiveKnights.Isma
                     StartCoroutine(AttackChoice());
                     StartCoroutine(SpawnWalls());
                 }
-                _healthPool -= hitInstance.DamageDealt;
-                _hitEffects.RecieveHitEffect(hitInstance.Direction);
+                _healthPool -= damage;
+                _hitEffects.RecieveHitEffect(dir);
                 isIsmaHitLast = true;
             }
-            else if (self.name.Contains("White Defender"))
+            else if (tar.name.Contains("White Defender"))
             {
-                _healthPool -= hitInstance.DamageDealt;
+                _healthPool -= damage;
                 isIsmaHitLast = false;
             }
-            orig(self, hitInstance);
         }
 
         IEnumerator FlashWhite()
