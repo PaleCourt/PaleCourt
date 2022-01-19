@@ -24,7 +24,8 @@ namespace FiveKnights
     {
         private HealthManager _hm;
         private PlayMakerFSM _fsm;
-        private GameObject _dd; 
+        private GameObject _dd;
+        private Texture acidOldTex;
         private tk2dSpriteAnimator _tk;
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
@@ -54,15 +55,13 @@ namespace FiveKnights
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 CreateIsma();
                 GameObject ogrim = GameObject.Find("Ogrim");
-                Log($"Found ogrim? {ogrim != null}");
-                Log("Made arena");
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110f);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
-                PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
+                // PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
                 yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
                 PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
                 yield return new WaitWhile(() => ic != null);
@@ -341,6 +340,32 @@ namespace FiveKnights
                 i.gameObject.layer = 17;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
             }
+            
+            // Doing acid spit stuff
+            var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
+            var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
+            acidOrig = Instantiate(acidOrig);
+            acidOrig.SetActive(false);
+            
+            // Change particle color to green
+            var stmain = acidOrig.transform.Find("Steam").GetComponent<ParticleSystem>().main;
+            var stamain = acidOrig.transform.Find("Air Steam").GetComponent<ParticleSystem>().main;
+            stmain.startColor = new ParticleSystem.MinMaxGradient(new Color(128/255f,226/255f,169/255f,217/255f));
+            stamain.startColor = new ParticleSystem.MinMaxGradient(new Color(128/255f,226/255f,169/255f,217/255f));
+            // Get audio actor and audio clip
+            var actorOrig = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
+                .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioPlayer.Value;
+            actorOrig.SetActive(false);
+            var clip = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
+                .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
+            // Change texture
+            tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+            acidOldTex = def.material.mainTexture;
+            def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
+            // Store values
+            FiveKnights.IsmaClips["AcidSpitSnd"] = clip;
+            FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
+            FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
 
             // Have to move arena up a little
             GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.18f, 0f);
@@ -472,6 +497,11 @@ namespace FiveKnights
         {
             _ap?.StopMusic();
             _ap2?.StopMusic();
+            if (acidOldTex == null) return;
+            var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
+            var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
+            tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+            def.material.mainTexture = acidOldTex;
         }
 
         private void Log(object o)

@@ -13,6 +13,8 @@ using SFCore.Utils;
 using TMPro;
 using UnityEngine;
 using Vasi;
+using Logger = Modding.Logger;
+using Random = System.Random;
 
 namespace FiveKnights.Isma
 {
@@ -48,7 +50,7 @@ namespace FiveKnights.Isma
         private const int MAX_HP = 1500;
         private const int WALL_HP = 1000;
         private const int SPIKE_HP = 600;
-        private const float IDLE_TIME = 0.1f;
+        private const float IDLE_TIME = 0f; //0.1f;
         public static float offsetTime;
         public static bool killAllMinions;
         private bool isDead;
@@ -154,13 +156,14 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.IsPlaying());
             //GameObject whip = transform.Find("Whip").gameObject;
             //whip.layer = 11;
+            yield return new WaitForSeconds(0.75f);
             if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
+            if (OWArenaFinder.IsInOverWorld) OWBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
             StartCoroutine("Start2");
         }
 
         private void MusicControl()
         {
-            Log("Start music");
             WDController.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaMusic"], 1f);
         }
         
@@ -228,21 +231,37 @@ namespace FiveKnights.Isma
             int lastA = 3;
             while (true)
             {
+                yield return new WaitWhile(() => _attacking);
                 yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 0.8f) + offsetTime);
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
+                //= _rand.Next(100)
+                float plantPercent = 100f;
+                if (_healthPool > WALL_HP)
+                {
+                    plantPercent = (1f - (float) (EnemyPlantSpawn.FoolCount + EnemyPlantSpawn.TurretCount) / 
+                        (EnemyPlantSpawn.MaxFool + EnemyPlantSpawn.MaxTurret)) * 100;
+                }
+                bool throwBomb = _rand.Next(100) < plantPercent;
                 int r = onlyIsma ? UnityEngine.Random.Range(0, 10) : UnityEngine.Random.Range(0, 7);
-                if (r < 4 && lastA != 0)
+                if (EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0 
+                                                   && lastA != 2
+                                                   && UnityEngine.Random.Range(0, 2) == 0)
+                {
+                    lastA = 2;
+                    _prev = Bomb;
+                }
+                else if (r < 4 && lastA != 0)
                 {
                     lastA = 0;
                     _prev = AirFist;
                 }
-                else if ((r < 7 && lastA != 1) || lastA == 0)
+                else if ((r < 8 && lastA != 1) || lastA == 0)
                 {
                     lastA = 1;
                     _prev = WhipAttack;
                 }
-                else if (onlyIsma && (lastA != 2 || lastA == 1))
+                else if (throwBomb && onlyIsma && lastA != 2)
                 {
                     lastA = 2;
                     _prev = Bomb;
@@ -415,13 +434,17 @@ namespace FiveKnights.Isma
 
             IEnumerator AnimEnder()
             {
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
+                /*yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.1f);
                 _anim.enabled = true;
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _rb.velocity = new Vector2(0f, 0f);
+                _rb.velocity = new Vector2(0f, 0f);*/
+                yield return _anim.PlayToFrame("ThrowBomb", 8);
+                yield return new WaitForSeconds(0.08f);
+                transform.position += new Vector3(0f, 0.2f);
+                yield return _anim.PlayToEnd();
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
@@ -475,8 +498,17 @@ namespace FiveKnights.Isma
                 float heroX = _target.transform.GetPositionX();
                 float distance = UnityEngine.Random.Range(10, 12);
                 float ismaX = heroX - MIDDDLE > 0f ? heroX - distance : heroX + distance;
-                if (_wallActive) ismaX = _rand.Next((int)LEFT_X + 10, (int)RIGHT_X - 8);
-                transform.position = new Vector2(ismaX, UnityEngine.Random.Range(10, 16));
+
+                if (_wallActive)
+                {
+                    float rightMost = RIGHT_X - 8;
+                    float leftMost = LEFT_X + 10;
+                    ismaX = heroX - MIDDDLE > 0f 
+                        ? UnityEngine.Random.Range((int)leftMost, (int)heroX - 6) 
+                        : UnityEngine.Random.Range((int)heroX + 6, (int)rightMost);
+                }
+                
+                transform.position = new Vector2(ismaX, UnityEngine.Random.Range(13, 16));
                 ToggleIsma(true);
                 float dir = FaceHero();
                 
@@ -509,9 +541,19 @@ namespace FiveKnights.Isma
 
                 if (rotD is < -60f or > 50f)
                 {
-                    yield return EndAirFist(spike, new GameObject(), dir, 0.1f);
-                    if (UnityEngine.Random.Range(0, 3) == 0) this.AirFist();
-                    else StartCoroutine(IdleTimer(IDLE_TIME));
+                    int rnd = UnityEngine.Random.Range(0, 1);
+                    if (rnd == 0)
+                    {
+                        _anim.enabled = true;
+                        spike.SetActive(false);
+                        yield return AcidThrow();
+                    }
+                    else
+                    {
+                        yield return EndAirFist(spike, new GameObject(), dir, 0.1f);
+                        if (rnd == 1) this.AirFist();
+                        else StartCoroutine(IdleTimer(IDLE_TIME));
+                    }
                     yield break;
                 }
                 
@@ -530,12 +572,12 @@ namespace FiveKnights.Isma
                 tentArm.SetActive(true);
 
                 Animator tentAnim = tentArm.GetComponent<Animator>();
-                tentAnim.speed = 1f;
+                tentAnim.speed = 1.4f;
                 yield return tentAnim.PlayToFrameAt("NewArmAttack", 0, 12);
                 tentAnim.enabled = false;
                 yield return new WaitForSeconds(0.25f);
                 tentAnim.enabled = true;
-                tentAnim.speed = 1.8f;
+                tentAnim.speed = 1.9f;
                 yield return tentAnim.PlayToEnd();
                 tentAnim.speed = 1f;
 
@@ -559,19 +601,104 @@ namespace FiveKnights.Isma
                 _anim.Play("AFist2");
                 yield return new WaitForSeconds(0.05f);
                 spike.SetActive(false);
-                _anim.Play("AFistEnd");
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                _anim.enabled = false;
-                yield return new WaitForSeconds(spd);
-                _anim.enabled = true;
-                _rb.velocity = new Vector2(dir * -20f, 0f);
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _rb.velocity = Vector2.zero;
+                //_anim.Play("AFistEnd");
+                //yield return null;
+                yield return _anim.PlayBlocking("AFistEnd");
+                //transform.position += new Vector3(0.81f * Math.Sign(transform.localScale.x), 0.27f);
+                //_anim.enabled = false;
+                //yield return new WaitForSeconds(spd);
+                //_anim.enabled = true;
+                //_rb.velocity = new Vector2(dir * -20f, 0f);
+                //yield return new WaitWhile(() => _anim.IsPlaying());
+                //_rb.velocity = Vector2.zero;
                 ToggleIsma(false);
             }
 
             StartCoroutine(AirFist());
+        }
+        
+        IEnumerator AcidThrow()
+        {
+            float GetRot(Vector3 origPos, Vector3 tarPos)
+            {
+                Vector2 diff = origPos - tarPos;
+                float tmpRot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg;
+                if (diff.x > 0)
+                {
+                    tmpRot = tmpRot + 180f;
+                    tmpRot = tmpRot < 220f ? 220f : tmpRot;
+                    Log($"What is deg1? {tmpRot}");
+                }
+                else
+                {
+                    tmpRot = tmpRot > -40f ? -40f : tmpRot;
+                    Log($"What is deg2? {tmpRot}");
+                }
+                return tmpRot * Mathf.Deg2Rad;
+            }
+            
+            yield return _anim.PlayToFrameAt("AcidSwipe", 0, 6);
+            
+            Vector2 tarPos = HeroController.instance.transform.position;
+            Vector3 pos = transform.position - new Vector3(0f, 0.5f, 0f);
+            
+            float rot = GetRot(pos, tarPos);
+            float mag = 20f;
+            for (int i = -1; i < 2; i++)
+            {
+                var acid = Instantiate(FiveKnights.preloadedGO["AcidSpit"]);
+                acid.AddComponent<AcidGnd>();
+                acid.transform.position = pos;
+                acid.SetActive(true);
+
+                float currRot = rot + i * Mathf.PI / 3;
+                acid.GetComponent<Rigidbody2D>().velocity =
+                    new Vector2(mag * Mathf.Cos(currRot), mag * Mathf.Sin(currRot));
+            }
+
+            yield return _anim.PlayToEnd();
+            ToggleIsma(false);
+            StartCoroutine(IdleTimer(IDLE_TIME));
+
+        }
+        
+        public class AcidGnd : MonoBehaviour
+        {
+            private Rigidbody2D _rb;
+            private PlayMakerFSM _fsm;
+            private const float SlimeY = 7.5f;
+            private bool _isLanded;
+            public void Awake()
+            {
+                _rb = GetComponent<Rigidbody2D>();
+                _fsm = gameObject.LocateMyFSM("Vomit Glob");
+                _isLanded = false;
+            }
+
+            public void FixedUpdate()
+            {
+                if (!_isLanded && _fsm.ActiveStateName == "In Air" && transform.position.y < SlimeY)
+                {
+                    _isLanded = true;
+                    PlayGndSnd();
+                    var pos = transform.position;
+                    transform.position = new Vector3(pos.x, SlimeY, pos.z);
+                    _fsm.SetState("Land");
+                }
+            }
+
+            void PlayGndSnd()
+            {
+                var actor = Instantiate(FiveKnights.preloadedGO["AcidSpitPlayer"]);
+                actor.transform.position = HeroController.instance.transform.position;
+                var aud = actor.GetComponent<AudioSource>();
+                actor.SetActive(true);
+                aud.enabled = true;
+                aud.clip = null;
+                aud.pitch = aud.volume = 1f;
+                aud.PlayOneShot(FiveKnights.IsmaClips["AcidSpitSnd"], 1f);
+                Destroy(this);
+            }
         }
 
         private const float WhipYOffset = 2.21f;
@@ -625,17 +752,21 @@ namespace FiveKnights.Isma
                 );
                 
                 transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
-                _anim.Play("GFistEnd");
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                _anim.enabled = false;
-                yield return new WaitForSeconds(0.5f);
-                _anim.enabled = true;
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                _rb.velocity = new Vector2(dir * -20f, 0f);
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _rb.velocity = Vector2.zero;
+                yield return _anim.PlayBlocking("GFistEnd");
+                //_anim.Play("GFistEnd");
+                //yield return null;
+                //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                //_anim.enabled = false;
+                //yield return new WaitForSeconds(0.5f);
+                //_anim.enabled = true;
+                //transform.position += new Vector3(1.21f * Math.Sign(transform.localScale.x), 0.4f);
+                
+                
+                //yield return null;
+                //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                //_rb.velocity = new Vector2(dir * -20f, 0f);
+                //yield return new WaitWhile(() => _anim.IsPlaying());
+                //_rb.velocity = Vector2.zero;
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
@@ -691,18 +822,19 @@ namespace FiveKnights.Isma
                 (15, () => { whip.Find("W17").SetActive(false); })
             );
            
-            _anim.Play("GFistEnd");
+            //_anim.Play("GFistEnd");
             transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
-            yield return null;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            _anim.enabled = false;
-            yield return new WaitForSeconds(0.5f);
-            _anim.enabled = true;
-            yield return null;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-            _rb.velocity = new Vector2(dir * -20f, 0f);
-            yield return new WaitWhile(() => _anim.IsPlaying());
-            _rb.velocity = Vector2.zero;
+            yield return _anim.PlayBlocking("GFistEnd");
+            //yield return null;
+            //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            //_anim.enabled = false;
+            //yield return new WaitForSeconds(0.5f);
+            //_anim.enabled = true;
+            //yield return null;
+            //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            //_rb.velocity = new Vector2(dir * -20f, 0f);
+            //yield return new WaitWhile(() => _anim.IsPlaying());
+            //_rb.velocity = Vector2.zero;
             ToggleIsma(false);
             StartCoroutine(IdleTimer(IDLE_TIME));
         }
@@ -906,8 +1038,8 @@ namespace FiveKnights.Isma
         }
 
         private GameObject fakeIsma;
-        private float agonyAnimSpd = 1.3f;
-        private Vector2 agonySpread = new Vector2(25f, 40f);
+        private float agonyAnimSpd = 1.2f;
+        private Vector2 agonySpread = new Vector2(30f, 40f);
 
         private IEnumerator LoopedAgony()
         {
@@ -1411,7 +1543,7 @@ namespace FiveKnights.Isma
 
         private void ToggleIsma(bool visible)
         {
-            _anim.Play("Idle");
+            _anim.PlayAt("Idle", 0);
             _sr.enabled = visible;
             _bc.enabled = visible;
         }

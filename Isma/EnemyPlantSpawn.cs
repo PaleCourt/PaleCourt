@@ -16,10 +16,10 @@ namespace FiveKnights.Isma
         public static int FoolCount = 0;
         public static int PillarCount = 0;
         public static int TurretCount = 0;
-        private const int MaxTurret = 3;
-        private const int MaxFool = 5;
-        private const int MaxPillar = 5;
-        private const float TIME_INC = 0.32f;
+        public static readonly int MaxTurret = 3;
+        public static readonly int MaxFool = 5;
+        private const int MaxPillar = 3;
+        private const float TIME_INC = 0.1f;
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
         private static readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
@@ -104,6 +104,7 @@ namespace FiveKnights.Isma
                 lst.Add(i);
             }
             fsm.FsmVariables.FindFsmFloat("Distance Max").Value = 50f;
+            fsm.GetAction<Wait>("Idle Anim", 1).time = 0.8f;
             turret.transform.SetRotation2D(rot);
             turret.SetActive(true);
             rot *= Mathf.Deg2Rad;

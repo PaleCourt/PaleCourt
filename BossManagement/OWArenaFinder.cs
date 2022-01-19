@@ -1,8 +1,10 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = Modding.Logger;
@@ -39,7 +41,7 @@ namespace FiveKnights.BossManagement
         private string _currScene;
         private string _prevScene;
 
-        private IEnumerator Start()
+        private void Start()
         {
             Instance = this;
             USceneManager.activeSceneChanged += USceneManagerOnactiveSceneChanged;
@@ -47,18 +49,8 @@ namespace FiveKnights.BossManagement
             On.GameManager.RefreshTilemapInfo += GameManagerOnRefreshTilemapInfo;
             On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
-
-            yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
-
-            GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo()
-            {
-                EntryGateName = "left1",
-                SceneName = PrevZemScene,
-                Visualization = GameManager.SceneLoadVisualizations.Default,
-                WaitForSceneTransitionCameraFade = false,
-            });
-
         }
+
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? "DREAM_WORLD" : orig(self);
@@ -716,11 +708,6 @@ namespace FiveKnights.BossManagement
                 }
                 else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
-            Log("Test3");
-            /*foreach (SpriteRenderer spr in FiveKnights.preloadedGO["IsmaArena"].GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                spr.material = new Material(Shader.Find("Sprites/Default"));
-            }*/
 
             Log("Finished Loading Isma Bundle");
         }
