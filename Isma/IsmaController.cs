@@ -133,6 +133,13 @@ namespace FiveKnights.Isma
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitForSeconds(0.8f);
             }
+            
+            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
+            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Stop();
+            HeroController.instance.RelinquishControl();
+            HeroController.instance.StopAnimationControl();
+            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
@@ -144,8 +151,9 @@ namespace FiveKnights.Isma
             _target = HeroController.instance.gameObject;
             if (!onlyIsma) PositionIsma();
             else transform.position = new Vector3(LEFT_X + (RIGHT_X-LEFT_X)/1.5f, GROUND_Y, 1f);
-            float dir = FaceHero();
+            FaceHero();
             _bc.enabled = false;
+
             _anim.Play("Apear"); // Yes I know it's "appear," I don't feel like changing the assetbundle buddo
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y + 8f);
             _rb.velocity = new Vector2(0f, -40f);
@@ -154,9 +162,12 @@ namespace FiveKnights.Isma
             _rb.velocity = new Vector2(0f, 0f);
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
             yield return new WaitWhile(() => _anim.IsPlaying());
-            //GameObject whip = transform.Find("Whip").gameObject;
-            //whip.layer = 11;
+            
+            
             yield return new WaitForSeconds(0.75f);
+            HeroController.instance.RegainControl();
+            HeroController.instance.StartAnimationControl();
+            
             if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
             if (OWArenaFinder.IsInOverWorld) OWBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
             StartCoroutine("Start2");
@@ -527,7 +538,7 @@ namespace FiveKnights.Isma
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 0);
                 spike.SetActive(true);
                 _anim.enabled = false;
-                yield return new WaitForSeconds(0.4f);
+                yield return new WaitForSeconds(0.3f);
                 
                 Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
                 float predTime = 0.4f;
@@ -572,12 +583,12 @@ namespace FiveKnights.Isma
                 tentArm.SetActive(true);
 
                 Animator tentAnim = tentArm.GetComponent<Animator>();
-                tentAnim.speed = 1.4f;
+                tentAnim.speed = 1.9f;
                 yield return tentAnim.PlayToFrameAt("NewArmAttack", 0, 12);
                 tentAnim.enabled = false;
-                yield return new WaitForSeconds(0.25f);
+                yield return new WaitForSeconds(0.15f);
                 tentAnim.enabled = true;
-                tentAnim.speed = 1.9f;
+                tentAnim.speed = 2f;
                 yield return tentAnim.PlayToEnd();
                 tentAnim.speed = 1f;
 
@@ -1213,10 +1224,8 @@ namespace FiveKnights.Isma
             HeroController.instance.StartAnimationControl();
             yield return new WaitWhile(() => transform.position.y < 19f);
             PlayerData.instance.isInvincible = false;
-            Log("Death ogrim end0");
             if (CustomWP.boss != CustomWP.Boss.All) yield return new WaitForSeconds(1f);
             CustomWP.wonLastFight = true;
-            Log("Death ogrim end");
             _ddFsm.enabled = false;
             Destroy(this);
         }

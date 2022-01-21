@@ -195,6 +195,8 @@ namespace FiveKnights.Isma
             private GameObject initFool;
             private GameObject finalFool;
             private HealthManager hm;
+            private const float InitY = 6.01f;
+            private const float FinalY = 8.61f; //.65
             private float xPos;
             private void Awake()
             {
@@ -216,11 +218,11 @@ namespace FiveKnights.Isma
             {
                 initFool.SetActive(true);
                 Animator anim = initFool.GetComponent<Animator>();
-                initFool.transform.SetPosition2D(xPos, 6.05f); //6.2
+                initFool.transform.SetPosition2D(xPos, InitY); //6.2
                 initFool.transform.localScale *= 1.4f;
                 yield return anim.PlayBlocking("SpawnFool");
                 Destroy(initFool);
-                finalFool.transform.SetPosition2D(xPos, 8.65f); //8.8
+                finalFool.transform.SetPosition2D(xPos, FinalY); //8.8
                 tk2dSpriteAnimator tk = finalFool.GetComponent<tk2dSpriteAnimator>();
                 PlayMakerFSM fsm = finalFool.LocateMyFSM("Plant Trap Control");
                 fsm.enabled = false;
