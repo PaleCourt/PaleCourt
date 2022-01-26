@@ -57,10 +57,10 @@ namespace FiveKnights.BossManagement
 
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
         {
-            if (_currScene == ZemerScene && self.name == "CLA2")
+            /*if (_currScene == ZemerScene && self.name == "CLA2")
             {
                 HeroController.instance.superDash.SendEvent("SLOPE CANCEL");
-            }
+            }*/
 
             if (_currScene == DryyaScene)
             {
@@ -593,7 +593,6 @@ namespace FiveKnights.BossManagement
             foreach (GameObject i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name.Contains("Superdash Cancel")))
             {
-                Log("Found one " + i.name);
                 i.AddComponent<SuperDashCancel>();
             }
         }

@@ -109,8 +109,6 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Start()
         {
-            Log("Start2");
-
             _hm.hp = Phase2HP;
             _spinType = 1;
 
@@ -124,7 +122,7 @@ namespace FiveKnights.Zemer
 
         private void Update()
         {
-            if (!_bc.enabled) return;
+            if (_bc == null || !_bc.enabled) return;
 
             if (transform.GetPositionX() > RightX - 1.3f && _rb.velocity.x > 0f)
             {
@@ -1459,9 +1457,9 @@ namespace FiveKnights.Zemer
         {
             if (OWArenaFinder.IsInOverWorld)
             {
-                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"]);
+                OWBossManager.PlayMusic(FiveKnights.Clips["ZP2Intro"]);
                 yield return new WaitForSecondsRealtime(14.12f);
-                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"]);
+                OWBossManager.PlayMusic(FiveKnights.Clips["ZP2Loop"]);
             }
             else
             {
@@ -1475,7 +1473,8 @@ namespace FiveKnights.Zemer
         private IEnumerator EndPhase1()
         {
             float dir;
-
+            yield return KnockedOut();
+            
             IEnumerator KnockedOut()
             {
                 dir = -FaceHero();
@@ -1490,23 +1489,29 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 transform.position = new Vector3(transform.position.x, GroundY - 0.99f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _bc.enabled = true;
-                
+
                 Log($"Do or not do phase? {DoPhase}");
                 if (DoPhase)
                 {
+                    Log("AM I HERE wtf???");
                     _bc.enabled = false;
-                    _deathEff.RecordWithoutNotes();
+                    _hm.enabled = false;
+                    _anim.enabled = false;
+                    // This is breaking stuff, idk yall figure it out smh
+                    // _deathEff.RecordWithoutNotes();
                     yield return new WaitForSeconds(1.75f);
+                    Log("WHO IS THIS? 3");
                     CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);
-                    yield break;
                 }
-
-                isHit = false;
-                yield return new WaitSecWhile(() => !isHit, 8f);
-                yield return (Recover());
+                else
+                {
+                    _bc.enabled = true;
+                    isHit = false;
+                    yield return new WaitSecWhile(() => !isHit, 8f);
+                    yield return Recover();
+                }
             }
 
             IEnumerator Recover()
@@ -1680,8 +1685,6 @@ namespace FiveKnights.Zemer
                 FaceHero();
                 yield return new WaitForSeconds(0.3f);
             }
-
-            yield return (KnockedOut());
         }
 
         void SpawnPillar(float dir, Vector2 size, float xSpd)
@@ -1994,7 +1997,7 @@ namespace FiveKnights.Zemer
             }
 
             FaceHero();
-            if (OWArenaFinder.IsInOverWorld ) OWBossManager.Instance.PlayMusic(null);
+            if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
             else WDController.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _bc.enabled = false;

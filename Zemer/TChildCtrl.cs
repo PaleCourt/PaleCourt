@@ -86,6 +86,7 @@ namespace FiveKnights.Zemer
             _anim.speed = 1f;
             _rb.velocity = Vector2.zero;
             yield return _anim.PlayBlocking("Turn");
+            _hm.IsInvincible = true;
             _bc.enabled = _hm.enabled = false;
             // Waiting for player routine
             StartCoroutine(LeaveAndReturn());
@@ -93,12 +94,17 @@ namespace FiveKnights.Zemer
 
         private IEnumerator LeaveAndReturn()
         {
+            _hm.IsInvincible = true;
             yield return new WaitWhile(() => HeroController.instance.transform.position.x < 243f);
+            
+            OWBossManager.PlayMusic(null);
+            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
             HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Stop();
-            HeroController.instance.RelinquishControlNotVelocity();
+            //HeroController.instance.GetComponent<tk2dSpriteAnimator>().Stop();
+            HeroController.instance.RelinquishControl();
             HeroController.instance.StopAnimationControl();
             HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+            
             yield return new WaitForSeconds(1.5f);
             yield return Leave(true);
             

@@ -57,13 +57,7 @@ namespace FiveKnights.Isma
         public static bool eliminateMinions;
         private bool isIsmaHitLast;
         public bool introDone;
-        
-        private readonly string[] _dnailDial =
-        {
-            "ISMA_DREAM_1",
-            "ISMA_DREAM_2",
-            "ISMA_DREAM_3"
-        };
+        private const int MaxDreamAmount = 3;
 
         private void Awake()
         {
@@ -82,9 +76,9 @@ namespace FiveKnights.Isma
             _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             gameObject.AddComponent<Flash>();
             _dnailReac.enabled = true;
+            Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
             _rand = new System.Random();
             _randAud = new List<AudioClip>();
-            _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
             _healthPool = MAX_HP;
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
@@ -136,7 +130,6 @@ namespace FiveKnights.Isma
             
             HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
             HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Stop();
             HeroController.instance.RelinquishControl();
             HeroController.instance.StopAnimationControl();
             HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
@@ -169,8 +162,14 @@ namespace FiveKnights.Isma
             HeroController.instance.StartAnimationControl();
             
             if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
-            if (OWArenaFinder.IsInOverWorld) OWBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
             StartCoroutine("Start2");
+            if (OWArenaFinder.IsInOverWorld)
+            {
+                OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
+                yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
+                OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
+            }
+            
         }
 
         private void MusicControl()
@@ -648,7 +647,12 @@ namespace FiveKnights.Isma
                 return tmpRot * Mathf.Deg2Rad;
             }
             
-            yield return _anim.PlayToFrameAt("AcidSwipe", 0, 6);
+            yield return _anim.PlayToFrameAt("AcidSwipe", 0, 4);
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.3f);
+            _anim.enabled = true;
+            
+            yield return _anim.PlayToFrame("AcidSwipe", 6);
             
             Vector2 tarPos = HeroController.instance.transform.position;
             Vector3 pos = transform.position - new Vector3(0f, 0.5f, 0f);
@@ -684,6 +688,8 @@ namespace FiveKnights.Isma
                 _rb = GetComponent<Rigidbody2D>();
                 _fsm = gameObject.LocateMyFSM("Vomit Glob");
                 _isLanded = false;
+                _fsm.GetAction<WaitRandom>("Land", 8).timeMin = 0.75f;
+                _fsm.GetAction<WaitRandom>("Land", 8).timeMax = 1f;
             }
 
             public void FixedUpdate()
@@ -1129,7 +1135,7 @@ namespace FiveKnights.Isma
                 {
                     i.enabled = false;
                 }
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.35f);
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.enabled = true;
@@ -1402,7 +1408,7 @@ namespace FiveKnights.Isma
             _anim.enabled = true;
             yield return null;
             if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
-            else OWBossManager.Instance.PlayMusic(null);
+            else OWBossManager.PlayMusic(null);
             PlayDeathFor(gameObject);
             _bc.enabled = false;
             _rb.gravityScale = 1.5f;
@@ -1469,8 +1475,8 @@ namespace FiveKnights.Isma
             if (self.name.Contains("Isma"))
             {
                 StartCoroutine(FlashWhite());
-                Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
+                Instantiate(_dnailEff, transform.position, Quaternion.identity); 
+                _dnailReac.SetConvoTitle("ISMA_DREAM");
             }
             orig(self);
         }

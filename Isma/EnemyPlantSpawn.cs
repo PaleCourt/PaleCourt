@@ -104,7 +104,7 @@ namespace FiveKnights.Isma
                 lst.Add(i);
             }
             fsm.FsmVariables.FindFsmFloat("Distance Max").Value = 50f;
-            fsm.GetAction<Wait>("Idle Anim", 1).time = 0.8f;
+            fsm.GetAction<Wait>("Idle Anim", 1).time = 1.5f;
             turret.transform.SetRotation2D(rot);
             turret.SetActive(true);
             rot *= Mathf.Deg2Rad;

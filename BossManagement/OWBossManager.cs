@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -61,8 +62,8 @@ namespace FiveKnights
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
                 // PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
-                yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
-                PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
+                /*yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
+                PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);*/
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null);
 
@@ -167,20 +168,20 @@ namespace FiveKnights
             {
                 ZemerController.WaitForTChild = true;
                 ZemerController zc = CreateZemer();
+                PlayMusic(FiveKnights.Clips["Zem_Area"]);
                 GameObject zem = zc.gameObject;
                 zem.SetActive(true);
+                zem.GetComponent<HealthManager>().IsInvincible = true;
                 GameObject child = Instantiate(FiveKnights.preloadedGO["TChild"]);
                 var tChild = child.AddComponent<TChildCtrl>();
                 child.SetActive(true);
 
                 yield return null;
-                zem.GetComponent<HealthManager>().IsInvincible = true;
-                
+
                 yield return new WaitWhile(() => !tChild.helpZemer);
+                
                 ZemerController.WaitForTChild = false;
                 zem.GetComponent<HealthManager>().IsInvincible = false;
-                /*GameObject zem = zc.gameObject;
-                zem.SetActive(true);*/
 
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
@@ -252,7 +253,7 @@ namespace FiveKnights
             fsm.SetState("Fade Out");
         }
 
-        public void PlayMusic(AudioClip clip)
+        public static void PlayMusic(AudioClip clip)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
@@ -422,12 +423,13 @@ namespace FiveKnights
             Log("Creating Zemer");
             
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            string[] arr = new[]
+            string[] arr =
             {
                 "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
                 "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
                 "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1", 
-                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2"
+                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
+                "Zem_Area"
             };
             
             foreach (var i in arr)
@@ -485,7 +487,7 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
                 
             }
-            zemer.GetComponent<SpriteRenderer>();
+            zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
             var zc = zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");
             zemer.SetActive(false);

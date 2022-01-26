@@ -17,6 +17,8 @@ using UnityEngine.UI;
 using FrogCore;
 using SFCore.Generics;
 using TMPro;
+using Vasi;
+using GetLanguageString = On.HutongGames.PlayMaker.Actions.GetLanguageString;
 
 namespace FiveKnights
 {
@@ -26,16 +28,16 @@ namespace FiveKnights
     {
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
-        public static Dictionary<string, AudioClip> Clips { get; } = new Dictionary<string, AudioClip>();
-        public static Dictionary<string, AudioClip> IsmaClips { get; } = new Dictionary<string, AudioClip>();
-        public static Dictionary<string, Material> Materials { get; } = new Dictionary<string, Material>();
+        public static Dictionary<string, AudioClip> Clips { get; } = new ();
+        public static Dictionary<string, AudioClip> IsmaClips { get; } = new ();
+        public static Dictionary<string, Material> Materials { get; } = new ();
         private LanguageCtrl langStrings { get; set; }
-        public static Dictionary<string, GameObject> preloadedGO = new Dictionary<string, GameObject>();
-        public static readonly Dictionary<string, Sprite> SPRITES = new Dictionary<string, Sprite>();
+        public static Dictionary<string, GameObject> preloadedGO = new ();
+        public static readonly Dictionary<string, Sprite> SPRITES = new ();
         public static FiveKnights Instance;
         public List<int> charmIDs;
-        public static Dictionary<string, JournalHelper> journalentries = new Dictionary<string, JournalHelper>();
-        public static readonly string[] CharmKeys = new string[] { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
+        public static Dictionary<string, JournalHelper> journalentries = new ();
+        public static readonly string[] CharmKeys = { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
         public static string OS
         {
             get
@@ -146,10 +148,7 @@ namespace FiveKnights
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
             On.Language.Language.DoSwitch += SwitchLanguage;
-
             ModHooks.LanguageGetHook += LangGet;
-            On.DialogueBox.SetConversation += DialogueBoxOnSetConversation;
-
             On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
             On.UIManager.Start += OnUIManagerStart;
 
@@ -656,21 +655,6 @@ namespace FiveKnights
             return langStrings.ContainsKey(key, sheet) ? langStrings.Get(key, sheet) : orig;
         }
         
-        private void DialogueBoxOnSetConversation(On.DialogueBox.orig_SetConversation orig, DialogueBox self, string convname, string sheetname)
-        {
-            if (langStrings.ContainsKey(convname, sheetname))
-            {
-                self.currentConversation = convname;
-                self.currentPage = 1;
-                self.GetComponent<TextMeshPro>().text = langStrings.Get(convname, sheetname);
-                self.GetComponent<TextMeshPro>().ForceMeshUpdate();
-            }
-            else
-            {
-                orig(self, convname, sheetname);
-            }
-        }
-
         private void SaveGame(SaveGameData data)
         {
             AddComponent();

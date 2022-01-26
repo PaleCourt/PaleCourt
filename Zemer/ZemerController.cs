@@ -8,6 +8,7 @@ using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
+using Vasi;
 
 namespace FiveKnights.Zemer
 {
@@ -38,17 +39,12 @@ namespace FiveKnights.Zemer
         private bool _blockedHit;
         private const float DashDelay = 0.18f;
         private const float TurnDelay = 0.05f;
-        private const float WalkSpeed = 12f;
+        private const float WalkSpeed = 10f;
+        private const float AerialDelay = 0.25f;
         private bool _countering;
         private MusicPlayer _ap;
         public static bool WaitForTChild = false;
-
-        private readonly string[] _dnailDial =
-        {
-            "ZEM_DREAM_1",
-            "ZEM_DREAM_2",
-            "ZEM_DREAM_3"
-        };
+        private const int MaxDreamAmount = 3;
 
         private void Awake()
         {
@@ -56,6 +52,7 @@ namespace FiveKnights.Zemer
             OnDestroy();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
+            On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
             _hm = gameObject.AddComponent<HealthManager>();
             _anim = gameObject.GetComponent<Animator>();
             _bc = gameObject.GetComponent<BoxCollider2D>();
@@ -68,9 +65,11 @@ namespace FiveKnights.Zemer
             gameObject.AddComponent<DamageHero>().damageDealt = 1;
             _dd = FiveKnights.preloadedGO["WD"];
             _dnailEff = _dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
+            
             _dnailReac.enabled = true;
+            Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
+
             _rand = new System.Random();
-            _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
             gameObject.AddComponent<Flash>();
@@ -161,10 +160,10 @@ namespace FiveKnights.Zemer
         {
             if (OWArenaFinder.IsInOverWorld)
             {
-                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"]);
+                OWBossManager.PlayMusic(FiveKnights.Clips["ZP1Intro"]);
                 yield return new WaitForSecondsRealtime(7.04f);
-                OWBossManager.Instance.PlayMusic(null);
-                OWBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"]);
+                OWBossManager.PlayMusic(null);
+                OWBossManager.PlayMusic(FiveKnights.Clips["ZP1Loop"]);
             }
             else
             {
@@ -306,6 +305,10 @@ namespace FiveKnights.Zemer
                 _anim.Play("ZAerial2");
                 PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 yield return null;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                _anim.enabled = false;
+                yield return new WaitForSeconds(AerialDelay);
+                _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 _rb.velocity = new Vector2(xVel * 38f, 15f);
                 _rb.gravityScale = 1.3f;
@@ -679,7 +682,7 @@ namespace FiveKnights.Zemer
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
+                _dnailReac.SetConvoTitle("ZEM_DREAM");
             }
 
             orig(self);
@@ -687,9 +690,24 @@ namespace FiveKnights.Zemer
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("Zemer"))
+            DoTakeDamage(self.gameObject, hitInstance.Direction);
+            orig(self, hitInstance);
+        }
+        
+        private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, 
+            int upwardrecursionamount, bool burst)
+        {
+            DoTakeDamage(tar, 0);
+            orig(self, tar, upwardrecursionamount, burst);
+        }
+
+        private bool _hasDied;
+        
+        private void DoTakeDamage(GameObject tar, float dir)
+        {
+            if (tar.name.Contains("Zemer"))
             {
-                _hitEffects.RecieveHitEffect(hitInstance.Direction);
+                _hitEffects.RecieveHitEffect(dir);
 
                 if (doingIntro)
                 {
@@ -703,12 +721,13 @@ namespace FiveKnights.Zemer
                     StartCoroutine(Attacks());
                 }
 
-                if (_hm.hp <= Phase2HP)
+                if (_hm.hp <= Phase2HP && !_hasDied)
                 {
                     Log("Going to phase 2");
+                    _hasDied = true;
                     _bc.enabled = false;
                     
-                    if (OWArenaFinder.IsInOverWorld ) OWBossManager.Instance.PlayMusic(null);
+                    if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
                     else WDController.Instance.PlayMusic(null, 1f);
                     
                     GameObject extraNail = GameObject.Find("ZNailB");
@@ -723,8 +742,6 @@ namespace FiveKnights.Zemer
                     Destroy(this);
                 }
             }
-
-            orig(self, hitInstance);
         }
 
         private IEnumerator SilLeave()
