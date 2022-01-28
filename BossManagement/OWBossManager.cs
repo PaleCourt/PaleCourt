@@ -284,6 +284,8 @@ namespace FiveKnights
             // Get isma's music from bundle
             FiveKnights.Clips["LoneIsmaIntro"] = snd.LoadAsset<AudioClip>("LoneIsmaIntro");
             FiveKnights.Clips["LoneIsmaLoop"] = snd.LoadAsset<AudioClip>("LoneIsmaLoop");
+            FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
+            FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
             // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {

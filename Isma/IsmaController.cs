@@ -300,14 +300,7 @@ namespace FiveKnights.Isma
             if (onlyIsma)
             {
                 EnemyPlantSpawn spawner = GameObject.Find("SeedFloor").GetComponent<EnemyPlantSpawn>();
-                GameObject tur1 = new GameObject();
-                tur1.transform.position = new Vector2(LEFT_X + 10f, GROUND_Y + 14f);
-                StartCoroutine(spawner.Phase2Spawn(tur1));
-                //tur1.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
-                GameObject tur2 = new GameObject();
-                tur2.transform.position = new Vector2(RIGHT_X - 10f, GROUND_Y + 14f);
-                StartCoroutine(spawner.Phase2Spawn(tur2));
-                //tur2.AddComponent<EnemyPlantSpawn>().isSpecialTurret = true;
+                spawner.Phase2Spawn();
             }
             else
             {
@@ -966,6 +959,7 @@ namespace FiveKnights.Isma
             thorn.transform.parent = fakeIsma.transform;
 
             Animator tAnim = thorn.transform.Find("T1").gameObject.GetComponent<Animator>();
+
             _anim.Play("AgonyLoopIntro");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
@@ -976,6 +970,10 @@ namespace FiveKnights.Isma
             do
             {
                 _anim.PlayAt("AgonyLoop", 0);
+
+                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyIntro"];
+                _ap.DoPlayRandomClip();
+                
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
 
@@ -984,7 +982,8 @@ namespace FiveKnights.Isma
                 
                 Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
                 Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
-                float predTime = 0.2f;
+                // Disabled velocity tracking for now
+                float predTime = 0f;
                 float yOff = 0f;
                 float xOff = 1f;
                 Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
@@ -1020,6 +1019,7 @@ namespace FiveKnights.Isma
                 _anim.enabled = false;
                 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 4);
+
                 foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.enabled = false;
@@ -1030,6 +1030,11 @@ namespace FiveKnights.Isma
                     i.enabled = true;
                 }
                 
+                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
+                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
+                _ap.DoPlayRandomClip();
+
+
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => tAnim.IsPlaying());
@@ -1095,7 +1100,8 @@ namespace FiveKnights.Isma
                 
                 Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
                 Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
-                float predTime = 0.2f;
+                // Disabled velocity tracking for now
+                float predTime = 0f;
                 float yOff = 0f;
                 float xOff = 1f;
                 Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
@@ -1140,6 +1146,10 @@ namespace FiveKnights.Isma
                 {
                     i.enabled = true;
                 }
+                
+                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
+                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
+                _ap.DoPlayRandomClip();
                 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
@@ -1491,6 +1501,10 @@ namespace FiveKnights.Isma
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
+            if (self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
+            {
+                hitInstance.DamageDealt = 35;
+            }
             DoTakeDamage(self.gameObject, hitInstance.DamageDealt, hitInstance.Direction);
             orig(self, hitInstance);
         }

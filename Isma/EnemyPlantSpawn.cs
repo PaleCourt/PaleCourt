@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using SFCore.Utils;
 using UnityEngine;
 
@@ -71,7 +73,21 @@ namespace FiveKnights.Isma
             Destroy(other.gameObject);
         }
 
-        public IEnumerator Phase2Spawn(GameObject go)
+        public void Phase2Spawn()
+        {
+            GameObject turOrig1 = new GameObject();
+            turOrig1.transform.position = new Vector2(LEFT_X + 10f, GROUND_Y + 14f);
+            GameObject turOrig2 = new GameObject();
+            turOrig2.transform.position = new Vector2(RIGHT_X - 10f, GROUND_Y + 14f);
+            
+            GameObject turret1 = Instantiate(FiveKnights.preloadedGO["PTurret"]);
+            GameObject turret2 = Instantiate(FiveKnights.preloadedGO["PTurret"]);
+            
+            StartCoroutine(Phase2Spawn(turOrig1, turret1));
+            StartCoroutine(Phase2Spawn(turOrig2, turret2));
+        }
+
+        private IEnumerator Phase2Spawn(GameObject go, GameObject turret)
         {
             Vector2 pos = go.transform.position;
             yield return new WaitForSeconds(2f);
@@ -82,16 +98,11 @@ namespace FiveKnights.Isma
             gulk.transform.SetPosition2D(pos);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
-            GameObject turret = Instantiate(FiveKnights.preloadedGO["PTurret"]);
             var hm = turret.GetComponent<HealthManager>();
             RemoveGeo(hm);
             turret.name = SpecialName;
             MeshRenderer mesh = turret.GetComponent<MeshRenderer>();
             PlayMakerFSM fsm = turret.LocateMyFSM("Plant Turret");
-            
-            // stop spike ball from doing damage to enemy
-            var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
-            ball.layer = 11;
 
             fsm.GetAction<SetInvincible>("Wake", 2).Invincible = true; 
             hm.IsInvincible = true;
@@ -285,6 +296,7 @@ namespace FiveKnights.Isma
             private IEnumerator Start()
             {
                 hm = finalGulka.GetComponent<HealthManager>();
+                hm.GetComponent<HealthManager>().hp = 1;
                 RemoveGeo(hm);
                 hm.OnDeath += () =>
                 {
@@ -296,7 +308,8 @@ namespace FiveKnights.Isma
                 initGulka.SetActive(true);
                 Animator anim = initGulka.GetComponent<Animator>();
                 float rot = pos.x > MIDDDLE ? 90f : -90f;
-                initGulka.transform.SetPosition2D(pos.x + (pos.x > MIDDDLE ? 0f : -0.3f), pos.y);
+                //initGulka.transform.SetPosition2D(pos.x + (pos.x > MIDDDLE ? 0f : -0.3f), pos.y);
+                initGulka.transform.SetPosition2D(pos.x > MIDDDLE ? 136.6651f : 105.4166f, pos.y);
                 initGulka.transform.localScale *= 1.4f;
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
@@ -304,7 +317,8 @@ namespace FiveKnights.Isma
                 
                 // stop spike ball from doing damage to enemy
                 var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
-                ball.layer = 11;
+                ball.AddComponent<ModifiedSpit>();
+                //ball.layer = 11;
 
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();
@@ -317,10 +331,11 @@ namespace FiveKnights.Isma
                 finalGulka.transform.SetRotation2D(rot);
                 finalGulka.SetActive(true);
                 rot *= Mathf.Deg2Rad;
-                finalGulka.transform.SetPosition2D(pos.x, pos.y + 0.5f * Mathf.Cos(rot)); 
+                finalGulka.transform.SetPosition2D(pos.x > MIDDDLE ? pos.x : 105.8166f, pos.y + 0.5f * Mathf.Cos(rot));
                 anim.Play("SpawnGulka");
                 yield return new WaitForSeconds(0.05f);
                 yield return new WaitWhile(() => anim.IsPlaying());
+
                 Destroy(initGulka);
                 mesh.enabled = true;
                 foreach (MeshRenderer i in lst)
@@ -328,6 +343,28 @@ namespace FiveKnights.Isma
                     i.enabled = true;
                 }
                 fsm.SendEvent("SEE HERO");
+            }
+
+            class ModifiedSpit : MonoBehaviour
+            {
+                private PlayMakerFSM _fsmEnemyDmg;
+                private PlayMakerFSM _fsmSpit;
+                private void Awake()
+                {
+                    gameObject.layer = 11;
+                    _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
+                    _fsmEnemyDmg.enabled = false;
+                    _fsmSpit = gameObject.LocateMyFSM("spike ball control");
+                }
+
+                private void Start() => WaitForPlayerHit();
+
+                private async void WaitForPlayerHit()
+                {
+                    while (_fsmSpit.ActiveStateName != "Nail Hit") await Task.Yield();
+                    gameObject.layer = 17;
+                    _fsmEnemyDmg.enabled = true;
+                }
             }
 
             private void Update()

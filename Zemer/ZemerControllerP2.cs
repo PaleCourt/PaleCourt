@@ -1990,6 +1990,7 @@ namespace FiveKnights.Zemer
 
         IEnumerator Death()
         {
+            // TODO: This doesn't seem to take into account if Zem dies in the air??
             GameObject extraNail = GameObject.Find("ZNailB");
             if (extraNail != null && extraNail.transform.parent == null)
             {

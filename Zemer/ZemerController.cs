@@ -48,7 +48,7 @@ namespace FiveKnights.Zemer
 
         private void Awake()
         {
-            GroundY = OWArenaFinder.IsInOverWorld ? 108.8f : GroundY;
+            GroundY = OWArenaFinder.IsInOverWorld ? 108.3f : GroundY; //108.8f
             OnDestroy();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -92,7 +92,7 @@ namespace FiveKnights.Zemer
             Log("Start");
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
-            gameObject.transform.localScale *= 0.9f;
+            gameObject.transform.localScale *= 0.8f;
             gameObject.layer = 11;
             yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
             Destroy(GameObject.Find("Bounds Cage"));
