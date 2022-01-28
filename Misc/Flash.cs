@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using System.Collections;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,11 +8,25 @@ namespace FiveKnights
 {
     public class Flash : MonoBehaviour
     {
-        private Task _lastTask;
-        private CancellationTokenSource ts;
-        private CancellationToken ct;
         private SpriteRenderer _sr;
-        private bool _flashing;
+        private float amount;
+        private float t;
+        private float timeUp;
+        private float stayTime;
+        private float timeDown;
+        private float flashTimer;
+        private bool flashing;
+        private FlashState flashingState;
+        private float amountCurrent;
+        private static readonly int FlashAmount = Shader.PropertyToID("_FlashAmount");
+
+        private enum FlashState
+        {
+            Increase,
+            Stay,
+            Decrease,
+            Stop
+        };
 
         private void Start()
         {
@@ -19,27 +34,73 @@ namespace FiveKnights
             _sr.material = FiveKnights.Materials["flash"];
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
-            ts = new CancellationTokenSource();
-            ct = ts.Token;
+        }
+
+        private void ResetValues()
+        {
+            amount = 0.85f;
+            timeUp = 0.01f;
+            stayTime = 0.01f;
+            timeDown = 0.35f;
+            _sr.material.SetFloat(FlashAmount, 0f);
+            flashingState = FlashState.Increase;
+            flashTimer = 0.0f;
+        }
+
+        private void Update()
+        {
+            if (flashingState == FlashState.Increase)
+            {
+                if (flashTimer < timeUp)
+                {
+                    flashTimer += Time.deltaTime;
+                    t = flashTimer / timeUp;
+                    amountCurrent = Mathf.Lerp(0.0f, amount, t);
+                    _sr.material.SetFloat(FlashAmount, amountCurrent);
+                }
+                else
+                {
+                    _sr.material.SetFloat(FlashAmount, amount);
+                    flashTimer = 0.0f;
+                    flashing = false;
+                    flashingState = FlashState.Stay;
+                }
+            }
+            if (flashingState == FlashState.Stay)
+            {
+                if (flashTimer < stayTime)
+                {
+                    flashTimer += Time.deltaTime;
+                }
+                else
+                {
+                    flashTimer = 0.0f;
+                    flashingState = FlashState.Decrease;
+                }
+            }
+            if (flashingState == FlashState.Decrease)
+            {
+                if (flashTimer < timeDown)
+                {
+                    flashTimer += Time.deltaTime;
+                    t = flashTimer / timeDown;
+                    amountCurrent = Mathf.Lerp(amount, 0.0f, t);
+                    _sr.material.SetFloat(FlashAmount, amountCurrent);
+                }
+                else
+                {
+                    _sr.material.SetFloat(FlashAmount, 0f);
+                    flashTimer = 0.0f;
+                    flashingState = FlashState.Stop;
+                }
+            }
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.gameObject == gameObject)
             {
-                if (_lastTask == null || _lastTask.IsCompleted)
-                {
-                    _lastTask = FlashWhite2();
-                }
-                else
-                {
-                    ts.Cancel();
-                    ts = new CancellationTokenSource();
-                    ct = ts.Token;
-                    _lastTask = FlashWhite2();
-                }
-
-                _flashing = true;
+                ResetValues();
             }
             orig(self, hitInstance);
         }
@@ -49,46 +110,9 @@ namespace FiveKnights
         {
             if (tar == gameObject)
             {
-                if (_lastTask == null || _lastTask.IsCompleted)
-                {
-                    _lastTask = FlashWhite2();
-                }
-                else
-                {
-                    ts.Cancel();
-                    ts = new CancellationTokenSource();
-                    ct = ts.Token;
-                    _lastTask = FlashWhite2();
-                }
-
-                _flashing = true;
+                ResetValues();
             }
             orig(self, tar, upwardrecursionamount, burst);
-        }
-        
-        async Task FlashWhite2()
-        {
-            _sr.material.SetFloat("_FlashAmount", 1f);
-            for (float i = 1f; i >= 0f; i -= 0.02f)
-            {
-                await Task.Delay(1, ct);
-                _sr.material.SetFloat("_FlashAmount", i);
-            }
-
-            _flashing = false;
-        }
-
-        IEnumerator FlashWhite()
-        {
-            _sr.material.SetFloat("_FlashAmount", 1f);
-            yield return null;
-            for (float i = 1f; i >= 0f; i -= 0.01f)
-            {
-                _sr.material.SetFloat("_FlashAmount", i);
-                yield return null;
-            }
-            yield return null;
-            //flashing = false;
         }
 
         private void OnDestroy()
