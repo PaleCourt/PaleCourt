@@ -31,8 +31,8 @@ namespace FiveKnights.Zemer
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : 45.7f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
-        private const int MaxHPV1 = 600;//1200;
-        private const int DoSpinSlashPhase = 600;//900;
+        private const int MaxHPV1 = 1200;
+        private const int DoSpinSlashPhase = 900;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
