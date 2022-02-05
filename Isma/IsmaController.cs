@@ -47,10 +47,13 @@ namespace FiveKnights.Isma
         // I did this dumb b/c this is actually going to loop 3 times
         private readonly int NUM_AGONY_LOOPS = 1;
         private readonly float GROUND_Y = 5.9f;
+        
         private const int MAX_HP = 1500;
         private const int WALL_HP = 1000;
         private const int SPIKE_HP = 600;
+        
         private const float IDLE_TIME = 0f; //0.1f;
+        private const int GulkaSpitEnemyDamage = 20;
         public static float offsetTime;
         public static bool killAllMinions;
         private bool isDead;
@@ -1503,7 +1506,7 @@ namespace FiveKnights.Isma
         {
             if (self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
             {
-                hitInstance.DamageDealt = 35;
+                hitInstance.DamageDealt = GulkaSpitEnemyDamage;
             }
             DoTakeDamage(self.gameObject, hitInstance.DamageDealt, hitInstance.Direction);
             orig(self, hitInstance);

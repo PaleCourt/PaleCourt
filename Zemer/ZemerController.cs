@@ -9,6 +9,7 @@ using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
 using Vasi;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights.Zemer
 {
@@ -31,6 +32,7 @@ namespace FiveKnights.Zemer
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
         private const int MaxHPV1 = 1200;
+        private const int DoSpinSlashPhase = 900;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -190,14 +192,16 @@ namespace FiveKnights.Zemer
         private IEnumerator Attacks()
         {
             int counterCount = 0;
+            int pokeSlashCnt = 0;
             Dictionary<Func<IEnumerator>, int> rep = new Dictionary<Func<IEnumerator>, int>
             {
                 [Dash] = 0,
                 [Attack1Base] = 0,
                 [AerialAttack] = 0,
+                [Attack1Complete] = 0
             };
             if (_countering) yield return (Countered());
-
+            
             while (true)
             {
                 Log("[Waiting to start calculation]");
@@ -256,13 +260,13 @@ namespace FiveKnights.Zemer
                 rep[currAtt]++;
                 yield return currAtt();
                 Log("Done " + currAtt.Method.Name);
-                
+
                 yield return null;
                 
                 if (currAtt == Attack1Base)
                 {
-                    //REM
-                    Func<IEnumerator>[] lst2 = {Dash, FancyAttack, null};
+                    Func<IEnumerator>[] lst2 = {FancyAttack, Attack1Complete, null};
+                    if (_hm.hp < DoSpinSlashPhase) lst2 = new Func<IEnumerator>[]{FancyAttack, Attack1Complete};
                     currAtt = lst2[_rand.Next(0, lst2.Length)];
                     if (currAtt != null)
                     { 
@@ -271,13 +275,19 @@ namespace FiveKnights.Zemer
                         Log("Done " + currAtt.Method.Name);
                     }
 
-                    if (currAtt == FancyAttack && _rand.Next(0, 3) == 0)
+                    if (currAtt == FancyAttack)
                     {
-                        Log("Doing Special Fancy Attack");
-                        yield return Dodge();
-                        yield return FancyAttack();
-                        yield return Dash();
-                        Log("Done Special Fancy Attack");
+                        if (_rand.Next(0, 3) == 0)
+                        {
+                            Log("Doing Special Fancy Attack");
+                            yield return Dodge();
+                            yield return FancyAttack();
+                            Log("Done Special Fancy Attack");
+                        }
+                        else
+                        {
+                            yield return Dash();
+                        }
                     }
                 }
                 
@@ -475,31 +485,9 @@ namespace FiveKnights.Zemer
             _countering = false;
         }
 
-        private IEnumerator Attack1Complete()
-        {
-            IEnumerator Attack1Complete()
-            {
-                _anim.Play("ZAtt1");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
-                float xVel = FaceHero() * -1;
-                _anim.enabled = false;
-                yield return new WaitForSeconds(0.1f);
-                _anim.enabled = true;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                PlayAudioClip("Slash", 0.85f, 1.15f);
-                _rb.velocity = new Vector2(40f * xVel, 0f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
-                _rb.velocity = Vector2.zero;
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _anim.Play("ZIdle");
-            }
-
-            yield return Attack1Complete();
-        }
-
         private IEnumerator Attack1Base()
         {
-            IEnumerator Attack1Base()
+            IEnumerator Attack1Reg()
             {
                 if (!IsFacingPlayer())
                 {
@@ -523,8 +511,53 @@ namespace FiveKnights.Zemer
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
             }
+            
+            IEnumerator Attack1Full()
+            {
+                if (!IsFacingPlayer())
+                {
+                    yield return Turn();
+                }
 
-            yield return Attack1Base();
+                float xVel = FaceHero() * -1f;
+                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                yield return _anim.PlayToFrame("ZAtt1Intro", 1);
+                
+                _anim.enabled = false;
+
+                yield return new WaitForSeconds(0.2f);
+
+                _anim.enabled = true;
+
+                yield return _anim.WaitToFrame(2);
+
+                PlayAudioClip("Slash", 0.85f, 1.15f);
+
+                yield return _anim.WaitToFrame(6);
+
+                yield return _anim.PlayToEnd();
+                
+                _rb.velocity = new Vector2(23f * xVel, 0f);
+
+                _anim.speed = 1.5f;
+                
+                while ((xVel > 0 && transform.position.x < RightX - 10f) ||
+                       (xVel < 0 && transform.position.x > LeftX + 10f))
+                {
+                    yield return _anim.PlayToEndWithActions("ZAtt1Loop",
+                        (0, ()=> PlayAudioClip("Slash", 0.85f, 1.15f))
+                    );
+                }
+
+                _anim.speed = 1f;
+
+                _anim.Play("ZAtt1End");
+                _rb.velocity = Vector2.zero;
+                
+                yield return _anim.PlayToEnd();
+            }
+
+            yield return _hm.hp < DoSpinSlashPhase ? Attack1Full() : Attack1Reg();
         }
 
         private IEnumerator Dash()
@@ -611,6 +644,42 @@ namespace FiveKnights.Zemer
             yield return Dodge();
         }
 
+        private const float SheoAttDelay = 0.2f;
+        
+        private IEnumerator Attack1Complete()
+        {
+            IEnumerator Attack1Complete()
+            {
+                _anim.Play("ZAtt1");
+                float xVel = FaceHero() * -1;
+
+                yield return null;
+                
+                _anim.enabled = false;
+                
+                yield return new WaitForSeconds(SheoAttDelay);
+
+                _anim.enabled = true;
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+
+                PlayAudioClip("AudBigSlash",0.85f, 1.15f);
+
+                _rb.velocity = new Vector2(40f * xVel, 0f);
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+
+                _rb.velocity = Vector2.zero;
+
+                yield return new WaitWhile(() => _anim.IsPlaying());
+
+                _anim.Play("ZIdle");
+            }
+            
+            yield return (Attack1Complete());
+        }
+
+        // This isn't actually a spin attack, it's the anti-cheese attack
         private IEnumerator SpinAttack()
         {
             IEnumerator SpinAttack()

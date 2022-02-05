@@ -1477,24 +1477,33 @@ namespace FiveKnights.Zemer
             
             IEnumerator KnockedOut()
             {
+                float knockDir = Math.Sign(transform.position.x - HeroController.instance.transform.position.x);
                 dir = -FaceHero();
+                _rb.gravityScale = 1.5f;
+                _rb.isKinematic = false;
+                _rb.velocity = new Vector2(knockDir * 12f, 10f);
                 PlayDeathFor(gameObject);
                 _bc.enabled = false;
                 _anim.enabled = true;
-                _rb.velocity = Vector2.zero;
                 _anim.Play("ZKnocked");
                 PlayAudioClip("ZAudP1Death",_voice);
                 _anim.speed = 1f;
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                transform.position = new Vector3(transform.position.x, GroundY - 0.99f);
+                _anim.enabled = false;
+                yield return new WaitWhile(() => transform.position.y > GroundY - 0.99f);
+                _rb.velocity = Vector2.zero;
+                _rb.isKinematic = false;
+                _bc.enabled = false;
+                _anim.enabled = true;
+                _rb.gravityScale = 0f;
+                transform.position = new Vector3(transform.position.x, GroundY - 1.18f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
-                Log($"Do or not do phase? {DoPhase}");
                 if (DoPhase)
                 {
-                    Log("AM I HERE wtf???");
                     _bc.enabled = false;
+                    _rb.isKinematic = false;
                     _hm.enabled = false;
                     _anim.enabled = false;
                     // This is breaking stuff, idk yall figure it out smh
@@ -1508,6 +1517,7 @@ namespace FiveKnights.Zemer
                 else
                 {
                     _bc.enabled = true;
+                    _rb.isKinematic = true;
                     isHit = false;
                     yield return new WaitSecWhile(() => !isHit, 8f);
                     yield return Recover();

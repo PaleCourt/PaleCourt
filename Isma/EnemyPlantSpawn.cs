@@ -3,11 +3,9 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using FiveKnights.BossManagement;
-using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
-using ModCommon;
-using SFCore.Utils;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights.Isma
 {
@@ -85,8 +83,43 @@ namespace FiveKnights.Isma
             
             StartCoroutine(Phase2Spawn(turOrig1, turret1));
             StartCoroutine(Phase2Spawn(turOrig2, turret2));
+            
+            WaitForInitFinish(turret1.LocateMyFSM("Plant Turret"), turret2.LocateMyFSM("Plant Turret"));
         }
 
+        private async void WaitForInitFinish(PlayMakerFSM fsm1, PlayMakerFSM fsm2)
+        {
+            string stopState = "Idle Anim";
+            while (!_hasP2GulkaInit) await Task.Yield();
+            while (fsm1.gameObject != null && fsm2.gameObject != null)
+            {
+                fsm1.enabled = fsm2.enabled = true;
+                fsm1.SetState("Shoot Antic"); fsm2.SetState("Shoot Antic");
+                
+                while (fsm1.ActiveStateName != stopState && fsm2.ActiveStateName != stopState) await Task.Yield();
+                if (fsm1.ActiveStateName == stopState)
+                {
+                    fsm1.enabled = false;
+                    fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
+                    while (fsm2.ActiveStateName != stopState) await Task.Yield();
+                    fsm2.enabled = false;
+                    fsm2.GetComponent<tk2dSpriteAnimator>().Play("Idle");
+                }
+                else
+                {
+                    fsm2.enabled = false;
+                    fsm2.GetComponent<tk2dSpriteAnimator>().Play("Idle");
+                    while (fsm1.ActiveStateName != stopState) await Task.Yield();
+                    fsm1.enabled = false;
+                    fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
+                }
+                
+                await Task.Delay(1200 + Random.Range(0, 4) * 100);
+            }
+        }
+
+        private bool _hasP2GulkaInit;
+        
         private IEnumerator Phase2Spawn(GameObject go, GameObject turret)
         {
             Vector2 pos = go.transform.position;
@@ -103,6 +136,13 @@ namespace FiveKnights.Isma
             turret.name = SpecialName;
             MeshRenderer mesh = turret.GetComponent<MeshRenderer>();
             PlayMakerFSM fsm = turret.LocateMyFSM("Plant Turret");
+            
+            // stop spike ball from doing damage to enemy
+            var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
+            if (!ball.GetComponent<ModifiedSpit>())
+            {
+                ball.AddComponent<ModifiedSpit>();
+            }
 
             fsm.GetAction<SetInvincible>("Wake", 2).Invincible = true; 
             hm.IsInvincible = true;
@@ -130,6 +170,8 @@ namespace FiveKnights.Isma
                 i.enabled = true;
             }
             fsm.SendEvent("SEE HERO");
+            fsm.enabled = false;
+            _hasP2GulkaInit = true;
             StartCoroutine(FinalGulkaKiller(turret));
         }
 
@@ -317,7 +359,10 @@ namespace FiveKnights.Isma
                 
                 // stop spike ball from doing damage to enemy
                 var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
-                ball.AddComponent<ModifiedSpit>();
+                if (!ball.GetComponent<ModifiedSpit>())
+                {
+                    ball.AddComponent<ModifiedSpit>();
+                }
                 //ball.layer = 11;
 
                 mesh.enabled = false;
@@ -345,28 +390,6 @@ namespace FiveKnights.Isma
                 fsm.SendEvent("SEE HERO");
             }
 
-            class ModifiedSpit : MonoBehaviour
-            {
-                private PlayMakerFSM _fsmEnemyDmg;
-                private PlayMakerFSM _fsmSpit;
-                private void Awake()
-                {
-                    gameObject.layer = 11;
-                    _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
-                    _fsmEnemyDmg.enabled = false;
-                    _fsmSpit = gameObject.LocateMyFSM("spike ball control");
-                }
-
-                private void Start() => WaitForPlayerHit();
-
-                private async void WaitForPlayerHit()
-                {
-                    while (_fsmSpit.ActiveStateName != "Nail Hit") await Task.Yield();
-                    gameObject.layer = 17;
-                    _fsmEnemyDmg.enabled = true;
-                }
-            }
-
             private void Update()
             {
                 if (!IsmaController.killAllMinions) return;
@@ -379,6 +402,28 @@ namespace FiveKnights.Isma
                 {
                     hm.Die(new float?(0f), AttackTypes.Nail, true);
                 }
+            }
+        }
+        
+        class ModifiedSpit : MonoBehaviour
+        {
+            private PlayMakerFSM _fsmEnemyDmg;
+            private PlayMakerFSM _fsmSpit;
+            private void Awake()
+            {
+                gameObject.layer = 11;
+                _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
+                _fsmEnemyDmg.enabled = false;
+                _fsmSpit = gameObject.LocateMyFSM("spike ball control");
+            }
+
+            private void Start() => WaitForPlayerHit();
+
+            private async void WaitForPlayerHit()
+            {
+                while (_fsmSpit.ActiveStateName != "Nail Hit") await Task.Yield();
+                gameObject.layer = 17;
+                _fsmEnemyDmg.enabled = true;
             }
         }
 
