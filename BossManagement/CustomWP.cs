@@ -383,7 +383,7 @@ namespace FiveKnights
             GameObject appearance = statue.transform.Find("Base").Find("Statue").gameObject;
             appearance.SetActive(true);
             SpriteRenderer sr = appearance.transform.Find("GG_statues_0006_5").GetComponent<SpriteRenderer>();
-            sr.enabled = true;
+            sr.enabled = false;
             sr.sprite = spr;
             var scaleX = sr.transform.GetScaleX();
             var scaleY = sr.transform.GetScaleY();

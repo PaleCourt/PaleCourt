@@ -706,7 +706,7 @@ namespace FiveKnights
             }
 
             //PlantChanger();
-            //GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
         }
