@@ -181,7 +181,7 @@ namespace FiveKnights
             CustomWP.isFromGodhome = arg0.name == "GG_Workshop";
             if (arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09") return;
             
-            if (arg1.name == DryyaScene || arg1.name == IsmaScene || arg1.name == HegemolScene || arg1.name == ZemerScene)
+            if (arg1.name is DryyaScene or IsmaScene or HegemolScene or ZemerScene)
             {
                 // Done using SFGrenade code
                 StartCoroutine(wow());
@@ -286,17 +286,14 @@ namespace FiveKnights
             }
 
             if (arg0.name == "White_Palace_09" && 
-                (arg1.name == DryyaScene || arg1.name == IsmaScene || 
-                 arg1.name == ZemerScene || arg1.name == HegemolScene ||
-                 arg1.name == "GG_White_Defender"))
+                arg1.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
             {
                 On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
             }
 
             if (arg1.name == "White_Palace_09" && 
-                (arg0.name == IsmaScene || arg0.name == DryyaScene || arg0.name == ZemerScene || arg0.name == HegemolScene || 
-                 arg0.name == "GG_White_Defender" || arg0.name == "Dream_04_White_Defender"))
+                arg0.name is IsmaScene or DryyaScene or ZemerScene or HegemolScene or "GG_White_Defender" or "Dream_04_White_Defender")
             {
                 //GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 PlayerData.instance.isInvincible = false;

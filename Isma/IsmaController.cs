@@ -90,10 +90,13 @@ namespace FiveKnights.Isma
             EnemyPlantSpawn.isPhase2 = false;
             EnemyPlantSpawn.FoolCount = EnemyPlantSpawn.PillarCount = EnemyPlantSpawn.TurretCount = 0;
             killAllMinions = eliminateMinions = false;
-            
-            foreach (Transform sidecols in GameObject.Find("SeedCols").transform)
+
+            if (OWArenaFinder.IsInOverWorld)
             {
-                sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
+                foreach (Transform sidecols in GameObject.Find("SeedCols").transform)
+                {
+                    sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
+                }
             }
         }
 
@@ -177,7 +180,7 @@ namespace FiveKnights.Isma
 
         private void MusicControl()
         {
-            WDController.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaMusic"], 1f);
+            GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaMusic"], 1f);
         }
         
         private IEnumerator Start2()
@@ -1188,10 +1191,10 @@ namespace FiveKnights.Isma
             _healthPool = 40;
             yield return new WaitWhile(() => _healthPool > 0);
             float xSpd = _target.transform.GetPositionX() > dd.transform.GetPositionX() ? -10f : 10f;
-            WDController.Instance.PlayMusic(null, 1f);
+            GGBossManager.Instance.PlayMusic(null, 1f);
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
-            //GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
-            //GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap2.StopMusic();
             PlayDeathFor(dd);
             eliminateMinions = true;
             killAllMinions = true;
@@ -1316,10 +1319,10 @@ namespace FiveKnights.Isma
             yield return null;
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
             Log("1 dada ");
-            //GameManager.instance.gameObject.GetComponent<WDController>()._ap.StopMusic();
-            //GameManager.instance.gameObject.GetComponent<WDController>()._ap2.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap.StopMusic();
+            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap2.StopMusic();
             Log("2 dada");
-            WDController.Instance.PlayMusic(null, 1f);
+            GGBossManager.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _anim.Play("Falling");
             PlayerData.instance.isInvincible = true; ;
@@ -1420,7 +1423,7 @@ namespace FiveKnights.Isma
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
-            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
+            if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             else OWBossManager.PlayMusic(null);
             PlayDeathFor(gameObject);
             _bc.enabled = false;

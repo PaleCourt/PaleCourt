@@ -238,7 +238,7 @@ namespace FiveKnights.Hegemol
         private void MusicControl()
         {
             Log("Start music");
-            WDController.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
+            GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
         }
 
 		private void AddIntro()
@@ -655,7 +655,7 @@ namespace FiveKnights.Hegemol
         private IEnumerator Die()
         {
             Log("Hegemol Death");
-            WDController.Instance.PlayMusic(null, 1f);
+            GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
             _anim.Play("Idle");
             yield return new WaitForSeconds(0.4f);

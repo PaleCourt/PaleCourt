@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 
 namespace FiveKnights
@@ -39,7 +40,7 @@ namespace FiveKnights
         {
             if (!Loop || _loop == null)
                 return;
-            WDController.Instance.StopCoroutine(_loop);
+            GGBossManager.Instance.StopCoroutine(_loop);
             audio.Stop();
         }
 
@@ -72,7 +73,7 @@ namespace FiveKnights
 
             if (Loop)
             {
-                _loop = WDController.Instance.StartCoroutine(LoopMusic(Clip));
+                _loop = GGBossManager.Instance.StartCoroutine(LoopMusic(Clip));
             }
         }
     }

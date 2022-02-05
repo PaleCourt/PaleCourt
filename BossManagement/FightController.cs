@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using System.Linq;
+using FiveKnights.BossManagement;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
 using FiveKnights.Isma;
@@ -30,9 +31,9 @@ namespace FiveKnights
 
             _whiteD = Instantiate(FiveKnights.preloadedGO["WhiteDef"]); //GameObject.Find("White Defender");
             _whiteD.SetActive(false);
-            //_whiteD.AddComponent<WDController>();
+            //_whiteD.AddComponent<GGBossManager>();
             
-            GameManager.instance.gameObject.AddComponent<WDController>().dd = _whiteD;
+            GameManager.instance.gameObject.AddComponent<GGBossManager>().dd = _whiteD;
             
             PlayMakerFSM fsm = _whiteD.LocateMyFSM("Dung Defender");
             GameObject pillar = fsm.GetAction<SendEventByName>("G Slam", 5).eventTarget.gameObject.GameObject.Value.transform.Find("Dung Pillar (1)").gameObject;
@@ -256,11 +257,11 @@ namespace FiveKnights
         private void OnDestroy()
         {
             Log("OnDestroy");
-            WDController ctrl = GameManager.instance.gameObject.GetComponent<WDController>();
+            GGBossManager ctrl = GameManager.instance.gameObject.GetComponent<GGBossManager>();
             if (ctrl != null)
             {
                 Destroy(ctrl);
-                WDController.Instance = null;
+                GGBossManager.Instance = null;
                 Log("Destroyed WDCtrl");
             }
 

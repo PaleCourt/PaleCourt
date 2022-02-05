@@ -133,12 +133,12 @@ namespace FiveKnights.Dryya
         private void MusicControl()
         {
             if (!OWArenaFinder.IsInOverWorld)
-                WDController.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
         }
         
         private void DeathHandler()
         {
-            if (!OWArenaFinder.IsInOverWorld) WDController.Instance.PlayMusic(null, 1f);
+            if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
         }
 

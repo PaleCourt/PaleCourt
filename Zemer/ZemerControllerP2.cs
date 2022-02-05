@@ -1468,9 +1468,9 @@ namespace FiveKnights.Zemer
             }
             else
             {
-                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
                 yield return new WaitForSecondsRealtime(14.12f);
-                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
             }
             
         }
@@ -2010,7 +2010,7 @@ namespace FiveKnights.Zemer
 
             FaceHero();
             if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
-            else WDController.Instance.PlayMusic(null, 1f);
+            else GGBossManager.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _bc.enabled = false;
             _anim.enabled = true;

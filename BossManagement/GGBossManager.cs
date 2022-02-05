@@ -10,9 +10,9 @@ using Modding;
 using UnityEngine;
 using ReflectionHelper = Modding.ReflectionHelper;
 
-namespace FiveKnights.Ogrim
+namespace FiveKnights.BossManagement
 {
-    public class WDController : MonoBehaviour
+    public class GGBossManager : MonoBehaviour
     {
         private HealthManager _hm;
         private PlayMakerFSM _fsm;
@@ -23,12 +23,12 @@ namespace FiveKnights.Ogrim
         public MusicPlayer _ap2;
         public static bool alone;
         private bool HIT_FLAG;
-        public static WDController Instance;
+        public static GGBossManager Instance;
 
         private IEnumerator Start()
         {
             Instance = this;
-            if (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim)
+            if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender");
             }
@@ -169,7 +169,9 @@ namespace FiveKnights.Ogrim
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
+                Log("Load zem 1");
                 yield return LoadZemerBundle();
+                Log("Load zem 2");
                 dd.SetActive(false);
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;

@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using UnityEngine;
 
@@ -8,7 +9,7 @@ namespace FiveKnights.Dryya
     {
         private IEnumerator Start()
         {
-            WDController.Instance.PlayMusic(null, 1f);
+            GGBossManager.Instance.PlayMusic(null, 1f);
             yield return new WaitForSeconds(2.0f);
             var bossSceneController = GameObject.Find("Boss Scene Controller");
             var bsc = bossSceneController.GetComponent<BossSceneController>();

@@ -9,7 +9,6 @@ using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
 using Vasi;
-using Random = UnityEngine.Random;
 
 namespace FiveKnights.Zemer
 {
@@ -26,7 +25,7 @@ namespace FiveKnights.Zemer
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
         private const int Phase2HP = 200;
@@ -50,7 +49,6 @@ namespace FiveKnights.Zemer
 
         private void Awake()
         {
-            GroundY = OWArenaFinder.IsInOverWorld ? 108.3f : GroundY; //108.8f
             OnDestroy();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -99,7 +97,7 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
             Destroy(GameObject.Find("Bounds Cage"));
             Destroy(GameObject.Find("World Edge v2"));
-            if (!WDController.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
+            if (!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
             else yield return new WaitForSeconds(1.7f);
             //StartCoroutine(MusicControl());
             gameObject.SetActive(true);
@@ -169,10 +167,10 @@ namespace FiveKnights.Zemer
             }
             else
             {
-                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"], 1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"], 1f);
                 yield return new WaitForSecondsRealtime(7.04f);
-                WDController.Instance.PlayMusic(null, 1f);
-                WDController.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"], 1f);
+                GGBossManager.Instance.PlayMusic(null, 1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"], 1f);
             }
         }
 
@@ -796,7 +794,7 @@ namespace FiveKnights.Zemer
                     _bc.enabled = false;
                     
                     if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
-                    else WDController.Instance.PlayMusic(null, 1f);
+                    else GGBossManager.Instance.PlayMusic(null, 1f);
                     
                     GameObject extraNail = GameObject.Find("ZNailB");
                     if (extraNail != null && extraNail.transform.parent == null)

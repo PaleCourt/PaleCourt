@@ -370,8 +370,10 @@ namespace FiveKnights
             bs.statueStatePD = state;
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
-            details.nameKey = details.nameSheet = name;
-            details.descriptionKey = details.descriptionSheet = desc;
+            details.nameKey = name;
+            details.nameSheet = "Speech";
+            details.descriptionKey = desc;
+            details.descriptionSheet = "Speech";
             bs.bossDetails = details;
             foreach (Transform i in statue.transform)
             {
@@ -451,8 +453,10 @@ namespace FiveKnights
             bs.statueDisplayAlt = alt;
             /* } 56's code */
             BossStatue.BossUIDetails details = new BossStatue.BossUIDetails();
-            details.nameKey = details.nameSheet = key;
-            details.descriptionKey = details.descriptionSheet = desc;
+            details.nameKey = key;
+            details.nameSheet = "Speech";
+            details.descriptionKey = desc;
+            details.descriptionSheet = "Speech";
             bs.dreamBossDetails = details;
 
             GameObject altLever = statue.FindGameObjectInChildren("alt_lever");
