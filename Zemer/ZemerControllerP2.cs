@@ -122,6 +122,11 @@ namespace FiveKnights.Zemer
 
         private void Update()
         {
+            if (_isKnockingOut)
+            {
+                _rb.isKinematic = false;
+                _bc.enabled = false;
+            }
             if (_bc == null || !_bc.enabled) return;
 
             if (transform.GetPositionX() > RightX - 1.3f && _rb.velocity.x > 0f)
@@ -1469,6 +1474,8 @@ namespace FiveKnights.Zemer
             }
             
         }
+
+        private bool _isKnockingOut;
         
         private IEnumerator EndPhase1()
         {
@@ -1477,13 +1484,12 @@ namespace FiveKnights.Zemer
             
             IEnumerator KnockedOut()
             {
+                _isKnockingOut = true;
                 float knockDir = Math.Sign(transform.position.x - HeroController.instance.transform.position.x);
                 dir = -FaceHero();
                 _rb.gravityScale = 1.5f;
-                _rb.isKinematic = false;
                 _rb.velocity = new Vector2(knockDir * 12f, 10f);
                 PlayDeathFor(gameObject);
-                _bc.enabled = false;
                 _anim.enabled = true;
                 _anim.Play("ZKnocked");
                 PlayAudioClip("ZAudP1Death",_voice);
@@ -1493,23 +1499,18 @@ namespace FiveKnights.Zemer
                 _anim.enabled = false;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.99f);
                 _rb.velocity = Vector2.zero;
-                _rb.isKinematic = false;
-                _bc.enabled = false;
                 _anim.enabled = true;
                 _rb.gravityScale = 0f;
                 transform.position = new Vector3(transform.position.x, GroundY - 1.18f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
+                _isKnockingOut = false;
 
                 if (DoPhase)
                 {
-                    _bc.enabled = false;
-                    _rb.isKinematic = false;
-                    _hm.enabled = false;
                     _anim.enabled = false;
                     // This is breaking stuff, idk yall figure it out smh
                     // _deathEff.RecordWithoutNotes();
                     yield return new WaitForSeconds(1.75f);
-                    Log("WHO IS THIS? 3");
                     CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);

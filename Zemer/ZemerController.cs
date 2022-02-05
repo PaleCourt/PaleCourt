@@ -31,8 +31,8 @@ namespace FiveKnights.Zemer
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : 45.7f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
-        private const int MaxHPV1 = 1200;
-        private const int DoSpinSlashPhase = 900;
+        private const int MaxHPV1 = 600;//1200;
+        private const int DoSpinSlashPhase = 600;//900;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
         private GameObject[] traitorSlam;
@@ -192,7 +192,6 @@ namespace FiveKnights.Zemer
         private IEnumerator Attacks()
         {
             int counterCount = 0;
-            int pokeSlashCnt = 0;
             Dictionary<Func<IEnumerator>, int> rep = new Dictionary<Func<IEnumerator>, int>
             {
                 [Dash] = 0,
@@ -205,7 +204,6 @@ namespace FiveKnights.Zemer
             while (true)
             {
                 Log("[Waiting to start calculation]");
-                //yield return new WaitForSeconds(IdleDelay);
                 float xDisp = (transform.position.x < RightX - 22f) ? 8f : -8f;
                 yield return Walk(xDisp);
                 Log("[Setting Attacks]");
@@ -219,7 +217,7 @@ namespace FiveKnights.Zemer
                 }
                 else if (FastApproximately(posZem.x, posH.x, 5f))
                 {
-                    int r = _rand.Next(0, 3);
+                    int r = _rand.Next(0, 4);
                     if (r == 0 && counterCount < 2)
                     {
                         counterCount++;
@@ -229,12 +227,13 @@ namespace FiveKnights.Zemer
                         yield return new WaitWhile(() => _countering);
                         Log("Done Counter");
                     }
-                    else if (r == 1)
+                    else if (r < 3)
                     {
-                        Log("Doing Dodge");
                         counterCount = 0;
                         yield return Dodge();
-                        Log("Done Dodge");
+                        var a = _rand.Next(0, 3);
+                        Log($"Calc rand att {a}");
+                        yield return a > 0 ? Dash() : FancyAttack();
                     }
                     else
                     {
@@ -620,7 +619,7 @@ namespace FiveKnights.Zemer
 
             yield return Dash();
         }
-
+        
         private IEnumerator Dodge()
         {
             IEnumerator Dodge()
@@ -633,7 +632,7 @@ namespace FiveKnights.Zemer
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                //PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
