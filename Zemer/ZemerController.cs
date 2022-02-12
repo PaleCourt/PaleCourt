@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
@@ -25,9 +26,10 @@ namespace FiveKnights.Zemer
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
-        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
-        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
+        private static readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
+        private static readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
+        private static readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
+        private static readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 6f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
         private const int MaxHPV1 = 1200;
@@ -195,7 +197,8 @@ namespace FiveKnights.Zemer
                 [Dash] = 0,
                 [Attack1Base] = 0,
                 [AerialAttack] = 0,
-                [Attack1Complete] = 0
+                [Attack1Complete] = 0,
+                [ZemerSlam] = 0
             };
             if (_countering) yield return (Countered());
             
@@ -243,7 +246,7 @@ namespace FiveKnights.Zemer
                 
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
-                    Dash, Attack1Base, Attack1Base, AerialAttack
+                    Dash, Attack1Base, Attack1Base, AerialAttack, ZemerSlam
                 };
                 Func<IEnumerator> currAtt = attLst[_rand.Next(0, attLst.Count)];
                 while (rep[currAtt] > 2)
@@ -274,12 +277,17 @@ namespace FiveKnights.Zemer
 
                     if (currAtt == FancyAttack)
                     {
-                        if (_rand.Next(0, 3) == 0)
+                        int rand = _rand.Next(0, 3);
+                        if (rand == 0)
                         {
                             Log("Doing Special Fancy Attack");
                             yield return Dodge();
                             yield return FancyAttack();
                             Log("Done Special Fancy Attack");
+                        }
+                        else if (rand == 1)
+                        {
+                            yield return ZemerSlam();
                         }
                         else
                         {
@@ -367,13 +375,59 @@ namespace FiveKnights.Zemer
             yield return Walk();
         }
 
+        private IEnumerator ZemerSlam()
+        {
+            IEnumerator Slam()
+            {
+                transform.position += new Vector3(0f, 1.32f);
+                yield return _anim.PlayToFrame("ZSlamNew", 7);
+                
+                SpawnShockwaves(2f, 50f, 1, transform.position);
+
+                GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
+                PlayAudioClip("AudLand");
+                
+                yield return _anim.PlayToEnd();
+                transform.position -= new Vector3(0f, 1.32f);
+            }
+            
+            yield return (Slam());
+        }
+
+        private static void SpawnShockwaves(float vertScale, float speed, int damage, Vector2 pos)
+        {
+            bool[] facingRightBools = {false, true};
+
+            PlayMakerFSM fsm = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
+
+            foreach (bool facingRight in facingRightBools)
+            {
+                GameObject shockwave = Instantiate
+                (
+                    fsm.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value
+                );
+
+                PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
+
+                shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
+                shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
+
+                shockwave.AddComponent<DamageHero>().damageDealt = damage;
+
+                shockwave.SetActive(true);
+        
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), SlamY));
+                shockwave.transform.SetScaleX(vertScale);
+            }
+        }
+
         private IEnumerator Turn()
         {
             _anim.Play("ZTurn");
             yield return new WaitForSeconds(TurnDelay);
         }
 
-        //Stolen from Jngo
+        // Stolen from Jngo
         private void ZemerCounter()
         {
             float dir = 0f;
