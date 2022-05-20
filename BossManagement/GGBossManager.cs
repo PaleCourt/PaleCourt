@@ -178,6 +178,12 @@ namespace FiveKnights.BossManagement
                 ZemerController zc = FightController.Instance.CreateZemer();
                 GameObject zem = zc.gameObject;
                 yield return new WaitWhile(() => zc != null);
+                if (zem == null)
+                {
+                    Log("Zem did not exist so destroying");
+                    Destroy(this);
+                    yield break;
+                }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
                 if (CustomWP.wonLastFight)

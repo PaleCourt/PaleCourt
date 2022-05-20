@@ -383,7 +383,6 @@ namespace FiveKnights
                 MenuStyles self)
         {
             Log("Start");
-
             #region Setting up materials
 
             var defaultSpriteMaterial = new Material(Shader.Find("Sprites/Default"));

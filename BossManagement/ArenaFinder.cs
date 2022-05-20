@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using HutongGames.PlayMaker.Actions;
 using System.Linq;
+using FiveKnights.BossManagement;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using SFCore.Utils;
@@ -343,6 +344,11 @@ namespace FiveKnights
         private void ResetBossBundle()
         {
             Log($"Destroying {CustomWP.boss}");
+            if (GGBossManager.Instance != null)
+            {
+                Log("Destroying ggbossmanager");
+                Destroy(GGBossManager.Instance);
+            }
             if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
                 ABManager.ResetBundle(ABManager.Bundle.GDryya);

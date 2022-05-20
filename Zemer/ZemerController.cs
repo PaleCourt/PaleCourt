@@ -26,10 +26,10 @@ namespace FiveKnights.Zemer
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private static readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
-        private static readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
-        private static readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
-        private static readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 6f;
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
+        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
+        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
+        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
         private const int MaxHPV1 = 1200;
@@ -394,7 +394,7 @@ namespace FiveKnights.Zemer
             yield return (Slam());
         }
 
-        private static void SpawnShockwaves(float vertScale, float speed, int damage, Vector2 pos)
+        private void SpawnShockwaves(float vertScale, float speed, int damage, Vector2 pos)
         {
             bool[] facingRightBools = {false, true};
 

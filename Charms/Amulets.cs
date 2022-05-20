@@ -17,7 +17,7 @@ namespace FiveKnights
     {
         private const int SmallShotSpeed = 50;
 
-        private const float ATTACK_COOLDOWN_REGULAR = 0.41f;
+        private const float ATTACK_COOLDOWN_REGULAR = 0.41f; 
         private const float ATTACK_COOLDOWN_32 = 0.25f;
         private const float ATTACK_DURATION_REGULAR = 0.36f;
         private const float ATTACK_DURATION_32 = 0.25f;

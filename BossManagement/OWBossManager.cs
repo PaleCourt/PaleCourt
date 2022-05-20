@@ -169,6 +169,18 @@ namespace FiveKnights
                 ZemerController.WaitForTChild = true;
                 ZemerController zc = CreateZemer();
                 PlayMusic(FiveKnights.Clips["Zem_Area"]);
+
+                IEnumerator Test()
+                {
+                    Log("Printing pos of zem");
+                    while (zc != null)
+                    {
+                        Log($"Pos of zem is {zc.gameObject.transform.position}");
+                        yield return null;
+                    }
+                }
+
+                StartCoroutine(Test());
                 GameObject zem = zc.gameObject;
                 zem.SetActive(true);
                 zem.GetComponent<HealthManager>().IsInvincible = true;
@@ -184,6 +196,12 @@ namespace FiveKnights
                 zem.GetComponent<HealthManager>().IsInvincible = false;
 
                 yield return new WaitWhile(() => zc != null);
+                if (zem == null)
+                {
+                    Log("Zem did not exist so destroying");
+                    Destroy(this);
+                    yield break;
+                }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
                 WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene);

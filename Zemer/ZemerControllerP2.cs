@@ -36,7 +36,7 @@ namespace FiveKnights.Zemer
         private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
-        private static readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 6f;
+        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
 
         private const int Phase2HP = 1500;
         private const int Phase3HP = 1000;
