@@ -131,7 +131,7 @@ namespace FiveKnights
             Vector3 localScale = _knightBall.transform.localScale;
             localScale.x *= -1;
             _knightBall.transform.localScale = localScale;
-            _knightBall.transform.position += Vector3.left * 5.0f;
+            _knightBall.transform.position += new Vector3(-4.75f, -0.25f);
             _knightBallAnim = _knightBall.GetComponent<tk2dSpriteAnimator>();
             _hcAnim = self.GetComponent<tk2dSpriteAnimator>();
 
@@ -621,6 +621,7 @@ namespace FiveKnights
 
                 yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum + " Antic"));
 
+                // ToDo Slashing will be done even if hit during the antic
                 StartCoroutine(Slash());
             }
 
@@ -631,6 +632,10 @@ namespace FiveKnights
                 shadeSlash.tag = "Nail Attack";
                 shadeSlash.transform.localPosition = new Vector3(0f, 0f, 0f);
                 shadeSlash.transform.localScale = new Vector3(1f, 1f, 1f);
+                // ToDo Slash and Knight are one go, so having the slash be affected by scale doesn't quite work
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
                 shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
@@ -697,21 +702,28 @@ namespace FiveKnights
                 AudioPlayerOneShotSingle("Shade Slash Antic");
 
                 _hcAnim.Play(animName + "Slash Void");
-                _hcAnim.Play(_hcAnim.GetClipByName(animName + "Slash Void"));
+                var slashAnim = _hcAnim.GetClipByName(animName + "Slash Void");
+                _hcAnim.Play(slashAnim);
 
-                yield return new WaitWhile(() => _hcAnim.CurrentFrame < 1);
+                yield return new WaitForSeconds(slashAnim.Duration);
 
+                // ToDo Slashing will be done even if hit during the antic
                 StartCoroutine(Slash());
             }
 
             IEnumerator Slash()
             {
-                GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), _hc.transform);
+                GameObject shadeSlashContainer = Instantiate(new GameObject("Shade Slash Container"), _hc.transform);
+                shadeSlashContainer.layer = 17;
+                //shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlashContainer.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
+                shadeSlashContainer.SetActive(false);
+                GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), shadeSlashContainer.transform);
                 shadeSlash.layer = 17;
                 shadeSlash.tag = "Nail Attack";
                 shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
                 shadeSlash.transform.localScale = new Vector3(2, 2, 2);
-                shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
                 shadeSlash.AddComponent<MeshRenderer>();
@@ -762,15 +774,14 @@ namespace FiveKnights
 
                 shadeSlash.AddComponent<ShadeSlash>().audioPlayer = _audioPlayerActor;
 
-                shadeSlash.SetActive(true);
+                shadeSlashContainer.SetActive(true);
 
                 yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect" + (_pd.GetBool("equippedCharm_13") ? " M" : "")));
 
-                Destroy(shadeSlash);
+                Destroy(shadeSlashContainer);
 
-                //if (!up)
-                //    yield return new WaitWhile(() => _hcAnim.Playing);
-                yield return new WaitWhile(() => _hcAnim.Playing);
+                // Fixed the floating
+                yield return new WaitWhile(() => _hcAnim.Playing && _hcAnim.IsPlaying(animName + "Slash Void"));
 
                 _hc.StartAnimationControl();
                 _hc.RegainControl();
@@ -802,6 +813,9 @@ namespace FiveKnights
                 shadeSlash.tag = "Nail Attack";
                 shadeSlash.transform.localPosition = new Vector3(0f, 1.0f, 0f);
                 shadeSlash.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
                 shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
@@ -910,82 +924,6 @@ namespace FiveKnights
             ResetHeroControllerProperties();
             On.HeroController.Attack -= On_HeroController_Attack;
         }
-
-        //private static readonly string[] CUSTOM_BACKBOARDS = new[]
-        //{
-        //    "BB 1",
-        //    "BB 12",
-        //    "BB 23",
-        //    "BB 34"
-        //};
-
-        //private static string BackboardToCharm(string name)
-        //{
-        //    return name switch
-        //    {
-        //        "BB 1" => "41",
-        //        "BB 12" => "42",
-        //        "BB 23" => "43",
-        //        "BB 34" => "44",
-        //        _ => throw new ArgumentException("Backboard does not match custom charm!")
-        //    };
-        //}
-
-        //private void On_InvCharmBackboard_OnEnable(On.InvCharmBackboard.orig_OnEnable orig, InvCharmBackboard self)
-        //{
-        //    if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
-        //    {
-        //        orig(self);
-
-        //        return;
-        //    }
-
-        //    self.charmObject.transform.localPosition = self.transform.localPosition - new Vector3(0, 0, 1f / 1000f);
-
-        //    string charm = BackboardToCharm(self.gameObject.name);
-
-        //    bool got_charm = PlayerData.instance.GetBool($"gotCharm_{charm}");
-        //    bool new_charm = PlayerData.instance.GetBool($"newCharm_{charm}");
-        //    bool blanked = self.GetAttr<InvCharmBackboard, bool>("blanked");
-
-        //    if (got_charm && new_charm)
-        //        self.newOrb.SetActive(true);
-
-        //    if (got_charm && !blanked)
-        //    {
-        //        self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.blankSprite;
-        //        self.SetAttr("blanked", true);
-        //    }
-
-        //    if (got_charm || !blanked)
-        //        return;
-
-        //    self.GetAttr<InvCharmBackboard, SpriteRenderer>("spriteRenderer").sprite = self.activeSprite;
-        //    self.SetAttr("blanked", false);
-        //}
-
-        //private void On_InvCharmBackboard_SelectCharm
-        //(
-        //    On.InvCharmBackboard.orig_SelectCharm orig,
-        //    InvCharmBackboard self
-        //)
-        //{
-        //    if (!CUSTOM_BACKBOARDS.Contains(self.gameObject.name))
-        //    {
-        //        orig(self);
-
-        //        return;
-        //    }
-
-        //    string charm = BackboardToCharm(self.gameObject.name);
-
-        //    if (!PlayerData.instance.GetBool("newCharm_{charm}"))
-        //        return;
-
-        //    PlayerData.instance.SetBool($"newCharm_{charm}", false);
-
-        //    self.newOrb.GetComponent<SimpleFadeOut>().FadeOut();
-        //}
 
         private IEnumerator FindAndAddComponentToDung()
         {
@@ -1313,11 +1251,7 @@ namespace FiveKnights
             nailArts.RemoveAction<ActivateGameObject>("G Slash Void");
 
 #if DEBUG
-            foreach (FsmState s in nailArts.FsmStates)
-            {
-                nailArts.InsertMethod(s.Name, 0, () => { Modding.Logger.Log($"[Nail Arts] - Entered {s.Name}"); });
-                nailArts.AddAction(s.Name, new InvokeMethod(() => { Modding.Logger.Log($"[Nail Arts] - Left {s.Name}"); }));
-            }
+            nailArts.MakeLog();
 #endif
 
             //self.gameObject.scene.Log();

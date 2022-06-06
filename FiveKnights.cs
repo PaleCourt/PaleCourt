@@ -99,8 +99,8 @@ namespace FiveKnights
             #region Menu Customization
 
             LoadTitleScreen();
-            On.UIManager.Awake += OnUIManagerAwake;
-            On.SetVersionNumber.Start += OnSetVersionNumberStart;
+            On.UIManager.Awake += ChangeDlcListSprite;
+            On.SetVersionNumber.Start += ChangeVersionNumber;
             //SFCore.MenuStyleHelper.Initialize();
             SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
             //SFCore.TitleLogoHelper.Initialize();
@@ -149,8 +149,8 @@ namespace FiveKnights
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
-            On.AudioManager.ApplyMusicCue += OnAudioManagerApplyMusicCue;
-            On.UIManager.Start += OnUIManagerStart;
+            On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
+            On.UIManager.Start += ApplyMenuTextOutline;
 
             #endregion
             #region Load Assetbundles
@@ -329,7 +329,7 @@ namespace FiveKnights
 
         #region Make Text Readable
 
-        private void OnUIManagerStart(On.UIManager.orig_Start orig, UIManager self)
+        private void ApplyMenuTextOutline(On.UIManager.orig_Start orig, UIManager self)
         {
             foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
             {
@@ -344,18 +344,18 @@ namespace FiveKnights
 
         #region Menu Customization
 
-        private void OnSetVersionNumberStart(On.SetVersionNumber.orig_Start orig, SetVersionNumber self)
+        private void ChangeVersionNumber(On.SetVersionNumber.orig_Start orig, SetVersionNumber self)
         {
             orig(self);
             self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
         }
-        private void OnUIManagerAwake(On.UIManager.orig_Awake orig, UIManager self)
+        private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
         {
             orig(self);
             self.transform.GetChild(1).GetChild(2).GetChild(2).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
         }
 
-        private void OnAudioManagerApplyMusicCue(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
+        private void LoadPaleCourtMenuMusic(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
         {
             // Insert Custom Audio into main MusicCue
             var infos = (MusicCue.MusicChannelInfo[]) musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(musicCue);
@@ -370,9 +370,6 @@ namespace FiveKnights
                 }
                 infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
                 audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
-                
-                var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
-                MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
             }
             musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
             orig(self, musicCue, delayTime, transitionTime, applySnapshot);
@@ -432,20 +429,6 @@ namespace FiveKnights
             cameraCurves.blueChannel = new AnimationCurve();
             cameraCurves.blueChannel.AddKey(new Keyframe(0f, 0f));
             cameraCurves.blueChannel.AddKey(new Keyframe(1f, 1f));
-
-            #region Fader
-
-            // ToDo Make this part of the cursor
-
-            //GameObject fader1 = new GameObject("Fader");
-            //fader1.transform.SetParent(pcStyleGo.transform);
-            //fader1.transform.localPosition = new Vector3(-6.125f, -1.75f, 1f);
-            //fader1.transform.localScale = new Vector3(3, 5, 1);
-            //var sr = fader1.AddComponent<SpriteRenderer>();
-            //sr.sprite = SPRITES["Fader"];
-            //sr.material = defaultSpriteMaterial;
-
-            #endregion
 
             return ("UI_MENU_STYLE_PALE_COURT", pcStyleGo, paleCourtLogoId, "", null, cameraCurves, Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Tension Only"));
         }
