@@ -184,6 +184,12 @@ namespace FiveKnights
                 zem.GetComponent<HealthManager>().IsInvincible = false;
 
                 yield return new WaitWhile(() => zc != null);
+                if (zem == null)
+                {
+                    Log("Zem did not exist so destroying");
+                    Destroy(this);
+                    yield break;
+                }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
                 WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene);
@@ -258,13 +264,11 @@ namespace FiveKnights
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Mirror.SetField(channelInfo, "clip", clip);
-            //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
             Mirror.SetField(musicCue, "channelInfos", channelInfos);
-            //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
@@ -478,6 +482,7 @@ namespace FiveKnights
                 
                 bc.isTrigger = true;
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
                 bc.gameObject.layer = 22;
             }
             foreach (PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
@@ -485,7 +490,7 @@ namespace FiveKnights
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Tink>();
-                i.gameObject.AddComponent<Pogoable>();
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
                 i.gameObject.layer = 22;
                 
             }

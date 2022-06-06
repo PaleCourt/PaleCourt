@@ -12,7 +12,7 @@ namespace FiveKnights
             if (other.gameObject.name != "Clash Tink" && !other.gameObject.CompareTag("Nail Attack")) return;
             
             // Change the type to get the normal freeze, this is smaller than normal.
-            GameManager.instance.FreezeMoment(1);
+            StartCoroutine(GameManager.instance.FreezeMoment(0.01f, 0.15f, 0.1f, 0.0f));
             
             HeroController.instance.NailParry();
             

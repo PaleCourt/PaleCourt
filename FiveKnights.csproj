@@ -60,7 +60,7 @@
     <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
     </Reference>
-    <Reference Include="SFCore, Version=1.5.2.4, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="SFCore">
       <HintPath>$(HollowKnightRefs)/Mods\SFCore\SFCore.dll</HintPath>
     </Reference>
     <Reference Include="System">

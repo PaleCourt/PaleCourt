@@ -19,7 +19,7 @@ namespace FiveKnights.Zemer
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
         private EnemyDreamnailReaction _dnailReac;
-        private MusicPlayer _ap;
+        private MusicPlayer _ap;    
         private MusicPlayer _voice;
         private GameObject _dd;
         private GameObject[] traitorSlam;
@@ -33,9 +33,11 @@ namespace FiveKnights.Zemer
         private GameObject _target;
         private string[] _commonAtt;
 
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 29.4f;
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
+        private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 1f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
+        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
 
         private const int Phase2HP = 1500;
         private const int Phase3HP = 1000;
@@ -47,6 +49,7 @@ namespace FiveKnights.Zemer
 
         private const float SmallPillarSpd = 23.5f;
         private const float Att1CompAnticTime = 0.25f;
+        private float Att1BaseDelay = 0.4f;
 
         private PlayMakerFSM _pvFsm;
         private Coroutine _counterRoutine;
@@ -69,8 +72,6 @@ namespace FiveKnights.Zemer
 
         private void Awake()
         {
-            GroundY = OWArenaFinder.IsInOverWorld ? 108.8f : GroundY;
-            
             OnDestroy();
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
@@ -215,10 +216,10 @@ namespace FiveKnights.Zemer
 
                 if (currAtt == Attack1Base)
                 {
-                    List<Func<IEnumerator>> lst2 = new List<Func<IEnumerator>>
-                    {
-                        Attack1Complete, FancyAttack
-                    };
+                    List<Func<IEnumerator>> lst2 = FastApproximately(transform.position.x, _target.transform.position.x, 7f) ? 
+                        new List<Func<IEnumerator>> {Attack1Complete} : 
+                        new List<Func<IEnumerator>> {Attack1Complete, FancyAttack, FancyAttack};
+
                     currAtt = lst2[_rand.Next(0, lst2.Count)];
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
@@ -522,26 +523,47 @@ namespace FiveKnights.Zemer
         {
             IEnumerator Slam()
             {
-                yield return _anim.PlayToFrame("ZSlam", 3);
-                _anim.enabled = false;
-
-                yield return new WaitForSeconds(0.25f);
-
-                _anim.enabled = true;
-                _anim.speed *= 5.5f;
-
-                yield return _anim.PlayToEnd();
-
-                _anim.speed /= 5.5f;
-
+                transform.position += new Vector3(0f, 1.32f);
+                yield return _anim.PlayToFrame("ZSlamNew", 7);
+                
                 SpawnShockwaves(2f, 50f, 1, transform.position);
 
                 GameCameras.instance.cameraShakeFSM.SendEvent("BigShake");
+                PlayAudioClip("AudLand", _ap);
+                
+                yield return _anim.PlayToEnd();
+                transform.position -= new Vector3(0f, 1.32f);
+            }
+            
+            void SpawnShockwaves(float vertScale, float speed, int damage, Vector2 pos)
+            {
+                bool[] facingRightBools = {false, true};
+
+                PlayMakerFSM fsm = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
+
+                foreach (bool facingRight in facingRightBools)
+                {
+                    GameObject shockwave = Instantiate
+                    (
+                        fsm.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value
+                    );
+
+                    PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
+
+                    shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
+                    shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
+
+                    shockwave.AddComponent<DamageHero>().damageDealt = damage;
+
+                    shockwave.SetActive(true);
+        
+                    shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), SlamY));
+                    shockwave.transform.SetScaleX(vertScale);
+                }
             }
 
             _lastAtt = ZemerSlam;
-
-            yield return (Slam());
+            yield return Slam();
         }
 
         private IEnumerator Attack1Complete()
@@ -596,7 +618,7 @@ namespace FiveKnights.Zemer
                 
                 _anim.enabled = false;
 
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(Att1BaseDelay);
 
                 _anim.enabled = true;
 
@@ -1462,12 +1484,14 @@ namespace FiveKnights.Zemer
         {
             if (OWArenaFinder.IsInOverWorld)
             {
+                OWBossManager.PlayMusic(null);
                 OWBossManager.PlayMusic(FiveKnights.Clips["ZP2Intro"]);
                 yield return new WaitForSecondsRealtime(14.12f);
                 OWBossManager.PlayMusic(FiveKnights.Clips["ZP2Loop"]);
             }
             else
             {
+                GGBossManager.Instance.PlayMusic(null);
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Intro"], 1f);
                 yield return new WaitForSecondsRealtime(14.12f);
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP2Loop"], 1f);
@@ -1476,7 +1500,7 @@ namespace FiveKnights.Zemer
         }
 
         private bool _isKnockingOut;
-        
+
         private IEnumerator EndPhase1()
         {
             float dir;
@@ -1501,7 +1525,7 @@ namespace FiveKnights.Zemer
                 _rb.velocity = Vector2.zero;
                 _anim.enabled = true;
                 _rb.gravityScale = 0f;
-                transform.position = new Vector3(transform.position.x, GroundY - 1.18f);
+                transform.position = new Vector3(transform.position.x, GroundY - deathGndOffset);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _isKnockingOut = false;
 
@@ -1517,10 +1541,12 @@ namespace FiveKnights.Zemer
                 }
                 else
                 {
+                    _anim.enabled = false;
                     _bc.enabled = true;
                     _rb.isKinematic = true;
                     isHit = false;
                     yield return new WaitSecWhile(() => !isHit, 8f);
+                    _anim.enabled = true;
                     yield return Recover();
                 }
             }
@@ -2021,7 +2047,7 @@ namespace FiveKnights.Zemer
             PlayAudioClip("ZAudP2Death1",_voice);
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
+            transform.position = new Vector3(transform.position.x, GroundY - deathGndOffset);
             yield return _anim.PlayToEnd();
             yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
             PlayAudioClip("ZAudP2Death2",_voice);
@@ -2065,33 +2091,6 @@ namespace FiveKnights.Zemer
             }
 
             yield return null;
-        }
-
-        private static void SpawnShockwaves(float vertScale, float speed, int damage, Vector2 pos)
-        {
-            bool[] facingRightBools = {false, true};
-
-            PlayMakerFSM fsm = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
-
-            foreach (bool facingRight in facingRightBools)
-            {
-                GameObject shockwave = Instantiate
-                (
-                    fsm.GetAction<SpawnObjectFromGlobalPool>("Quake Waves", 0).gameObject.Value
-                );
-
-                PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
-
-                shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
-                shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
-
-                shockwave.AddComponent<DamageHero>().damageDealt = damage;
-
-                shockwave.SetActive(true);
-
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 6f));
-                shockwave.transform.SetScaleX(vertScale);
-            }
         }
 
         private void PlayAudioClip(

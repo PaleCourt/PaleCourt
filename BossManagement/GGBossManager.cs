@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using FiveKnights.Dryya;
 using FiveKnights.Hegemol;
 using FiveKnights.Isma;
@@ -8,6 +9,8 @@ using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using Modding;
 using UnityEngine;
+using UnityEngine.Audio;
+using Vasi;
 using ReflectionHelper = Modding.ReflectionHelper;
 
 namespace FiveKnights.BossManagement
@@ -27,6 +30,9 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator Start()
         {
+            // set damage level
+            BossSceneController.Instance.BossLevel = CustomWP.lev;
+            
             Instance = this;
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
@@ -169,15 +175,19 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
-                Log("Load zem 1");
                 yield return LoadZemerBundle();
-                Log("Load zem 2");
                 dd.SetActive(false);
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;
                 ZemerController zc = FightController.Instance.CreateZemer();
                 GameObject zem = zc.gameObject;
                 yield return new WaitWhile(() => zc != null);
+                if (zem == null)
+                {
+                    Log("Zem did not exist so destroying");
+                    Destroy(this);
+                    yield break;
+                }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
                 if (CustomWP.wonLastFight)
@@ -328,8 +338,8 @@ namespace FiveKnights.BossManagement
             Log("HP TEST START");
             yield return new WaitWhile(() => _hm.hp > 600);
             Log("HP TEST END");
-            _fsm.ChangeTransition("Rage Roar", "FINISHED", "Music");
-            _fsm.ChangeTransition("Music", "FINISHED", "Set Rage");
+            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Rage Roar", "FINISHED", "Music");
+            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Music", "FINISHED", "Set Rage");
             var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
             var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
             _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
@@ -406,11 +416,17 @@ namespace FiveKnights.BossManagement
         public void PlayMusic(AudioClip clip, float vol = 0f)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
-            List<MusicCue.MusicChannelInfo> channelInfos = new List<MusicCue.MusicChannelInfo>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
-            channelInfo.SetAttr("clip", clip);
-            channelInfos.Add(channelInfo);
-            musicCue.SetAttr("channelInfos", channelInfos.ToArray());
+            Mirror.SetField(channelInfo, "clip", clip);
+            //channelInfo.SetAttr("clip", clip);
+            MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
+            {
+                channelInfo, null, null, null, null, null
+            };
+            Mirror.SetField(musicCue, "channelInfos", channelInfos);
+            //musicCue.SetAttr("channelInfos", channelInfos);
+            var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
+            yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
         }
         
