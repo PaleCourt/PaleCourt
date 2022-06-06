@@ -633,9 +633,9 @@ namespace FiveKnights
                 shadeSlash.transform.localPosition = new Vector3(0f, 0f, 0f);
                 shadeSlash.transform.localScale = new Vector3(1f, 1f, 1f);
                 // ToDo Slash and Knight are one go, so having the slash be affected by scale doesn't quite work
-                shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
-                shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
-                shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
                 shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
@@ -705,7 +705,6 @@ namespace FiveKnights
                 var slashAnim = _hcAnim.GetClipByName(animName + "Slash Void");
                 _hcAnim.Play(slashAnim);
 
-                //_hcAnim.GetClipByName(animName + "Slash Void").Duration
                 yield return new WaitForSeconds(slashAnim.Duration);
 
                 // ToDo Slashing will be done even if hit during the antic
@@ -716,9 +715,9 @@ namespace FiveKnights
             {
                 GameObject shadeSlashContainer = Instantiate(new GameObject("Shade Slash Container"), _hc.transform);
                 shadeSlashContainer.layer = 17;
-                shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
-                shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
-                shadeSlashContainer.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
+                //shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlashContainer.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlashContainer.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
                 shadeSlashContainer.SetActive(false);
                 GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), shadeSlashContainer.transform);
                 shadeSlash.layer = 17;
@@ -782,7 +781,7 @@ namespace FiveKnights
                 Destroy(shadeSlashContainer);
 
                 // Fixed the floating
-                yield return new WaitWhile(() => _hcAnim.Playing && (_hcAnim.IsPlaying("UpSlash Void") ||  _hcAnim.IsPlaying("DownSlash Void")));
+                yield return new WaitWhile(() => _hcAnim.Playing && _hcAnim.IsPlaying(animName + "Slash Void"));
 
                 _hc.StartAnimationControl();
                 _hc.RegainControl();
@@ -814,9 +813,9 @@ namespace FiveKnights
                 shadeSlash.tag = "Nail Attack";
                 shadeSlash.transform.localPosition = new Vector3(0f, 1.0f, 0f);
                 shadeSlash.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
-                shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
-                shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
-                shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_18") ? 1.15f : 1.0f; // Long Nail // ToDo
+                //shadeSlash.transform.localScale *= _pd.GetBool("equippedCharm_13") ? 1.25f : 1.0f; // Mark of Pride // ToDo
+                //shadeSlash.transform.localScale *= FiveKnights.Instance.SaveSettings.equippedCharms[0] ? 2.15f : 1.0f; // Mark of Purity // ToDo
                 shadeSlash.SetActive(false);
 
                 var slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
