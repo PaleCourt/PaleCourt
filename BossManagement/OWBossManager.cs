@@ -169,18 +169,6 @@ namespace FiveKnights
                 ZemerController.WaitForTChild = true;
                 ZemerController zc = CreateZemer();
                 PlayMusic(FiveKnights.Clips["Zem_Area"]);
-
-                IEnumerator Test()
-                {
-                    Log("Printing pos of zem");
-                    while (zc != null)
-                    {
-                        Log($"Pos of zem is {zc.gameObject.transform.position}");
-                        yield return null;
-                    }
-                }
-
-                StartCoroutine(Test());
                 GameObject zem = zc.gameObject;
                 zem.SetActive(true);
                 zem.GetComponent<HealthManager>().IsInvincible = true;
@@ -276,13 +264,11 @@ namespace FiveKnights
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Mirror.SetField(channelInfo, "clip", clip);
-            //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
             Mirror.SetField(musicCue, "channelInfos", channelInfos);
-            //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
@@ -496,6 +482,7 @@ namespace FiveKnights
                 
                 bc.isTrigger = true;
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
                 bc.gameObject.layer = 22;
             }
             foreach (PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
@@ -503,7 +490,7 @@ namespace FiveKnights
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Tink>();
-                i.gameObject.AddComponent<Pogoable>();
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
                 i.gameObject.layer = 22;
                 
             }

@@ -42,6 +42,8 @@ namespace FiveKnights.Zemer
         private bool _blockedHit;
         private const float DashDelay = 0.18f;
         private const float TurnDelay = 0.05f;
+        private float Att1BaseDelay = 0.4f;
+        private const float SheoAttDelay = 0.2f;
         private const float WalkSpeed = 10f;
         private const float AerialDelay = 0.25f;
         private bool _countering;
@@ -162,6 +164,7 @@ namespace FiveKnights.Zemer
         {
             if (OWArenaFinder.IsInOverWorld)
             {
+                OWBossManager.PlayMusic(null);
                 OWBossManager.PlayMusic(FiveKnights.Clips["ZP1Intro"]);
                 yield return new WaitForSecondsRealtime(7.04f);
                 OWBossManager.PlayMusic(null);
@@ -169,10 +172,11 @@ namespace FiveKnights.Zemer
             }
             else
             {
-                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"], 1f);
+                GGBossManager.Instance.PlayMusic(null);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Intro"]);
                 yield return new WaitForSecondsRealtime(7.04f);
-                GGBossManager.Instance.PlayMusic(null, 1f);
-                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"], 1f);
+                GGBossManager.Instance.PlayMusic(null);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["ZP1Loop"]);
             }
         }
 
@@ -265,8 +269,13 @@ namespace FiveKnights.Zemer
                 
                 if (currAtt == Attack1Base)
                 {
-                    Func<IEnumerator>[] lst2 = {FancyAttack, Attack1Complete, null};
-                    if (_hm.hp < DoSpinSlashPhase) lst2 = new Func<IEnumerator>[]{FancyAttack, Attack1Complete};
+                    Func<IEnumerator>[] lst2 = { FancyAttack, Attack1Complete, null };
+                    if (_hm.hp < DoSpinSlashPhase) lst2 = new Func<IEnumerator>[] { FancyAttack, FancyAttack, Attack1Complete };
+                    if (FastApproximately(transform.position.x, _target.transform.position.x, 7f))
+                    {
+                        lst2 = (_hm.hp < DoSpinSlashPhase) ? new Func<IEnumerator>[] {Attack1Complete} : new Func<IEnumerator>[] {Attack1Complete, null};
+                    }
+
                     currAtt = lst2[_rand.Next(0, lst2.Length)];
                     if (currAtt != null)
                     { 
@@ -551,7 +560,7 @@ namespace FiveKnights.Zemer
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(Att1BaseDelay);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 PlayAudioClip("Slash", 0.85f, 1.15f);
@@ -576,7 +585,7 @@ namespace FiveKnights.Zemer
                 
                 _anim.enabled = false;
 
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(Att1BaseDelay);
 
                 _anim.enabled = true;
 
@@ -695,8 +704,6 @@ namespace FiveKnights.Zemer
             yield return Dodge();
         }
 
-        private const float SheoAttDelay = 0.2f;
-        
         private IEnumerator Attack1Complete()
         {
             IEnumerator Attack1Complete()

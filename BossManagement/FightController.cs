@@ -236,6 +236,7 @@ namespace FiveKnights
                 
                 bc.isTrigger = true;
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<Pogoable>().tar = _zemer;
                 bc.gameObject.layer = 22;
             }
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
@@ -243,7 +244,7 @@ namespace FiveKnights
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Tink>();
-                i.gameObject.AddComponent<Pogoable>();
+                i.gameObject.AddComponent<Pogoable>().tar = _zemer;
                 i.gameObject.layer = 22;
                 
             }
