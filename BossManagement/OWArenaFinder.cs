@@ -429,7 +429,6 @@ namespace FiveKnights.BossManagement
             GameObject pref = null;
             foreach (var i in FindObjectsOfType<SceneManager>())
             {
-                Log("Found scene man");
                 var j = i.borderPrefab;
                 pref = j;
                 Destroy(i.gameObject);
@@ -437,11 +436,8 @@ namespace FiveKnights.BossManagement
             GameObject o = Instantiate(FiveKnights.preloadedGO["SMTest"]);
             if (pref != null)
             {
-                Log("pref 2 is not null");
                 o.GetComponent<SceneManager>().borderPrefab = pref;
             }
-            Log($"Lantern needed? {o.GetComponent<SceneManager>().noLantern}");
-            Log($"Darkness needed? {o.GetComponent<SceneManager>().darknessLevel}");
             o.GetComponent<SceneManager>().noLantern = true;
             o.GetComponent<SceneManager>().darknessLevel = -1;
             o.SetActive(true);

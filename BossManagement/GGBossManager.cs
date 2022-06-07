@@ -492,21 +492,6 @@ namespace FiveKnights.BossManagement
             return orig(self, channel);
         }
 
-        private void OnDestroy()
-        {
-            Unload();
-        }
-
-        private void Unload()
-        {
-            ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
-            On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
-            On.MusicCue.GetChannelInfo -= MusicCue_GetChannelInfo;
-
-            _ap?.StopMusic();
-            _ap2?.StopMusic();
-        }
-        
         private void Log(object o)
         {
             Modding.Logger.Log("[White Defender] " + o);
@@ -687,6 +672,7 @@ namespace FiveKnights.BossManagement
             {
                 var i = (GameObject) o;
                 if (i.name == "Zemer") FiveKnights.preloadedGO["Zemer"] = i;
+                if (i.name == "TChild") FiveKnights.preloadedGO["TChild"] = i;
                 else if (i.name == "NewSlash") FiveKnights.preloadedGO["SlashBeam"] = i;
                 else if (i.name == "NewSlash2") FiveKnights.preloadedGO["SlashBeam2"] = i;
                 yield return null;
@@ -704,6 +690,21 @@ namespace FiveKnights.BossManagement
                 new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Zemer Bundle");
+        }
+        
+        private void OnDestroy()
+        {
+            Unload();
+        }
+
+        private void Unload()
+        {
+            ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
+            On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
+            On.MusicCue.GetChannelInfo -= MusicCue_GetChannelInfo;
+
+            _ap?.StopMusic();
+            _ap2?.StopMusic();
         }
     }
 }

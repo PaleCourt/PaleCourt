@@ -13,8 +13,8 @@
     <FileVersion>1.0.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
-    <HollowKnightRefs>E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
-    <HollowKnightRefs2>C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs2>
+    <HollowKnightRefs2>E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs2>
+    <HollowKnightRefs>C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />

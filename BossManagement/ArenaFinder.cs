@@ -35,13 +35,19 @@ namespace FiveKnights
         
         private string currScene;
 
+        public const string Isma2Scene = "GG_White_Defender";
+
+        public const string GauntletArena = "Dream_04_White_Defender";
+            
         public const string DryyaScene = "gg dryya";
-        
+
         public const string ZemerScene = "gg zemer";
         
         public const string HegemolScene = "gg hegemol";
 
         public const string IsmaScene = "gg isma";
+
+        private const string PrevFightScene = "White_Palace_09";
 
         private void Start()
         {
@@ -63,7 +69,7 @@ namespace FiveKnights
             {
                 self.environmentType = 7;
             }
-            else if (currScene == "White_Palace_09")
+            else if (currScene == PrevFightScene)
             {
                 Log("Changed SceneManager settings for WP_09");
                 //self.noLantern = true;
@@ -75,7 +81,7 @@ namespace FiveKnights
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
             Log($"Before: Going to {info.SceneName} from {prevScene} using gate {info.EntryGateName}");
-            if (info.SceneName == "White_Palace_09")
+            if (info.SceneName == PrevFightScene)
             {
                 if (CustomWP.boss == CustomWP.Boss.Isma || CustomWP.boss == CustomWP.Boss.Ogrim)
                 {
@@ -103,7 +109,7 @@ namespace FiveKnights
             else if (prevScene == "Dream_04_White_Defender" && info.SceneName == prevScene)
             {
                 Log("in here boi");
-                info.SceneName = "White_Palace_09";
+                info.SceneName = PrevFightScene;
                 info.EntryGateName = "door_dreamReturnGGTestingIt";
             }
             Log($"After: Going to {info.SceneName} from {prevScene} using gate {info.EntryGateName}");
@@ -153,15 +159,8 @@ namespace FiveKnights
         
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
         {
-            Log("Are in locked cam");
             switch (currScene)
             {
-                /*case DryyaScene:
-                    
-                    break;
-                case IsmaScene:
-                    
-                    break;*/
                 case ZemerScene:
                     self.cameraXMin = 22.3f;
                     self.cameraYMin = self.cameraYMax = 31.6f;
@@ -170,10 +169,6 @@ namespace FiveKnights
                     self.cameraXMin = 22.3f;
                     self.cameraYMin = self.cameraYMax = 31.6f;
                     break;
-                /*default:
-                    self.cameraXMin = self.cameraXMin;
-                    self.cameraYMin = self.cameraYMax = 13.6f;
-                    break;*/
             }
         }                                                                                                            
         
@@ -400,7 +395,7 @@ namespace FiveKnights
             fsm.FsmVariables.FindFsmString("Scene Name").Value = scene;
             fsm.FsmVariables.FindFsmString("Spawn Name").Value = name;
             fsm.FsmVariables.FindFsmVector3("Sit Vector").Value = new Vector3(0f,0.5f,0f);
-            PlayerData.instance.respawnScene = "White_Palace_09";
+            PlayerData.instance.respawnScene = PrevFightScene;
             PlayerData.instance.respawnMarkerName = go.name;
         }
 
@@ -462,10 +457,10 @@ namespace FiveKnights
             GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
             secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
-            tp.targetScene = "White_Palace_09";
+            tp.targetScene = PrevFightScene;
             tp.entryPoint = "door_Land_of_Storms_return";
             secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
-                .FsmVariables.FindFsmString("New Scene").Value = "White_Palace_09";
+                .FsmVariables.FindFsmString("New Scene").Value = PrevFightScene;
             secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
                 .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
             secret.LocateMyFSM("Deactivate").enabled = false;
@@ -473,7 +468,7 @@ namespace FiveKnights
             Log("Finished with crack setting");
         }
 
-        private void OnDestroy()
+        private void OnDestroy() 
         {
             USceneManager.activeSceneChanged -= SceneChanged;
             On.SceneManager.Start -= SceneManagerOnStart;

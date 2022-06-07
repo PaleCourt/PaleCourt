@@ -179,7 +179,7 @@ namespace FiveKnights
             _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
             _hegemol.SetActive(true);
             Log("Adding HegemolController component");
-            return _hegemol.AddComponent<HegemolController>();
+            return _hegemol.AddComponent<HegemolController>(); 
         }
         
         public ZemerController CreateZemer()
