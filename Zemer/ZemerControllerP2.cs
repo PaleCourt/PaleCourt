@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using FrogCore.Ext;
@@ -34,7 +35,7 @@ namespace FiveKnights.Zemer
         private string[] _commonAtt;
 
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
-        private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 1f;
+        private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
@@ -43,9 +44,10 @@ namespace FiveKnights.Zemer
         private const int Phase3HP = 1000;
 
         private const float TurnDelay = 0.05f;
-        private const float IdleDelay = 0.38f;
+        private const float IdleDelay = 0.19f; //0.38
         private const float DashDelay = 0.18f;
         private const float MIDDLE = 29f;
+        private const float NailSize = 1.15f;
 
         private const float SmallPillarSpd = 23.5f;
         private const float Att1CompAnticTime = 0.25f;
@@ -120,7 +122,7 @@ namespace FiveKnights.Zemer
             yield return EndPhase1();
             StartCoroutine(Attacks());
         }
-
+        
         private void Update()
         {
             if (_isKnockingOut)
@@ -128,7 +130,10 @@ namespace FiveKnights.Zemer
                 _rb.isKinematic = false;
                 _bc.enabled = false;
             }
-            if (_bc == null || !_bc.enabled) return;
+
+            if ((_bc == null || !_bc.enabled) 
+                && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZKnocked") 
+                && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZThrow2B")) return;
 
             if (transform.GetPositionX() > RightX - 1.3f && _rb.velocity.x > 0f)
             {
@@ -195,43 +200,58 @@ namespace FiveKnights.Zemer
                     }
                 }
 
-                List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
-                {
-                    Dash, Attack1Base, NailLaunch, 
-                    AerialAttack, DoubleFancy, SweepDash, ZemerSlam
-                };
+                List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>> { NailLaunch, null, null, null };
+                Func<IEnumerator> currAtt = null;
                 
-                Func<IEnumerator> currAtt = attLst[_rand.Next(0, attLst.Count)];
-                while (rep[currAtt] >= 2)
+                if (!FastApproximately(posZem.x, posH.x, 10f)) currAtt = attLst[_rand.Next(0, attLst.Count)];
+
+                if (currAtt != null)
                 {
-                    attLst.Remove(currAtt);
-                    rep[currAtt] = 0;
-                    currAtt = attLst[_rand.Next(0, attLst.Count)];
-                }
-
-                rep[currAtt]++;
-                Log("Doing " + currAtt.Method.Name);
-                yield return currAtt();
-                Log("Doing " + currAtt.Method.Name);
-
-                if (currAtt == Attack1Base)
-                {
-                    List<Func<IEnumerator>> lst2 = FastApproximately(transform.position.x, _target.transform.position.x, 7f) ? 
-                        new List<Func<IEnumerator>> {Attack1Complete} : 
-                        new List<Func<IEnumerator>> {Attack1Complete, FancyAttack, FancyAttack};
-
-                    currAtt = lst2[_rand.Next(0, lst2.Count)];
+                    rep[currAtt]++;
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
-                    Log("Done " + currAtt.Method.Name);
-                    
-                    if (currAtt == FancyAttack && _rand.Next(0,3) < 2)
+                    Log("Doing " + currAtt.Method.Name);
+                }
+                else
+                {
+                    attLst = new List<Func<IEnumerator>>
                     {
-                        Log("Doing Special Fancy Attack");
-                        yield return Dodge();
-                        yield return FancyAttack();
-                        yield return Dash();
-                        Log("Done Special Fancy Attack");
+                        Dash, Attack1Base, NailLaunch, 
+                        AerialAttack, DoubleFancy, SweepDash, ZemerSlam
+                    };
+                
+                    currAtt = attLst[_rand.Next(0, attLst.Count)];
+                    while (rep[currAtt] >= 2)
+                    {
+                        attLst.Remove(currAtt);
+                        rep[currAtt] = 0;
+                        currAtt = attLst[_rand.Next(0, attLst.Count)];
+                    }
+
+                    rep[currAtt]++;
+                    Log("Doing " + currAtt.Method.Name);
+                    yield return currAtt();
+                    Log("Doing " + currAtt.Method.Name);
+
+                    if (currAtt == Attack1Base)
+                    {
+                        List<Func<IEnumerator>> lst2 = FastApproximately(transform.position.x, _target.transform.position.x, 7f) ? 
+                            new List<Func<IEnumerator>> {Attack1Complete} : 
+                            new List<Func<IEnumerator>> {Attack1Complete, FancyAttack, FancyAttack};
+
+                        currAtt = lst2[_rand.Next(0, lst2.Count)];
+                        Log("Doing " + currAtt.Method.Name);
+                        yield return currAtt();
+                        Log("Done " + currAtt.Method.Name);
+                    
+                        if (currAtt == FancyAttack && _rand.Next(0,3) < 2)
+                        {
+                            Log("Doing Special Fancy Attack");
+                            yield return Dodge();
+                            yield return FancyAttack();
+                            yield return Dash();
+                            Log("Done Special Fancy Attack");
+                        }
                     }
                 }
 
@@ -327,7 +347,7 @@ namespace FiveKnights.Zemer
                 arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
                 nailPar.transform.SetRotation2D(rot * Mathf.Rad2Deg);
                 nailPar.transform.position = transform.Find("ZNailB").position;
-                nailPar.transform.localScale = new Vector3(dir * 1.6f, 1.6f, 1.6f);
+                nailPar.transform.localScale = new Vector3(dir * NailSize, NailSize, NailSize);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 nailPar.SetActive(true);
                 float velmag = hero.y < GroundY + 2f ? 70f : 28f;
@@ -1505,7 +1525,7 @@ namespace FiveKnights.Zemer
         {
             float dir;
             yield return KnockedOut();
-            
+
             IEnumerator KnockedOut()
             {
                 _isKnockingOut = true;
@@ -1557,7 +1577,7 @@ namespace FiveKnights.Zemer
 
                 _anim.Play("ZThrow2B");
 
-                _rb.velocity = new Vector2(dir * 35f, 35f);
+                _rb.velocity = new Vector2(dir * 45f, 45f);
 
                 yield return _anim.PlayToEnd();
                 
@@ -1967,7 +1987,6 @@ namespace FiveKnights.Zemer
                     //(0.04f, 0.2f, 0.04f, 0f)
                     GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.01f, 0.35f, 0.1f, 0.0f));
                     Log("Blocked Hit");
-                    Log("Closing " + _counterRoutine);
                     StopCoroutine(_counterRoutine);
                     StartCoroutine(Countered());
                     return;
@@ -1979,12 +1998,11 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Countered()
         {
-            On.HealthManager.Hit -= OnBlockedHit;
-            _anim.Play("ZCAtt");
             _hm.IsInvincible = false;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
-            PlayAudioClip("Slash",_ap,0.85f, 1.15f);
-            yield return new WaitWhile(() => _anim.IsPlaying());
+            On.HealthManager.Hit -= OnBlockedHit;
+            yield return _anim.PlayToEndWithActions("ZCAtt",
+                (3, () => PlayAudioClip("Slash", _ap,0.85f, 1.15f))
+            );
             Parryable.ParryFlag = false;
             _anim.Play("ZIdle");
             yield return new WaitForSeconds(0.25f);

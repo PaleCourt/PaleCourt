@@ -233,11 +233,11 @@ namespace FiveKnights
                 
                 if (bc == null) 
                     continue;
-                
                 bc.isTrigger = true;
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Pogoable>().tar = _zemer;
                 bc.gameObject.layer = 22;
+                if (!i.name.Contains("Zemer")) i.gameObject.AddComponent<Tink>();
             }
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             { 

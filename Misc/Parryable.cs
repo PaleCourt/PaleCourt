@@ -12,7 +12,7 @@ namespace FiveKnights
         {
             if (ParryFlag || col.gameObject.layer != 16) return;
             ParryFlag = true;
-            StartCoroutine(GameManager.instance.FreezeMoment(0.03f, 0.1f, 0.03f, 0f));
+            GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.03f, 0.1f, 0.03f, 0f));
             HeroController.instance.NailParry();
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             FiveKnights.preloadedGO["ClashTink"].transform.SetPosition2D(transform.position);

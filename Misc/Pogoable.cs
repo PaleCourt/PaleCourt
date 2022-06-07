@@ -9,7 +9,6 @@ namespace FiveKnights
         private void OnTriggerEnter2D(Collider2D col)
         {
             if (col.gameObject.layer != 16) return;
-            
             GameObject slash = tar;
             if (col.transform.parent != null)
             {
@@ -19,7 +18,6 @@ namespace FiveKnights
             PlayMakerFSM damagesEnemy = PlayMakerFSM.FindFsmOnGameObject(slash, "damages_enemy");
             if (damagesEnemy == null) return;
             degrees = damagesEnemy.FsmVariables.FindFsmFloat("direction").Value;
-            
             if (degrees < 45f)
             {
                 HeroController.instance.RecoilLeft();
