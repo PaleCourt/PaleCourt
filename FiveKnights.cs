@@ -361,6 +361,7 @@ namespace FiveKnights
             var infos = (MusicCue.MusicChannelInfo[]) musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(musicCue);
 
             var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
+            var syncFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("sync", BindingFlags.NonPublic | BindingFlags.Instance);
             var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
             if (origAudio != null && origAudio.name.Equals("Title"))
             {
@@ -370,6 +371,8 @@ namespace FiveKnights
                 }
                 infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
                 audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                // Don't sync this audio with the not-as-long normal main menu theme
+                syncFieldInfo.SetValue(infos[(int) MusicChannels.Tension], MusicChannelSync.ExplicitOff);
             }
             musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
             orig(self, musicCue, delayTime, transitionTime, applySnapshot);
