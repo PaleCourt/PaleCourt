@@ -46,6 +46,7 @@ namespace FiveKnights.Zemer
         private const float SheoAttDelay = 0.2f;
         private const float WalkSpeed = 10f;
         private const float AerialDelay = 0.25f;
+        private const float TwoFancyDelay = 0.25f;
         private bool _countering;
         private MusicPlayer _ap;
         public static bool WaitForTChild = false;
@@ -291,6 +292,7 @@ namespace FiveKnights.Zemer
                         {
                             Log("Doing Special Fancy Attack");
                             yield return Dodge();
+                            yield return new WaitForSeconds(TwoFancyDelay);
                             yield return FancyAttack();
                             Log("Done Special Fancy Attack");
                         }

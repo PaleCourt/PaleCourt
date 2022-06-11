@@ -52,6 +52,7 @@ namespace FiveKnights.Zemer
         private const float SmallPillarSpd = 23.5f;
         private const float Att1CompAnticTime = 0.25f;
         private float Att1BaseDelay = 0.4f;
+        private float TwoFancyDelay = 0.25f;
 
         private PlayMakerFSM _pvFsm;
         private Coroutine _counterRoutine;
@@ -248,6 +249,7 @@ namespace FiveKnights.Zemer
                         {
                             Log("Doing Special Fancy Attack");
                             yield return Dodge();
+                            yield return new WaitForSeconds(TwoFancyDelay);
                             yield return FancyAttack();
                             yield return Dash();
                             Log("Done Special Fancy Attack");
@@ -1339,6 +1341,47 @@ namespace FiveKnights.Zemer
                 yield return (LaserNuts(++i, type));
             }
 
+            IEnumerator RegularDash()
+            {
+if (!IsFacingPlayer())
+                {
+                    yield return Turn();
+                }
+
+                float dir = FaceHero();
+                transform.Find("HyperCut").gameObject.SetActive(false);
+
+                _anim.Play("ZDash");
+                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+                yield return _anim.WaitToFrame(4);
+                
+                _anim.enabled = false;
+                
+                yield return new WaitForSeconds(DashDelay);
+                PlayAudioClip("ZAudHoriz", _voice);
+                
+                _anim.enabled = true;
+                
+                yield return _anim.WaitToFrame(5);
+    
+                PlayAudioClip("AudDashIntro", _ap);
+                if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
+                {
+                    yield return StrikeAlternate();
+                    transform.position = new Vector3(transform.position.x, GroundY);
+                    yield break;
+                }
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
+                PlayAudioClip("AudDash", _ap);
+                _rb.velocity = new Vector2(-dir * 60f, 0f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+                _rb.velocity = Vector2.zero;
+                yield return new WaitWhile(() => _anim.IsPlaying());
+                _anim.Play("ZIdle");
+                transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
+            }
+
             IEnumerator StrikeAlternate()
             {
                 FaceHero();
@@ -1351,7 +1394,7 @@ namespace FiveKnights.Zemer
             }
 
             _lastAtt = this.Dash;
-            yield return (Dash());
+            yield return FastApproximately(MIDDLE, transform.position.x, 8.5f) ? Dash() : RegularDash();
         }
 
         private IEnumerator Dodge()
@@ -2025,12 +2068,13 @@ namespace FiveKnights.Zemer
         {
             if (self.name.Contains("Zemer"))
             {
-                isHit = true;
+                isHit = true;   
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
-                if (_spinType == 1 && _hm.hp <= Phase3HP)
+                // TODO Disabled second spin type
+                /*if (_spinType == 1 && _hm.hp <= Phase3HP)
                 {
                     _spinType = 3;
-                }
+                }*/
                 
                 if (_hm.hp <= 50)
                 {
