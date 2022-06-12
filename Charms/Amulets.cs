@@ -383,9 +383,6 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
             {
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2 Blasts");
-
                 _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus Blast");
                 _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal Blast");
                 _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain Blast");
@@ -393,9 +390,6 @@ namespace FiveKnights
             }
             else
             {
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1");
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2");
-
                 _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus");
                 _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal");
                 _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain");
@@ -404,6 +398,9 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[2])
             {
+                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
+                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2 Blasts");
+
                 _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Q1 Land Plumes");
                 _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land Plumes");
 
@@ -412,6 +409,9 @@ namespace FiveKnights
             }
             else
             {
+                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1");
+                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2");
+
                 _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Quake1 Land");
                 _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land");
 
