@@ -585,16 +585,19 @@ namespace FiveKnights.BossManagement
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
-                
+                var r5 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dagger");
+
                 yield return r1;
                 yield return r2;
                 yield return r3;
                 yield return r4;
+                yield return r5;
 
                 FiveKnights.preloadedGO["Dryya"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
                 FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
                 FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
+                FiveKnights.preloadedGO["Dagger"] = r5.asset as GameObject;;
             }
             else
             {
@@ -602,6 +605,7 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
                 FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
+                FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
 
             Log("Finished Loading Dryya Bundle");
@@ -620,17 +624,21 @@ namespace FiveKnights.BossManagement
             {
                 var r1 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteCollection");
                 var r2 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteAnimation");
-                
+                var r3 = hegemolBundle.LoadAssetAsync<GameObject>("Mace");
+
                 yield return r1;
                 yield return r2;
-                
+                yield return r3;
+
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = r2.asset as GameObject;
+                FiveKnights.preloadedGO["Mace"] = r3.asset as GameObject;
             }
             else
             {
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
+                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
 
             }
             Log("Finished Loading Hegemol Bundle");

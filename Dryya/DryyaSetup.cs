@@ -112,6 +112,8 @@ namespace FiveKnights.Dryya
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
             
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
+
+            _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers(), false);
             //GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             AssignFields();
@@ -265,6 +267,18 @@ namespace FiveKnights.Dryya
                 shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), SlamY));
                 shockwave.transform.SetScaleX(vertScale);
             }
+        }
+
+        private IEnumerator SpawnDaggers()
+        {
+            GameObject dagger = FiveKnights.preloadedGO["Dagger"];
+            GameObject dagger1 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 1f));
+            GameObject dagger2 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 2f));
+            GameObject dagger3 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 3f));
+            yield return new WaitForSeconds(10f);
+            GameObject.Destroy(dagger1);
+            GameObject.Destroy(dagger2);
+            GameObject.Destroy(dagger3);
         }
         
         private void OnDestroy()

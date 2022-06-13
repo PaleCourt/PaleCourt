@@ -45,9 +45,6 @@
     <Reference Include="MonoMod.Utils, Version=21.4.29.1, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(HollowKnightRefs)/MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="mscorlib">
-      <HintPath>$(HollowKnightRefs)/mscorlib.dll</HintPath>
-    </Reference>
     <Reference Include="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
       <HintPath>$(HollowKnightRefs)/mscorlib.dll</HintPath>
     </Reference>

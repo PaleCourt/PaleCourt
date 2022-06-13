@@ -22,12 +22,12 @@ namespace FiveKnights.Hegemol
         private const float OWLeftX = 420.7f;
         private const float OWRightX = 456.0f;
         private const float DigInWalkSpeed = 8.0f;
-	private const int Phases = 3;
-	private int phase = 1;
+	    private const int Phases = 3;
+	    private int phase = 1;
 
-        private GameObject _mace;
         private GameObject _ogrim;
         private GameObject _pv;
+        private GameObject _sw;
 
         private AudioSource _audio;
         private BoxCollider2D _collider;
@@ -37,6 +37,7 @@ namespace FiveKnights.Hegemol
         private Rigidbody2D _rb;
         private tk2dSprite _sprite;
         private tk2dSpriteAnimator _anim;
+        private Mace _mace;
 
         private void Awake()
         {
@@ -73,7 +74,8 @@ namespace FiveKnights.Hegemol
 
             _hm.hp = Health;
 	    
-	    GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
+            // TODO old stuff might have to put back in
+	        /*GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
 
             //_mace = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
             //_mace.AddComponent<Mace>();
@@ -115,7 +117,12 @@ namespace FiveKnights.Hegemol
             _mace.AddComponent<Mace>();
             //_mace.AddComponent<DebugColliders>();
             //_mace.transform.Log();
-            _mace.SetActive(false);
+            _mace.SetActive(false);*/
+            
+	        GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
+            GameObject _maceGO = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
+            _maceGO.SetActive(false);
+            _mace = _maceGO.GetComponent<Mace>();
 
             tk2dSpriteCollectionData fcCollectionData = _sprite.Collection;
             List<tk2dSpriteDefinition> fcSpriteDefs = fcCollectionData.spriteDefinitions.ToList();
@@ -152,10 +159,20 @@ namespace FiveKnights.Hegemol
             AddGroundPunch();
 
             _control.Fsm.GetFsmFloat("Run Speed").Value = 20.0f;
-	    _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (CustomWP.boss == CustomWP.Boss.All) ? (LeftX + RightX) / 2 : (11.2f + 45.7f) / 2;
+            
+            // TODO Old stuff might have to put back in
+	        //_control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (CustomWP.boss == CustomWP.Boss.All) ? (LeftX + RightX) / 2 : (11.2f + 45.7f) / 2;
+	        _control.Fsm.GetFsmFloat("Rage Point X").Value = OWArenaFinder.IsInOverWorld ? (OWLeftX + OWRightX) / 2 : (LeftX + RightX) / 2;
 
-            _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
-            _control.InsertCoroutine("S Attack Recover", 0, DungWave);
+            if (OWArenaFinder.IsInOverWorld)
+            {
+                _sw = _control.GetAction<SpawnObjectFromGlobalPool>("S Attack Recover").gameObject.Value;
+            }
+            else
+            {
+                _control.RemoveAction<SpawnObjectFromGlobalPool>("S Attack Recover");
+                _control.InsertCoroutine("S Attack Recover", 0, DungWave);
+            }
             _control.RemoveAction<AudioPlayerOneShot>("Voice?");
             _control.RemoveAction<AudioPlayerOneShot>("Voice? 2");
             _control.GetAction<SendRandomEvent>("Move Choice").AddToSendRandomEvent("Dig Antic", 1);
@@ -173,10 +190,10 @@ namespace FiveKnights.Hegemol
                 new InvokeCoroutine(new Func<IEnumerator>(PhaseChange), false)
             };
             _control.GetState("Check Direction").Transitions = new FsmTransition[] 
-	    {
-	        new FsmTransition() { ToFsmState = _control.GetState("Rage Jump Antic"), ToState = "Rage Jump Antic", FsmEvent = FsmEvent.Finished }
-	    };
-	    _control.ChangeTransition("State 2", "FINISHED", "Toss Antic");
+	        {
+	            new FsmTransition() { ToFsmState = _control.GetState("Rage Jump Antic"), ToState = "Rage Jump Antic", FsmEvent = FsmEvent.Finished }
+	        };
+	        _control.ChangeTransition("State 2", "FINISHED", "Toss Antic");
 
             yield return new WaitForSeconds(2.0f);
 
@@ -204,9 +221,7 @@ namespace FiveKnights.Hegemol
 
             _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
-            _mace.SetActive(true);
-            _mace.SetActiveChildren(true);
-            _mace.transform.Find("Mace Sprite").gameObject.SetActive(true);
+            _mace.gameObject.SetActive(true);
 
             yield return new WaitWhile(() => _anim.IsPlaying("Intro Greet"));
 
@@ -270,10 +285,9 @@ namespace FiveKnights.Hegemol
 
             IEnumerator Grabbed()
             {
-                _mace.SetActive(false);
-                _mace.SetActiveChildren(false);
-                _mace.GetComponent<Mace>().LaunchSpeed = 93f;
-                _mace.GetComponent<Mace>().SpinSpeed = 500f;
+                _mace.gameObject.SetActive(false);
+                _mace.LaunchSpeed = 93f;
+                _mace.SpinSpeed = 500f;
                 yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
             }
 
@@ -443,11 +457,10 @@ namespace FiveKnights.Hegemol
             IEnumerator PunchAntic()
             {
                 _anim.Play("Punch Antic");
-                _mace.GetComponent<Mace>().SpinSpeed = 500f * transform.localScale.x;
+                _mace.SpinSpeed = 500f * transform.localScale.x;
                 _mace.transform.localScale = new Vector3(transform.position.x, 1f, 1f);
                 _mace.transform.position = new Vector3(transform.position.x, transform.position.y, _mace.transform.position.z);
-                _mace.SetActive(true);
-                _mace.SetActiveChildren(true);
+                _mace.gameObject.SetActive(true);
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
             }
@@ -457,8 +470,25 @@ namespace FiveKnights.Hegemol
             IEnumerator Punching()
             {
                 _anim.Play("Punching");
+
+                for (int i = 0; i < 10; i++)
+                {
+                    yield return new WaitUntil(() => _anim.CurrentFrame == 2);
+
+                    if (OWArenaFinder.IsInOverWorld)
+                        StartCoroutine(DungSide(true));
+                    else
+                        SpawnShockwaves(0.5f, 2f, 50, 1);
+
+                    yield return new WaitUntil(() => _anim.CurrentFrame == 6);
+
+                    if (OWArenaFinder.IsInOverWorld)
+                        StartCoroutine(DungSide(false));
+                    else
+                        SpawnShockwaves(2f, 0.5f, 50, 1);
+                }
                 
-                yield return new WaitForSeconds(5.0f);
+                //yield return new WaitForSeconds(5.0f);
             }
             
             _control.InsertCoroutine("Punching", 0, Punching);
@@ -474,8 +504,7 @@ namespace FiveKnights.Hegemol
 
             IEnumerator Grabbed()
             {
-                _mace.SetActive(false);
-                _mace.SetActiveChildren(false);
+                _mace.gameObject.SetActive(false);
                 yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
             }
 
@@ -710,7 +739,51 @@ namespace FiveKnights.Hegemol
                 yield return new WaitForSeconds(0.1f);
             }
         }
-        
+
+        private IEnumerator DungSide(bool right)
+        {
+            Transform trans = transform;
+            Vector2 pos = trans.position;
+            float scaleX = trans.localScale.x;
+            float x = pos.x + 5 * scaleX + (right ? 2 : -2);
+            float pillarSpacing = 2;
+            float xMaxMin = right ? (OWArenaFinder.IsInOverWorld ? OWRightX : RightX) : (OWArenaFinder.IsInOverWorld ? OWLeftX : LeftX);
+            while (right ? x <= xMaxMin : x >= xMaxMin)
+            {
+                _audio.Play("Dung Pillar", 0.9f, 1.1f);
+
+                GameObject dungPillar = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(x, 12.0f), Quaternion.identity);
+                dungPillar.SetActive(true);
+                dungPillar.AddComponent<DungPillar>();
+                if (!right)
+                {
+                    Vector3 pillarScale = dungPillar.transform.localScale;
+                    dungPillar.transform.localScale = new Vector3(-pillarScale.x, pillarScale.y, pillarScale.z);
+                }
+
+                x -= pillarSpacing;
+
+                yield return new WaitForSeconds(0.1f);
+            }
+        }
+
+        private void SpawnShockwaves(float LvertScale, float RvertScale, float speed, int damage)
+        {
+            bool[] facingRightBools = { false, true };
+            Vector2 pos = transform.position;
+            foreach (bool facingRight in facingRightBools)
+            {
+                GameObject shockwave = Instantiate(_sw);
+                PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
+                shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
+                shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
+                shockwave.AddComponent<DamageHero>().damageDealt = damage;
+                shockwave.SetActive(true);
+                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 12.0f));
+                shockwave.transform.SetScaleX(facingRight ? RvertScale : LvertScale);
+            }
+        }
+
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
