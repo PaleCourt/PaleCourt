@@ -352,16 +352,15 @@ namespace FiveKnights
         private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
         {
             orig(self);
-            self.transform.GetChild(1).GetChild(2).GetChild(2).GetChild(0).gameObject.GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
+            self.gameObject.Find("Hidden_Dreams_Logo").GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
         }
 
         private void LoadPaleCourtMenuMusic(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
         {
             // Insert Custom Audio into main MusicCue
             var infos = (MusicCue.MusicChannelInfo[]) musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(musicCue);
-
-            var audioFieldInfo = typeof(MusicCue.MusicChannelInfo).GetField("clip", BindingFlags.NonPublic | BindingFlags.Instance);
-            var origAudio = (AudioClip) audioFieldInfo.GetValue(infos[0]);
+            
+            var origAudio = infos[0].GetAttr<MusicCue.MusicChannelInfo, AudioClip>("clip");
             if (origAudio != null && origAudio.name.Equals("Title"))
             {
                 if (!ABManager.AssetBundles.ContainsKey(ABManager.Bundle.Sound))
@@ -369,7 +368,9 @@ namespace FiveKnights
                     LoadMusic();
                 }
                 infos[(int) MusicChannels.Tension] = new MusicCue.MusicChannelInfo();
-                audioFieldInfo.SetValue(infos[(int) MusicChannels.Tension], ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                infos[(int) MusicChannels.Tension].SetAttr("clip", ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset("MM_Aud"));
+                // Don't sync this audio with the not-as-long normal main menu theme
+                infos[(int) MusicChannels.Tension].SetAttr("sync", MusicChannelSync.ExplicitOff);
             }
             musicCue.GetType().GetField("channelInfos", BindingFlags.NonPublic | BindingFlags.Instance).SetValue(musicCue, infos);
             orig(self, musicCue, delayTime, transitionTime, applySnapshot);
