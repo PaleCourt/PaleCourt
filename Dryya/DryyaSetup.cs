@@ -113,7 +113,8 @@ namespace FiveKnights.Dryya
             
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
 
-            _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers(), false);
+            _control.InsertCoroutine("Dagger Throw", 0, () => DaggerWait());
+
             //GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             AssignFields();
@@ -269,12 +270,25 @@ namespace FiveKnights.Dryya
             }
         }
 
+        private IEnumerator DaggerWait()
+        {
+            StartCoroutine(SpawnDaggers());
+            yield return new WaitForSeconds(0.5f);
+        }
+
         private IEnumerator SpawnDaggers()
         {
+            float yDist = transform.position.y - HeroController.instance.transform.position.y;
+            float xDist = transform.position.x - HeroController.instance.transform.position.x;
+            float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
+            float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
             GameObject dagger = FiveKnights.preloadedGO["Dagger"];
-            GameObject dagger1 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 1f));
-            GameObject dagger2 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 2f));
-            GameObject dagger3 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 3f));
+            GameObject dagger1 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 165f - angle));
+            GameObject dagger2 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 180f - angle));
+            GameObject dagger3 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 195f - angle));
+            dagger1.SetActive(true);
+            dagger2.SetActive(true);
+            dagger3.SetActive(true);
             yield return new WaitForSeconds(10f);
             GameObject.Destroy(dagger1);
             GameObject.Destroy(dagger2);

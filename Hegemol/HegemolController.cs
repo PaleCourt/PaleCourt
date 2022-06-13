@@ -286,8 +286,8 @@ namespace FiveKnights.Hegemol
             IEnumerator Grabbed()
             {
                 _mace.gameObject.SetActive(false);
-                _mace.LaunchSpeed = 93f;
-                _mace.SpinSpeed = 500f;
+                _mace.LaunchSpeed = 53.5f; // 93
+                _mace.SpinSpeed = 560f; // 500
                 yield return new WaitWhile(() => _anim.IsPlaying("Grab"));
             }
 
@@ -457,9 +457,9 @@ namespace FiveKnights.Hegemol
             IEnumerator PunchAntic()
             {
                 _anim.Play("Punch Antic");
-                _mace.SpinSpeed = 500f * transform.localScale.x;
-                _mace.transform.localScale = new Vector3(transform.position.x, 1f, 1f);
-                _mace.transform.position = new Vector3(transform.position.x, transform.position.y, _mace.transform.position.z);
+                _mace.SpinSpeed = 560f * transform.localScale.x; // 500
+                _mace.transform.localScale = new Vector3(transform.localScale.x, 1f, 1f);
+                _mace.transform.position = new Vector3(transform.position.x - (0.75f * transform.localScale.x), transform.position.y + 5f, _mace.transform.position.z);
                 _mace.gameObject.SetActive(true);
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Punch Antic"));
@@ -469,28 +469,26 @@ namespace FiveKnights.Hegemol
             
             IEnumerator Punching()
             {
-                _anim.Play("Punching");
-
-                for (int i = 0; i < 10; i++)
+                bool right = transform.localScale.x > 0f;
+                for (int i = 0; i < 8; i++)
                 {
-                    yield return new WaitUntil(() => _anim.CurrentFrame == 2);
+                    _anim.Play("Punching");
+
+                    yield return new WaitUntil(() => _anim.CurrentFrame == 3);
 
                     if (OWArenaFinder.IsInOverWorld)
-                        StartCoroutine(DungSide(true));
-                    else
+                        StartCoroutine(DungSide(right));
+                    else if (right)
                         SpawnShockwaves(0.5f, 2f, 50, 1);
-
-                    yield return new WaitUntil(() => _anim.CurrentFrame == 6);
-
-                    if (OWArenaFinder.IsInOverWorld)
-                        StartCoroutine(DungSide(false));
                     else
                         SpawnShockwaves(2f, 0.5f, 50, 1);
+
+                    yield return new WaitWhile(() => _anim.IsPlaying("Punch"));
+                    transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
+                    right = !right;
                 }
-                
-                //yield return new WaitForSeconds(5.0f);
             }
-            
+
             _control.InsertCoroutine("Punching", 0, Punching);
 
             IEnumerator Grab()
