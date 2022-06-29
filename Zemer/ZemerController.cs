@@ -92,6 +92,24 @@ namespace FiveKnights.Zemer
                 traitorSlam[i].SetActive(false);
             }
         }
+
+        private void DoTitle()
+        {
+            GameObject area = null;
+            foreach (GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
+            {
+                area = i.transform.Find("Area Title").gameObject;
+            }
+
+            string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
+            area = Instantiate(area);
+            area.SetActive(true);
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f, 
+                "","","",
+                "Ze'mer",title);
+        }
+        
         private IEnumerator Start()
         {
             Log("Start");
@@ -127,21 +145,9 @@ namespace FiveKnights.Zemer
             
             yield return new WaitWhile(() => WaitForTChild);
             StartCoroutine(MusicControl());
-            
-            GameObject area = null;
-            foreach (GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
-            {
-                area = i.transform.Find("Area Title").gameObject;
-            }
+            DoTitle();
+            doingIntro = true;
 
-            string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
-            area = Instantiate(area);
-            area.SetActive(true);
-            AreaTitleCtrl.ShowBossTitle(
-                this, area, 2f, 
-                "","","",
-                "Ze'mer",title);
-            
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
             PlayAudioClip("ZAudBow");
