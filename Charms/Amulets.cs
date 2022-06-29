@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -86,6 +87,7 @@ namespace FiveKnights
             On.HeroController.MaxHealth += CheckForAbyssalBloomStages_MaxHealth;
             On.CharmIconList.GetSprite += CharmIconList_GetSprite;
             ModHooks.CharmUpdateHook += CharmUpdateUpdateSpellConnections;
+            On.HeroController.Attack += On_HeroController_Attack;
         }
 
         private Sprite CharmIconList_GetSprite(On.CharmIconList.orig_GetSprite orig, CharmIconList self, int id)
@@ -354,6 +356,8 @@ namespace FiveKnights
         private void CharmUpdateUpdateSpellConnections(PlayerData playerData, HeroController hc)
         {
             Log("Charm Update");
+            
+            CheckForAbyssalBloomStages(hc);
 
             if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10)
             {
@@ -864,6 +868,35 @@ namespace FiveKnights
             StartCoroutine(Slash());
         }
 
+        private bool isAbyssalBloomStage2 = false;
+        private void CheckForAbyssalBloomStages(HeroController hc)
+        {
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3])
+            {
+                isAbyssalBloomStage2 = false;
+                return;
+            }
+
+            if (hc.playerData.health > hc.playerData.maxHealth / 2)
+            {
+                Log("On no effect");
+                ResetHeroControllerProperties();
+                isAbyssalBloomStage2 = false;
+            }
+            else if (hc.playerData.health > 1 && hc.playerData.health <= hc.playerData.maxHealth / 2)
+            {
+                Log("On level 1");
+                ModifyHcPropsLevel1AbyssalBloom();
+                isAbyssalBloomStage2 = false;
+            }
+            else if (hc.playerData.health <= 1)
+            {
+                Log("On level 2");
+                ModifyHcPropsLevel2AbyssalBloom();
+                isAbyssalBloomStage2 = true;
+            }
+        }
+        
         private void CheckForAbyssalBloomStages_TakeDamage
         (
             On.HeroController.orig_TakeDamage orig,
@@ -880,49 +913,21 @@ namespace FiveKnights
 
             if (_pd.health == oldHealth) return;
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            if (_pd.health <= 1)
-            {
-                Log("Damaged to level 2");
-                ModifyHcPropsLevel2AbyssalBloom();
-                On.HeroController.Attack += On_HeroController_Attack;
-            }
-            else if (_pd.health <= _pd.maxHealth / 2)
-            {
-                Log("Damaged to level 1");
-                ModifyHcPropsLevel1AbyssalBloom();
-            }
+            CheckForAbyssalBloomStages(self);
         }
 
         private void CheckForAbyssalBloomStages_AddHealth(On.HeroController.orig_AddHealth orig, HeroController self, int amount)
         {
             orig(self, amount);
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            if (_pd.health > _pd.maxHealth / 2)
-            {
-                Log("Healed to no effect");
-                ResetHeroControllerProperties();
-            }
-            else if (_pd.health > 1 && _pd.health <= _pd.maxHealth / 2)
-            {
-                Log("Healed to level 1");
-                ModifyHcPropsLevel1AbyssalBloom();
-                On.HeroController.Attack -= On_HeroController_Attack;
-            }
+            CheckForAbyssalBloomStages(self);
         }
 
         private void CheckForAbyssalBloomStages_MaxHealth(On.HeroController.orig_MaxHealth orig, HeroController self)
         {
             orig(self);
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            Log("Reset HeroController Properties");
-            ResetHeroControllerProperties();
-            On.HeroController.Attack -= On_HeroController_Attack;
+            CheckForAbyssalBloomStages(self);
         }
 
         private IEnumerator FindAndAddComponentToDung()
@@ -964,6 +969,8 @@ namespace FiveKnights
 
         private void On_HeroController_Attack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
         {
+            if (!isAbyssalBloomStage2) return;
+            
             InputHandler ih = InputHandler.Instance;
             
             if (hc.cState.wallSliding)
