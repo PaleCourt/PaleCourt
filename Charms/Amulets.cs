@@ -780,7 +780,7 @@ namespace FiveKnights
 
                 shadeSlashContainer.SetActive(true);
 
-                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect" + (_pd.GetBool("equippedCharm_13") ? " M" : "")));
+                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect"));
 
                 Destroy(shadeSlashContainer);
 
