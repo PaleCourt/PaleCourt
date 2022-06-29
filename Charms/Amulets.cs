@@ -87,7 +87,7 @@ namespace FiveKnights
             On.HeroController.MaxHealth += CheckForAbyssalBloomStages_MaxHealth;
             On.CharmIconList.GetSprite += CharmIconList_GetSprite;
             ModHooks.CharmUpdateHook += CharmUpdateUpdateSpellConnections;
-            On.HeroController.Attack += On_HeroController_Attack;
+            On.HeroController.Attack += HcAttackDoTendrilAttacks;
         }
 
         private Sprite CharmIconList_GetSprite(On.CharmIconList.orig_GetSprite orig, CharmIconList self, int id)
@@ -967,9 +967,13 @@ namespace FiveKnights
             //     PureAmulets.Settings.equippedCharm_44);
         }
 
-        private void On_HeroController_Attack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
+        private void HcAttackDoTendrilAttacks(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
         {
-            if (!isAbyssalBloomStage2) return;
+            if (!isAbyssalBloomStage2)
+            {
+                origAttack(hc, dir);
+                return;
+            }
             
             InputHandler ih = InputHandler.Instance;
             
