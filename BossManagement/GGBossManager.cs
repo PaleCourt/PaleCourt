@@ -27,6 +27,7 @@ namespace FiveKnights.BossManagement
         public static bool alone;
         private bool HIT_FLAG;
         public static GGBossManager Instance;
+        public Dictionary<string, AnimationClip> clips;
 
         private IEnumerator Start()
         {
@@ -698,6 +699,13 @@ namespace FiveKnights.BossManagement
 
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
+
+            clips = new Dictionary<string, AnimationClip>();
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                clips[c.name] = c;
+            }
 
             Log("Finished Loading Zemer Bundle");
         }

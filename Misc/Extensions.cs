@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using FiveKnights.BossManagement;
 using FrogCore.Ext;
 using JetBrains.Annotations;
 using Modding;
@@ -59,9 +60,19 @@ namespace FiveKnights
         /// <param name="frame"></param>
         public static void PlayAt(this Animator anim, string name, int frame)
         {
-            AnimatorClipInfo att = anim.GetCurrentAnimatorClipInfo(0)[0];
-            float normTime = frame / (att.clip.length * att.clip.frameRate);
-            anim.Play(name, 0, normTime);
+            if (GGBossManager.Instance.clips.ContainsKey(name))
+            {
+                var clip = GGBossManager.Instance.clips[name];
+                float normTime = frame / (clip.length * clip.frameRate);
+                anim.Play(name, -1, normTime);
+            }
+            else
+            {
+                Modding.Logger.Log("WARNING: Could not find aninmation clip, reverting to old method.");
+                AnimatorClipInfo att = anim.GetCurrentAnimatorClipInfo(0)[0];
+                float normTime = frame / (att.clip.length * att.clip.frameRate);
+                anim.Play(name, 0, normTime);
+            }
         }
         
         [Pure]

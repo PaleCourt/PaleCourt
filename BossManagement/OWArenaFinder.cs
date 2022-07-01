@@ -34,6 +34,8 @@ namespace FiveKnights.BossManagement
 
         private static Dictionary<string, Shader> ParticleMatToShader = new();
         
+        public Dictionary<string, AnimationClip> clips;
+        
         public static bool IsInOverWorld =>
             Instance != null && (Instance._currScene is DryyaScene or IsmaScene or ZemerScene or HegemolScene );
 
@@ -767,6 +769,12 @@ namespace FiveKnights.BossManagement
             }
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
+
+            clips = new Dictionary<string, AnimationClip>();
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                clips[c.name] = c;
+            }
 
             Log("Finished Loading Zemer Bundle");
         }
