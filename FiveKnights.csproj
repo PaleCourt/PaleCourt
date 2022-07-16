@@ -33,6 +33,9 @@
     <Reference Include="MMHOOK_PlayMaker, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>$(HollowKnightRefs)/MMHOOK_PlayMaker.dll</HintPath>
     </Reference>
+    <Reference Include="ModCommon">
+      <HintPath>..\..\..\FiveKnights\bin\Debug\net472\ModCommon.dll</HintPath>
+    </Reference>
     <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e">
       <HintPath>$(HollowKnightRefs)/Mono.Cecil.dll</HintPath>
     </Reference>
