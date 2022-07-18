@@ -10,7 +10,6 @@ using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
-using GameObjectExtensions = ModCommon.GameObjectExtensions;
 using Logger = Modding.Logger;
 using Random = System.Random;
 
