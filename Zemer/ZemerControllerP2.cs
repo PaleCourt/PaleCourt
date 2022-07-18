@@ -385,7 +385,11 @@ namespace FiveKnights.Zemer
                 cc.Freeze = true;
                 cc.OnCollide += () =>
                 {
-                    if (cc.Hit) PlayAudioClip("AudLand",_ap);
+                    PlayAudioClip("AudLand",_ap);
+                    GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+                    nailPar.GetComponent<SpriteRenderer>().enabled = false;
+                    nailPar.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
+                    nailPar.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
                 };
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 bool isTooHigh = nailPar.transform.position.y > GroundY + 1f;
@@ -466,10 +470,19 @@ namespace FiveKnights.Zemer
                 
                 if (rotVel * Mathf.Rad2Deg is > -20f and < 200f)
                 {
+                    hero = new Vector2(hero.x, GroundY);
+                    rot = Mathf.Atan((hero.y - zem.y) / (hero.x - zem.x));
+                    rotVel = dir > 0 ? rot + Mathf.PI : rot;
+                    offset = dir.Within(oldDir, 0.1f) ? 0f : 180f;
+                    tRot = rot * Mathf.Rad2Deg + offset;
+                    nail.transform.SetRotation2D(rot * Mathf.Rad2Deg + offset);
+                    
+                    
+                    /*
                     var t = nail.transform.localScale.x;
                     doSlam = true;
                     rotVel = -Mathf.PI / 2f;
-                    nail.transform.SetRotation2D(t > 0 ? 90f : -90f);
+                    nail.transform.SetRotation2D(t > 0 ? 90f : -90f);*/
                 }
                 
                 Log($"Angle2 is: {rotVel * Mathf.Rad2Deg}");
@@ -2026,10 +2039,13 @@ namespace FiveKnights.Zemer
                     StopAllCoroutines();
                     
                     
-                    GameObject extraNail = GameObject.Find("ZNailB");
-                    if (extraNail != null && extraNail.transform.parent == null)
+                    foreach (var i in FindObjectsOfType<Rigidbody2D>(true))
                     {
-                        Destroy(extraNail);
+                        if (i.name.Contains("Nail") && i.transform.parent == null)
+                        {
+                            Log("Destroyed nail!!!!");
+                            Destroy(i.gameObject);
+                        }
                     }
 
                     FaceHero();
@@ -2055,10 +2071,13 @@ namespace FiveKnights.Zemer
         IEnumerator Death()
         {
             // TODO: This doesn't seem to take into account if Zem dies in the air??
-            GameObject extraNail = GameObject.Find("ZNailB");
-            if (extraNail != null && extraNail.transform.parent == null)
+            foreach (var i in FindObjectsOfType<Rigidbody2D>(true))
             {
-                Destroy(extraNail);
+                if (i.name.Contains("Nail") && i.transform.parent == null)
+                {
+                    Log("Destroyed nail!!!!");
+                    Destroy(i.gameObject);
+                }
             }
 
             if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);

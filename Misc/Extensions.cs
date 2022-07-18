@@ -60,9 +60,9 @@ namespace FiveKnights
         /// <param name="frame"></param>
         public static void PlayAt(this Animator anim, string name, int frame)
         {
-            if (GGBossManager.Instance.clips.ContainsKey(name))
+            if (FiveKnights.AnimClips.ContainsKey(name))
             {
-                var clip = GGBossManager.Instance.clips[name];
+                var clip = FiveKnights.AnimClips[name];
                 float normTime = frame / (clip.length * clip.frameRate);
                 anim.Play(name, -1, normTime);
             }

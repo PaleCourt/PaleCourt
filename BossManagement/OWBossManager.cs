@@ -30,6 +30,7 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
+        public Dictionary<string, AnimationClip> clips;
 
         private IEnumerator Start()
         {

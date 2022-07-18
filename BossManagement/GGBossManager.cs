@@ -547,6 +547,12 @@ namespace FiveKnights.BossManagement
                 };
             }
             
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+            
             foreach (var i in gos)
             {
                 FiveKnights.preloadedGO[i.name] = i;
@@ -579,6 +585,12 @@ namespace FiveKnights.BossManagement
             }
 
             AssetBundle dryyaAssetBundle = ABManager.AssetBundles[ABManager.Bundle.GDryya];
+            
+            foreach (var c in dryyaAssetBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
             
             if (CustomWP.boss == CustomWP.Boss.All)
             {
@@ -623,6 +635,11 @@ namespace FiveKnights.BossManagement
                 yield break;
             }
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
+            foreach (var c in hegemolBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
             if (CustomWP.boss == CustomWP.Boss.All)
             {
                 var r1 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteCollection");
@@ -700,11 +717,10 @@ namespace FiveKnights.BossManagement
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
 
-            clips = new Dictionary<string, AnimationClip>();
             foreach (var c in ab.LoadAllAssets<AnimationClip>())
             {
                 Log($"Name of anim adding is {c.name}");
-                clips[c.name] = c;
+                FiveKnights.AnimClips[c.name] = c;
             }
 
             Log("Finished Loading Zemer Bundle");
