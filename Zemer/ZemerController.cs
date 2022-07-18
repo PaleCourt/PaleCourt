@@ -223,7 +223,7 @@ namespace FiveKnights.Zemer
                 Vector2 posH = _target.transform.position;
 
                 //If the player is close
-                if (posH.y > GroundY+9f && (posH.x <= LeftX || posH.x >= RightX))
+                if (posH.y > GroundY + 3f && (posH.x <= LeftX + 1f || posH.x >= RightX - 1))
                 {
                     yield return SpinAttack();
                 }
