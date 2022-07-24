@@ -1164,11 +1164,15 @@ namespace FiveKnights
 
             // Nail Arts FSM
             PlayMakerFSM nailArts = self.gameObject.LocateMyFSM("Nail Arts");
+            if (nailArts.FsmStates[0].Fsm == null)
+            {
+                nailArts.Preprocess();
+            }
 
             // Create states to test for activated Abyssal Bloom
-            nailArts.CreateState("Bloom Activated CSlash?");
-            nailArts.CreateState("Bloom Activated DSlash?");
-            nailArts.CreateState("Bloom Activated GSlash?");
+            nailArts.AddState("Bloom Activated CSlash?");
+            nailArts.AddState("Bloom Activated DSlash?");
+            nailArts.AddState("Bloom Activated GSlash?");
 
             // Clone Cyclone Slash states
             nailArts.CopyState("Cyclone Start", "Cyclone Start Void");
@@ -1213,6 +1217,26 @@ namespace FiveKnights
             nailArts.ChangeTransition("G Slash Void", "FINISHED", "Stop Move Void");
             nailArts.ChangeTransition("Stop Move Void", "FINISHED", "G Slash End Void");
 
+            // Make transitions for void narts
+            nailArts.AddTransition("Bloom Activated CSlash?", "VOID", "Cyclone Start Void");
+            nailArts.AddTransition("Bloom Activated CSlash?", "NORMAL", "Cyclone Start");
+            nailArts.AddTransition("Bloom Activated DSlash?", "VOID", "Dash Slash Void");
+            nailArts.AddTransition("Bloom Activated DSlash?", "NORMAL", "Dash Slash");
+            nailArts.AddTransition("Bloom Activated GSlash?", "VOID", "G Slash Void");
+            nailArts.AddTransition("Bloom Activated GSlash?", "NORMAL", "G Slash");
+            nailArts.AddMethod("Bloom Activated CSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "Cyclone Start Void" : "Cyclone Start");
+            });
+            nailArts.AddMethod("Bloom Activated DSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "Dash Slash Void" : "Dash Slash");
+            });
+            nailArts.AddMethod("Bloom Activated GSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "G Slash Void" : "G Slash");
+            });
+
             // Change Knight animation clips
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Cyclone Start Void").clipName = "NA Cyclone Start Void";
             nailArts.GetAction<Tk2dPlayAnimation>("Cyclone Spin Void").clipName = "NA Cyclone Void";
@@ -1221,20 +1245,20 @@ namespace FiveKnights
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Dash Slash Void").clipName = "NA Dash Slash Void";
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("G Slash Void").clipName = "NA Big Slash Void";
 
-            // Insert testing methods for testing states
-            nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
-            {
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
-            });
-            nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
-            {
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
-            });
-            nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
-            {
-                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
-            });
+            //// Insert testing methods for testing states
+            //nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
+            //});
+            //nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
+            //});
+            //nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
+            //{
+            //    Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
+            //});
 
             // Insert activation and deactivation of void nail arts
             nailArts.InsertMethod("Activate Slash Void", 0, () =>
@@ -1264,9 +1288,8 @@ namespace FiveKnights
             nailArts.RemoveAction<ActivateGameObject>("Dash Slash Void");
             nailArts.RemoveAction<ActivateGameObject>("G Slash Void");
 
-#if DEBUG
-            nailArts.MakeLog();
-#endif
+            nailArts.Log();
+            nailArts.MakeLog(true);
 
             //self.gameObject.scene.Log();
 

@@ -45,9 +45,10 @@ namespace FiveKnights
                 return SystemInfo.operatingSystemFamily switch
                 {
                     OperatingSystemFamily.Windows => "win",
-                    OperatingSystemFamily.Linux => "lin",
-                    OperatingSystemFamily.MacOSX => "mc",
-                    _ => null
+                    //OperatingSystemFamily.Linux => "lin",
+                    //OperatingSystemFamily.MacOSX => "mc",
+                    //_ => null
+                    _ => "win"
                 };
             }
         }
