@@ -10,6 +10,7 @@ using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
+using GameObjectExtensions = ModCommon.GameObjectExtensions;
 using Logger = Modding.Logger;
 using Random = System.Random;
 
@@ -142,7 +143,7 @@ namespace FiveKnights.Zemer
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             _deathEff.SetJournalEntry(FiveKnights.journalentries["Zemer"]);
             _target = HeroController.instance.gameObject;
-            
+
             yield return EndPhase1(true);
         }
         
@@ -202,7 +203,7 @@ namespace FiveKnights.Zemer
                 else if (FastApproximately(posZem.x, posH.x, 5f) && 
                          !((DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP) || (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP)))
                 {
-                    int r = _rand.Next(0, 4);
+                    int r = _rand.Next(0, 6);
                     if (r == 0 && counterCount < 2)
                     {
                         counterCount++;
@@ -218,6 +219,13 @@ namespace FiveKnights.Zemer
                         counterCount = 0;
                         yield return Dodge();
                         Log("Done Dodge");
+                    }
+                    else if (r < 3)
+                    {
+                        counterCount = 0;
+                        Log("Doing NailLaunch");
+                        yield return NailLaunch();
+                        Log("Done NailLaunch");
                     }
                     else
                     {
@@ -246,6 +254,7 @@ namespace FiveKnights.Zemer
                     };
 
                     currAtt = attLst[_rand.Next(0, attLst.Count)];
+
                     while (rep[currAtt] >= 2)
                     {
                         attLst.Remove(currAtt);
@@ -347,7 +356,8 @@ namespace FiveKnights.Zemer
             {
                 Vector2 hero = _target.transform.position;
                 Vector2 zem = gameObject.transform.position;
-                if (hero.x.Within(zem.x, 10f) && hero.y < GroundY + 1.5f)
+                //if (hero.x.Within(zem.x, 10f) && hero.y < GroundY + 1.5f)
+                if (hero.y < GroundY + 1.5f)
                 {
                     Log("Failed NailLaunch");
                     yield break;
@@ -384,11 +394,13 @@ namespace FiveKnights.Zemer
                 cc.Freeze = true;
                 cc.OnCollide += () =>
                 {
+                    Log($"Collision debug 1: {nailPar.GetComponent<Rigidbody2D>().velocity}");
                     PlayAudioClip("AudLand",_ap);
                     GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                     nailPar.GetComponent<SpriteRenderer>().enabled = false;
                     nailPar.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
                     nailPar.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                    Destroy(cc);
                 };
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 bool isTooHigh = nailPar.transform.position.y > GroundY + 1f;
@@ -422,18 +434,19 @@ namespace FiveKnights.Zemer
                 }
             }
             
-            IEnumerator LaunchUp(float rot, GameObject nail)
+            IEnumerator LaunchUp(float rot, GameObject nail, bool isRepeat=false)
             {
                 float rotVel = dir > 0 ? rot + 180 * Mathf.Deg2Rad : rot;
                 GameObject col = nail.transform.Find("ZNailC").gameObject;
                 CollisionCheck cc = col.GetComponent<CollisionCheck>() ?? col.AddComponent<CollisionCheck>();
                 Rigidbody2D rb = nail.GetComponent<Rigidbody2D>();
 
-                yield return GndLeave(dir, true);
+                if (!isRepeat) yield return GndLeave(dir, true);
 
                 cc.Hit = rb.velocity == Vector2.zero;
-
+                Log("Waiting to grab nail");
                 yield return new WaitWhile(() => nail.transform.position.y < NailHeightGrab && !cc.Hit);
+                Log("Went to get nail!!");
                 var pos = nail.transform.position + new Vector3(5f * Mathf.Cos(rotVel), 5f * Mathf.Sin(rotVel), 0f);
                 if (pos.y > NailMaxHeightStop) pos.y = NailMaxHeightStop;
                 if (pos.x > NailMaxRightStop) pos.x = NailMaxRightStop;
@@ -462,41 +475,78 @@ namespace FiveKnights.Zemer
                 rotVel = dir > 0 ? rot + Mathf.PI : rot;
                 float offset = dir.Within(oldDir, 0.1f) ? 0f : 180f;
                 float tRot = rot * Mathf.Rad2Deg + offset;
-                nail.transform.SetRotation2D(rot * Mathf.Rad2Deg + offset);
-                
-                
-                Log($"Angle is: {rotVel * Mathf.Rad2Deg}");
-                
-                if (rotVel * Mathf.Rad2Deg is > -20f and < 200f)
+                nail.transform.SetRotation2D(rot * Mathf.Rad2Deg);//offset);
+                var vel = new Vector2(Mathf.Cos(rotVel) * 70f, Mathf.Sin(rotVel) * 70f);
+                float deltaX = vel.x > 0 ? RightX - nail.transform.position.x : LeftX - nail.transform.position.x;
+                float time = deltaX / vel.x;
+                float endY = vel.y * time + nail.transform.position.y;
+
+                if (endY > 31f)//GroundY + 2f)//rotVel * Mathf.Rad2Deg is > -20f and < 200f)
                 {
-                    hero = new Vector2(hero.x, GroundY);
+                    var t = Mathf.Sign(nail.transform.localScale.x) * Mathf.Sign(transform.localScale.x);
+                    nail.transform.SetRotation2D(t < 0 ? rot * Mathf.Rad2Deg + 180f : rot * Mathf.Rad2Deg);
+                    Log("Going to repeat!!");
+                    rb.velocity = vel;
+                    nail.transform.position = transform.position;
+                    if (cc != null) Destroy(cc);
+                    cc = col.AddComponent<CollisionCheck>();
+                    nail.GetComponent<SpriteRenderer>().enabled = true;
+                    nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = false;
+                    cc.Freeze = false;
+                    cc.Hit = false;
+                    cc.OnCollide += () =>
+                    {
+                        if (nail.transform.position.y > GroundY + 5f) return;
+                        PlayAudioClip("AudLand",_ap);
+                        GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+                        nail.GetComponent<SpriteRenderer>().enabled = false;
+                        nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
+                        rb.velocity = Vector2.zero;
+                        Destroy(cc);
+                    };
+                    yield return new WaitForSeconds(0.02f);
+                    cc.Freeze = true;
+                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
+                    rotVel = dir > 0 ? 10f : -45f;
+                
+                    _anim.speed = 2f;
+                    Spring(false, transform.position + new Vector3(LeaveOffset.x * Mathf.Cos(rotVel), LeaveOffset.y * Mathf.Sin(rotVel),0f));
+                    transform.position += new Vector3(LeaveOffset.x * Mathf.Cos(rotVel), LeaveOffset.y * Mathf.Sin(rotVel));
+                    yield return _anim.PlayToEnd();
+                    ToggleZemer(false);
+                    cc.Freeze = true;
+                    yield return LaunchUp(rot, nail, true);
+                    yield break;
+
+                    /*hero = new Vector2(hero.x, GroundY);
                     rot = Mathf.Atan((hero.y - zem.y) / (hero.x - zem.x));
                     rotVel = dir > 0 ? rot + Mathf.PI : rot;
                     offset = dir.Within(oldDir, 0.1f) ? 0f : 180f;
                     tRot = rot * Mathf.Rad2Deg + offset;
-                    nail.transform.SetRotation2D(rot * Mathf.Rad2Deg + offset);
-                    
-                    
-                    /*
-                    var t = nail.transform.localScale.x;
-                    doSlam = true;
-                    rotVel = -Mathf.PI / 2f;
-                    nail.transform.SetRotation2D(t > 0 ? 90f : -90f);*/
+                    nail.transform.SetRotation2D(rot * Mathf.Rad2Deg + offset);*/
                 }
                 
-                Log($"Angle2 is: {rotVel * Mathf.Rad2Deg}");
-                
-                rb.velocity = new Vector2(Mathf.Cos(rotVel) * 70f, Mathf.Sin(rotVel) * 70f);
+                var t2 = Mathf.Sign(nail.transform.localScale.x) * Mathf.Sign(transform.localScale.x);
+                nail.transform.SetRotation2D(t2 < 0 ? rot * Mathf.Rad2Deg + 180f : rot * Mathf.Rad2Deg);
+                rb.velocity = new Vector2(Mathf.Cos(rotVel) * 90f, Mathf.Sin(rotVel) * 90f);
+                col.GetComponent<BoxCollider2D>().enabled = true;
+                col.SetActive(true);
                 nail.transform.position = transform.position;
+                if (cc != null) Destroy(cc);
+                cc = col.AddComponent<CollisionCheck>();
+                cc.Hit = false;
                 cc.Freeze = false;
+                nail.GetComponent<SpriteRenderer>().enabled = true;
+                nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = false;
                 cc.OnCollide += () =>
                 {
-                    if (!nail.transform.position.y.Within(GroundY, 5f)) return;
+                    if (nail.transform.position.y > GroundY + 5f) return;
                     PlayAudioClip("AudLand",_ap);
                     GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                     nail.GetComponent<SpriteRenderer>().enabled = false;
                     nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
-                    nail.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                    rb.velocity = Vector2.zero;
+                    Destroy(cc);
                 };
                 yield return new WaitForSeconds(0.02f);
                 cc.Freeze = true;
@@ -520,6 +570,7 @@ namespace FiveKnights.Zemer
                 GameObject col = nail.transform.Find("ZNailC").gameObject;
                 Rigidbody2D rbNail = nail.GetComponent<Rigidbody2D>();
                 CollisionCheck cc = col.GetComponent<CollisionCheck>();
+                Log("Doing launch side");
                 if (cc == null)
                 {
                     cc = col.AddComponent<CollisionCheck>();
@@ -530,6 +581,7 @@ namespace FiveKnights.Zemer
                         nail.GetComponent<SpriteRenderer>().enabled = false;
                         nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
                         rbNail.velocity = Vector2.zero;
+                        Destroy(cc);
                     };
                 }
                 
@@ -953,96 +1005,166 @@ namespace FiveKnights.Zemer
             
             IEnumerator LandSlide()
             {
+
                 float dir = Mathf.Sign(transform.localScale.x);
-                
+                float XVel = 65f;
+
                 //_anim.speed = 2f;
                 _anim.PlayAt("ZThrow2", 4);
-                Spring(false, transform.position + new Vector3(-dir * LeaveOffset.x, 0f,0f), 1.5f);
+                Spring(false, transform.position + new Vector3(-dir * LeaveOffset.x, 0f, 0f), 1.5f);
                 transform.position += new Vector3(-dir * LeaveOffset.x, 0f);
                 yield return _anim.PlayToEnd();
                 ToggleZemer(false);
-
-                yield return new WaitForSeconds(LandSlideTPInDelay);
-
-                transform.position = dir > 0
-                    ? new Vector3(RightX - 1.5f, transform.position.y)
-                    : new Vector3(LeftX + 1.5f, transform.position.y);
                 
-                Spring(true, transform.position);
-                yield return new WaitForSeconds(0.15f);
-                ToggleZemer(true);
-
-                float signX = Mathf.Sign(gameObject.transform.GetPositionX() - MIDDLE);
-                Vector3 pScale = gameObject.transform.localScale;
-                gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
+                yield return new WaitForSeconds(0.2f);
                 
-                Log("Doing special dash");
-                transform.Find("HyperCut").gameObject.SetActive(false);
-                _anim.PlayAt("ZDash", 6);
-                yield return null;
-                _anim.enabled = false;
-                _rb.velocity = new Vector2(-signX * DashXVel, 0f);
-                yield return new WaitWhile
-                (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) &&
-                          ((-signX <= 0 && !FastApproximately(transform.position.x, LeftX, 10f)) ||
-                           (-signX > 0 && !FastApproximately(transform.position.x, RightX, 10f)))
-                );
+                for (int i = 0; i < 5; i++)
+                {
+                    float heroX = _target.transform.position.x;
+                    float zemY = transform.position.y;
+                    float offsetRand = _rand.Next(0, 3);
+
+                    if (heroX.Within(LeftX, 7f))
+                    {
+                        transform.position = new Vector3(heroX + 10f + offsetRand, zemY);
+                    }
+                    else if (heroX.Within(RightX, 7f))
+                    {
+                        transform.position = new Vector3(heroX - 10f + offsetRand, zemY);
+                    }
+                    else
+                    {
+                        
+                        Vector3 pos = i % 2 == 0
+                            ? new Vector3(heroX + 10f + offsetRand, zemY)
+                            : new Vector3(heroX - 10f + offsetRand, zemY);
+                        if (pos.x > RightX) pos.x = RightX;
+                        if (pos.x < LeftX) pos.x = LeftX;
+                        transform.position = pos;
+                    }
+
+                    yield return null;
+                    
+                    float signX = FaceHero();
+
+                    Spring(true, transform.position, 1.5f);
+                    //yield return new WaitForSeconds(0.07f);
+                    ToggleZemer(true);
+                    if (i != 0)
+                    {
+                        _anim.enabled = false;
+                    }
+
+                    Log("Doing special dash");
+                    PlayAudioClip("AudDash",_ap);
+                    if (i == 0)
+                    {
+                        transform.Find("HyperCut").gameObject.SetActive(false);
+                        _anim.PlayAt("ZMultiDashAir", 6);
+                        yield return null;
+                        _anim.enabled = false;
+                    }
+                    float velX = -signX * (XVel + i * 1.5f);
+                    _rb.velocity = new Vector2(velX, 0f);
+                    offsetRand = _rand.Next(1, 5);
+
+                    // trying to add here
+                    float oldDiff = _target.transform.position.x - transform.position.x;
+
+                    yield return new WaitWhile(() =>
+                    {
+                        var newDiff = _target.transform.position.x - transform.position.x;
+                        if (newDiff * oldDiff <= 0 && Mathf.Abs(newDiff) > 7f + offsetRand) return false;
+                        if (_rb.velocity.x.Within(0f, 0.1f)) return false;
+                        if (-signX <= 0 && transform.position.x.Within( LeftX, 3f)) return false;
+                        if (-signX > 0 && transform.position.x.Within(RightX, 3f)) return false;
+                        return true;
+                    });
+
+                    if ((_target.transform.position.x.Within(LeftX, 2.5f) ||
+                         _target.transform.position.x.Within(RightX, 2.5f)) &&
+                        _target.transform.position.y > GroundY + 3f)
+                    {
+                        _anim.enabled = true;
+                        float xVel = FaceHero() * -1f;
+                        float diffX = Mathf.Abs(_target.transform.GetPositionX() - transform.GetPositionX());
+                        float diffY = Mathf.Abs(_target.transform.GetPositionY() - transform.GetPositionY());
+                        float rot = Mathf.Atan(diffY / diffX);
+                        rot = xVel < 0 ? Mathf.PI - rot : rot;
+                        PlayAudioClip("AudDashIntro",_ap);
+                        _anim.speed = 3f;
+                        yield return _anim.WaitToFrame(9);
+                        _anim.speed = 1f;
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+                        _rb.velocity = new Vector2(60f * Mathf.Cos(rot), 60f * Mathf.Sin(rot));
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
+                        _anim.enabled = false;
+                        yield return new WaitWhile(() => transform.position.x > LeftX + 4f && transform.position.x < RightX - 4f);
+                        _anim.enabled = true;
+                        _rb.velocity = Vector2.zero;
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
+                        PlayAudioClip("AudBigSlash2",_ap);
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 18);
+                        _rb.isKinematic = false;
+                        _rb.gravityScale = 1.5f;
+                        yield return new WaitWhile(() => transform.position.y > GroundY);
+                        PlayAudioClip("AudLand",_ap);
+                        _rb.velocity = Vector2.zero;
+                        _rb.gravityScale = 0f;
+                        _rb.isKinematic = true;
+                        transform.position = new Vector3(transform.position.x, GroundY);
+                        yield return new WaitWhile(() => _anim.IsPlaying());
+                        _anim.Play("ZIdle");
+                        
+                        yield break;
+                    }
+                    
+                    if (i != 4)
+                    {
+                        float xNext = velX * 0.1f;
+                        Vector3 newPos = transform.position + new Vector3(xNext, 0f, 0f);
+                        if (newPos.x > RightX) newPos.x = RightX - 1f;
+                        if (newPos.x < LeftX) newPos.x = LeftX + 1f;
+                        Spring(false, newPos, 1.5f);
+                        yield return new WaitWhile(() =>
+                        {
+                            if (_rb.velocity.x.Within(0f, 0.1f)) return false;
+                            if (-signX <= 0)
+                            {
+                                if (transform.position.x.Within(LeftX, 1.2f)) return false;
+                                if (transform.position.x < newPos.x) return false;
+                            }
+                            if (-signX > 0)
+                            {
+                                if (-signX > 0 && transform.position.x.Within(RightX, 1.2f)) return false;
+                                if (transform.position.x > newPos.x) return false;
+                            }
+                            return true;
+                        });
+                        _rb.velocity = Vector2.zero;
+                        ToggleZemer(false);
+                        yield return new WaitForSeconds(0.2f);
+                    }
+
+                }
+                
+                _anim.PlayAt("ZDash", 7);
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
-
-                
-            }
-
-            IEnumerator Dash()
-            {
-                float dir = Mathf.Sign(transform.localScale.x);
-
-                transform.Find("HyperCut").gameObject.SetActive(false);
-
-                PlayAudioClip("AudDash",_ap);
-
-                _rb.velocity = new Vector2(-dir * DashXVel, 0f);
-                
-                _anim.PlayAt("ZDash", 5);
-
-                _anim.enabled = false;
-                
-                
-                if (dir > 0)
-                {
-                    yield return new WaitWhile(() => 
-                        transform.GetPositionX() > LeftX + 11f);
-                }
-                else
-                {
-                    yield return new WaitWhile(() => 
-                        transform.GetPositionX() < RightX - 11f);
-                }
-               
-                _anim.enabled = true;
-                
-                yield return _anim.WaitToFrame(9);
-
-                _rb.velocity = Vector2.zero;
-
-                yield return _anim.PlayToEnd();
-
-                _anim.Play("ZIdle");
 
             }
 
             yield return (Leave());
         }
 
-        private IEnumerator SwingTemp(float dir)
+        private IEnumerator SwingTemp(float dir, float delay)
         {
             _anim.Play("Z3Swing");
             yield return null;
             yield return _anim.WaitToFrame(0);
             _anim.enabled = false;
-            yield return new WaitForSeconds(0.2f);
+            yield return new WaitForSeconds(delay);
             _anim.enabled = true;
             yield return _anim.WaitToFrame(2);
             PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
@@ -1062,7 +1184,7 @@ namespace FiveKnights.Zemer
             {
                 _lastAtt = null;
 
-                yield return SwingTemp(dir);
+                yield return SwingTemp(dir, special ? 0.2f : 0.4f);
                 yield return new WaitForSeconds(SwingOutToInDelay); //0.15f
                 yield return (FlyStrike());
             }
@@ -1179,11 +1301,22 @@ namespace FiveKnights.Zemer
                     _rb.velocity = new Vector2(-signX * DashXVel, 0f);
                     _anim.enabled = false;
                     yield return null;
-                    yield return new WaitWhile
-                    (
-                        () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) &&
-                              !FastApproximately(transform.position.x, MIDDLE, 0.25f)
-                    );
+                    if (signX < 0)
+                    {
+                        yield return new WaitWhile
+                        (
+                            () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && 
+                                  transform.position.x <= MIDDLE
+                        );
+                    }
+                    else 
+                    {
+                        yield return new WaitWhile
+                        (
+                            () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && 
+                                  transform.position.x >= MIDDLE
+                        );
+                    }
                     _anim.enabled = true;
                     _rb.velocity = Vector2.zero;
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1333,69 +1466,6 @@ namespace FiveKnights.Zemer
                 an.gameObject.SetActive(false);
                 _anim.Play("ZIdle");
                 transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
-            }
-
-            IEnumerator LandSlide()
-            {
-                float signX = Mathf.Sign(gameObject.transform.GetPositionX() - MIDDLE);
-                Vector3 pScale = gameObject.transform.localScale;
-                gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
-                _anim.Play("Z5LandSlide");
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                _rb.velocity = new Vector2(-signX * DashXVel, 0f);
-                _anim.enabled = false; 
-                yield return null;
-                yield return new WaitWhile
-                (
-                    () => !FastApproximately(_rb.velocity.x, 0f, 0.1f) && !FastApproximately(transform.position.x, MIDDLE, 0.25f)
-                );
-                _anim.enabled = true;
-                _rb.velocity = Vector2.zero;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                yield return (LaserNuts(1, _spinType));
-            }
-
-            IEnumerator LaserNuts(int i, int type)
-            {
-                if (i == 1)
-                {
-                    _anim.Play("Z6LaserSpin", -1, 0f);
-                    yield return null;
-                    _anim.enabled = false;
-                    yield return new WaitForSeconds(0.3f);
-                    PlayAudioClip("ZAudLaser", _voice);
-                    _anim.enabled = true;
-                }
-                else _anim.PlayAt("Z6LaserSpin", 1);
-
-                transform.position = new Vector3(transform.position.x, GroundY - 1.2f);
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-
-                if (type == 3)
-                {
-                    GameObject wav = Instantiate(FiveKnights.preloadedGO["WaveShad"]);
-                    wav.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["TestDist"];
-                    wav.transform.position = new Vector3(MIDDLE, GroundY);
-                    wav.SetActive(true);
-                    wav.AddComponent<WaveIncrease>();
-                }
-
-                SpawnSlashes(type);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
-
-                if (i > 2)
-                {
-                    yield return new WaitWhile(() => _anim.IsPlaying());
-                    transform.position = new Vector3(transform.position.x, GroundY);
-                    FaceHero();
-                    _anim.Play("ZIdle");
-                    yield break;
-                }
-
-                yield return (LaserNuts(++i, type));
             }
 
             IEnumerator RegularDash()
