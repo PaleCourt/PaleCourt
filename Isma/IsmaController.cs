@@ -90,14 +90,6 @@ namespace FiveKnights.Isma
             EnemyPlantSpawn.isPhase2 = false;
             EnemyPlantSpawn.FoolCount = EnemyPlantSpawn.PillarCount = EnemyPlantSpawn.TurretCount = 0;
             killAllMinions = eliminateMinions = false;
-
-            if (OWArenaFinder.IsInOverWorld)
-            {
-                foreach (Transform sidecols in GameObject.Find("SeedCols").transform)
-                {
-                    sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
-                }
-            }
         }
 
         private IEnumerator Start()
@@ -133,12 +125,85 @@ namespace FiveKnights.Isma
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return new WaitForSeconds(0.8f);
             }
-            
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            HeroController.instance.RelinquishControl();
-            HeroController.instance.StopAnimationControl();
-            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+
+            // Load/create missing objects and assets for Godhome arena
+            if(!OWArenaFinder.IsInOverWorld)
+            {
+                // Acid spit
+                #region
+                var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
+                var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
+                acidOrig = Instantiate(acidOrig);
+                acidOrig.SetActive(false);
+
+                // Change particle color to green
+                var stmain = acidOrig.transform.Find("Steam").GetComponent<ParticleSystem>().main;
+                var stamain = acidOrig.transform.Find("Air Steam").GetComponent<ParticleSystem>().main;
+                stmain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
+                stamain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
+                // Get audio actor and audio clip
+                var actorOrig = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
+                    .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioPlayer.Value;
+                actorOrig.SetActive(false);
+                var clip = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
+                    .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
+                // Change texture
+                tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+                //acidOldTex = def.material.mainTexture;
+                def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
+                // Store values
+                FiveKnights.IsmaClips["AcidSpitSnd"] = clip;
+                FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
+                FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
+                #endregion
+
+                // Load thorn attack sound effects
+                AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
+                FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
+
+				// Seed columns
+				#region
+				GameObject sc = new GameObject();
+                sc.name = "SeedCols";
+
+                GameObject sf = new GameObject();
+                sf.name = "SeedFloor";
+                sf.transform.position = new Vector3(70.8f, 5.1f, 0f);
+                BoxCollider2D sfcol = sf.AddComponent<BoxCollider2D>();
+                sfcol.offset = new Vector2(3f, 0f);
+                sfcol.size = new Vector2(19f, 1f);
+                sf.transform.parent = sc.transform;
+
+                GameObject sr = new GameObject();
+                sr.name = "SeedSideR";
+                sr.transform.position = new Vector3(92.4f, 12.7f, 0f);
+                BoxCollider2D srcol = sr.AddComponent<BoxCollider2D>();
+                srcol.size = new Vector2(1f, 7f);
+                sr.transform.parent = sc.transform;
+
+                GameObject sl = new GameObject();
+                sl.name = "SeedSideL";
+                sl.transform.position = new Vector3(59.4f, 12.7f, 0f);
+                BoxCollider2D slcol = sl.AddComponent<BoxCollider2D>();
+                slcol.size = new Vector2(1f, 7f);
+                sl.transform.parent = sc.transform;
+				#endregion
+			}
+
+			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
+            {
+                sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
+            }
+
+            if(OWArenaFinder.IsInOverWorld)
+            {
+                HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
+                HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                HeroController.instance.RelinquishControl();
+                HeroController.instance.StopAnimationControl();
+                HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+            }
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
@@ -161,26 +226,28 @@ namespace FiveKnights.Isma
             _rb.velocity = new Vector2(0f, 0f);
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
             yield return new WaitWhile(() => _anim.IsPlaying());
-            
-            
-            yield return new WaitForSeconds(0.75f);
-            HeroController.instance.RegainControl();
-            HeroController.instance.StartAnimationControl();
-            
-            if (onlyIsma && !OWArenaFinder.IsInOverWorld) MusicControl();
-            StartCoroutine("Start2");
-            if (OWArenaFinder.IsInOverWorld)
+
+            //Log(HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name);
+            if(OWArenaFinder.IsInOverWorld)
+            {
+                yield return new WaitForSeconds(0.75f);
+                HeroController.instance.RegainControl();
+                HeroController.instance.StartAnimationControl();
+            }
+
+			StartCoroutine("Start2");
+            if(OWArenaFinder.IsInOverWorld)
             {
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
                 yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
             }
-            
-        }
-
-        private void MusicControl()
-        {
-            GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaMusic"], 1f);
+            else
+            {
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
+                yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
+            }
         }
         
         private IEnumerator Start2()
@@ -225,7 +292,6 @@ namespace FiveKnights.Isma
             _ddFsm.FsmVariables.FindFsmInt("Damage").Value = 1;
             dd.GetComponent<DamageHero>().damageDealt = 1;
         }
-        
         
         private void Update()
         {
