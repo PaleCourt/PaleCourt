@@ -242,7 +242,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
             }
-            else
+            else if(onlyIsma)
             {
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
                 yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
@@ -285,12 +285,16 @@ namespace FiveKnights.Isma
             ToggleIsma(false);
             _attacking = false;
             PlantPillar();
-            if (!onlyIsma) StartCoroutine(SmashBall());
-            StartCoroutine(Agony());
-            StartCoroutine(AttackChoice());
             StartCoroutine(SpawnWalls());
-            _ddFsm.FsmVariables.FindFsmInt("Damage").Value = 1;
-            dd.GetComponent<DamageHero>().damageDealt = 1;
+            if(onlyIsma)
+            {
+                StartCoroutine(Agony());
+                StartCoroutine(AttackChoice());
+            }
+			else
+			{
+                StartCoroutine(AttackChoiceDuo());
+            }
         }
         
         private void Update()
@@ -300,8 +304,8 @@ namespace FiveKnights.Isma
                 Log("Victory");
                 isDead = true;
                 _healthPool = 100;
-                if (isIsmaHitLast && !onlyIsma) StartCoroutine(IsmaDeath());
-                else if (onlyIsma) StartCoroutine(IsmaLoneDeath());
+                if(onlyIsma) StartCoroutine(IsmaLoneDeath());
+                else if(isIsmaHitLast) StartCoroutine(IsmaDeath());
                 else StartCoroutine(OgrimDeath());
             }
         }
@@ -359,6 +363,83 @@ namespace FiveKnights.Isma
             }
         }
 
+        private IEnumerator AttackChoiceDuo()
+		{
+            EnemyPlantSpawn.isPhase2 = true;
+            _ddFsm.FsmVariables.FindFsmInt("Damage").Value = 1;
+            dd.GetComponent<DamageHero>().damageDealt = 1;
+
+            // Limit to 1 throw
+            _ddFsm.ChangeFsmTransition("Throw 2", "FINISHED", "After Throw?");
+
+            // Add short delay after dung toss
+            _ddFsm.GetAction<SendEventByName>("After Throw?", 0).delay = 0.3f;
+            _ddFsm.InsertAction("After Throw?", _ddFsm.GetAction<Tk2dPlayAnimation>("Idle", 0), 0);
+
+            // Increase delay after ground slam
+            _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
+
+            StartCoroutine(SmashBall());
+
+            // Vine Whip - Burrowing
+            _ddFsm.InsertMethod("Timer", () =>
+            {
+                IEnumerator WaitForWhip()
+                {
+                    yield return new WaitWhile(() => _attacking);
+                    _attacking = true;
+                    yield return new WaitForSeconds(0.15f);
+                    WhipAttack();
+                    _attacking = false;
+                }
+                StartCoroutine(WaitForWhip());
+            }, 0);
+            // Bomb - Bouncing
+            _ddFsm.InsertMethod("RJ Launch", () =>
+            {
+                IEnumerator WaitForBomb()
+                {
+                    yield return new WaitWhile(() => _attacking);
+                    _attacking = true;
+                    yield return new WaitForSeconds(0.1f);
+                    Bomb();
+                    _attacking = false;
+                }
+                StartCoroutine(WaitForBomb());
+            }, 0);
+
+            yield return new WaitWhile(() => _healthPool > WALL_HP);
+
+            // Acid/Air Fist - Spike slam
+            _ddFsm.InsertMethod("G Slam", () =>
+            {
+                IEnumerator WaitForAirFist()
+                {
+                    yield return new WaitWhile(() => _attacking);
+                    _attacking = true;
+                    AirFist();
+                    _attacking = false;
+                }
+                StartCoroutine(WaitForAirFist());
+            }, 0);
+
+            yield return new WaitWhile(() => _healthPool > SPIKE_HP);
+
+            // Agony - Spike wave
+            _ddFsm.InsertMethod("Under", () =>
+            {
+                IEnumerator WaitForAgony()
+                {
+                    yield return new WaitForSeconds(0.5f);
+                    yield return new WaitWhile(() => _attacking);
+                    _attacking = true;
+                    yield return Agony();
+                    _attacking = false;
+                }
+                StartCoroutine(WaitForAgony());
+            }, 0);
+        }
+
         private bool _wallActive;
 
         private IEnumerator SpawnWalls()
@@ -369,7 +450,7 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.1f);
             killAllMinions = false;
             _wallActive = true;
-            if (onlyIsma)
+            if(onlyIsma)
             {
                 EnemyPlantSpawn spawner = GameObject.Find("SeedFloor").GetComponent<EnemyPlantSpawn>();
                 spawner.Phase2Spawn();
@@ -560,7 +641,7 @@ namespace FiveKnights.Isma
                     GameObject plant = Instantiate(FiveKnights.preloadedGO["Plant"]);
                     plant.transform.position = new Vector2(posX, GROUND_Y);
                     plant.AddComponent<PlantCtrl>().PlantX = PlantX;
-                    yield return new WaitForSeconds(UnityEngine.Random.Range(1, 2));
+                    yield return new WaitForSeconds(UnityEngine.Random.Range(1f, 2f));
                 }
             }
             StartCoroutine(PlantChecker());
@@ -614,7 +695,7 @@ namespace FiveKnights.Isma
                     : GetRot(arm, predPos, dir);
                 float rotD = rot * Mathf.Rad2Deg;
 
-                if (rotD is < -60f or > 50f)
+                if(rotD is < -60f or > 50f)
                 {
                     int rnd = UnityEngine.Random.Range(0, 1);
                     if (rnd == 0)
@@ -692,7 +773,7 @@ namespace FiveKnights.Isma
             StartCoroutine(AirFist());
         }
         
-        IEnumerator AcidThrow()
+        private IEnumerator AcidThrow()
         {
             float GetRot(Vector3 origPos, Vector3 tarPos)
             {
@@ -714,7 +795,8 @@ namespace FiveKnights.Isma
             
             yield return _anim.PlayToFrameAt("AcidSwipe", 0, 4);
             _anim.enabled = false;
-            yield return new WaitForSeconds(0.3f);
+            // Shortened delay if WD is present to avoid getting canceled by the next attack
+            yield return new WaitForSeconds(onlyIsma ? 0.3f : 0.1f);
             _anim.enabled = true;
             
             yield return _anim.PlayToFrame("AcidSwipe", 6);
@@ -739,7 +821,6 @@ namespace FiveKnights.Isma
             yield return _anim.PlayToEnd();
             ToggleIsma(false);
             StartCoroutine(IdleTimer(IDLE_TIME));
-
         }
         
         public class AcidGnd : MonoBehaviour
@@ -921,20 +1002,17 @@ namespace FiveKnights.Isma
             StartCoroutine(IdleTimer(IDLE_TIME));
         }
 
-        private bool ddIsThrowing;
-
         private IEnumerator SmashBall()
         {
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             while (true)
             {
                 yield return new WaitWhile(() => !tk.CurrentClip.name.Contains("Throw"));
-                ddIsThrowing = true;
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
-                while (tk.CurrentClip.name.Contains("Throw"))
+                while (tk.CurrentClip.name.Contains("Throw") || tk.CurrentClip.name.Contains("Erupt"))
                 {
-                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball Large W") && x.activeSelf && x.transform.GetPositionY() > 15f
+                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionY() > 15f
                             && x.transform.GetPositionY() < 16.5f && x.GetComponent<Rigidbody2D>().velocity.y > 0f))
                     {
                         Vector2 pos = go.transform.position;
@@ -985,49 +1063,31 @@ namespace FiveKnights.Isma
                     }
                     yield return new WaitForEndOfFrame();
                 }
-                ddIsThrowing = false;
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
         }
 
-        IEnumerator Agony()
+        private IEnumerator Agony()
         {
-            yield return new WaitWhile(() => _hm.hp > WALL_HP);
-            if (onlyIsma)
-            {
+            if(onlyIsma)
+			{
+                yield return new WaitWhile(() => _hm.hp > WALL_HP);
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
             }
-            else
-            {
-                yield return new WaitWhile(() => 
-                    !FastApproximately(dd.transform.GetPositionY(), -3, 0.2f));//!tk.IsPlaying("Dive In 2"));
-                yield return new WaitWhile(() => _attacking);
-                _attacking = true;
-                float time = 1f;
-                yield return new WaitWhile(() => 
-                    !FastApproximately(dd.transform.GetPositionY(), -3, 0.2f) && 
-                    (time -= Time.deltaTime) > 0f);
-                if (time <= 0f)
-                {
-                    _attacking = false;
-                    yield return null;
-                    Log("Restarting agony but I really don't know why lmao");
-                    StartCoroutine(Agony());
-                }
-            }
+
             ToggleIsma(true);
             Vector3 scIs = gameObject.transform.localScale;
             gameObject.transform.localScale = new Vector3(Mathf.Abs(scIs.x), scIs.y, scIs.z);
             gameObject.transform.SetPosition2D(MIDDDLE, GROUND_Y + 11.6f);
-            
+
             GameObject fakeIsma = new GameObject();
             fakeIsma.transform.position = gameObject.transform.position;
             fakeIsma.transform.localScale = gameObject.transform.localScale;
             GameObject thornorig = transform.Find("Thorn").gameObject;
             GameObject thorn = Instantiate(thornorig);
             Vector3 orig = thornorig.transform.position;
-            thorn.transform.position = new Vector3(orig.x-1f,orig.y-4f,orig.z);
+            thorn.transform.position = new Vector3(orig.x - 1f, orig.y - 4f, orig.z);
             thorn.transform.parent = fakeIsma.transform;
 
             Animator tAnim = thorn.transform.Find("T1").gameObject.GetComponent<Animator>();
@@ -1037,21 +1097,37 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.IsPlaying());
             _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
             _ap.DoPlayRandomClip();
-            int j = NUM_AGONY_LOOPS;
             _anim.speed = 1.7f;
-            do
+
+            yield return PerformAgony(thorn, tAnim, onlyIsma ? 3 : 1);
+
+            _anim.Play("AgonyLoopEnd");
+            yield return null;
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+            _rb.velocity = new Vector2(20f, 0f);
+            yield return new WaitWhile(() => _anim.IsPlaying());
+            _anim.speed = 1f;
+            _rb.velocity = Vector2.zero;
+            ToggleIsma(false);
+            StartCoroutine(IdleTimer(IDLE_TIME));
+        }
+
+        private IEnumerator PerformAgony(GameObject thorn, Animator tAnim, int loops = 0)
+		{
+            bool repeat = loops == 0;
+            for(int j = 0; j < loops || repeat; j++)
             {
                 _anim.PlayAt("AgonyLoop", 0);
 
                 _ap.Clip = FiveKnights.Clips["IsmaAudAgonyIntro"];
                 _ap.DoPlayRandomClip();
-                
+
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
-                
-                
+
+
                 Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
                 Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
                 // Disabled velocity tracking for now
@@ -1063,9 +1139,9 @@ namespace FiveKnights.Isma
                 float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
                 float smallOff = 4;
                 float rotStart = rot;
-                float[] arr = 
+                float[] arr =
                 {
-                    rot, 
+                    rot,
                     rotStart + UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
                     rotStart + 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
                     rotStart - UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
@@ -1081,7 +1157,7 @@ namespace FiveKnights.Isma
                     t2.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot + smallOff);
                 }
 
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                foreach(Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
                     i.Play("NewAThornAnim");
@@ -1089,19 +1165,19 @@ namespace FiveKnights.Isma
                 }
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _anim.enabled = false;
-                
+
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 4);
 
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                foreach(Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.enabled = false;
                 }
                 yield return new WaitForSeconds(0.2f);
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                foreach(Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.enabled = true;
                 }
-                
+
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
                 _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
                 _ap.DoPlayRandomClip();
@@ -1110,7 +1186,7 @@ namespace FiveKnights.Isma
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => tAnim.IsPlaying());
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
+                foreach(Animator i in thorn.GetComponentsInChildren<Animator>(true))
                 {
                     i.gameObject.GetComponent<SpriteRenderer>().enabled = false;
                     i.Play("IdleThorn");
@@ -1118,17 +1194,6 @@ namespace FiveKnights.Isma
                 thorn.SetActive(false);
                 yield return new WaitWhile(() => _anim.IsPlaying());
             }
-            while (j-- >= 0 && !ddIsThrowing);
-
-            _anim.Play("AgonyLoopEnd");
-            yield return null;
-            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            _rb.velocity = new Vector2(20f, 0f);
-            yield return new WaitWhile(() => _anim.IsPlaying());
-            _anim.speed = 1f;
-            _rb.velocity = Vector2.zero;
-            ToggleIsma(false);
-            StartCoroutine(IdleTimer(IDLE_TIME));
         }
 
         private GameObject fakeIsma;
@@ -1159,82 +1224,7 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.05f);
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.speed = 1.6f;
-            while (true)
-            {
-                _anim.PlayAt("AgonyLoop", 0);
-                _anim.enabled = true;
-                _ap.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _ap.DoPlayRandomClip();
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                thorn.SetActive(true);
-
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
-                
-                Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
-                Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
-                // Disabled velocity tracking for now
-                float predTime = 0f;
-                float yOff = 0f;
-                float xOff = 1f;
-                Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
-                Vector2 diff = tAnim.transform.position - predPos;
-                float rot = Mathf.Atan(diff.y / diff.x) * Mathf.Rad2Deg + (diff.x < 0 ? 180f : 0f);
-                float smallOff = 4;
-                float rotStart = rot;
-                float[] arr = 
-                {
-                    rot, 
-                    rotStart + UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
-                    rotStart + 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
-                    rotStart - UnityEngine.Random.Range(agonySpread.x, agonySpread.y),
-                    rotStart - 2 * UnityEngine.Random.Range(agonySpread.x, agonySpread.y)
-                };
-                for(int i = 0; i < arr.Length; i++)
-                {
-                    float currRot = arr[i];
-                    Animator t1 = anims[i * 2];
-                    Animator t2 = anims[i * 2 + 1];
-                    t1.gameObject.layer = t2.gameObject.layer = 17;
-                    t1.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot - smallOff);
-                    t2.gameObject.transform.rotation = Quaternion.Euler(0f, 0f, currRot + smallOff);
-                }
-
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                {
-                    i.gameObject.GetComponent<SpriteRenderer>().enabled = true;
-                    i.Play("NewAThornAnim");
-                    i.speed = agonyAnimSpd;
-                }
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
-                _anim.enabled = false;
-                
-                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 4);
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                {
-                    i.enabled = false;
-                }
-                yield return new WaitForSeconds(0.35f);
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                {
-                    i.enabled = true;
-                }
-                
-                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
-                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
-                _ap.DoPlayRandomClip();
-                
-                yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
-                _anim.enabled = true;
-                yield return new WaitWhile(() => tAnim.IsPlaying());
-                foreach (Animator i in thorn.GetComponentsInChildren<Animator>(true))
-                {
-                    i.gameObject.GetComponent<SpriteRenderer>().enabled = false;
-                    i.Play("IdleThorn");
-                }
-
-                thorn.SetActive(false);
-                yield return new WaitWhile(() => _anim.IsPlaying());
-            }
+            yield return PerformAgony(thorn, tAnim);
         }
 
         private float CalculateTrajector(Vector2 vel0, float h, float g)
@@ -1704,7 +1694,7 @@ namespace FiveKnights.Isma
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
 
-            foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x=> !x.name.Contains("Death")))
+            foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")))
             {
                 _randAud.Add(i);
             }
@@ -1719,7 +1709,6 @@ namespace FiveKnights.Isma
         {
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
-
         }
 
         private void Log(object o)

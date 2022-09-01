@@ -11,14 +11,13 @@ namespace FiveKnights.Isma
 {
     public class EnemyPlantSpawn : MonoBehaviour
     {
-        private SpriteRenderer _sr;
         public static bool isPhase2;
         public static int FoolCount = 0;
         public static int PillarCount = 0;
         public static int TurretCount = 0;
         public static readonly int MaxTurret = 3;
         public static readonly int MaxFool = 5;
-        private const int MaxPillar = 3;
+        public const int MAXPILLAR = 3;
         private const float TIME_INC = 0.1f;
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
@@ -37,7 +36,7 @@ namespace FiveKnights.Isma
                 if (isPhase2)
                 {
                     Log($"Working with Pillars {PillarCount}");
-                    if (PillarCount >= MaxPillar)
+                    if (PillarCount >= MAXPILLAR)
                     {
                         Log("Oh no too many");
                         Destroy(other.gameObject);
@@ -208,6 +207,10 @@ namespace FiveKnights.Isma
                     dying = true;
                     StartCoroutine(PillarDeath());
                 };
+                if(transform.position.x < 60.3f || transform.position.x > 90.6f)
+				{
+                    GetComponent<HealthManager>().SendDeathEvent();
+                }
             }
 
             private IEnumerator PillarDeath()

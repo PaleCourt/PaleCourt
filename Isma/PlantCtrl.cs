@@ -45,7 +45,6 @@ namespace FiveKnights.Isma
             bc.isTrigger = false;
             bc.enabled = true;
             gameObject.AddComponent<ShadeOnlyPass>().disableCollider = bc;
-
             if (IsmaFight)
             {
                 GameObject bnc = new GameObject("PillarPogo")
