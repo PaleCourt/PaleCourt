@@ -72,6 +72,7 @@ namespace FiveKnights.Isma
 
         private IEnumerator Death()
         {
+            GetComponent<BoxCollider2D>().enabled = false;
             _anim.Play("PlantDie");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());

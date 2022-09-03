@@ -207,7 +207,7 @@ namespace FiveKnights.Isma
                     dying = true;
                     StartCoroutine(PillarDeath());
                 };
-                if(transform.position.x < 60.3f || transform.position.x > 90.6f)
+                if(!OWArenaFinder.IsInOverWorld && (transform.position.x < 60.3f || transform.position.x > 90.6f))
 				{
                     GetComponent<HealthManager>().SendDeathEvent();
                 }

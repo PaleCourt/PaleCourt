@@ -44,13 +44,12 @@ namespace FiveKnights.Isma
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
         private readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
-        // I did this dumb b/c this is actually going to loop 3 times
-        private readonly int NUM_AGONY_LOOPS = 1;
         private readonly float GROUND_Y = 5.9f;
         
         private const int MAX_HP = 1500;
         private const int WALL_HP = 1000;
         private const int SPIKE_HP = 600;
+        private const int WALL_HP_DUO = 1200;
         
         private const float IDLE_TIME = 0f; //0.1f;
         private const int GulkaSpitEnemyDamage = 20;
@@ -286,6 +285,7 @@ namespace FiveKnights.Isma
             _attacking = false;
             PlantPillar();
             StartCoroutine(SpawnWalls());
+
             if(onlyIsma)
             {
                 StartCoroutine(Agony());
@@ -388,9 +388,7 @@ namespace FiveKnights.Isma
                 {
                     yield return new WaitWhile(() => _attacking);
                     _attacking = true;
-                    yield return new WaitForSeconds(0.15f);
                     WhipAttack();
-                    _attacking = false;
                 }
                 StartCoroutine(WaitForWhip());
             }, 0);
@@ -401,14 +399,12 @@ namespace FiveKnights.Isma
                 {
                     yield return new WaitWhile(() => _attacking);
                     _attacking = true;
-                    yield return new WaitForSeconds(0.1f);
                     Bomb();
-                    _attacking = false;
                 }
                 StartCoroutine(WaitForBomb());
             }, 0);
 
-            yield return new WaitWhile(() => _healthPool > WALL_HP);
+            yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
 
             // Acid/Air Fist - Spike slam
             _ddFsm.InsertMethod("G Slam", () =>
@@ -418,7 +414,6 @@ namespace FiveKnights.Isma
                     yield return new WaitWhile(() => _attacking);
                     _attacking = true;
                     AirFist();
-                    _attacking = false;
                 }
                 StartCoroutine(WaitForAirFist());
             }, 0);
@@ -434,7 +429,6 @@ namespace FiveKnights.Isma
                     yield return new WaitWhile(() => _attacking);
                     _attacking = true;
                     yield return Agony();
-                    _attacking = false;
                 }
                 StartCoroutine(WaitForAgony());
             }, 0);
@@ -444,7 +438,7 @@ namespace FiveKnights.Isma
 
         private IEnumerator SpawnWalls()
         {
-            yield return new WaitWhile(() => _healthPool > WALL_HP);
+            yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
             EnemyPlantSpawn.isPhase2 = true;
             killAllMinions = true;
             yield return new WaitForSeconds(0.1f);
@@ -481,9 +475,9 @@ namespace FiveKnights.Isma
             wallR.transform.Find("Petal").gameObject.SetActive(true);
             wallL.transform.Find("Petal").gameObject.SetActive(true);
             Vector2 hPos = _target.transform.position;
-            if (hPos.x > RIGHT_X - 4.6f) _target.transform.position = new Vector2(RIGHT_X - 4.6f,hPos.y);
-            else if (hPos.x < LEFT_X + 7.3f) _target.transform.position = new Vector2(LEFT_X + 7.3f,hPos.y);
-            
+            if(hPos.x > RIGHT_X - 4.6f) _target.transform.position = new Vector2(RIGHT_X - 4.6f, hPos.y);
+            else if(hPos.x < LEFT_X + 7.3f) _target.transform.position = new Vector2(LEFT_X + 7.3f, hPos.y);
+
             yield return new WaitWhile(() => _healthPool > SPIKE_HP);
 
             foreach (GameObject wall in new[] {wallR, wallL})
@@ -1005,15 +999,19 @@ namespace FiveKnights.Isma
         private IEnumerator SmashBall()
         {
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
-            while (true)
+            while(true)
             {
-                yield return new WaitWhile(() => !tk.CurrentClip.name.Contains("Throw"));
+                yield return new WaitUntil(() => tk.CurrentClip.name.Contains("Throw") || tk.CurrentClip.name.Contains("Erupt"));
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
-                while (tk.CurrentClip.name.Contains("Throw") || tk.CurrentClip.name.Contains("Erupt"))
+                while(tk.CurrentClip.name.Contains("Throw") ||
+                    (tk.CurrentClip.name.Contains("Erupt") && _ddFsm.FsmVariables.FindFsmInt("Rages").Value % 2 == 1))
                 {
-                    foreach (GameObject go in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Dung Ball") && x.activeSelf && x.transform.GetPositionY() > 15f
-                            && x.transform.GetPositionY() < 16.5f && x.GetComponent<Rigidbody2D>().velocity.y > 0f))
+                    foreach(GameObject go in FindObjectsOfType<GameObject>().Where(x => 
+                        x.name.Contains("Dung Ball") && x.activeSelf && 
+                        x.transform.GetPositionY() > 15f && x.transform.GetPositionY() < 16.5f &&
+                        (tk.CurrentClip.name.Contains("Throw") || Mathf.Abs(x.transform.GetPositionX() - _target.transform.GetPositionX()) < 5f) && 
+                        x.GetComponent<Rigidbody2D>().velocity.y > 0f))
                     {
                         Vector2 pos = go.transform.position;
                         ToggleIsma(true);
@@ -1042,7 +1040,7 @@ namespace FiveKnights.Isma
                         ballFx.transform.parent = null;
                         Vector2 diff = ball.transform.position - _target.transform.position;
                         float offset2 = 0f;
-                        if (diff.x > 0)
+                        if(diff.x > 0)
                         {
                             offset2 += 180f;
                         }
@@ -1071,10 +1069,11 @@ namespace FiveKnights.Isma
         {
             if(onlyIsma)
 			{
-                yield return new WaitWhile(() => _hm.hp > WALL_HP);
+                yield return new WaitWhile(() => _hm.hp > (onlyIsma ? WALL_HP : WALL_HP_DUO));
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
             }
+
 
             ToggleIsma(true);
             Vector3 scIs = gameObject.transform.localScale;
@@ -1374,14 +1373,10 @@ namespace FiveKnights.Isma
             _anim.enabled = true;
             yield return null;
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
-            Log("1 dada ");
-            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap.StopMusic();
-            //GameManager.instance.gameObject.GetComponent<GGBossManager>()._ap2.StopMusic();
-            Log("2 dada");
             GGBossManager.Instance.PlayMusic(null, 1f);
             PlayDeathFor(gameObject);
             _anim.Play("Falling");
-            PlayerData.instance.isInvincible = true; ;
+            PlayerData.instance.isInvincible = true;
 
             _rb.gravityScale = 1.5f;
             float ismaXSpd = dir * 10f;
@@ -1582,10 +1577,9 @@ namespace FiveKnights.Isma
                     waitForHitStart = false;
                     StartCoroutine(BowWhipAttack());
                     PlantPillar();
-                    if (!onlyIsma) StartCoroutine(SmashBall());
+                    StartCoroutine(SpawnWalls());
                     StartCoroutine(Agony());
                     StartCoroutine(AttackChoice());
-                    StartCoroutine(SpawnWalls());
                 }
                 _healthPool -= damage;
                 _hitEffects.RecieveHitEffect(dir);

@@ -105,25 +105,6 @@ namespace FiveKnights.BossManagement
                 transitionsFSM.SetState("Out Statue");
                 yield return new WaitForSeconds(1.0f);
                 bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-				//PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-				//pm.SendEvent("FADE OUT INSTANT");
-				//PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
-				//fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-				//fsm2.SendEvent("FADE IN");
-				//yield return null;
-				HeroController.instance.MaxHealth();
-				yield return null;
-				GameCameras.instance.cameraFadeFSM.FsmVariables.FindFsmBool("No Fade").Value = true;
-				yield return null;
-				GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-				{
-					SceneName = "White_Palace_09",
-					EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)",
-					Visualization = GameManager.SceneLoadVisualizations.GodsAndGlory,
-					WaitForSceneTransitionCameraFade = false,
-					PreventCameraFadeOut = true,
-					EntryDelay = 0
-				});
 
 				Destroy(this);
             }
