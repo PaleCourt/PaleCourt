@@ -12,7 +12,14 @@ namespace FiveKnights.Ogrim
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
             {
-                if (!EnemyPlantSpawn.isPhase2) StartCoroutine(SpawnDungPillar(gameObject.transform.position));
+                //if (!EnemyPlantSpawn.isPhase2) StartCoroutine(SpawnDungPillar(gameObject.transform.position));
+                if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAXPILLAR)
+				{
+                    GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
+                    pillar.name = "PillarEnemy";
+                    pillar.transform.position = new Vector2(gameObject.transform.position.x, 6.1f);
+                    pillar.AddComponent<EnemyPlantSpawn.PillarMinion>();
+                }
                 StartCoroutine(DelayedKill());
                 _hit = true;
             }
