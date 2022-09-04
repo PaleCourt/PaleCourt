@@ -49,7 +49,7 @@ namespace FiveKnights.Isma
         private const int MAX_HP = 1500;
         private const int WALL_HP = 1000;
         private const int SPIKE_HP = 600;
-        private const int WALL_HP_DUO = 1200;
+        private const int WALL_HP_DUO = 1250;
         
         private const float IDLE_TIME = 0f; //0.1f;
         private const int GulkaSpitEnemyDamage = 20;
@@ -226,7 +226,6 @@ namespace FiveKnights.Isma
             gameObject.transform.position = new Vector2(gameObject.transform.GetPositionX(), GROUND_Y);
             yield return new WaitWhile(() => _anim.IsPlaying());
 
-            //Log(HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name);
             if(OWArenaFinder.IsInOverWorld)
             {
                 yield return new WaitForSeconds(0.75f);
@@ -475,8 +474,17 @@ namespace FiveKnights.Isma
             wallR.transform.Find("Petal").gameObject.SetActive(true);
             wallL.transform.Find("Petal").gameObject.SetActive(true);
             Vector2 hPos = _target.transform.position;
-            if(hPos.x > RIGHT_X - 4.6f) _target.transform.position = new Vector2(RIGHT_X - 4.6f, hPos.y);
-            else if(hPos.x < LEFT_X + 7.3f) _target.transform.position = new Vector2(LEFT_X + 7.3f, hPos.y);
+            //Teleport player inbounds and grant invuln frames if necessary
+            if(hPos.x > RIGHT_X - 4.6f)
+            {
+                _target.transform.position = new Vector2(RIGHT_X - 4.6f, hPos.y);
+                HeroController.instance.parryInvulnTimer = 0.4f;
+            }
+            else if(hPos.x < LEFT_X + 7.3f)
+            {
+                _target.transform.position = new Vector2(LEFT_X + 7.3f, hPos.y);
+                HeroController.instance.parryInvulnTimer = 0.4f;
+            }
 
             yield return new WaitWhile(() => _healthPool > SPIKE_HP);
 
@@ -1046,7 +1054,7 @@ namespace FiveKnights.Isma
                         }
                         float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
                         ball.transform.SetRotation2D(rot * Mathf.Rad2Deg + 90f);
-                        Vector2 vel = new Vector2(30f * Mathf.Cos(rot), 30f * Mathf.Sin(rot));
+                        Vector2 vel = new Vector2(25f * Mathf.Cos(rot), 25f * Mathf.Sin(rot));
                         ball.GetComponent<Rigidbody2D>().velocity = vel;
                         yield return new WaitForSeconds(0.1f);
                         ballFx.GetComponent<Animator>().Play("FxEnd");
@@ -1226,7 +1234,7 @@ namespace FiveKnights.Isma
             yield return PerformAgony(thorn, tAnim);
         }
 
-        private float CalculateTrajector(Vector2 vel0, float h, float g)
+        private float CalculateTrajectory(Vector2 vel0, float h, float g)
         {
             float accel = g * Physics2D.gravity.y;
             float disc = vel0.y * vel0.y - 2 * accel * h;
@@ -1254,14 +1262,15 @@ namespace FiveKnights.Isma
             eliminateMinions = true;
             killAllMinions = true;
             _ddFsm.GetAction<SetVelocity2d>("Stun Launch", 0).y.Value = 45f;
+            _ddFsm.GetAction<SetVelocity2d>("Stun Launch", 0).x.Value = xSpd;
             _ddFsm.SetState("Stun Set");
             yield return null;
             yield return new WaitWhile(() => _ddFsm.ActiveStateName == "Stun Set");
             PlayerData.instance.isInvincible = true;
-            float x = CalculateTrajector(new Vector2(xSpd, 45f), 7.95f, dd.GetComponent<Rigidbody2D>().gravityScale) + dd.transform.GetPositionX();
-            if (x < 68f) x = 68f;
-            else if (x > 85f) x = 85f;
-            yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun In Air");
+            float x = CalculateTrajectory(new Vector2(xSpd, 45f), dd.transform.GetPositionY(), dd.GetComponent<Rigidbody2D>().gravityScale) + dd.transform.GetPositionX();
+			if(x < 68f) x = 68f;
+			else if(x > 85f) x = 85f;
+			yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun In Air");
             yield return null;
             _ddFsm.enabled = false;
             Rigidbody2D ogrimRb = dd.GetComponent<Rigidbody2D>();
@@ -1325,7 +1334,7 @@ namespace FiveKnights.Isma
 
             //_sr.sortingOrder = 0;
             _hm.hp = _hmDD.hp = 500;
-            _healthPool = 250;
+            _healthPool = 170;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             Rigidbody2D ogrimRB = dd.GetComponent<Rigidbody2D>();
@@ -1628,9 +1637,9 @@ namespace FiveKnights.Isma
 
         private void ToggleIsma(bool visible)
         {
-            _anim.PlayAt("Idle", 0);
             _sr.enabled = visible;
             _bc.enabled = visible;
+            _anim.PlayAt("Idle", 0);
         }
 
         IEnumerator IdleTimer(float time)
