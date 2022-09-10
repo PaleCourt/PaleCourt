@@ -311,6 +311,9 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
+            On.HeroController.TakeDamage += HCTakeDamage;
+
+            // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
@@ -321,10 +324,11 @@ namespace FiveKnights.BossManagement
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
             yield return new WaitForSeconds(1f);
+
+            // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-            Log("HP TEST START");
             yield return new WaitWhile(() => _hm.hp > 600);
-            Log("HP TEST END");
+            HIT_FLAG = false;
             SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Rage Roar", "FINISHED", "Music");
             SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Music", "FINISHED", "Set Rage");
             var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
@@ -340,34 +344,45 @@ namespace FiveKnights.BossManagement
                 transitionTime = 0,
                 delayTime = 0
             });
-            HIT_FLAG = false;
-            yield return new WaitWhile(() => !HIT_FLAG && dd.transform.position.y < 9f);
-            PlayerData.instance.isInvincible = true;
-            HeroController.instance.RelinquishControl();
-            GameManager.instance.playerData.disablePause = true;
+
+            // Transition to phase 2
+            yield return new WaitWhile(() => !HIT_FLAG);
+            if(dd.transform.position.y < 9f) dd.transform.position = 
+                    new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
+			PlayerData.instance.isInvincible = true;
+			GameManager.instance.playerData.disablePause = true;
             _fsm.SetState("Stun Set");
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+
+            // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
             //_ap.Volume = 1f;
             _ap?.UpdateMusic();
             _fsm.enabled = true;
             _fsm.SetState("Stun Recover");
             yield return null;
+
+            // Wait for WD to finish screaming
+            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+            burrow.SendEvent("BURROW END");
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
             _fsm.SetState("Rage Roar");
-            yield return new WaitWhile(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Roar Lock");
-            PlayerData.instance.isInvincible = false;
+            yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
             GameManager.instance.playerData.disablePause = false;
-            HeroController.instance.RegainControl();
-            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
-            yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
-            burrow.SendEvent("BURROW END");
+            yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
+            PlayerData.instance.isInvincible = false;
             yield return new WaitWhile(() => ic != null);
             _ap?.StopMusic();
             _ap2?.StopMusic();
+            On.HeroController.TakeDamage -= HCTakeDamage;
+        }
+
+        private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+        {
+            orig(self, go, damageSide, 1, hazardType);
         }
 
         public void BeforePlayerDied()
