@@ -7,6 +7,7 @@ namespace FiveKnights.Ogrim
     internal class DungBall : MonoBehaviour
     {
         private bool _hit;
+        public GameObject particles;
         
         private void FixedUpdate()
         {
@@ -23,6 +24,8 @@ namespace FiveKnights.Ogrim
                 }
                 StartCoroutine(DelayedKill());
                 _hit = true;
+                particles.transform.position = transform.position;
+                particles.GetComponent<ParticleSystem>().Play();
             }
         }
 
