@@ -32,7 +32,7 @@ namespace FiveKnights.Isma
                 _hm.hp = PLANTHP;
             }
             var bc = GetComponent<BoxCollider2D>();
-            gameObject.layer = 25;
+            gameObject.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
             gameObject.SetActive(true);
             _anim.enabled = true;
             _anim.Play("PlantGrow");
@@ -45,7 +45,6 @@ namespace FiveKnights.Isma
             bc.isTrigger = false;
             bc.enabled = true;
             gameObject.AddComponent<ShadeOnlyPass>().disableCollider = bc;
-
             if (IsmaFight)
             {
                 GameObject bnc = new GameObject("PillarPogo")
@@ -73,6 +72,7 @@ namespace FiveKnights.Isma
 
         private IEnumerator Death()
         {
+            GetComponent<BoxCollider2D>().enabled = false;
             _anim.Play("PlantDie");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());

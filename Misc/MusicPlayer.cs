@@ -16,19 +16,6 @@ namespace FiveKnights
         public bool Loop;
 
         private AudioSource audio;
-        private Coroutine _loop;
-
-        private IEnumerator LoopMusic(AudioClip clip)
-        {
-            while (true)
-            {
-                yield return new WaitForSeconds(Clip.length);
-                audio.pitch = Random.Range(MinPitch, MaxPitch);
-                audio.volume = Volume;
-                audio.PlayOneShot(clip);
-                yield return null;
-            }
-        }
 
         public void UpdateMusic()
         {
@@ -38,9 +25,6 @@ namespace FiveKnights
 
         public void StopMusic()
         {
-            if (!Loop || _loop == null)
-                return;
-            GGBossManager.Instance.StopCoroutine(_loop);
             audio.Stop();
         }
 
@@ -65,15 +49,22 @@ namespace FiveKnights
                 Quaternion.Euler(Vector3.up)
             );
 
-            audio = audioPlayer.GetComponent<AudioSource>();
-            audio.clip = null;
-            audio.pitch = Random.Range(MinPitch, MaxPitch);
-            audio.volume = Volume;
-            audio.PlayOneShot(Clip);
-
-            if (Loop)
-            {
-                _loop = GGBossManager.Instance.StartCoroutine(LoopMusic(Clip));
+            if(Loop)
+			{
+                audio = audioPlayer.GetComponent<AudioSource>();
+                audio.clip = Clip;
+                audio.pitch = Random.Range(MinPitch, MaxPitch);
+                audio.volume = Volume;
+                audio.loop = Loop;
+                audio.Play();
+            }
+			else
+			{
+                audio = audioPlayer.GetComponent<AudioSource>();
+                audio.clip = null;
+                audio.pitch = Random.Range(MinPitch, MaxPitch);
+                audio.volume = Volume;
+                audio.PlayOneShot(Clip);
             }
         }
     }

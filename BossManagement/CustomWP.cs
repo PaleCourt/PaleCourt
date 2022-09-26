@@ -253,7 +253,7 @@ namespace FiveKnights
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRY_NAME", "DRY_DESC", "statueStateDryya");
-            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 2.03f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0.4f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
@@ -390,6 +390,7 @@ namespace FiveKnights
             var scaleX = sr.transform.GetScaleX();
             var scaleY = sr.transform.GetScaleY();
             float scaler = state.Contains("Hegemol") ? 1.5f : 1.4f;
+            scaler = state.Contains("Zemer") ? 1.2f : 1.4f;
             sr.transform.localScale *= scaler;
             sr.transform.SetPosition3D(sr.transform.GetPositionX() + offset.x, sr.transform.GetPositionY() + offset.y, 2f);
             if (bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen)

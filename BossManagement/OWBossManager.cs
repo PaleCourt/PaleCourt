@@ -30,7 +30,7 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
-        
+        public Dictionary<string, AnimationClip> clips;
 
         private IEnumerator Start()
         {
@@ -496,6 +496,7 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
                 
             }
+
             zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
             var zc = zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");

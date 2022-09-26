@@ -29,6 +29,7 @@ namespace FiveKnights
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
         public static Dictionary<string, AudioClip> Clips { get; } = new ();
+        public static Dictionary<string, AnimationClip> AnimClips { get; } = new ();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new ();
         public static Dictionary<string, Material> Materials { get; } = new ();
         private LanguageCtrl langStrings { get; set; }
