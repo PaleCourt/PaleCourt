@@ -19,7 +19,7 @@ namespace FiveKnights
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
-            Misc, Charms
+            Misc, Charms, tk2dDep
         }
 
         private static string BundleToString(Bundle bd)
@@ -49,6 +49,7 @@ namespace FiveKnights
                 Bundle.WSArena => "workShopEntrance",
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
+                Bundle.tk2dDep => "blendvertexcolor",
                 _ => ""
             };
         }

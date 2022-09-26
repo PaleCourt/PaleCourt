@@ -76,6 +76,7 @@ namespace FiveKnights.Dryya
                 _cheekySlashCollider2,
                 _cheekySlashCollider3,
             };
+            _slashes.AddRange(transform.Find("Super").gameObject.GetComponentsInChildren<DamageHero>().Select(d => d.gameObject));
             
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
             _ogrim = FiveKnights.preloadedGO["WD"];
@@ -86,6 +87,7 @@ namespace FiveKnights.Dryya
             _control = gameObject.LocateMyFSM("Control");
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
+            _control.Fsm.GetFsmBool("GG Form").Value = !OWArenaFinder.IsInOverWorld;
 
             _control.InsertMethod("Activate", 0, () => _hm.enabled = true);
             
@@ -111,9 +113,13 @@ namespace FiveKnights.Dryya
 
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
             
-            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 50, 1));
+            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 40f, 1)); // 1.5f, 50f, 1
 
-            _control.InsertCoroutine("Dagger Throw", 0, () => DaggerWait());
+            _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
+
+            var heroY = _control.GetFsmFloatVariable("Hero Y");
+            _control.InsertMethod("Choice Super", 2, () => transform.position += new Vector3(0f, 3.217f, 0f));
+            _control.InsertMethod("Air 4", 6, () => heroY.Value += 3.217f, true);
 
             //GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
@@ -270,29 +276,21 @@ namespace FiveKnights.Dryya
             }
         }
 
-        private IEnumerator DaggerWait()
-        {
-            StartCoroutine(SpawnDaggers());
-            yield return new WaitForSeconds(0.5f);
-        }
-
         private IEnumerator SpawnDaggers()
         {
             float yDist = transform.position.y - HeroController.instance.transform.position.y;
             float xDist = transform.position.x - HeroController.instance.transform.position.x;
             float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
             float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
+            int daggers = OWArenaFinder.IsInOverWorld ? 4 : 5;
+            float startAngle = (180f - ((daggers - 1) * 7.5f)) - angle;
             GameObject dagger = FiveKnights.preloadedGO["Dagger"];
-            GameObject dagger1 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 165f - angle));
-            GameObject dagger2 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 180f - angle));
-            GameObject dagger3 = GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, 195f - angle));
-            dagger1.SetActive(true);
-            dagger2.SetActive(true);
-            dagger3.SetActive(true);
-            yield return new WaitForSeconds(10f);
-            GameObject.Destroy(dagger1);
-            GameObject.Destroy(dagger2);
-            GameObject.Destroy(dagger3);
+            for (int i = 0; i < daggers; i++)
+            {
+                GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle)).SetActive(true);
+                startAngle += 15f;
+            }
+            yield return new WaitForSeconds(0.5f);
         }
         
         private void OnDestroy()

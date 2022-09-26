@@ -496,6 +496,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaH);
             ABManager.Load(ABManager.Bundle.OWArenaI);
             ABManager.Load(ABManager.Bundle.GArenaIsma);
+            ABManager.Load(ABManager.Bundle.tk2dDep);
 
             Log("Finished bundling");
         }

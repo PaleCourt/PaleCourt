@@ -81,7 +81,9 @@ namespace FiveKnights
                 dc.gameObject.SetActive(true);
                 var bc = dc.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                yield return new WaitWhile(() => dc.transform.position.y > 103f);
+                while (dc.transform.position.y > 103f)
+                    yield return new WaitForFixedUpdate();
+                // yield return new WaitWhile(() => dc.transform.position.y > 103f);
                 bc.enabled = true;
                 
                 var rb = dc.GetComponent<Rigidbody2D>();
@@ -399,7 +401,7 @@ namespace FiveKnights
             }*/
 
             Vector2 pos = new Vector2(457.6f, 112.5f);
-            GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], pos, Quaternion.identity);
+            GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
             dryya.SetActive(false);
             Log("Done creating dryya");
             return dryya.AddComponent<DryyaSetup>();

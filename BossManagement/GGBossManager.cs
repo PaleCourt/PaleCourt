@@ -571,7 +571,7 @@ namespace FiveKnights.BossManagement
         private IEnumerator LoadDryyaAssets()
         {
             Log("Loading Dryya Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Dryya", out var go) && go != null)
+            if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
             {
                 Log("broke Dryya");
                 yield break;
@@ -581,7 +581,7 @@ namespace FiveKnights.BossManagement
             
             if (CustomWP.boss == CustomWP.Boss.All)
             {
-                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya");
+                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
@@ -593,7 +593,7 @@ namespace FiveKnights.BossManagement
                 yield return r4;
                 yield return r5;
 
-                FiveKnights.preloadedGO["Dryya"] = r1.asset as GameObject;
+                FiveKnights.preloadedGO["Dryya2"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
                 FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
                 FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
@@ -601,14 +601,14 @@ namespace FiveKnights.BossManagement
             }
             else
             {
-                FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
+                FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
                 FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2.5f;
+            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
@@ -641,8 +641,9 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
                 FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-
             }
+            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
             Log("Finished Loading Hegemol Bundle");
         }
         

@@ -154,12 +154,14 @@ namespace FiveKnights
             {
                 var bc = _dryya.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                yield return new WaitWhile(() => _dryya.transform.position.y > 20f);
+                //yield return new WaitWhile(() => _dryya.transform.position.y > 20f);
+                while (_dryya.transform.position.y > 20f)
+                    yield return new WaitForFixedUpdate();
                 bc.enabled = true;
             }
             
             Vector2 pos = (CustomWP.boss == CustomWP.Boss.All) ? new Vector2(91, 25.5f) : new Vector2(90, 25);
-            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], pos, Quaternion.identity);
+            _dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
             StartCoroutine(DryyaIntro());
             return _dryya.AddComponent<DryyaSetup>();
         }
