@@ -340,6 +340,7 @@ namespace FiveKnights.BossManagement
             _fsm.enabled = false;
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            
 
             // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
@@ -359,7 +360,6 @@ namespace FiveKnights.BossManagement
             _fsm.RemoveAction("Idle", 1);
             GameManager.instance.playerData.disablePause = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
-            //PlayerData.instance.isInvincible = false;
             yield return new WaitWhile(() => ic != null);
             _ap?.StopMusic();
             _ap2?.StopMusic();

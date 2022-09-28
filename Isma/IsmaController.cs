@@ -126,7 +126,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.8f);
             }
 
-            // Load/create missing objects and assets for Godhome arena
+            // Create missing objects for Godhome arena
             if(!OWArenaFinder.IsInOverWorld)
             {
                 // Load thorn attack sound effects
@@ -195,6 +195,7 @@ namespace FiveKnights.Isma
 			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
             {
                 sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
+                sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
             }
 
             if(OWArenaFinder.IsInOverWorld)
@@ -267,7 +268,7 @@ namespace FiveKnights.Isma
                 this, area2, 2f, 
                 "","","",
                 "Isma","Kindly");
-            _bc.enabled = true;
+            if(onlyIsma) _bc.enabled = true;
             waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
             _anim.Play("Bow");
@@ -360,16 +361,18 @@ namespace FiveKnights.Isma
 			_ddFsm.ChangeFsmTransition("Throw 2", "FINISHED", "After Throw?");
 
             // Add short delay after dung toss
-            _ddFsm.GetAction<SendEventByName>("After Throw?", 0).delay = 0.4f;
+            _ddFsm.GetAction<SendEventByName>("After Throw?", 0).delay = 0.2f;
             _ddFsm.InsertAction("After Throw?", _ddFsm.GetAction<Tk2dPlayAnimation>("Idle", 0), 0);
 
             // Increase delay after ground slam
-            _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
+            _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1f;
 
             // WD rolls before using Ground Slam if in the middle of the arena
             _ddFsm.InsertMethod("G Slam Antic", () =>
             {
-                if(Mathf.Abs(dd.transform.position.x - 76f) < 4f)
+                if(FastApproximately(dd.transform.GetPositionX(), 76f, 4f) || 
+                    (FastApproximately(dd.transform.GetPositionX(), _target.transform.GetPositionX(), 4f) && 
+                    (dd.transform.GetPositionX() < 72f || dd.transform.GetPositionX() > 80f)))
 				{
                     _ddFsm.SetState("Evade Dir");
                     _ddFsm.GetAction<SendRandomEvent>("After Evade", 0).weights[0].Value = 0f;
@@ -389,10 +392,16 @@ namespace FiveKnights.Isma
             {
                 _ddFsm.FsmVariables.FindFsmFloat("Throw Speed Crt").Value = 12f;
             });
-			#endregion
+
+            // Add anticheese to bounce by adding to counter when knight hits WD
+            _ddFsm.InsertMethod("Ball Hit Up", () =>
+            {
+                _ddFsm.FsmVariables.FindFsmInt("Bounces").Value--;
+            }, 0);
+            #endregion
 
             // Dung Strike - Always
-			StartCoroutine(DungStrike());
+            StartCoroutine(DungStrike());
 
             // Vine Whip - Burrowing
             _ddFsm.InsertMethod("Timer", () =>
@@ -430,7 +439,10 @@ namespace FiveKnights.Isma
                 StartCoroutine(WaitForAirFist());
             }, 0);
 
-			yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
+            yield return new WaitUntil(() => _wallActive);
+
+            // Add delay before spawning spike wave after bouncing
+            _ddFsm.GetAction<Wait>("AD In", 0).time.Value = 0.4f;
 
 			// Thorn Pillars - Bouncing
 			_ddFsm.RemoveAction("RJ Launch", 0);
@@ -470,14 +482,13 @@ namespace FiveKnights.Isma
 
         private IEnumerator SpawnWalls()
         {
-            if(!startedOgrimRage)
+            if(!startedOgrimRage && !startedIsmaRage)
             {
                 yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
                 EnemyPlantSpawn.isPhase2 = true;
                 killAllMinions = true;
                 yield return new WaitForSeconds(0.1f);
                 killAllMinions = false;
-                _wallActive = true;
                 if(onlyIsma)
                 {
                     EnemyPlantSpawn spawner = GameObject.Find("SeedFloor").GetComponent<EnemyPlantSpawn>();
@@ -485,9 +496,11 @@ namespace FiveKnights.Isma
                 }
                 else
                 {
-                    yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Idle");
-                    _ddFsm.SetState("Timer");
-                    yield return new WaitForSeconds(0.65f);
+                    yield return new WaitUntil(() => _ddFsm.ActiveStateName == "Idle");
+                    _ddFsm.InsertMethod("Rage?", () => _ddFsm.SetState("Timer"), 0);
+                    yield return new WaitUntil(() => _ddFsm.ActiveStateName.Contains("Tunneling"));
+                    _ddFsm.RemoveAction("Rage?", 0);
+                    yield return new WaitForSeconds(0.3f);
                     dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge L").Value = 66.5f;
                     dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge R").Value = 86f;
                     _ddFsm.FsmVariables.FindFsmFloat("Dolphin Max X").Value = 86f;
@@ -495,6 +508,7 @@ namespace FiveKnights.Isma
                     _ddFsm.FsmVariables.FindFsmFloat("Max X").Value = 85f;
                     _ddFsm.FsmVariables.FindFsmFloat("Min X").Value = 67f;
                 }
+                _wallActive = true;
 
                 wallR = Instantiate(FiveKnights.preloadedGO["Wall"]);
                 wallR.transform.localScale = new Vector3(wallR.transform.localScale.x * -1f, wallR.transform.localScale.y, wallR.transform.localScale.z);
@@ -605,7 +619,7 @@ namespace FiveKnights.Isma
                     localSeed.transform.localScale = new Vector3(scale.x * -1f, scale.y, scale.z);
                     float spd = 30;
                     
-                    localSeed.layer = 11;
+                    localSeed.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
                     localSeed.name = "SeedEnemy";
                     
                     localSeed.GetComponent<Rigidbody2D>().velocity = new Vector2(spd * Mathf.Cos(rot * Mathf.Deg2Rad), spd * Mathf.Sin(rot * Mathf.Deg2Rad));
@@ -1068,7 +1082,7 @@ namespace FiveKnights.Isma
                 x.name.Contains("Dung Ball") && x.activeSelf &&
                 x.transform.GetPositionY() > 16f &&
                 x.GetComponent<Rigidbody2D>().velocity.y > 0f &&
-                (tk.CurrentClip.name.Contains("Throw") || Mathf.Abs(x.transform.GetPositionX() - _target.transform.GetPositionX()) < 5f)).ToArray();
+                (tk.CurrentClip.name.Contains("Throw") || FastApproximately(x.transform.GetPositionX(), _target.transform.GetPositionX(), 10f))).ToArray();
             if(balls.Length > 0) return balls[_rand.Next(0, balls.Length)];
             return null;
         }
@@ -1081,8 +1095,8 @@ namespace FiveKnights.Isma
             _ddFsm.GetAction<SetVelocity2d>("Air Dive", 4).Enabled = false;
             _ddFsm.InsertMethod("Under", () =>
             {
-				rb.velocity = Vector3.zero;
-				dd.transform.SetRotation2D(0f);
+                rb.velocity = Vector3.zero;
+                dd.transform.SetRotation2D(0f);
             }, 0);
 
             while(true)
@@ -1093,9 +1107,11 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(1f);
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
-                yield return new WaitUntil(() => !_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
-                    && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value);
-                _ddFsm.SendEvent("AIR DIVE");
+                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
+                    && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) || startedIsmaRage);
+                if(startedIsmaRage) break;
+
+                _ddFsm.SetState("Air Dive Antic");
 
                 Vector2 pos = dd.transform.position;
 
@@ -1105,14 +1121,14 @@ namespace FiveKnights.Isma
                 gameObject.transform.position = new Vector2(pos.x, pos.y);
                 float dir = FaceHero();
 
-                Vector2 diff = dd.transform.position - _target.transform.position;
+                Vector2 diff = dd.transform.position - new Vector3(_target.transform.GetPositionX(), GROUND_Y);
                 float offset2 = 0f;
                 if(diff.x > 0)
                 {
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(35f * Mathf.Cos(rot), 35f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(40f * Mathf.Cos(rot), 35f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -1387,12 +1403,14 @@ namespace FiveKnights.Isma
                 }
                 else
                 {
+                    startedIsmaRage = true;
                     StartCoroutine(IsmaRage());
                 }
             }
         }
 
         private bool startedOgrimRage;
+        private bool startedIsmaRage;
 
         private IEnumerator OgrimRage()
         {
@@ -1441,6 +1459,7 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.75f);
 
             // Ogrim begins rage
+            _ddFsm.GetAction<Wait>("AD In", 0).time.Value = 0.75f;
             _ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = true;
             _ddFsm.GetAction<SetVelocity2d>("Air Dive", 4).Enabled = true;
             _ddFsm.GetAction<SetIntValue>("Set Rage", 1).intValue = 999;
@@ -1533,11 +1552,16 @@ namespace FiveKnights.Isma
         {
             Log("Started Isma rage");
 
+            _attacking = true;
+            _hm.hp = _hmDD.hp = MAX_HP_DUO;
+            _healthPool = 450;
+
             //Make Ogrim get stunned
+            dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _ddFsm.SetState("Stun Set");
             yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
             _ddFsm.enabled = false;
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
             _ddFsm.enabled = true;
             _ddFsm.SetState("Stun Recover");
             foreach(FsmTransition i in _ddFsm.GetState("Idle").Transitions)
@@ -1549,13 +1573,8 @@ namespace FiveKnights.Isma
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             _ddFsm.enabled = false;
 
-            yield return new WaitWhile(() => _attacking);
-            _attacking = true;
-
             // Start Agony
             //_sr.sortingOrder = 0;
-            _hm.hp = _hmDD.hp = 500;
-            _healthPool = 170;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
             Rigidbody2D ogrimRB = dd.GetComponent<Rigidbody2D>();
@@ -1846,7 +1865,7 @@ namespace FiveKnights.Isma
         IEnumerator IdleTimer(float time)
         {
             yield return new WaitForSeconds(time);
-            _attacking = false;
+            if(!startedIsmaRage) _attacking = false;
         }
 
         private void PositionIsma()

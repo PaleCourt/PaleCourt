@@ -379,7 +379,7 @@ namespace FiveKnights.Isma
                 finalGulka.transform.SetRotation2D(rot);
                 finalGulka.SetActive(true);
                 rot *= Mathf.Deg2Rad;
-                finalGulka.transform.SetPosition2D(pos.x > MIDDDLE ? pos.x : 105.8166f, pos.y + 0.5f * Mathf.Cos(rot));
+                finalGulka.transform.SetPosition2D(pos.x, pos.y + 0.5f * Mathf.Cos(rot));
                 anim.Play("SpawnGulka");
                 yield return new WaitForSeconds(0.05f);
                 yield return new WaitWhile(() => anim.IsPlaying());

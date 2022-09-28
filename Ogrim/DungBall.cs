@@ -8,14 +8,14 @@ namespace FiveKnights.Ogrim
     {
         private bool _hit;
         public GameObject particles;
+        public bool usingThornPillars;
         
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
             {
-                //if (!EnemyPlantSpawn.isPhase2) StartCoroutine(SpawnDungPillar(gameObject.transform.position));
                 if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAXPILLAR && 
-                    transform.position.x > 67f && transform.position.x < 85f)
+                    transform.position.x > 67f && transform.position.x < 85f && !usingThornPillars)
 				{
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
                     pillar.name = "PillarEnemy";
