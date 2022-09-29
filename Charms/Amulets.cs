@@ -378,11 +378,11 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
             {
-                ChangeSlashScale(3, true);
+                ChangeSlashScale(2.835f, 2.879177f, 2.2362515f, true); // original * 1.75f
             }
             else
             {
-                ChangeSlashScale(1.6f);
+                ChangeSlashScale(1.62f, 1.645244f, 1.277858f);
             }
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
@@ -1074,9 +1074,9 @@ namespace FiveKnights
             _audio.Stop();
         }
 
-        private void ChangeSlashScale(float scale, bool mantis = false)
+        private void ChangeSlashScale(float scaleX, float scaleY, float scaleZ, bool mantis = false)
         {
-            Vector3 slashScale = new Vector3(scale, scale, 1);
+            Vector3 slashScale = new Vector3(scaleX, scaleY, scaleZ);
 
             foreach (NailSlash nailSlash in _nailSlashes)
             {
