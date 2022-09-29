@@ -318,7 +318,6 @@ namespace FiveKnights.BossManagement
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
-            yield return LoadIsmaBundle();
             alone = false;
             _hm.hp = 950;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
@@ -329,51 +328,38 @@ namespace FiveKnights.BossManagement
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             yield return new WaitWhile(() => _hm.hp > 600);
             HIT_FLAG = false;
-            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Rage Roar", "FINISHED", "Music");
-            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Music", "FINISHED", "Set Rage");
-            var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
-            var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
-            _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
-            {
-                snapshot = ac1,
-                transitionTime = 0
-            });
-            _fsm.AddAction("Rage Roar", new ApplyMusicCue()
-            {
-                musicCue = ac2,
-                transitionTime = 0,
-                delayTime = 0
-            });
 
-            // Transition to phase 2
-            yield return new WaitWhile(() => !HIT_FLAG);
+			// Transition to phase 2
+			yield return new WaitWhile(() => !HIT_FLAG);
             if(dd.transform.position.y < 9f) dd.transform.position = 
                     new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
-			PlayerData.instance.isInvincible = true;
+			//PlayerData.instance.isInvincible = true;
 			GameManager.instance.playerData.disablePause = true;
             _fsm.SetState("Stun Set");
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            
 
             // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
-            //_ap.Volume = 1f;
-            _ap?.UpdateMusic();
-            _fsm.enabled = true;
+			_ap.Volume = 1f;
+			_ap?.UpdateMusic();
+			_fsm.enabled = true;
             _fsm.SetState("Stun Recover");
             yield return null;
 
-            // Wait for WD to finish screaming
+            // WD scream
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
             burrow.SendEvent("BURROW END");
+            // This is to prevent WD from entering any other state after Stun Recover
+            _fsm.InsertMethod("Idle", 1, () => _fsm.SetState("Rage Roar"));
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-            _fsm.SetState("Rage Roar");
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
+            _fsm.RemoveAction("Idle", 1);
             GameManager.instance.playerData.disablePause = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
-            PlayerData.instance.isInvincible = false;
             yield return new WaitWhile(() => ic != null);
             _ap?.StopMusic();
             _ap2?.StopMusic();
@@ -497,7 +483,7 @@ namespace FiveKnights.BossManagement
             Log("Loading Isma Bundle");
             if (FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
             {
-                Log("broke Isma");
+                Log("Already loaded Isma");
                 yield break;
             }
 
@@ -513,12 +499,14 @@ namespace FiveKnights.BossManagement
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");
                 var r4 = ab.LoadAssetAsync<GameObject>("Wall");
                 var r5 = ab.LoadAssetAsync<GameObject>("Fool");
-                
+                var r6 = ab.LoadAssetAsync<GameObject>("ThornPlant");
+
                 yield return r1;
                 yield return r2;
                 yield return r3;
                 yield return r4;
                 yield return r5;
+                yield return r6;
 
                 gos = new List<GameObject>
                 {
@@ -526,7 +514,8 @@ namespace FiveKnights.BossManagement
                     r2.asset as GameObject, 
                     r3.asset as GameObject, 
                     r4.asset as GameObject,
-                    r5.asset as GameObject
+                    r5.asset as GameObject,
+                    r6.asset as GameObject
                 };
             }
             else
@@ -537,7 +526,8 @@ namespace FiveKnights.BossManagement
                     ab.LoadAsset<GameObject>("Gulka"),
                     ab.LoadAsset<GameObject>("Plant"),
                     ab.LoadAsset<GameObject>("Wall"),
-                    ab.LoadAsset<GameObject>("Fool")
+                    ab.LoadAsset<GameObject>("Fool"),
+                    ab.LoadAsset<GameObject>("ThornPlant")
                 };
             }
             
@@ -572,7 +562,7 @@ namespace FiveKnights.BossManagement
         private IEnumerator LoadDryyaAssets()
         {
             Log("Loading Dryya Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Dryya", out var go) && go != null)
+            if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
             {
                 Log("broke Dryya");
                 yield break;
@@ -588,7 +578,7 @@ namespace FiveKnights.BossManagement
             
             if (CustomWP.boss == CustomWP.Boss.All)
             {
-                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya");
+                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
@@ -600,7 +590,7 @@ namespace FiveKnights.BossManagement
                 yield return r4;
                 yield return r5;
 
-                FiveKnights.preloadedGO["Dryya"] = r1.asset as GameObject;
+                FiveKnights.preloadedGO["Dryya2"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
                 FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
                 FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
@@ -608,14 +598,14 @@ namespace FiveKnights.BossManagement
             }
             else
             {
-                FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
+                FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
                 FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2.5f;
+            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
@@ -653,8 +643,9 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
                 FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-
             }
+            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
             Log("Finished Loading Hegemol Bundle");
         }
         
