@@ -333,7 +333,7 @@ namespace FiveKnights.BossManagement
 			yield return new WaitWhile(() => !HIT_FLAG);
             if(dd.transform.position.y < 9f) dd.transform.position = 
                     new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
-			//PlayerData.instance.isInvincible = true;
+			PlayerData.instance.isInvincible = true;
 			GameManager.instance.playerData.disablePause = true;
             _fsm.SetState("Stun Set");
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
@@ -358,6 +358,7 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
             _fsm.RemoveAction("Idle", 1);
+            PlayerData.instance.isInvincible = false;
             GameManager.instance.playerData.disablePause = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
@@ -555,7 +556,13 @@ namespace FiveKnights.BossManagement
                 AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.GArenaIsma];
                 FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
             }
-            
+
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
+            FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
+            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
+            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
+
             Log("Finished Loading Isma Bundle");
         }
         

@@ -8,13 +8,13 @@ namespace FiveKnights.Ogrim
     {
         private bool _hit;
         public GameObject particles;
-        public bool usingThornPillars;
+        public bool usingThornPillars = false;
         
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
             {
-                if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAXPILLAR && 
+                if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAX_PILLAR && 
                     transform.position.x > 67f && transform.position.x < 85f && !usingThornPillars)
 				{
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
