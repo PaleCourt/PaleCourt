@@ -16,18 +16,18 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 800; //1600; //2400; // 800 is 2400/3, did this because of the new phases
+        private const int Health = 2400; //1600; //2400; // 800 is 2400/3, did this because of the new phases
         private const float LeftX = 61.0f;
         private const float RightX = 91.0f;
         private const float OWLeftX = 420.7f;
         private const float OWRightX = 456.0f;
         private const float DigInWalkSpeed = 8.0f;
-        private const float WalkSpeed = 10f;
-        private const int Phases = 3;
         private const float IdleTime = 1f;
 	    private int phase = 1;
         private bool addDig = true;
-        private int IdleCount;
+        private bool isPhase1 = true;
+        private bool isPhase2 = false;
+        private bool isPhase3 = false;
 
         private GameObject _ogrim;
         private GameObject _pv;
@@ -79,7 +79,7 @@ namespace FiveKnights.Hegemol
             while (HeroController.instance == null) yield return null;
 
             _hm.hp = Health;
-
+            isPhase1 = true;
             # region TODO old stuff might have to put back in
             /*GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
 
@@ -184,7 +184,7 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator IntroGreet()
         {
-            float roarTime = 3.0f;
+            float roarTime = 6.0f;
 
             _anim.Play("Intro Greet");
 
@@ -234,6 +234,18 @@ namespace FiveKnights.Hegemol
         {
             while(true)
             {
+                if (_hm.hp < 1600 && isPhase1)
+                {
+                    phase++;
+                    isPhase1 = false;
+                    isPhase2 = true;
+                }
+                if (_hm.hp < 800 && isPhase2)
+                {
+                    phase++;
+                    isPhase2 = false;
+                    isPhase3 = true;
+                }
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
                     GroundPunch,JumpTowardsPlayer
@@ -243,9 +255,7 @@ namespace FiveKnights.Hegemol
 
                 Turn();
 
-                if (HeroController.instance.transform.position.x > gameObject.transform.position.x + 10f)
-                    StartCoroutine(JumpTowardsPlayer());
-                else if (HeroController.instance.transform.position.x < gameObject.transform.position.x - 10f)
+                if (HeroController.instance.transform.position.x > gameObject.transform.position.x + 10f || HeroController.instance.transform.position.x < gameObject.transform.position.x - 10f)
                     StartCoroutine(JumpTowardsPlayer());
                 else
                 {
@@ -257,6 +267,7 @@ namespace FiveKnights.Hegemol
                     }
                     Func<IEnumerator> curAtt = attLst[Random.Range(0, attLst.Count)];
                     StartCoroutine(curAtt.Method.Name);
+                    Log(attLst);
 
                     Log("[Attack] " + curAtt.Method.Name);
                     curAtt.Invoke();
@@ -281,45 +292,26 @@ namespace FiveKnights.Hegemol
             StartCoroutine(IntroGrab());
         }
 
-        IEnumerator JumpTowardsPlayer()
+        private IEnumerator JumpTowardsPlayer()
         {
             Log("Jump");
-            float JumpX = 0;
-            //float JumpXAlt;
-            //float VelAlt;
-            //float velY;
-            float choose = Random.Range(12f, 18f);
-            float HeroX = HeroController.instance.transform.position.x;
+            float JumpX;
             float diff = HeroController.instance.transform.position.x - transform.position.x;
+            float diffAlt = Vector2.Distance(gameObject.transform.position, HeroController.instance.transform.position);
             bool right;
 
-            JumpX = HeroX;
+            right = diff > 0;
 
-            if (diff > 0)
-            {
-                JumpX -= choose;
-                right = true;
-            }
-
-            else
-            {
-                JumpX += choose;
-                right = false;
-            }
-                
-            Log(JumpX);
-
-            JumpX -= gameObject.transform.position.x;
-            Log(JumpX);
-            JumpX *= 1.2f;
-            Log(JumpX);
+            JumpX = transform.position.x;
             _anim.Play("Jump Antic");
             yield return new WaitWhile(() => _anim.IsPlaying("Jump Antic"));
-            Log(JumpX);
             _anim.Play("Jump");
             _rb.gravityScale = 3f;
-            _rb.velocity = new Vector2(Mathf.Clamp(JumpX, diff, -diff), 60f);
-            Log(_rb.velocity = new Vector2(Mathf.Clamp(JumpX, diff, -diff), 60f));
+            if(right)
+                _rb.velocity = new Vector2(Mathf.Abs(diffAlt/*JumpX - diff*/), 60f);
+            else
+                _rb.velocity = new Vector2(-Mathf.Abs(diffAlt/*JumpX + diff*/), 60f);
+            
             yield return new WaitForSeconds(0.69f);
             yield return new WaitUntil(() => gameObject.transform.position.y < 500);
             Log("Lands");
@@ -327,18 +319,20 @@ namespace FiveKnights.Hegemol
             _rb.velocity = Vector2.zero;
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
             Turn();
-            _anim.Play("Attack Antic");
-            yield return new WaitWhile(() => _anim.IsPlaying("Attack Antic"));
-            _anim.Play("Attack");
+            //_anim.Play("Attack Antic");
+            //yield return new WaitWhile(() => _anim.IsPlaying("Attack Antic"));
+            //_anim.Play("Attack");
+            //yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
             if(right)
                 SpawnShockwaves(5f, 2f, 50f, 2);
             else
                 SpawnShockwaves(2f, 5f, 50f, 2);
-            yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
+            ShakeCameraAverage();
+            
             yield return IdleTimer();
         }
-
-        IEnumerator Dig()
+        
+        private IEnumerator Dig()
         {
             _anim.Play("Dig Antic");
             yield return new WaitWhile(() => _anim.IsPlaying("Dig Antic"));
@@ -402,7 +396,7 @@ namespace FiveKnights.Hegemol
 
             hitter.AddComponent<DamageHero>().damageDealt = 2;
 
-            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            ShakeCameraAverage();
 
             yield return new WaitForSeconds(1.0f / 12);
 
@@ -467,10 +461,12 @@ namespace FiveKnights.Hegemol
 
                 if (OWArenaFinder.IsInOverWorld) 
                     StartCoroutine(DungSide(right));
-                else if (right)
-                    SpawnShockwaves(5f,2f, 50f, 2);
                 else
+                {
+                    SpawnShockwaves(5f,2f, 50f, 2);
                     SpawnShockwaves(2f,5f, 50f, 2);
+                }
+                    
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Punch"));
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -559,24 +555,32 @@ namespace FiveKnights.Hegemol
             }
         }
 
+        private void ShakeCameraAverage()
+        {
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+        }
+        
         private IEnumerator IdleTimer()
         {
-            IdleCount++;
-            Log("[Idle]" + IdleCount);
+            Log("[Idle]");
             _anim.Play("Idle");
             yield return new WaitForSeconds(IdleTime);
             _attacking = false;
 		}
 
-        private IEnumerator Turn()
+        private void Turn()
         {
             float diff = HeroController.instance.transform.position.x - transform.position.x;
             if (diff > 0)
-                transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            {
+                transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y,
+                    transform.localScale.z);
+            }
             else
-                transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
-            _anim.Play("Turn");
-            yield return new WaitWhile(() => _anim.IsPlaying("Turn"));
+            {
+                transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
+                    transform.localScale.z);
+            }
         }
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
@@ -708,23 +712,29 @@ namespace FiveKnights.Hegemol
 
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.name.Contains("False Knight Dream"))
+            //if (self.name.Contains("False Knight Dream"))
+            if(self.gameObject.name == "Hegemol")
             {
+                if (_hm.hp < 50)
+                {
+                    StopAllCoroutines();
+                    StartCoroutine(Die());
+                }
                 if (hitInstance.AttackType == AttackTypes.Nail)
                 {
                     // Manually gain soul when striking Hegemol
                     int soulGain;
                     if (PlayerData.instance.MPCharge >= 99)
                     {
-                        soulGain = 6;
-                        if (PlayerData.instance.equippedCharm_20) soulGain += 2;
-                        if (PlayerData.instance.equippedCharm_21) soulGain += 4;
+                        soulGain = 4;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 1;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 2;
                     }
                     else
                     {
-                        soulGain = 11;
-                        if (PlayerData.instance.equippedCharm_20) soulGain += 3;
-                        if (PlayerData.instance.equippedCharm_21) soulGain += 8;
+                        soulGain = 9;
+                        if (PlayerData.instance.equippedCharm_20) soulGain += 2;
+                        if (PlayerData.instance.equippedCharm_21) soulGain += 4;
                     }
                     HeroController.instance.AddMPCharge(soulGain);
                 }
@@ -739,6 +749,7 @@ namespace FiveKnights.Hegemol
             GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
             _anim.Play("Idle");
+            isPhase3 = false;
             yield return new WaitForSeconds(0.4f);
 
             _anim.Play("Leave Antic");
@@ -751,7 +762,6 @@ namespace FiveKnights.Hegemol
 	    
             Destroy(gameObject);
         }
-
         
         private void AssignFields()
         {
@@ -763,26 +773,15 @@ namespace FiveKnights.Hegemol
             }
         }
 
-        private void Update()
-        {
-            if(_hm.hp < 0)
-            {
-                _hm.hp = Health;
-                phase++;
-                if (phase == 4)
-                    Die();
-            }
-        }
-
         private void OnDestroy()
         {
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
             On.HealthManager.TakeDamage -= OnTakeDamage;
         }
 
-        private void Log(object o)
+        private void Log(object message)
         {
-            Modding.Logger.Log("[Hegemol Controller] " + o);
+            Modding.Logger.Log("[Hegemol Controller] " + message);
         }
     }
 }
