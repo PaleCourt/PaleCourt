@@ -17,7 +17,7 @@ namespace FiveKnights.Isma
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
-
+            gameObject.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
             transform.position -= new Vector3(0f, 0.2f, 0f);
         }
 
@@ -32,7 +32,6 @@ namespace FiveKnights.Isma
                 _hm.hp = PLANTHP;
             }
             var bc = GetComponent<BoxCollider2D>();
-            gameObject.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
             gameObject.SetActive(true);
             _anim.enabled = true;
             _anim.Play("PlantGrow");

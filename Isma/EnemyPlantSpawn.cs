@@ -15,9 +15,9 @@ namespace FiveKnights.Isma
         public static int FoolCount = 0;
         public static int PillarCount = 0;
         public static int TurretCount = 0;
-        public static readonly int MaxTurret = 3;
-        public static readonly int MaxFool = 5;
-        public const int MAXPILLAR = 3;
+        public const int MAX_TURRET = 2;
+        public const int MAX_FOOL = 3;
+        public const int MAX_PILLAR = 3;
         private const float TIME_INC = 0.1f;
         private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
         private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
@@ -36,7 +36,7 @@ namespace FiveKnights.Isma
                 if (isPhase2)
                 {
                     Log($"Working with Pillars {PillarCount}");
-                    if (PillarCount >= MAXPILLAR)
+                    if (PillarCount >= MAX_PILLAR)
                     {
                         Log("Oh no too many");
                         Destroy(other.gameObject);
@@ -47,7 +47,7 @@ namespace FiveKnights.Isma
                 else
                 {
                     Log($"Working with Fools {FoolCount}");
-                    if (FoolCount >= MaxFool)
+                    if (FoolCount >= MAX_FOOL)
                     {
                         Log("Oh no too many");
                         Destroy(other.gameObject);
@@ -59,7 +59,7 @@ namespace FiveKnights.Isma
             else if (name.Contains("Side") && !isPhase2)
             {
                 Log($"Working with Gulka {TurretCount}");
-                if (TurretCount >= MaxTurret)
+                if (TurretCount >= MAX_TURRET)
                 {
                     Log("Oh no too many");
                     Destroy(other.gameObject);
@@ -113,7 +113,7 @@ namespace FiveKnights.Isma
                     fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
                 }
                 
-                await Task.Delay(1200 + Random.Range(0, 4) * 100);
+                await Task.Delay(2000 + Random.Range(0, 4) * 100);
             }
         }
 
@@ -293,7 +293,7 @@ namespace FiveKnights.Isma
                 });
                 fsm.enabled = true;
                 fsm.SetState("Init");
-                fsm.GetAction<Wait>("Ready", 2).time = 0.4f;
+                fsm.GetAction<Wait>("Ready", 2).time = 0.55f;
             }
 
             private void Update()

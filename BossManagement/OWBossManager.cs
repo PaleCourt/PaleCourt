@@ -292,6 +292,9 @@ namespace FiveKnights
             FiveKnights.Clips["LoneIsmaLoop"] = snd.LoadAsset<AudioClip>("LoneIsmaLoop");
             FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
             FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
+            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
+            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
+
             // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {
@@ -371,7 +374,7 @@ namespace FiveKnights
             acidOldTex = def.material.mainTexture;
             def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
             // Store values
-            FiveKnights.IsmaClips["AcidSpitSnd"] = clip;
+            FiveKnights.Clips["AcidSpitSnd"] = clip;
             FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
             FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
 
