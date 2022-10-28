@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -81,11 +82,12 @@ namespace FiveKnights
         public void Awake()
         {
             On.HeroController.Awake += On_HeroController_Awake;
-            On.HeroController.TakeDamage += On_HeroController_TakeDamage;
-            On.HeroController.AddHealth += On_HeroController_AddHealth;
-            On.HeroController.MaxHealth += On_HeroController_MaxHealth;
+            On.HeroController.TakeDamage += CheckForAbyssalBloomStages_TakeDamage;
+            On.HeroController.AddHealth += CheckForAbyssalBloomStages_AddHealth;
+            On.HeroController.MaxHealth += CheckForAbyssalBloomStages_MaxHealth;
             On.CharmIconList.GetSprite += CharmIconList_GetSprite;
-            ModHooks.CharmUpdateHook += ModHooks_CharmUpdate;
+            ModHooks.CharmUpdateHook += CharmUpdateUpdateSpellConnections;
+            On.HeroController.Attack += HcAttackDoTendrilAttacks;
         }
 
         private Sprite CharmIconList_GetSprite(On.CharmIconList.orig_GetSprite orig, CharmIconList self, int id)
@@ -156,8 +158,8 @@ namespace FiveKnights
             Log("Got Audio");
             _audio.pitch = 1.5f;
 
-            CreateCharmSpellEffects();
-            ModifyFury();
+            InsertCharmSpellEffectsInFsm();
+            ModifyFuryForAbyssalBloom();
 
 #if DEBUG
             FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
@@ -190,15 +192,15 @@ namespace FiveKnights
 
         private GameObject _royalAura;
 
-        private void CreateCharmSpellEffects()
+        private void InsertCharmSpellEffectsInFsm()
         {
             _spellControl.CopyState("Fireball 1", "Fireball 1 SmallShots");
             _spellControl.CopyState("Fireball 2", "Fireball 2 SmallShots");
 
             _spellControl.RemoveAction<SpawnObjectFromGlobalPool>("Fireball 1 SmallShots");
             _spellControl.RemoveAction<SpawnObjectFromGlobalPool>("Fireball 2 SmallShots");
-            _spellControl.InsertMethod("Fireball 1 SmallShots", 3, () => ShootSmallShots(-10, 10));
-            _spellControl.InsertMethod("Fireball 2 SmallShots", 3, () => ShootSmallShots(-20, 20));
+            _spellControl.InsertMethod("Fireball 1 SmallShots", 3, () => CastShootSmallDaggers(-10, 10));
+            _spellControl.InsertMethod("Fireball 2 SmallShots", 3, () => CastShootSmallDaggers(-20, 20));
 
             _spellControl.CopyState("Quake1 Land", "Q1 Land Plumes");
             _spellControl.CopyState("Q2 Land", "Q2 Land Plumes");
@@ -232,7 +234,7 @@ namespace FiveKnights
             _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 1 Blasts");
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
-            _spellControl.InsertCoroutine("Scream Burst 1 Blasts", 0, () => ScreamBlasts(2));
+            _spellControl.InsertCoroutine("Scream Burst 1 Blasts", 0, () => UpCastScreamBlasts(2));
 
             _spellControl.RemoveAction<AudioPlay>("Scream Antic2 Blasts");
             _spellControl.RemoveAction<CreateObject>("Scream Burst 2 Blasts");
@@ -240,10 +242,10 @@ namespace FiveKnights
             _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 2 Blasts");
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
-            _spellControl.InsertCoroutine("Scream Burst 2 Blasts", 0, () => ScreamBlasts(4));
+            _spellControl.InsertCoroutine("Scream Burst 2 Blasts", 0, () => UpCastScreamBlasts(4));
         }
 
-        private void ShootSmallShots(int angleMin, int angleMax)
+        private void CastShootSmallDaggers(int angleMin, int angleMax)
         {
             for (int angle = angleMin; angle <= angleMax; angle += 10)
             {
@@ -274,7 +276,7 @@ namespace FiveKnights
             }
         }
 
-        private IEnumerator ScreamBlasts(int numBlasts)
+        private IEnumerator UpCastScreamBlasts(int numBlasts)
         {
             List<GameObject> blasts = new List<GameObject>();
             GameObject blastMain = Instantiate
@@ -332,7 +334,7 @@ namespace FiveKnights
             }
         }
 
-        private void ModifyFury()
+        private void ModifyFuryForAbyssalBloom()
         {
             PlayMakerFSM fury = _hc.gameObject.FindGameObjectInChildren("Charm Effects").LocateMyFSM("Fury");
             Log("Fury Color: " + fury.GetAction<Tk2dSpriteSetColor>("Activate", 17).color.Value);
@@ -351,9 +353,11 @@ namespace FiveKnights
             );
         }
 
-        private void ModHooks_CharmUpdate(PlayerData playerData, HeroController hc)
+        private void CharmUpdateUpdateSpellConnections(PlayerData playerData, HeroController hc)
         {
             Log("Charm Update");
+            
+            CheckForAbyssalBloomStages(hc);
 
             if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10)
             {
@@ -374,11 +378,11 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
             {
-                ChangeSlashScale(3, true);
+                ChangeSlashScale(2.835f, 2.879177f, 2.2362515f, true); // original * 1.75f
             }
             else
             {
-                ChangeSlashScale(1.6f);
+                ChangeSlashScale(1.62f, 1.645244f, 1.277858f);
             }
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
@@ -465,7 +469,7 @@ namespace FiveKnights
             }
         }
 
-        private void ModifyHeroControllerPropertiesLevel1()
+        private void ModifyHcPropsLevel1AbyssalBloom()
         {
             _pd.nailDamage = Mathf.FloorToInt((5 + 4 * _pd.nailSmithUpgrades) * 1.25f);
 
@@ -505,11 +509,11 @@ namespace FiveKnights
 
             ModifyHeroControllerProperties(HeroUpdateType.Modify);
 
-            On.HeroController.SoulGain += On_HeroController_SoulGain_L1;
-            On.HeroController.SoulGain -= On_HeroController_SoulGain_L2;
+            On.HeroController.SoulGain += OnHcSoulGainLevel1AbyssalBloom;
+            On.HeroController.SoulGain -= OnHcSoulGainLevel2AbyssalBloom;
         }
 
-        private void ModifyHeroControllerPropertiesLevel2()
+        private void ModifyHcPropsLevel2AbyssalBloom()
         {
             _pd.nailDamage = Mathf.FloorToInt((5 + 4 * _pd.nailSmithUpgrades) * 1.5f);
 
@@ -541,11 +545,11 @@ namespace FiveKnights
 
             ModifyHeroControllerProperties(HeroUpdateType.Modify);
 
-            On.HeroController.SoulGain -= On_HeroController_SoulGain_L1;
-            On.HeroController.SoulGain += On_HeroController_SoulGain_L2;
+            On.HeroController.SoulGain -= OnHcSoulGainLevel1AbyssalBloom;
+            On.HeroController.SoulGain += OnHcSoulGainLevel2AbyssalBloom;
         }
 
-        void On_HeroController_SoulGain_L1(On.HeroController.orig_SoulGain orig, HeroController self)
+        void OnHcSoulGainLevel1AbyssalBloom(On.HeroController.orig_SoulGain orig, HeroController self)
         {
             int charge;
             if (_pd.GetInt("MPCharge") < _pd.GetInt("maxMP"))
@@ -560,7 +564,7 @@ namespace FiveKnights
             GameManager.instance.soulVessel_fsm.SendEvent("MP RESERVE UP");
         }
 
-        static void On_HeroController_SoulGain_L2(On.HeroController.orig_SoulGain orig, HeroController self)
+        static void OnHcSoulGainLevel2AbyssalBloom(On.HeroController.orig_SoulGain orig, HeroController self)
         {
             // Gain no soul at all when striking enemies
         }
@@ -583,8 +587,8 @@ namespace FiveKnights
 
             ModifyHeroControllerProperties(HeroUpdateType.Reset);
 
-            On.HeroController.SoulGain -= On_HeroController_SoulGain_L1;
-            On.HeroController.SoulGain -= On_HeroController_SoulGain_L2;
+            On.HeroController.SoulGain -= OnHcSoulGainLevel1AbyssalBloom;
+            On.HeroController.SoulGain -= OnHcSoulGainLevel2AbyssalBloom;
         }
 
         private int _shadeSlashNum = 1;
@@ -776,7 +780,7 @@ namespace FiveKnights
 
                 shadeSlashContainer.SetActive(true);
 
-                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect" + (_pd.GetBool("equippedCharm_13") ? " M" : "")));
+                yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect"));
 
                 Destroy(shadeSlashContainer);
 
@@ -864,7 +868,36 @@ namespace FiveKnights
             StartCoroutine(Slash());
         }
 
-        private void On_HeroController_TakeDamage
+        private bool isAbyssalBloomStage2 = false;
+        private void CheckForAbyssalBloomStages(HeroController hc)
+        {
+            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3])
+            {
+                isAbyssalBloomStage2 = false;
+                return;
+            }
+
+            if (hc.playerData.health > hc.playerData.maxHealth / 2)
+            {
+                Log("On no effect");
+                ResetHeroControllerProperties();
+                isAbyssalBloomStage2 = false;
+            }
+            else if (hc.playerData.health > 1 && hc.playerData.health <= hc.playerData.maxHealth / 2)
+            {
+                Log("On level 1");
+                ModifyHcPropsLevel1AbyssalBloom();
+                isAbyssalBloomStage2 = false;
+            }
+            else if (hc.playerData.health <= 1)
+            {
+                Log("On level 2");
+                ModifyHcPropsLevel2AbyssalBloom();
+                isAbyssalBloomStage2 = true;
+            }
+        }
+        
+        private void CheckForAbyssalBloomStages_TakeDamage
         (
             On.HeroController.orig_TakeDamage orig,
             HeroController self,
@@ -880,49 +913,21 @@ namespace FiveKnights
 
             if (_pd.health == oldHealth) return;
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            if (_pd.health <= 1)
-            {
-                Log("Damaged to level 2");
-                ModifyHeroControllerPropertiesLevel2();
-                On.HeroController.Attack += On_HeroController_Attack;
-            }
-            else if (_pd.health <= _pd.maxHealth / 2)
-            {
-                Log("Damaged to level 1");
-                ModifyHeroControllerPropertiesLevel1();
-            }
+            CheckForAbyssalBloomStages(self);
         }
 
-        private void On_HeroController_AddHealth(On.HeroController.orig_AddHealth orig, HeroController self, int amount)
+        private void CheckForAbyssalBloomStages_AddHealth(On.HeroController.orig_AddHealth orig, HeroController self, int amount)
         {
             orig(self, amount);
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            if (_pd.health > _pd.maxHealth / 2)
-            {
-                Log("Healed to no effect");
-                ResetHeroControllerProperties();
-            }
-            else if (_pd.health > 1 && _pd.health <= _pd.maxHealth / 2)
-            {
-                Log("Healed to level 1");
-                ModifyHeroControllerPropertiesLevel1();
-                On.HeroController.Attack -= On_HeroController_Attack;
-            }
+            CheckForAbyssalBloomStages(self);
         }
 
-        private void On_HeroController_MaxHealth(On.HeroController.orig_MaxHealth orig, HeroController self)
+        private void CheckForAbyssalBloomStages_MaxHealth(On.HeroController.orig_MaxHealth orig, HeroController self)
         {
             orig(self);
 
-            if (!FiveKnights.Instance.SaveSettings.equippedCharms[3]) return;
-
-            Log("Reset HeroController Properties");
-            ResetHeroControllerProperties();
-            On.HeroController.Attack -= On_HeroController_Attack;
+            CheckForAbyssalBloomStages(self);
         }
 
         private IEnumerator FindAndAddComponentToDung()
@@ -962,8 +967,14 @@ namespace FiveKnights
             //     PureAmulets.Settings.equippedCharm_44);
         }
 
-        private void On_HeroController_Attack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
+        private void HcAttackDoTendrilAttacks(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
         {
+            if (!isAbyssalBloomStage2)
+            {
+                origAttack(hc, dir);
+                return;
+            }
+            
             InputHandler ih = InputHandler.Instance;
             
             if (hc.cState.wallSliding)
@@ -1063,9 +1074,9 @@ namespace FiveKnights
             _audio.Stop();
         }
 
-        private void ChangeSlashScale(float scale, bool mantis = false)
+        private void ChangeSlashScale(float scaleX, float scaleY, float scaleZ, bool mantis = false)
         {
-            Vector3 slashScale = new Vector3(scale, scale, 1);
+            Vector3 slashScale = new Vector3(scaleX, scaleY, scaleZ);
 
             foreach (NailSlash nailSlash in _nailSlashes)
             {
@@ -1153,11 +1164,15 @@ namespace FiveKnights
 
             // Nail Arts FSM
             PlayMakerFSM nailArts = self.gameObject.LocateMyFSM("Nail Arts");
+            if (nailArts.FsmStates[0].Fsm == null)
+            {
+                nailArts.Preprocess();
+            }
 
             // Create states to test for activated Abyssal Bloom
-            nailArts.CreateState("Bloom Activated CSlash?");
-            nailArts.CreateState("Bloom Activated DSlash?");
-            nailArts.CreateState("Bloom Activated GSlash?");
+            nailArts.AddState("Bloom Activated CSlash?");
+            nailArts.AddState("Bloom Activated DSlash?");
+            nailArts.AddState("Bloom Activated GSlash?");
 
             // Clone Cyclone Slash states
             nailArts.CopyState("Cyclone Start", "Cyclone Start Void");
@@ -1202,6 +1217,26 @@ namespace FiveKnights
             nailArts.ChangeTransition("G Slash Void", "FINISHED", "Stop Move Void");
             nailArts.ChangeTransition("Stop Move Void", "FINISHED", "G Slash End Void");
 
+            // Make transitions for void narts
+            nailArts.AddTransition("Bloom Activated CSlash?", "VOID", "Cyclone Start Void");
+            nailArts.AddTransition("Bloom Activated CSlash?", "NORMAL", "Cyclone Start");
+            nailArts.AddTransition("Bloom Activated DSlash?", "VOID", "Dash Slash Void");
+            nailArts.AddTransition("Bloom Activated DSlash?", "NORMAL", "Dash Slash");
+            nailArts.AddTransition("Bloom Activated GSlash?", "VOID", "G Slash Void");
+            nailArts.AddTransition("Bloom Activated GSlash?", "NORMAL", "G Slash");
+            nailArts.AddMethod("Bloom Activated CSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "Cyclone Start Void" : "Cyclone Start");
+            });
+            nailArts.AddMethod("Bloom Activated DSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "Dash Slash Void" : "Dash Slash");
+            });
+            nailArts.AddMethod("Bloom Activated GSlash?", () => 
+            {
+                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 1 ? "G Slash Void" : "G Slash");
+            });
+
             // Change Knight animation clips
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Cyclone Start Void").clipName = "NA Cyclone Start Void";
             nailArts.GetAction<Tk2dPlayAnimation>("Cyclone Spin Void").clipName = "NA Cyclone Void";
@@ -1210,20 +1245,20 @@ namespace FiveKnights
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Dash Slash Void").clipName = "NA Dash Slash Void";
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("G Slash Void").clipName = "NA Big Slash Void";
 
-            // Insert testing methods for testing states
-            nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
-            {
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
-            });
-            nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
-            {
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
-            });
-            nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
-            {
-                Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
-                nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
-            });
+            //// Insert testing methods for testing states
+            //nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
+            //});
+            //nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
+            //});
+            //nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
+            //{
+            //    Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
+            //});
 
             // Insert activation and deactivation of void nail arts
             nailArts.InsertMethod("Activate Slash Void", 0, () =>
@@ -1232,27 +1267,29 @@ namespace FiveKnights
                 cycloneSlashVoid.GetComponent<tk2dSpriteAnimator>().Play("Cyclone Slash Effect Void");
             });
             nailArts.InsertMethod("Cyclone End Void", 2, () => cycloneSlashVoid.SetActive(false));
+            nailArts.AddMethod("Cancel All", () => cycloneSlashVoid.SetActive(false));
             nailArts.InsertMethod("Dash Slash Void", 0, () =>
             {
                 dashSlashVoid.SetActive(true);
                 dashSlashVoid.GetComponent<tk2dSpriteAnimator>().Play("Dash Slash Effect Void");
             });
             nailArts.InsertMethod("D Slash End Void", 0, () => dashSlashVoid.SetActive(false));
+            nailArts.AddMethod("Cancel All", () => dashSlashVoid.SetActive(false));
             nailArts.InsertMethod("G Slash Void", 0, () =>
             {
                 greatSlashVoid.SetActive(true);
                 greatSlashVoid.GetComponent<tk2dSpriteAnimator>().Play("Great Slash Effect Void");
             });
             nailArts.InsertMethod("G Slash End Void", 0, () => greatSlashVoid.SetActive(false));
+            nailArts.AddMethod("Cancel All", () => greatSlashVoid.SetActive(false));
 
             // Remove activating old nail art effects
             nailArts.RemoveAction<ActivateGameObject>("Activate Slash Void");
             nailArts.RemoveAction<ActivateGameObject>("Dash Slash Void");
             nailArts.RemoveAction<ActivateGameObject>("G Slash Void");
 
-#if DEBUG
-            nailArts.MakeLog();
-#endif
+            nailArts.Log();
+            nailArts.MakeLog(true);
 
             //self.gameObject.scene.Log();
 
@@ -1261,11 +1298,11 @@ namespace FiveKnights
         private void OnDestroy()
         {
             On.HeroController.Awake -= On_HeroController_Awake;
-            On.HeroController.TakeDamage -= On_HeroController_TakeDamage;
-            On.HeroController.AddHealth -= On_HeroController_AddHealth;
-            On.HeroController.MaxHealth -= On_HeroController_MaxHealth;
+            On.HeroController.TakeDamage -= CheckForAbyssalBloomStages_TakeDamage;
+            On.HeroController.AddHealth -= CheckForAbyssalBloomStages_AddHealth;
+            On.HeroController.MaxHealth -= CheckForAbyssalBloomStages_MaxHealth;
             //On.CharmIconList.Awake -= CharmIconList_Awake;
-            ModHooks.CharmUpdateHook -= ModHooks_CharmUpdate;
+            ModHooks.CharmUpdateHook -= CharmUpdateUpdateSpellConnections;
         }
 
         private static void Log(object message) => Modding.Logger.Log("[FiveKnights][Amulets] " + message);

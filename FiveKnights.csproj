@@ -13,51 +13,84 @@
     <FileVersion>1.0.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
-    <HollowKnightRefs2>E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs2>
-    <HollowKnightRefs>C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs>
+    <HollowKnightRefs Condition="Exists('/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/')">/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/</HollowKnightRefs>
+    <HollowKnightRefs Condition="Exists('E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/')">E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
+    <HollowKnightRefs Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs>
+    <ExportDir Condition="$([MSBuild]::IsOSPlatform('Linux'))">/home/sfg/Documents/Projects/__Exports/</ExportDir>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />
     <Copy Condition="Exists('$(HollowKnightRefs)')" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
   </Target>
+  <!--<Target Name="CopyMod" AfterTargets="PostBuildEvent">
+    <RemoveDir Condition="Exists('$(ExportDir)/$(TargetName)/')" Directories="$(ExportDir)/$(TargetName)/" />
+    <MakeDir Directories="$(ExportDir)/$(TargetName)/" />
+    <MakeDir Directories="$(ExportDir)/$(TargetName)/zip/" />
+    <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />
+
+    <Copy Condition="'$(DocumentationFile)'!=''" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb;$(TargetDir)/$(TargetName).xml" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
+    <Copy Condition="'$(DocumentationFile)'==''" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
+
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ExportDir)/$(TargetName)/" />
+
+    <Copy Condition="'$(DocumentationFile)'!=''" SourceFiles="README.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb;$(TargetDir)/$(TargetName).xml" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
+    <Copy Condition="'$(DocumentationFile)'==''" SourceFiles="README.md;$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(ExportDir)/$(TargetName)/zip/" />
+
+    <ZipDirectory SourceDirectory="$(ExportDir)/$(TargetName)/zip/" DestinationFile="$(ExportDir)/$(TargetName)/$(TargetName).zip" />
+    <RemoveDir Directories="$(ExportDir)/$(TargetName)/zip/" />
+
+    <PropertyGroup>
+      <OutputFileString>SHA256 - $(AssemblyTitle).dll, Version $(AssemblyVersion):</OutputFileString>
+    </PropertyGroup>
+    <GetFileHash Files="$(ExportDir)/$(TargetName)/$(TargetName).dll" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="FilesWithHashes" />
+    </GetFileHash>
+    <PropertyGroup>
+      <OutputZipString>SHA256 - $(AssemblyTitle).zip:</OutputZipString>
+    </PropertyGroup>
+    <GetFileHash Files="$(ExportDir)/$(TargetName)/$(TargetName).zip" Algorithm="SHA256">
+      <Output TaskParameter="Items" ItemName="ZipFilesWithHashes" />
+    </GetFileHash>
+    <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
+  </Target>-->
   <ItemGroup>
     <None Remove="StreamingAssets\blendvertexcolor" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="FrogCore, Version=0.0.1.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="FrogCore">
       <HintPath>$(HollowKnightRefs)/Mods\FrogCore\FrogCore.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/MMHOOK_Assembly-CSharp.dll</HintPath>
     </Reference>
-    <Reference Include="MMHOOK_PlayMaker, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="MMHOOK_PlayMaker">
       <HintPath>$(HollowKnightRefs)/MMHOOK_PlayMaker.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Cecil, Version=0.11.3.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e">
+    <Reference Include="Mono.Cecil">
       <HintPath>$(HollowKnightRefs)/Mono.Cecil.dll</HintPath>
     </Reference>
-    <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756">
+    <Reference Include="Mono.Security">
       <HintPath>$(HollowKnightRefs)/Mono.Security.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.RuntimeDetour, Version=21.4.29.1, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="MonoMod.RuntimeDetour">
       <HintPath>$(HollowKnightRefs)/MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
-    <Reference Include="MonoMod.Utils, Version=21.4.29.1, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="MonoMod.Utils">
       <HintPath>$(HollowKnightRefs)/MonoMod.Utils.dll</HintPath>
     </Reference>
-    <Reference Include="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <Reference Include="mscorlib">
       <HintPath>$(HollowKnightRefs)/mscorlib.dll</HintPath>
     </Reference>
     <Reference Include="netstandard">
       <HintPath>$(HollowKnightRefs)/netstandard.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Newtonsoft.Json">
       <HintPath>$(HollowKnightRefs)/Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="PlayMaker, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="PlayMaker">
       <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
     </Reference>
     <Reference Include="SFCore">
@@ -99,55 +132,55 @@
     <Reference Include="System.Xml.XPath.XDocument">
       <HintPath>$(HollowKnightRefs)/System.Xml.XPath.XDocument.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine">
       <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.AnimationModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.AnimationModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.AssetBundleModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.AssetBundleModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.AudioModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.AudioModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.CoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.GIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.GIModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.GIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.ImageConversionModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.ImageConversionModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.IMGUIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.IMGUIModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.InputLegacyModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.InputLegacyModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.ParticleSystemModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.ParticleSystemModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.Physics2DModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.Physics2DModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextCoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.TextCoreModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.TextCoreModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.TextRenderingModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.TextRenderingModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UI, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.UI">
       <HintPath>$(HollowKnightRefs)/UnityEngine.UI.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UIElementsModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.UIElementsModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.UIElementsModule.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEngine.UIModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="UnityEngine.UIModule">
       <HintPath>$(HollowKnightRefs)/UnityEngine.UIModule.dll</HintPath>
     </Reference>
-    <Reference Include="Vasi, Version=2.0.0.0, Culture=neutral, PublicKeyToken=null">
+    <Reference Include="Vasi">
       <HintPath>$(HollowKnightRefs)/Mods\Vasi\Vasi.dll</HintPath>
     </Reference>
   </ItemGroup>
@@ -175,17 +208,17 @@
     <EmbeddedResource Include="StreamingAssets\soundbund" />
     <EmbeddedResource Include="StreamingAssets\miscbund" />
     <EmbeddedResource Include="StreamingAssets\ggArenaZemer" />
-    <EmbeddedResource Include="StreamingAssets\owarenazemer" />
+    <EmbeddedResource Include="StreamingAssets\owArenaZemer" />
     <EmbeddedResource Include="StreamingAssets\ggArenaDryya" />
-    <EmbeddedResource Include="StreamingAssets\owarenadryya" />
+    <EmbeddedResource Include="StreamingAssets\owArenaDryya" />
     <EmbeddedResource Include="StreamingAssets\ggArenaDep" />
-    <EmbeddedResource Include="StreamingAssets\owarenadep" />
+    <EmbeddedResource Include="StreamingAssets\owArenaDep" />
     <EmbeddedResource Include="StreamingAssets\ggArenaIsma" />
     <EmbeddedResource Include="StreamingAssets\ggArenaHegemol" />
-    <EmbeddedResource Include="StreamingAssets\owarenahegemol" />
-    <EmbeddedResource Include="StreamingAssets\owarenaisma" />
+    <EmbeddedResource Include="StreamingAssets\owArenaHegemol" />
+    <EmbeddedResource Include="StreamingAssets\owArenaIsma" />
     <EmbeddedResource Include="StreamingAssets\ggArenaHub" />
-    <EmbeddedResource Include="StreamingAssets\rewardroom" />
+    <EmbeddedResource Include="StreamingAssets\rewardRoom" />
     <EmbeddedResource Include="StreamingAssets\workShopEntranceDep" />
     <EmbeddedResource Include="StreamingAssets\workShopEntrance" />
     <EmbeddedResource Include="assets\DlcList.png" />
