@@ -30,7 +30,7 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
-        
+        public Dictionary<string, AnimationClip> clips;
 
         private IEnumerator Start()
         {
@@ -81,7 +81,9 @@ namespace FiveKnights
                 dc.gameObject.SetActive(true);
                 var bc = dc.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                yield return new WaitWhile(() => dc.transform.position.y > 103f);
+                while (dc.transform.position.y > 103f)
+                    yield return new WaitForFixedUpdate();
+                // yield return new WaitWhile(() => dc.transform.position.y > 103f);
                 bc.enabled = true;
                 
                 var rb = dc.GetComponent<Rigidbody2D>();
@@ -290,6 +292,9 @@ namespace FiveKnights
             FiveKnights.Clips["LoneIsmaLoop"] = snd.LoadAsset<AudioClip>("LoneIsmaLoop");
             FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
             FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
+            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
+            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
+
             // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {
@@ -369,7 +374,7 @@ namespace FiveKnights
             acidOldTex = def.material.mainTexture;
             def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
             // Store values
-            FiveKnights.IsmaClips["AcidSpitSnd"] = clip;
+            FiveKnights.Clips["AcidSpitSnd"] = clip;
             FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
             FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
 
@@ -399,7 +404,7 @@ namespace FiveKnights
             }*/
 
             Vector2 pos = new Vector2(457.6f, 112.5f);
-            GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya"], pos, Quaternion.identity);
+            GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
             dryya.SetActive(false);
             Log("Done creating dryya");
             return dryya.AddComponent<DryyaSetup>();
@@ -494,6 +499,7 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
                 
             }
+
             zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
             var zc = zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");

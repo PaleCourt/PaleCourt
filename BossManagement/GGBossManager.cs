@@ -27,6 +27,7 @@ namespace FiveKnights.BossManagement
         public static bool alone;
         private bool HIT_FLAG;
         public static GGBossManager Instance;
+        public Dictionary<string, AnimationClip> clips;
 
         private IEnumerator Start()
         {
@@ -98,28 +99,14 @@ namespace FiveKnights.BossManagement
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
                 }
-                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-                pm.SendEvent("FADE OUT INSTANT");
-                PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
-                fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-                fsm2.SendEvent("FADE IN");
-                yield return null;
-                HeroController.instance.MaxHealth();
-                yield return null;
-                GameCameras.instance.cameraFadeFSM.FsmVariables.FindFsmBool("No Fade").Value = true;
-                yield return null;
-                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-                {
-                    SceneName = "White_Palace_09",
-                    EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)",
-                    Visualization = GameManager.SceneLoadVisualizations.GodsAndGlory,
-                    WaitForSceneTransitionCameraFade = false,
-                    PreventCameraFadeOut = true,
-                    EntryDelay = 0
+                var bsc = BossSceneController.Instance;
+                GameObject transition = Instantiate(bsc.transitionPrefab);
+                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                transitionsFSM.SetState("Out Statue");
+                yield return new WaitForSeconds(1.0f);
+                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
 
-                });
-
-                Destroy(this);
+				Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
@@ -324,70 +311,65 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
+            On.HeroController.TakeDamage += HCTakeDamage;
+
+            // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
-            yield return LoadIsmaBundle();
             alone = false;
             _hm.hp = 950;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
             yield return new WaitForSeconds(1f);
+
+            // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
-            Log("HP TEST START");
             yield return new WaitWhile(() => _hm.hp > 600);
-            Log("HP TEST END");
-            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Rage Roar", "FINISHED", "Music");
-            SFCore.Utils.FsmUtil.ChangeTransition(_fsm, "Music", "FINISHED", "Set Rage");
-            var ac1 = _fsm.GetAction<TransitionToAudioSnapshot>("Music", 1).snapshot;
-            var ac2 = _fsm.GetAction<ApplyMusicCue>("Music", 2).musicCue;
-            _fsm.AddAction("Rage Roar", new TransitionToAudioSnapshot()
-            {
-                snapshot = ac1,
-                transitionTime = 0
-            });
-            _fsm.AddAction("Rage Roar", new ApplyMusicCue()
-            {
-                musicCue = ac2,
-                transitionTime = 0,
-                delayTime = 0
-            });
             HIT_FLAG = false;
-            yield return new WaitWhile(() => !HIT_FLAG);
-            PlayerData.instance.isInvincible = true;
-            HeroController.instance.RelinquishControl();
-            GameManager.instance.playerData.disablePause = true;
+
+			// Transition to phase 2
+			yield return new WaitWhile(() => !HIT_FLAG);
+            if(dd.transform.position.y < 9f) dd.transform.position = 
+                    new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
+			PlayerData.instance.isInvincible = true;
+			GameManager.instance.playerData.disablePause = true;
             _fsm.SetState("Stun Set");
-            Log("Log Mid Isma Intro");
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
-            Log("Log A");
             _fsm.enabled = false;
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            
+
+            // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
-            Log("Log B");
-            //_ap.Volume = 1f;
-            Log("Log C");
-            _ap?.UpdateMusic();
-            Log("Log D");
-            _fsm.enabled = true;
-            Log("Log E");
+			_ap.Volume = 1f;
+			_ap?.UpdateMusic();
+			_fsm.enabled = true;
             _fsm.SetState("Stun Recover");
-            Log("Log End Isma Intro");
             yield return null;
+
+            // WD scream
+            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+            burrow.SendEvent("BURROW END");
+            // This is to prevent WD from entering any other state after Stun Recover
+            _fsm.InsertMethod("Idle", 1, () => _fsm.SetState("Rage Roar"));
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
-            Log("Log Stun Recovery");
-            _fsm.SetState("Rage Roar");
+            yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
+            _fsm.RemoveAction("Idle", 1);
             PlayerData.instance.isInvincible = false;
             GameManager.instance.playerData.disablePause = false;
-            HeroController.instance.RegainControl();
-            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
-            yield return new WaitWhile(() => burrow.ActiveStateName != "Burrowing");
-            burrow.SendEvent("BURROW END");
+            yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
             _ap?.StopMusic();
             _ap2?.StopMusic();
+            On.HeroController.TakeDamage -= HCTakeDamage;
+        }
+
+        private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+        {
+            orig(self, go, damageSide, 1, hazardType);
         }
 
         public void BeforePlayerDied()
@@ -502,7 +484,7 @@ namespace FiveKnights.BossManagement
             Log("Loading Isma Bundle");
             if (FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
             {
-                Log("broke Isma");
+                Log("Already loaded Isma");
                 yield break;
             }
 
@@ -518,12 +500,14 @@ namespace FiveKnights.BossManagement
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");
                 var r4 = ab.LoadAssetAsync<GameObject>("Wall");
                 var r5 = ab.LoadAssetAsync<GameObject>("Fool");
-                
+                var r6 = ab.LoadAssetAsync<GameObject>("ThornPlant");
+
                 yield return r1;
                 yield return r2;
                 yield return r3;
                 yield return r4;
                 yield return r5;
+                yield return r6;
 
                 gos = new List<GameObject>
                 {
@@ -531,7 +515,8 @@ namespace FiveKnights.BossManagement
                     r2.asset as GameObject, 
                     r3.asset as GameObject, 
                     r4.asset as GameObject,
-                    r5.asset as GameObject
+                    r5.asset as GameObject,
+                    r6.asset as GameObject
                 };
             }
             else
@@ -542,8 +527,15 @@ namespace FiveKnights.BossManagement
                     ab.LoadAsset<GameObject>("Gulka"),
                     ab.LoadAsset<GameObject>("Plant"),
                     ab.LoadAsset<GameObject>("Wall"),
-                    ab.LoadAsset<GameObject>("Fool")
+                    ab.LoadAsset<GameObject>("Fool"),
+                    ab.LoadAsset<GameObject>("ThornPlant")
                 };
+            }
+            
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
             }
             
             foreach (var i in gos)
@@ -564,14 +556,20 @@ namespace FiveKnights.BossManagement
                 AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.GArenaIsma];
                 FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
             }
-            
+
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
+            FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
+            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
+            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
+
             Log("Finished Loading Isma Bundle");
         }
         
         private IEnumerator LoadDryyaAssets()
         {
             Log("Loading Dryya Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Dryya", out var go) && go != null)
+            if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
             {
                 Log("broke Dryya");
                 yield break;
@@ -579,9 +577,15 @@ namespace FiveKnights.BossManagement
 
             AssetBundle dryyaAssetBundle = ABManager.AssetBundles[ABManager.Bundle.GDryya];
             
+            foreach (var c in dryyaAssetBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+            
             if (CustomWP.boss == CustomWP.Boss.All)
             {
-                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya");
+                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
@@ -593,7 +597,7 @@ namespace FiveKnights.BossManagement
                 yield return r4;
                 yield return r5;
 
-                FiveKnights.preloadedGO["Dryya"] = r1.asset as GameObject;
+                FiveKnights.preloadedGO["Dryya2"] = r1.asset as GameObject;
                 FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
                 FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
                 FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
@@ -601,14 +605,14 @@ namespace FiveKnights.BossManagement
             }
             else
             {
-                FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
+                FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
                 FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2.5f;
+            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
@@ -622,6 +626,11 @@ namespace FiveKnights.BossManagement
                 yield break;
             }
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
+            foreach (var c in hegemolBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
             if (CustomWP.boss == CustomWP.Boss.All)
             {
                 var r1 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteCollection");
@@ -641,8 +650,9 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
                 FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
                 FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-
             }
+            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
             Log("Finished Loading Hegemol Bundle");
         }
         
@@ -698,6 +708,12 @@ namespace FiveKnights.BossManagement
 
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
+
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
 
             Log("Finished Loading Zemer Bundle");
         }

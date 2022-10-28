@@ -15,7 +15,7 @@ namespace FiveKnights
                 return;
             
             Hit = true;
-
+            
             OnCollide?.Invoke();
 
             if (!Freeze) 
@@ -25,7 +25,7 @@ namespace FiveKnights
             
             rb.velocity = Vector2.zero;
         }
-        
+
         private void OnTriggerStay2D(Collider2D col)
         {
             if (col.gameObject.layer == 8)

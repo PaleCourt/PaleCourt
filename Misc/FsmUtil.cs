@@ -80,7 +80,8 @@ namespace FiveKnights
             transitions.Add(new FsmTransition
             {
                 FsmEvent = @event,
-                ToState = toState
+                ToState = toState,
+                ToFsmState = fsm.GetState(toState)
             });
             t.Transitions = transitions.ToArray();
         }
@@ -94,7 +95,8 @@ namespace FiveKnights
             transitions.Add(new FsmTransition
             {
                 FsmEvent = new FsmEvent(eventName),
-                ToState = toState
+                ToState = toState,
+                ToFsmState = fsm.GetState(toState)
             });
             t.Transitions = transitions.ToArray();
         }
@@ -126,9 +128,9 @@ namespace FiveKnights
         }
 
         [PublicAPI]
-        public static void InsertMethod(this PlayMakerFSM fsm, string stateName, int index, Action method)
+        public static void InsertMethod(this PlayMakerFSM fsm, string stateName, int index, Action method, bool everyFrame = false)
         {
-            InsertAction(fsm, stateName, new InvokeMethod(method), index);
+            InsertAction(fsm, stateName, new InvokeMethod(method, everyFrame), index);
         }
 
         [PublicAPI]
@@ -223,7 +225,7 @@ namespace FiveKnights
         /* Helper method specifically for creating a series of states leading to a final "Idle" state */
         public static void CreateStates(this PlayMakerFSM fsm, string[] stateNames, string finalState)
         {
-            for (int i = 0; i < stateNames.Length; i++)
+            for (int i = stateNames.Length - 1; i >= 0 ; i--)
             {
                 string state = stateNames[i];
                 fsm.CreateState(state);
@@ -245,16 +247,24 @@ namespace FiveKnights
     public class InvokeMethod : FsmStateAction
     {
         private readonly Action _action;
+        private readonly bool _everyFrame;
 
-        public InvokeMethod(Action a)
+        public InvokeMethod(Action a, bool everyFrame = false)
         {
             _action = a;
+            _everyFrame = everyFrame;
         }
 
         public override void OnEnter()
         {
             _action?.Invoke();
-            Finish();
+            if (!_everyFrame)
+                Finish();
+        }
+
+        public override void OnUpdate()
+        {
+            _action?.Invoke();
         }
     }
 

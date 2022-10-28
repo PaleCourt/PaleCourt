@@ -7,14 +7,25 @@ namespace FiveKnights.Ogrim
     internal class DungBall : MonoBehaviour
     {
         private bool _hit;
+        public GameObject particles;
+        public bool usingThornPillars = false;
         
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
             {
-                if (!EnemyPlantSpawn.isPhase2) StartCoroutine(SpawnDungPillar(gameObject.transform.position));
+                if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAX_PILLAR && 
+                    transform.position.x > 67f && transform.position.x < 85f && !usingThornPillars)
+				{
+                    GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
+                    pillar.name = "PillarEnemy";
+                    pillar.transform.position = new Vector2(transform.position.x, 6.1f);
+                    pillar.AddComponent<EnemyPlantSpawn.PillarMinion>();
+                }
                 StartCoroutine(DelayedKill());
                 _hit = true;
+                particles.transform.position = transform.position;
+                particles.GetComponent<ParticleSystem>().Play();
             }
         }
 

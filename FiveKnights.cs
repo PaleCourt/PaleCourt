@@ -29,6 +29,7 @@ namespace FiveKnights
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
         public static Dictionary<string, AudioClip> Clips { get; } = new ();
+        public static Dictionary<string, AnimationClip> AnimClips { get; } = new ();
         public static Dictionary<string, AudioClip> IsmaClips { get; } = new ();
         public static Dictionary<string, Material> Materials { get; } = new ();
         private LanguageCtrl langStrings { get; set; }
@@ -497,6 +498,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaH);
             ABManager.Load(ABManager.Bundle.OWArenaI);
             ABManager.Load(ABManager.Bundle.GArenaIsma);
+            ABManager.Load(ABManager.Bundle.tk2dDep);
 
             Log("Finished bundling");
         }

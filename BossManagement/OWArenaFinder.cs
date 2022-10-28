@@ -34,6 +34,8 @@ namespace FiveKnights.BossManagement
 
         private static Dictionary<string, Shader> ParticleMatToShader = new();
         
+        public Dictionary<string, AnimationClip> clips;
+        
         public static bool IsInOverWorld =>
             Instance != null && (Instance._currScene is DryyaScene or IsmaScene or ZemerScene or HegemolScene );
 
@@ -143,7 +145,7 @@ namespace FiveKnights.BossManagement
                 {
                     if (self.sceneName == PrevDryScene)
                     {
-                        CreateGateway("door_dreamReturn", new Vector2(39.2f, 94.4f), Vector2.zero, 
+                        CreateGateway("door_dreamReturn", new Vector2(40.5f, 94.4f), Vector2.zero, // 39.2f, 94.4f
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
@@ -663,13 +665,18 @@ namespace FiveKnights.BossManagement
             yield return null;
             
             AssetBundle dryyaAssetBundle = ABManager.AssetBundles[ABManager.Bundle.GDryya];
-            FiveKnights.preloadedGO["Dryya"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya");
+            foreach (var c in dryyaAssetBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+            FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
             FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
             FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
             FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
-            FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2.5f;
+            //FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
@@ -686,6 +693,11 @@ namespace FiveKnights.BossManagement
             yield return null;
             yield return null;
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GIsma];
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
             //AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.OWArenaI];
             //FiveKnights.preloadedGO["IsmaArena"] = ab2.LoadAsset<GameObject>("new stuff isma 1");
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
@@ -722,10 +734,17 @@ namespace FiveKnights.BossManagement
             yield return null;
             
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
+            
+            foreach (var c in hegemolBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
 
             FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
             FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
             FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
+            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Hegemol Bundle");
         }
@@ -749,6 +768,11 @@ namespace FiveKnights.BossManagement
             yield return null;
             
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GZemer];
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.name == "Zemer") FiveKnights.preloadedGO["Zemer"] = i;
@@ -767,6 +791,12 @@ namespace FiveKnights.BossManagement
             }
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
+
+            clips = new Dictionary<string, AnimationClip>();
+            foreach (var c in ab.LoadAllAssets<AnimationClip>())
+            {
+                clips[c.name] = c;
+            }
 
             Log("Finished Loading Zemer Bundle");
         }

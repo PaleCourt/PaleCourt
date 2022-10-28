@@ -54,6 +54,9 @@
     <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
   </Target>
   <ItemGroup>
+    <None Remove="StreamingAssets\blendvertexcolor" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -195,6 +198,7 @@
     <EmbeddedResource Include="assets\ach_isma.png" />
     <EmbeddedResource Include="assets\ach_zem.png" />
     <EmbeddedResource Include="assets\ach_panth.png" />
+    <EmbeddedResource Include="StreamingAssets\blendvertexcolor" />
     <EmbeddedResource Include="StreamingAssets\ismawin" />
     <EmbeddedResource Include="StreamingAssets\dryyawin" />
     <EmbeddedResource Include="StreamingAssets\zemerwin" />
