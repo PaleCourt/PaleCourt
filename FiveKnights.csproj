@@ -22,7 +22,7 @@
     <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />
     <Copy Condition="Exists('$(HollowKnightRefs)')" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
   </Target>
-  <Target Name="CopyMod" AfterTargets="PostBuildEvent">
+  <!--<Target Name="CopyMod" AfterTargets="PostBuildEvent">
     <RemoveDir Condition="Exists('$(ExportDir)/$(TargetName)/')" Directories="$(ExportDir)/$(TargetName)/" />
     <MakeDir Directories="$(ExportDir)/$(TargetName)/" />
     <MakeDir Directories="$(ExportDir)/$(TargetName)/zip/" />
@@ -52,7 +52,7 @@
       <Output TaskParameter="Items" ItemName="ZipFilesWithHashes" />
     </GetFileHash>
     <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
-  </Target>
+  </Target>-->
   <ItemGroup>
     <None Remove="StreamingAssets\blendvertexcolor" />
   </ItemGroup>
