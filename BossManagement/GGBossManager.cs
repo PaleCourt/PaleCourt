@@ -22,8 +22,6 @@ namespace FiveKnights.BossManagement
         public GameObject dd; 
         private tk2dSpriteAnimator _tk;
         private List<AssetBundle> _assetBundles;
-        public MusicPlayer _ap;
-        public MusicPlayer _ap2;
         public static bool alone;
         private bool HIT_FLAG;
         public static GGBossManager Instance;
@@ -48,7 +46,6 @@ namespace FiveKnights.BossManagement
             Unload();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             ModHooks.BeforePlayerDeadHook += BeforePlayerDied;
-            On.MusicCue.GetChannelInfo += MusicCue_GetChannelInfo;
             string dret = PlayerData.instance.dreamReturnScene;
             PlayerData.instance.dreamReturnScene = (dret == "Waterways_13") ? dret : "White_Palace_09";
             dret = PlayerData.instance.dreamReturnScene;
@@ -85,8 +82,7 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
             {
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
-                FiveKnights.Clips["IsmaMusic"] = snd.LoadAsset<AudioClip>("Aud_Isma");
+                FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return LoadIsmaBundle();
                 yield return OgrimIsmaFight();
@@ -331,21 +327,20 @@ namespace FiveKnights.BossManagement
 
 			// Transition to phase 2
 			yield return new WaitWhile(() => !HIT_FLAG);
-            if(dd.transform.position.y < 9f) dd.transform.position = 
-                    new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
+			PlayMusic(null, 1f);
+            if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
 			PlayerData.instance.isInvincible = true;
-			GameManager.instance.playerData.disablePause = true;
             _fsm.SetState("Stun Set");
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
+
+            // Delay Isma appearing slightly
+            yield return new WaitForSeconds(1f);
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
-            
 
             // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
-			_ap.Volume = 1f;
-			_ap?.UpdateMusic();
 			_fsm.enabled = true;
             _fsm.SetState("Stun Recover");
             yield return null;
@@ -359,17 +354,15 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
             _fsm.RemoveAction("Idle", 1);
             PlayerData.instance.isInvincible = false;
-            GameManager.instance.playerData.disablePause = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
-            _ap?.StopMusic();
-            _ap2?.StopMusic();
             On.HeroController.TakeDamage -= HCTakeDamage;
         }
 
         private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
         {
             orig(self, go, damageSide, 1, hazardType);
+            Log("Took damage from " + go);
         }
 
         public void BeforePlayerDied()
@@ -410,68 +403,6 @@ namespace FiveKnights.BossManagement
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
-        }
-        
-        /*public void PlayMusic(string clip, float vol = 0f)
-        {
-            GameObject actor = GameObject.Find("Audio Player Actor");
-            AudioClip ac = ArenaFinder.Clips[clip];
-            CustomAudioPlayer = new MusicPlayer
-            {
-                Volume = vol,
-                Clip = ac,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Loop = true,
-                Spawn = HeroController.instance.gameObject
-            };
-            CustomAudioPlayer.DoPlayRandomClip();
-        }*/
-
-        private bool startedMusic;
-        
-        private MusicCue.MusicChannelInfo MusicCue_GetChannelInfo(On.MusicCue.orig_GetChannelInfo orig, MusicCue self, MusicChannels channel)
-        {
-            if (!startedMusic && self.name.Contains("Defender") && (CustomWP.boss == CustomWP.Boss.Ogrim || CustomWP.boss == CustomWP.Boss.All))
-            {
-                Log("PLayed Isma song too " + self.name);
-                startedMusic = true;
-                PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-                GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-                PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-                GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-                _ap = new MusicPlayer
-                {
-                    Volume = 0f,
-                    Player = actor,
-                    MaxPitch = 1f,
-                    MinPitch = 1f,
-                    Loop = true,
-                    Clip = FiveKnights.Clips["IsmaMusic"],
-                    Spawn = HeroController.instance.gameObject
-                };
-                _ap2 = new MusicPlayer
-                {
-                    Volume = 1f,
-                    Player = actor,
-                    MaxPitch = 1f,
-                    MinPitch = 1f,
-                    Loop = true,
-                    Clip = FiveKnights.Clips["OgrimMusic"],
-                    Spawn = HeroController.instance.gameObject
-                };
-
-                _ap.DoPlayRandomClip();
-                _ap2.DoPlayRandomClip();
-                
-                return null;
-            }
-            else if (self.name.Contains("Defender"))
-            {
-                return null;
-            }
-            return orig(self, channel);
         }
 
         private void Log(object o)
@@ -727,10 +658,6 @@ namespace FiveKnights.BossManagement
         {
             ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
-            On.MusicCue.GetChannelInfo -= MusicCue_GetChannelInfo;
-
-            _ap?.StopMusic();
-            _ap2?.StopMusic();
         }
     }
 }
