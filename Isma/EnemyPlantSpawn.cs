@@ -19,9 +19,9 @@ namespace FiveKnights.Isma
         public const int MAX_FOOL = 3;
         public const int MAX_PILLAR = 3;
         private const float TIME_INC = 0.1f;
-        private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
-        private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
-        private static readonly float MIDDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
+        private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
+        private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 90.6f;
+        private static readonly float MIDDDLE = OWArenaFinder.IsInOverWorld ? 120 : 75f;
         private readonly float GROUND_Y = 6.05f;
         private const String FoolName = "FoolEnemy";
         private const String SpecialName = "SpecialEnemy";
@@ -273,6 +273,7 @@ namespace FiveKnights.Isma
             private IEnumerator Start()
             {
                 initFool.SetActive(true);
+                hm.IsInvincible = true;
                 Animator anim = initFool.GetComponent<Animator>();
                 initFool.transform.SetPosition2D(xPos, InitY); //6.2
                 initFool.transform.localScale *= 1.4f;
@@ -294,6 +295,7 @@ namespace FiveKnights.Isma
                 fsm.enabled = true;
                 fsm.SetState("Init");
                 fsm.GetAction<Wait>("Ready", 2).time = 0.55f;
+                hm.IsInvincible = false;
             }
 
             private void Update()

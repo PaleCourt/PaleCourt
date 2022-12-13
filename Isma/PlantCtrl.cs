@@ -10,13 +10,16 @@ namespace FiveKnights.Isma
     {
         private Animator _anim;
         private HealthManager _hm;
-        public List<float> PlantX;
+        private BoxCollider2D _bc;
+
         private const int PLANTHP = 35;
         public bool IsmaFight;
 
         private void Awake()
         {
             _anim = gameObject.GetComponent<Animator>();
+            _bc = gameObject.GetComponent<BoxCollider2D>();
+
             gameObject.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
             transform.position -= new Vector3(0f, 0.2f, 0f);
         }
@@ -24,14 +27,15 @@ namespace FiveKnights.Isma
         private IEnumerator Start()
         {
             yield return null;
-            if (IsmaFight)
+
+            if(IsmaFight)
             {
                 _hm = gameObject.AddComponent<HealthManager>();
                 SetupHM();
                 gameObject.AddComponent<Flash>();
                 _hm.hp = PLANTHP;
             }
-            var bc = GetComponent<BoxCollider2D>();
+
             gameObject.SetActive(true);
             _anim.enabled = true;
             _anim.Play("PlantGrow");
@@ -41,10 +45,11 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.9f);
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            bc.isTrigger = false;
-            bc.enabled = true;
-            gameObject.AddComponent<ShadeOnlyPass>().disableCollider = bc;
-            if (IsmaFight)
+            _bc.isTrigger = false;
+            if(!HeroController.instance.cState.shadowDashing) _bc.enabled = true;
+            gameObject.AddComponent<ShadeOnlyPass>().disableCollider = _bc;
+
+            if(IsmaFight)
             {
                 GameObject bnc = new GameObject("PillarPogo")
                 {
@@ -59,14 +64,14 @@ namespace FiveKnights.Isma
                 };
                 var col = bnc.AddComponent<BoxCollider2D>();
                 col.isTrigger = true;
-                col.size = bc.size;
-                col.offset = bc.offset;
+                col.size = _bc.size;
+                col.offset = _bc.offset;
                 bnc.SetActive(true);
                 bnc.transform.parent = gameObject.transform;
             }
             
             yield return new WaitForSeconds(0.55f);
-            if (!IsmaFight) StartCoroutine(Death());
+            if(!IsmaFight) StartCoroutine(Death());
         }
 
         private IEnumerator Death()
@@ -75,7 +80,6 @@ namespace FiveKnights.Isma
             _anim.Play("PlantDie");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            PlantX.Remove(gameObject.transform.GetPositionX());
             Destroy(gameObject);
         }
 

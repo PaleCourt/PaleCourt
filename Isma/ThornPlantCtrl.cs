@@ -63,7 +63,7 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(0.4f);
             _anim.enabled = true;
             _anim.Play("ThornPlantDie");
-            yield return _anim.WaitToFrame(4);
+            yield return _anim.WaitToFrame(3);
             _bc.enabled = false;
             yield return _anim.WaitToFrame(5);
             Destroy(gameObject);

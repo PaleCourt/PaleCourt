@@ -322,6 +322,7 @@ namespace FiveKnights.BossManagement
 
             // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
+            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
             yield return new WaitWhile(() => _hm.hp > 600);
             HIT_FLAG = false;
 
@@ -330,7 +331,10 @@ namespace FiveKnights.BossManagement
 			PlayMusic(null, 1f);
             if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
 			PlayerData.instance.isInvincible = true;
+            dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
+            burrow.SendEvent("BURROW END");
+            burrow.enabled = false;
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
 
@@ -346,20 +350,21 @@ namespace FiveKnights.BossManagement
             yield return null;
 
             // WD scream
-            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+            burrow.enabled = true;
             burrow.SendEvent("BURROW END");
             // This is to prevent WD from entering any other state after Stun Recover
             _fsm.InsertMethod("Idle", 1, () => _fsm.SetState("Rage Roar"));
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
             _fsm.RemoveAction("Idle", 1);
+            dd.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
             PlayerData.instance.isInvincible = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
             On.HeroController.TakeDamage -= HCTakeDamage;
         }
 
-        private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+		private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
         {
             orig(self, go, damageSide, 1, hazardType);
             Log("Took damage from " + go);
