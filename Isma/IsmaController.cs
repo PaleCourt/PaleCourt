@@ -743,7 +743,9 @@ namespace FiveKnights.Isma
                 _anim.enabled = true;
                 arm.SetActive(true);
                 tentArm.SetActive(true);
-
+                
+                tentArm.AddComponent<AFistFlash>();
+                
                 Animator tentAnim = tentArm.GetComponent<Animator>();
                 tentAnim.speed = 1.9f;
                 yield return tentAnim.PlayToFrameAt("NewArmAttack", 0, 12);
@@ -755,6 +757,7 @@ namespace FiveKnights.Isma
                 tentAnim.speed = 1f;
 
                 yield return EndAirFist(spike, tentArm, dir);
+                Destroy(tentArm);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
 
@@ -912,6 +915,7 @@ namespace FiveKnights.Isma
                 whip.transform.position = oldWhip.transform.position;
                 whip.transform.localScale = oldWhip.transform.lossyScale;
                 whip.SetActive(true);
+                whip.AddComponent<WhipFlash>();
                 _ap.Clip = FiveKnights.Clips["IsmaAudGroundWhip"];
                 _ap.DoPlayRandomClip();
                 
@@ -937,6 +941,7 @@ namespace FiveKnights.Isma
                 transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
                 yield return _anim.PlayBlocking("GFistEnd");
                 ToggleIsma(false);
+                Destroy(whip);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
 
@@ -971,6 +976,7 @@ namespace FiveKnights.Isma
             whip.transform.position = oldWhip.transform.position;
             whip.transform.localScale = oldWhip.transform.lossyScale;
             whip.SetActive(true);
+            whip.AddComponent<WhipFlash>();
             _ap.Clip = FiveKnights.Clips["IsmaAudGroundWhip"];
             _ap.DoPlayRandomClip();
 
