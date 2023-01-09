@@ -654,7 +654,7 @@ namespace FiveKnights.Isma
                 rb.velocity = new Vector2(dir * 30f, 40f);
                 CollisionCheck cc = bomb.AddComponent<CollisionCheck>();
                 rb.angularVelocity = dir * 900f;
-                yield return new WaitWhile(() => !cc.Hit && !FastApproximately(bomb.transform.GetPositionX(), MIDDLE, 0.2f));
+                yield return new WaitWhile(() => !cc.Hit && !FastApproximately(bomb.transform.GetPositionX(), MIDDLE, 0.6f));
                 anim.Play("Bomb");
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 1);
                 rb.angularVelocity = 0f;
