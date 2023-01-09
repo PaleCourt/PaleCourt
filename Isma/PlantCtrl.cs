@@ -13,7 +13,6 @@ namespace FiveKnights.Isma
         private BoxCollider2D _bc;
 
         private const int PLANTHP = 35;
-        public bool IsmaFight;
 
         private void Awake()
         {
@@ -28,13 +27,10 @@ namespace FiveKnights.Isma
         {
             yield return null;
 
-            if(IsmaFight)
-            {
-                _hm = gameObject.AddComponent<HealthManager>();
-                SetupHM();
-                gameObject.AddComponent<Flash>();
-                _hm.hp = PLANTHP;
-            }
+            _hm = gameObject.AddComponent<HealthManager>();
+            SetupHM();
+            gameObject.AddComponent<Flash>();
+            _hm.hp = PLANTHP;
 
             gameObject.SetActive(true);
             _anim.enabled = true;
@@ -49,38 +45,25 @@ namespace FiveKnights.Isma
             if(!HeroController.instance.cState.shadowDashing) _bc.enabled = true;
             gameObject.AddComponent<ShadeOnlyPass>().disableCollider = _bc;
 
-            if(IsmaFight)
+            GameObject bnc = new GameObject("PillarPogo")
             {
-                GameObject bnc = new GameObject("PillarPogo")
-                {
-                    layer = 11,
-                    transform =
+                layer = 11,
+                transform =
                     {
                         position = gameObject.transform.position,
                         rotation = gameObject.transform.rotation,
                         localScale = gameObject.transform.localScale,
                         parent = gameObject.transform
                     }
-                };
-                var col = bnc.AddComponent<BoxCollider2D>();
-                col.isTrigger = true;
-                col.size = _bc.size;
-                col.offset = _bc.offset;
-                bnc.SetActive(true);
-                bnc.transform.parent = gameObject.transform;
-            }
-            
-            yield return new WaitForSeconds(0.55f);
-            if(!IsmaFight) StartCoroutine(Death());
-        }
+            };
+            var col = bnc.AddComponent<BoxCollider2D>();
+            col.isTrigger = true;
+            col.size = _bc.size;
+            col.offset = _bc.offset;
+            bnc.SetActive(true);
+            bnc.transform.parent = gameObject.transform;
 
-        private IEnumerator Death()
-        {
-            GetComponent<BoxCollider2D>().enabled = false;
-            _anim.Play("PlantDie");
-            yield return null;
-            yield return new WaitWhile(() => _anim.IsPlaying());
-            Destroy(gameObject);
+            yield return new WaitForSeconds(0.55f);
         }
 
         private void SetupHM()

@@ -42,9 +42,9 @@ namespace FiveKnights.Isma
         private System.Random _rand;
         private int _healthPool;
         private bool waitForHitStart;
-        private readonly float LEFT_X = (OWArenaFinder.IsInOverWorld) ? 105f : 60.3f;
-        private readonly float RIGHT_X = (OWArenaFinder.IsInOverWorld) ? 135f : 90.6f;
-        private readonly float MIDDLE = (OWArenaFinder.IsInOverWorld) ? 120 : 75f;
+        private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
+        private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 91.7f;
+        private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
         private readonly float GROUND_Y = 5.9f;
         
         private const int MAX_HP = 1500;
@@ -162,7 +162,7 @@ namespace FiveKnights.Isma
                 //acidOldTex = def.material.mainTexture;
                 def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
                 // Store values
-                FiveKnights.IsmaClips["AcidSpitSnd"] = clip;
+                FiveKnights.Clips["AcidSpitSnd"] = clip;
                 FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
                 FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
                 #endregion
@@ -197,6 +197,8 @@ namespace FiveKnights.Isma
                 }
 				#endregion
 			}
+
+            if(!OWArenaFinder.IsInOverWorld && onlyIsma) Destroy(GameObject.Find("black_fader_GG"));
 
 			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
             {
@@ -325,7 +327,7 @@ namespace FiveKnights.Isma
             yield return WaitToAttack();
             yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 0.8f) + offsetTime);
             int lastA = 2;
-            Bomb();
+            SeedBomb();
 
             while (true)
             {
@@ -342,11 +344,11 @@ namespace FiveKnights.Isma
                 }
                 bool throwBomb = _rand.Next(100) < plantPercent;
                 int r = onlyIsma ? UnityEngine.Random.Range(0, 10) : UnityEngine.Random.Range(0, 7);
-                if (EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0 
-                    && lastA != 2 && UnityEngine.Random.Range(0, 2) == 0)
+                if(spawningWalls || (EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0 
+                    && lastA != 2 && UnityEngine.Random.Range(0, 2) == 0))
                 {
                     lastA = 2;
-                    _prev = Bomb;
+                    _prev = SeedBomb;
                 }
                 else if (r < 4 && lastA != 0)
                 {
@@ -361,7 +363,7 @@ namespace FiveKnights.Isma
                 else if (throwBomb && onlyIsma && lastA != 2)
                 {
                     lastA = 2;
-                    _prev = Bomb;
+                    _prev = SeedBomb;
                 }
                 else
                 {
@@ -429,12 +431,13 @@ namespace FiveKnights.Isma
             _ddFsm.InsertMethod("Timer", () =>
             {
                 if(startedIsmaRage) return;
-                IEnumerator WaitForWhip()
+                IEnumerator WaitForWhipOrBomb()
                 {
                     yield return WaitToAttack();
-                    WhipAttack();
+                    if(spawningWalls) SeedBomb();
+                    else WhipAttack();
                 }
-                StartCoroutine(WaitForWhip());
+                StartCoroutine(WaitForWhipOrBomb());
             }, 0);
 
             // Seed Bomb - Bouncing
@@ -443,7 +446,7 @@ namespace FiveKnights.Isma
                 IEnumerator WaitForBomb()
                 {
                     yield return WaitToAttack();
-                    Bomb();
+                    SeedBomb();
                 }
                 StartCoroutine(WaitForBomb());
             }, 0);
@@ -509,25 +512,32 @@ namespace FiveKnights.Isma
                 killAllMinions = true;
                 yield return new WaitForSeconds(0.1f);
                 killAllMinions = false;
+                preventDamage = true;
+                spawningWalls = true;
                 if(onlyIsma)
                 {
+                    yield return new WaitWhile(() => spawningWalls);
+                    yield return new WaitForSeconds(1f);
                     EnemyPlantSpawn spawner = GameObject.Find("SeedFloor").GetComponent<EnemyPlantSpawn>();
                     spawner.Phase2Spawn();
                 }
                 else
                 {
                     yield return new WaitUntil(() => _ddFsm.ActiveStateName == "Idle");
-                    _ddFsm.InsertMethod("Rage?", () => _ddFsm.SetState("Timer"), 0);
+                    _ddFsm.InsertMethod("Rage?", () => _ddFsm.SetState("TD Set"), 0);
                     yield return new WaitUntil(() => _ddFsm.ActiveStateName.Contains("Tunneling"));
                     _ddFsm.RemoveAction("Rage?", 0);
                     yield return new WaitForSeconds(0.3f);
-                    dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge L").Value = 66.5f;
-                    dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge R").Value = 86f;
-                    _ddFsm.FsmVariables.FindFsmFloat("Dolphin Max X").Value = 86f;
-                    _ddFsm.FsmVariables.FindFsmFloat("Dolphin Min X").Value = 66.5f;
+                    dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge R").Value = 88f;
+                    dd.LocateMyFSM("Constrain X").FsmVariables.FindFsmFloat("Edge L").Value = 64f;
+                    _ddFsm.FsmVariables.FindFsmFloat("Dolphin Max X").Value = 88f;
+                    _ddFsm.FsmVariables.FindFsmFloat("Dolphin Min X").Value = 64f;
                     _ddFsm.FsmVariables.FindFsmFloat("Max X").Value = 85f;
                     _ddFsm.FsmVariables.FindFsmFloat("Min X").Value = 67f;
+                    yield return new WaitWhile(() => spawningWalls);
+                    yield return new WaitForSeconds(1f);
                 }
+                preventDamage = false;
                 _wallActive = true;
 
                 wallR = Instantiate(FiveKnights.preloadedGO["Wall"]);
@@ -537,17 +547,36 @@ namespace FiveKnights.Isma
                 GameObject frontWL = wallL.transform.Find("FrontW").gameObject;
                 frontWR.layer = 8;
                 frontWL.layer = 8;
-                wallR.transform.position = new Vector2(RIGHT_X - 1.5f, GROUND_Y);
-                wallL.transform.position = new Vector2(LEFT_X + 3f, GROUND_Y);
+                wallR.transform.position = new Vector2(RIGHT_X - 2f, GROUND_Y);
+                wallL.transform.position = new Vector2(LEFT_X + 2f, GROUND_Y);
                 Animator anim = frontWR.GetComponent<Animator>();
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 3);
                 wallR.transform.Find("Petal").gameObject.SetActive(true);
                 wallL.transform.Find("Petal").gameObject.SetActive(true);
                 Vector2 hPos = _target.transform.position;
-                if(hPos.x > RIGHT_X - 4.6f) _target.transform.position = new Vector2(RIGHT_X - 4.6f, hPos.y);
-                else if(hPos.x < LEFT_X + 7.3f) _target.transform.position = new Vector2(LEFT_X + 7.3f, hPos.y);
+                if(hPos.x > RIGHT_X - 6f) _target.transform.position = new Vector2(RIGHT_X - 6f, hPos.y);
+                else if(hPos.x < LEFT_X + 6f) _target.transform.position = new Vector2(LEFT_X + 6f, hPos.y);
 
                 yield return new WaitWhile(() => _healthPool > SPIKE_HP);
+
+                preventDamage = true;
+                spawningWalls = true;
+                if(onlyIsma)
+                {
+                    yield return new WaitWhile(() => spawningWalls);
+                    yield return new WaitForSeconds(1f);
+                }
+                else
+				{
+                    yield return new WaitUntil(() => _ddFsm.ActiveStateName == "Idle");
+                    _ddFsm.InsertMethod("Rage?", () => _ddFsm.SetState("TD Set"), 0);
+                    yield return new WaitUntil(() => _ddFsm.ActiveStateName.Contains("Tunneling"));
+                    _ddFsm.RemoveAction("Rage?", 0);
+                    yield return new WaitForSeconds(0.3f);
+                    yield return new WaitWhile(() => spawningWalls);
+                    yield return new WaitForSeconds(1f);
+                }
+                preventDamage = false;
 
                 foreach(GameObject wall in new[] { wallR, wallL })
                 {
@@ -556,13 +585,8 @@ namespace FiveKnights.Isma
                     spikeFront.layer = 17;
                     spikeFront.AddComponent<DamageHero>().damageDealt = 1;
 
-                    var newEff = spikeFront.AddComponent<TinkEffect>();
-                    var oldEff = FiveKnights.preloadedGO["TinkEff"].GetComponent<TinkEffect>();
-                    foreach(FieldInfo fi in typeof(TinkEffect).GetFields(BindingFlags.Instance | BindingFlags.Public))
-                    {
-                        fi.SetValue(newEff, fi.GetValue(oldEff));
-                    }
-
+                    spikeFront.AddComponent<ThornSplat>();
+                    spikeFront.AddComponent<NonBouncer>();
                     spike.SetActive(true);
                 }
 
@@ -582,11 +606,14 @@ namespace FiveKnights.Isma
                 wall.transform.Find("FrontW").gameObject.GetComponent<BoxCollider2D>().enabled = false;
                 wall.transform.Find("Spike").Find("Front").gameObject.GetComponent<BoxCollider2D>().enabled = false;
             }
-            
         }
 
-        private void Bomb()
+        private bool firstBomb = true;
+        private bool spawningWalls = false;
+
+        private void SeedBomb()
         {
+            if(!onlyIsma) firstBomb = false;
             float dir = 0f;
             IEnumerator BombThrow()
             {
@@ -605,6 +632,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(0, 0f);
                 yield return new WaitForSeconds(0.3f);
                 _anim.enabled = true;
+
                 GameObject bombRe = transform.Find("Bomb").gameObject;
                 GameObject seedRe = bombRe.transform.Find("Seed").gameObject;
                 GameObject bomb = Instantiate(bombRe, bombRe.transform.position, bombRe.transform.rotation);
@@ -612,8 +640,13 @@ namespace FiveKnights.Isma
                 Rigidbody2D rb = bomb.GetComponent<Rigidbody2D>();
                 Animator anim = bomb.GetComponent<Animator>();
                 bomb.transform.localScale *= 1.4f;
-                //seed.transform.localScale *= 1.75f;
-                seed.transform.localScale *= 1.15f;
+                Vector3 scale = seed.transform.localScale;
+                scale *= 2f;
+                scale.x *= -1f;
+                seed.transform.localScale = scale;
+                seed.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
+                Destroy(seed.GetComponent<DamageHero>());
+
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 bomb.SetActive(true);
                 rb.gravityScale = 1.3f;
@@ -621,8 +654,7 @@ namespace FiveKnights.Isma
                 rb.velocity = new Vector2(dir * 30f, 40f);
                 CollisionCheck cc = bomb.AddComponent<CollisionCheck>();
                 rb.angularVelocity = dir * 900f;
-                float xLim = MIDDLE;
-                yield return new WaitWhile(() => !cc.Hit && !FastApproximately(bomb.transform.GetPositionX(), xLim, 0.6f));
+                yield return new WaitWhile(() => !cc.Hit && !FastApproximately(bomb.transform.GetPositionX(), MIDDLE, 0.2f));
                 anim.Play("Bomb");
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 1);
                 rb.angularVelocity = 0f;
@@ -631,26 +663,46 @@ namespace FiveKnights.Isma
                 _ap.Clip = FiveKnights.Clips["IsmaAudSeedBomb"];
                 _ap.DoPlayRandomClip();
                 yield return new WaitWhile(() => anim.GetCurrentFrame() <= 2); //whip and boxcollider seed
-                int incr = _wallActive ? 50 : 40;
-                for (int i = 0; i <= 360; i += incr)
+                if(firstBomb)
                 {
-                    GameObject localSeed = Instantiate(seed);
-                    float rot = i + UnityEngine.Random.Range(0, 10) * (incr/10);
-                    localSeed.SetActive(true);
-                    localSeed.transform.rotation = Quaternion.Euler(0f, 0f, rot);
-                    localSeed.transform.position = bomb.transform.position;
-                    Vector3 scale = localSeed.transform.localScale * 1.7f;
-                    localSeed.transform.localScale = new Vector3(scale.x * -1f, scale.y, scale.z);
-                    float spd = 30;
-                    
-                    localSeed.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
-                    localSeed.name = "SeedEnemy";
-                    
-                    localSeed.GetComponent<Rigidbody2D>().velocity = new Vector2(spd * Mathf.Cos(rot * Mathf.Deg2Rad), spd * Mathf.Sin(rot * Mathf.Deg2Rad));
-                    //EnemyPlantSpawn eps = localSeed.AddComponent<EnemyPlantSpawn>();
-                    Destroy(localSeed.GetComponent<DamageHero>());
-                    //eps.PlantG = PlantG;
-                    //eps.PlantF = PlantF;
+                    for(int i = 200; i <= 340; i += 35)
+                    {
+                        GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, i));
+                        localSeed.name = "SeedEnemy";
+                        localSeed.SetActive(true);
+                        localSeed.GetComponent<Rigidbody2D>().velocity =
+                            new Vector2(30f * Mathf.Cos(i * Mathf.Deg2Rad), 30f * Mathf.Sin(i * Mathf.Deg2Rad));
+                    }
+                    firstBomb = false;
+                }
+                else if(spawningWalls)
+                {
+                    for(int i = 0; i < 8; i++)
+                    {
+                        Vector2 targetPos = new Vector2(i < 4 ? LEFT_X + 2f * (i + 1) : RIGHT_X + 2f * (i - 8), 7.3f);
+                        Vector2 path = targetPos - (Vector2)bomb.transform.position;
+                        float rot = Mathf.Atan2(path.y, path.x);
+
+                        GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
+                        localSeed.name = "VineWallSeed";
+                        localSeed.SetActive(true);
+                        localSeed.GetComponent<Rigidbody2D>().velocity =
+                            new Vector2(30f * Mathf.Cos(rot), 30f * Mathf.Sin(rot));
+                    }
+                    spawningWalls = false;
+                }
+                else
+                {
+                    int incr = _wallActive ? 50 : 40;
+                    for(int i = 0; i <= 360; i += incr)
+                    {
+                        float rot = i + UnityEngine.Random.Range(0, 10) * (incr / 10);
+                        GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
+                        localSeed.name = "SeedEnemy";
+                        localSeed.SetActive(true);
+                        localSeed.GetComponent<Rigidbody2D>().velocity =
+                            new Vector2(30f * Mathf.Cos(rot * Mathf.Deg2Rad), 30f * Mathf.Sin(rot * Mathf.Deg2Rad));
+                    }
                 }
                 yield return new WaitWhile(() => anim.IsPlaying());
                 Destroy(bomb);
@@ -676,6 +728,10 @@ namespace FiveKnights.Isma
             StartCoroutine(BombThrow());
         }
 
+        private GameObject arm;
+        private GameObject spike;
+        private GameObject tentArm;
+
         private void AirFist()
         {
             IEnumerator AirFist()
@@ -697,14 +753,14 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 float dir = FaceHero();
                 
-                GameObject arm = transform.Find("Arm2").gameObject;
+                arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
                 _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
                 _voice.DoPlayRandomClip();
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _rb.velocity = new Vector2(0f, 0f);
-                GameObject spike = transform.Find("SpikeArm").gameObject;
+                spike = transform.Find("SpikeArm").gameObject;
                 yield return new WaitWhile(() => _anim.IsPlaying());
 
                 _anim.Play("AFist");
@@ -733,7 +789,7 @@ namespace FiveKnights.Isma
                 arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
                 GameObject parArm = arm.transform.Find("TentArm").gameObject;
                 parArm.SetActive(false);
-                GameObject tentArm = Instantiate(parArm, parArm.transform.position, parArm.transform.rotation);
+                tentArm = Instantiate(parArm, parArm.transform.position, parArm.transform.rotation);
                 tentArm.SetActive(false);
                 Vector3 tentArmScale = tentArm.transform.localScale;
                 tentArm.transform.localScale = new Vector3(dir * tentArmScale.x, tentArmScale.y, tentArmScale.z) * 1.35f;
@@ -743,9 +799,8 @@ namespace FiveKnights.Isma
                 _anim.enabled = true;
                 arm.SetActive(true);
                 tentArm.SetActive(true);
-                
                 tentArm.AddComponent<AFistFlash>();
-                
+
                 Animator tentAnim = tentArm.GetComponent<Animator>();
                 tentAnim.speed = 1.9f;
                 yield return tentAnim.PlayToFrameAt("NewArmAttack", 0, 12);
@@ -879,7 +934,7 @@ namespace FiveKnights.Isma
                 aud.enabled = true;
                 aud.clip = null;
                 aud.pitch = aud.volume = 1f;
-                aud.PlayOneShot(FiveKnights.IsmaClips["AcidSpitSnd"], 1f);
+                aud.PlayOneShot(FiveKnights.Clips["AcidSpitSnd"], 1f);
                 Destroy(this);
             }
         }
@@ -894,8 +949,7 @@ namespace FiveKnights.Isma
             {
                 float heroX = _target.transform.GetPositionX();
                 float ismaX = heroX - MIDDLE > 0f ? LEFT_X + 8f : RIGHT_X - 8f;
-                //if (_wallActive) ismaX = heroX - MIDDDLE > 0f ? LEFT_X + 11f : RIGHT_X - 11f;
-                if (_wallActive) ismaX = heroX - MIDDLE > 0f ? LEFT_X + 11f : RIGHT_X - 9f;
+                if (_wallActive) ismaX = heroX - MIDDLE > 0f ? LEFT_X + 11f : RIGHT_X - 11f;
                 transform.position = new Vector2(ismaX, GROUND_Y);
                 float dir = FaceHero();
                 ToggleIsma(true);
@@ -1252,7 +1306,7 @@ namespace FiveKnights.Isma
         {
             if(onlyIsma)
 			{
-                yield return new WaitWhile(() => _hm.hp > (onlyIsma ? WALL_HP : WALL_HP_DUO));
+                yield return new WaitUntil(() => _wallActive);
                 yield return WaitToAttack();
             }
 
@@ -1459,6 +1513,9 @@ namespace FiveKnights.Isma
             // Isma dies and leaves
             Destroy(whip);
             Destroy(agonyThorns);
+            Destroy(tentArm);
+            Destroy(arm);
+            Destroy(spike);
             float dir = FaceHero(true);
             PlayDeathFor(gameObject);
             _bc.enabled = false;
@@ -1503,9 +1560,21 @@ namespace FiveKnights.Isma
             _ddFsm.GetAction<SetIntValue>("Set Rage", 1).intValue = 999;
             foreach(string state in new string[] { "Idle", "Move Choice", "After Throw?", "After Evade" })
 			{
-                _ddFsm.InsertMethod(state, () => _ddFsm.SetState("Rage Roar"), 0);
+                _ddFsm.InsertMethod(state, () =>
+				{
+                    IEnumerator WaitToRage()
+					{
+                        yield return new WaitWhile(() => dd.GetComponent<tk2dSpriteAnimator>().Playing);
+                        _ddFsm.SetState("Rage Roar");
+                    }
+                    StartCoroutine(WaitToRage());
+                }, 0);
             }
             _ddFsm.GetAction<Tk2dPlayAnimation>("Rage Roar", 1).Enabled = true;
+            _ddFsm.InsertMethod("Rage Roar", () =>
+            {
+                dd.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            }, 0);
 
             // Wait until death and set variables
             _healthPool = 180;
@@ -1537,6 +1606,7 @@ namespace FiveKnights.Isma
 
             // Isma starts moving to catch Ogrim
             yield return new WaitWhile(() => ogrimRb.velocity.y > 0f);
+            Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
             Log("Catching ogrim");
             ToggleIsma(true);
             _anim.Play("OgrimCatchIntro");
@@ -1567,17 +1637,16 @@ namespace FiveKnights.Isma
 			{
 				_anim.PlayAt("OgrimCatch", 2);
 				transform.position = new Vector3(dd.transform.GetPositionX(), GROUND_Y + 2.05f);
-				dd.SetActive(false);
-			}
+            }
 			else
 			{
                 _anim.Play("OgrimCatch");
-                dd.SetActive(false);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                _anim.enabled = false;
-                yield return new WaitForSeconds(0.65f);
-                _anim.enabled = true;
             }
+            dd.SetActive(false);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.65f);
+            _anim.enabled = true;
             yield return null;
 
             // Jump after catching
@@ -1600,7 +1669,7 @@ namespace FiveKnights.Isma
 
             void TransitionToAudioSnapshotOnEnter(On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.orig_OnEnter orig, TransitionToAudioSnapshot self)
             {
-                if(self.Fsm.GameObjectName == "_SceneManager" && self.Fsm.Name == "FSM") return;
+                if(self.State.Name == "Wake") return;
                 else orig(self);
             }
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter += TransitionToAudioSnapshotOnEnter;
@@ -1831,12 +1900,23 @@ namespace FiveKnights.Isma
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
+            if(self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
             {
                 hitInstance.DamageDealt = GulkaSpitEnemyDamage;
             }
-            DoTakeDamage(self.gameObject, hitInstance.DamageDealt, hitInstance.Direction);
+            DoTakeDamage(self.gameObject, (int)(hitInstance.DamageDealt * hitInstance.Multiplier), hitInstance.Direction);
+            if(self.gameObject.name.Contains("White Defender"))
+			{
+                if(_hmDD.hp - (int)(hitInstance.DamageDealt * hitInstance.Multiplier) <= 0)
+				{
+                    _hmDD.hp = 2;
+                    hitInstance.DamageDealt = 1;
+                    hitInstance.Multiplier = 1f;
+				}
+			}
             orig(self, hitInstance);
+            if(self.gameObject.name.Contains("White Defender")) _hmDD.hp = _healthPool;
+            _hm.hp = _healthPool;
         }
         
         private void DoTakeDamage(GameObject tar, int damage, float dir)
@@ -1862,7 +1942,6 @@ namespace FiveKnights.Isma
                 if(!preventDamage) _healthPool -= damage;
                 isIsmaHitLast = false;
             }
-            if(!onlyIsma) _hmDD.hp = Math.Max(200, _healthPool);
         }
 
         IEnumerator FlashWhite()

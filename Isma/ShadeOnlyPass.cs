@@ -8,38 +8,38 @@
         private bool unlocked;
         private EventRegister eventRegister;
 
-        private void Awake() => this.eventRegister = this.GetComponent<EventRegister>();
+        private void Awake() => eventRegister = GetComponent<EventRegister>();
 
         private void Start()
         {
-            if ((bool) (Object) this.eventRegister)
-                this.eventRegister.OnReceivedEvent += new EventRegister.RegisteredEvent(this.Setup);
-            this.Setup();
+            if ((bool) (Object) eventRegister)
+                eventRegister.OnReceivedEvent += new EventRegister.RegisteredEvent(Setup);
+            Setup();
         }
 
         private void OnDestroy()
         {
-            if (!(bool) (Object) this.eventRegister)
+            if (!(bool)eventRegister)
                 return;
-            this.eventRegister.OnReceivedEvent -= new EventRegister.RegisteredEvent(this.Setup);
+            eventRegister.OnReceivedEvent -= new EventRegister.RegisteredEvent(Setup);
         }
 
         private void Setup()
         {
             if (!GameManager.instance.playerData.GetBool("hasShadowDash"))
                 return;
-            this.unlocked = true;
+            unlocked = true;
         }
 
         private void FixedUpdate()
         {
-            if (!this.unlocked)
+            if (!unlocked || disableCollider == null)
                 return;
-            if (HeroController.instance.cState.shadowDashing && this.disableCollider.enabled)
-                this.disableCollider.enabled = false;
-            if (HeroController.instance.cState.shadowDashing || this.disableCollider.enabled)
+            if (HeroController.instance.cState.shadowDashing && disableCollider.enabled)
+                disableCollider.enabled = false;
+            if (HeroController.instance.cState.shadowDashing || disableCollider.enabled)
                 return;
-            this.disableCollider.enabled = true;
+            disableCollider.enabled = true;
         }
     }
 }

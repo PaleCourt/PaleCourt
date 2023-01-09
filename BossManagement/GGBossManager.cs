@@ -432,7 +432,7 @@ namespace FiveKnights.BossManagement
                 // TODO: REMOVE BELOW DEBUG STATEMENT
                 FiveKnights.Instance.SaveSettings.gotCharms[3] = false;
                 var r1 = ab.LoadAssetAsync<GameObject>("Isma");
-                var r2 =  ab.LoadAssetAsync<GameObject>("Gulka");
+                var r2 = ab.LoadAssetAsync<GameObject>("Gulka");
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");
                 var r4 = ab.LoadAssetAsync<GameObject>("Wall");
                 var r5 = ab.LoadAssetAsync<GameObject>("Fool");
