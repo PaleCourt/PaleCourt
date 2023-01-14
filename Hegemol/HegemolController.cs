@@ -45,15 +45,18 @@ namespace FiveKnights.Hegemol
 
         private GameObject _ogrim;
         private GameObject _pv;
-        private GameObject _sw;
         private PlayMakerFSM _control;
         private AudioSource _audio;
+        private MusicPlayer _ap;
+        private MusicPlayer _voice;
         private BoxCollider2D _collider;
         private HealthManager _hm;
         private PlayMakerFSM _dd;
         private Rigidbody2D _rb;
         private tk2dSprite _sprite;
         private tk2dSpriteAnimator _anim;
+        private SpriteRenderer _sr;
+        private SpriteFlash _sf;
         private Mace _mace;
         private bool _attacking;
         private bool _isNextPhase = false;
@@ -84,8 +87,10 @@ namespace FiveKnights.Hegemol
             _audio = GetComponent<AudioSource>();
             _hm = GetComponent<HealthManager>();
             _rb = GetComponent<Rigidbody2D>();
+            _sr = gameObject.AddComponent<SpriteRenderer>();
+			_sf = gameObject.AddComponent<SpriteFlash>();
 
-            On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
+			On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
         
@@ -199,7 +204,7 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator IntroGreet()
         {
-            float roarTime = 6.0f;
+            float roarTime = 3.0f;
 
             _anim.Play("Intro Greet");
 
@@ -228,7 +233,9 @@ namespace FiveKnights.Hegemol
             HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
 
             yield return new WaitForSeconds(roarTime);
+            GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
 
+            Destroy(roarEmitter);
             HeroController.instance.RegainControl();
             HeroController.instance.StartAnimationControl();
 
@@ -251,6 +258,7 @@ namespace FiveKnights.Hegemol
         private Func<IEnumerator> curAtt;
         private Dictionary<Func<IEnumerator>, int> repeats;
         private Dictionary<Func<IEnumerator>, int> maxRepeats;
+
         private IEnumerator AttackChoice()
         {
             while(true)
@@ -364,10 +372,11 @@ namespace FiveKnights.Hegemol
             yield return new WaitUntil(() => gameObject.transform.position.y < 500);
             _anim.Play("Land");
             _rb.velocity = Vector2.zero;
+            PlayAudioClip(_ap, FiveKnights.Clips["AudLand"]);
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
             Turn();
-            ShakeCameraAverage();
-            
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+
             yield return Slam();
         }
         
@@ -448,7 +457,7 @@ namespace FiveKnights.Hegemol
 
             hitter.AddComponent<DamageHero>().damageDealt = 2;
 
-            ShakeCameraAverage();
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
             yield return new WaitForSeconds(1.0f / 12);
 
@@ -530,7 +539,7 @@ namespace FiveKnights.Hegemol
             {
                 _anim.Play("Punch");
 
-                yield return new WaitUntil(() => _anim.CurrentFrame == 3);
+                yield return new WaitUntil(() => _anim.CurrentFrame == 2);
 
                 if (_isNextPhase)
                 {
@@ -541,10 +550,8 @@ namespace FiveKnights.Hegemol
                     StartCoroutine(DungSide(right));
                 else
                 {
-                    SpawnShockwaves(5f,2f, 50f, 2);
-                    SpawnShockwaves(2f,5f, 50f, 2);
+                    SpawnShockwaves(right, 4f, 1.5f, 50f, 2);
                 }
-                    
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Punch"));
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
@@ -563,32 +570,27 @@ namespace FiveKnights.Hegemol
             float diff = HeroController.instance.transform.position.x - transform.position.x;
             bool right = diff > 0;
             _anim.Play("Attack Antic");
-            yield return new WaitForSeconds(0.08333334f * 6f);
+            yield return new WaitForSeconds(0.4f);
             _anim.Play("Attack");
+            yield return new WaitWhile(() => _anim.CurrentFrame < 2);
+            SpawnShockwaves(right, 6f, 2.5f, 50f, 2);
             yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
-            if(right)
-                SpawnShockwaves(5f, 2f, 50f, 2);
-            else
-                SpawnShockwaves(2f, 5f, 50f, 2);
             yield return IdleTimer();
         }
 
         private IEnumerator Feint()
         {
-            float diff = HeroController.instance.transform.position.x - transform.position.x;
-            bool right = diff > 0;
-            _rb.gravityScale = 3;
+            bool right = HeroController.instance.transform.position.x - transform.position.x > 0;
             _anim.Play("Jump");
-            if (right)
-                _rb.velocity = new Vector2(-15, 20);
-            else
-                _rb.velocity = new Vector2(15, 20);
+            _rb.velocity = 25f * (right ? Vector2.left : Vector2.right);
+            yield return new WaitForSeconds(0.5f);
+            _rb.velocity = Vector2.zero;
             yield return new WaitForSeconds(0.1f);
             _anim.Play("Land");
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
             yield return Slam();
         }
-        
+
         private IEnumerator DungWave()
         {
             Transform trans = transform;
@@ -617,7 +619,6 @@ namespace FiveKnights.Hegemol
                 yield return new WaitForSeconds(0.1f);
             }
         }
-
      
         private IEnumerator DungSide(bool right)
         {
@@ -646,27 +647,19 @@ namespace FiveKnights.Hegemol
             }
         }
 
-
-        private void SpawnShockwaves(float RvertScale,float LvertScale,float speed, int damage)
+        private void SpawnShockwaves(bool facingRight, float offset, float scale, float speed, int damage)
         {
-            bool[] facingRightBools = { false, true };
             Vector2 pos = transform.position;
-            foreach (bool facingRight in facingRightBools)
-            {
-                GameObject shockwave = Instantiate(_control.GetAction<SpawnObjectFromGlobalPool>("S Attack Recover",4).gameObject.Value);
-                PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
-                shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
-                shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
-                shockwave.AddComponent<DamageHero>().damageDealt = damage;
-                shockwave.SetActive(true);
-                shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 0.5f : -0.5f), 12.0f));
-                shockwave.transform.SetScaleX(facingRight ? RvertScale : LvertScale);
-            }
-        }
-
-        private void ShakeCameraAverage()
-        {
-            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            PlayAudioClip(_ap, FiveKnights.Clips["AudLand"]);
+            GameObject shockwave = Instantiate(_control.GetAction<SpawnObjectFromGlobalPool>("S Attack Recover").gameObject.Value);
+            PlayMakerFSM shockFSM = shockwave.LocateMyFSM("shockwave");
+            shockFSM.FsmVariables.FindFsmBool("Facing Right").Value = facingRight;
+            shockFSM.FsmVariables.FindFsmFloat("Speed").Value = speed;
+            shockwave.AddComponent<DamageHero>().damageDealt = damage;
+            shockwave.SetActive(true);
+            shockwave.transform.SetPosition2D(new Vector2(pos.x + (facingRight ? 1 : -1) * offset, 
+                (OWArenaFinder.IsInOverWorld ? OWBottomY : GGBottomY) - 1.4f));
+            shockwave.transform.SetScaleX(scale);
         }
         
         private IEnumerator IdleTimer()
@@ -691,6 +684,12 @@ namespace FiveKnights.Hegemol
                     transform.localScale.z);
             }
         }
+
+        private void PlayAudioClip(MusicPlayer ap, AudioClip clip)
+		{
+            ap.Clip = clip;
+            ap.DoPlayRandomClip();
+		}
 
         private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
         {
@@ -847,6 +846,7 @@ namespace FiveKnights.Hegemol
                     }
                     HeroController.instance.AddMPCharge(soulGain);
                 }
+                _sf.flashArmoured();
             }
 
             orig(self, hitInstance);
@@ -880,6 +880,27 @@ namespace FiveKnights.Hegemol
             {
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
             }
+
+            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
+            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
+            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
+            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
+            _ap = new MusicPlayer
+            {
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = gameObject
+            };
+            _voice = new MusicPlayer
+            {
+                Volume = 1f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = gameObject
+            };
         }
 
         private void OnDestroy()

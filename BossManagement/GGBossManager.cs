@@ -300,7 +300,6 @@ namespace FiveKnights.BossManagement
                     PreventCameraFadeOut = true,
                     EntryDelay = 0
                 });
-
                 Destroy(this);
             }
         }

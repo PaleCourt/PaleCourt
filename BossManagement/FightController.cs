@@ -170,7 +170,15 @@ namespace FiveKnights
         {
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
-            
+            string[] arr = new[]
+            {
+                "HegemolMusic", "AudLand"
+            };
+            foreach(var i in arr)
+            {
+                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+            }
+
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
             {
