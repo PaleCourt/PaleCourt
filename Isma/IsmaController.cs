@@ -1315,7 +1315,7 @@ namespace FiveKnights.Isma
 
         private GameObject fakeIsma;
         private float agonyAnimSpd = 1.2f;
-        private Vector2 agonySpread = new Vector2(33f, 37f);
+        private Vector2 agonySpread = new Vector2(35f, 40f);
         private GameObject agonyThorns;
 
         private IEnumerator Agony()
