@@ -6,7 +6,7 @@ using HutongGames.PlayMaker.Actions;
 namespace FiveKnights.Isma
 {
 	// Recreation of the Thorn Collider - Slash Reaction FSM in Greenpath/Queen's Gardens
-	public class ThornSplat : MonoBehaviour
+	public class PlantHitFx : MonoBehaviour
 	{
 		private AudioClip hitSound;
 		private GameObject hitEffectPrefab;
