@@ -281,24 +281,29 @@ namespace FiveKnights
             Log("Creating Isma");
             
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+
+            // Get isma's music from bundle
+            string[] arr = new string[]
+            {
+                "LoneIsmaIntro", "LoneIsmaLoop", "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", 
+                "IsmaAudVineGrow", "IsmaAudVineHit", "IsmaAudWallGrow", "IsmaAudWallHit"
+            };
+            foreach(string name in arr)
+            {
+                FiveKnights.Clips[name] = snd.LoadAsset<AudioClip>(name);
+            }
+
             // List of Isma's voice lines
-            string[] arr =
+            string[] voice =
             {
                 "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
                 "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
             };
-            // Get isma's music from bundle
-            FiveKnights.Clips["LoneIsmaIntro"] = snd.LoadAsset<AudioClip>("LoneIsmaIntro");
-            FiveKnights.Clips["LoneIsmaLoop"] = snd.LoadAsset<AudioClip>("LoneIsmaLoop");
-            FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
-            FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
-            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
-            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
 
             // Loads Isma's voice lines a frame at a time, not sure why though 
             IEnumerator LoadSlow()
             {
-                foreach (var i in arr)
+                foreach (var i in voice)
                 {
                     FiveKnights.IsmaClips[i] = snd.LoadAsset<AudioClip>(i);
                     yield return null;

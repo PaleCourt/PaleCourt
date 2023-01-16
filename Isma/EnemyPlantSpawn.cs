@@ -195,6 +195,7 @@ namespace FiveKnights.Isma
             private void Awake()
             {
                 gameObject.AddComponent<PlantCtrl>();
+                gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 PillarCount++;
                 IsmaController.offsetTime += TIME_INC;
             }
@@ -373,6 +374,8 @@ namespace FiveKnights.Isma
                     ball.AddComponent<ModifiedSpit>();
                 }
                 //ball.layer = 11;
+
+                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();

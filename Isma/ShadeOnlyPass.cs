@@ -5,6 +5,7 @@
     public class ShadeOnlyPass : MonoBehaviour
     {
         public Collider2D disableCollider;
+        public bool colliderEnabled;
         private bool unlocked;
         private EventRegister eventRegister;
 
@@ -39,7 +40,7 @@
                 disableCollider.enabled = false;
             if (HeroController.instance.cState.shadowDashing || disableCollider.enabled)
                 return;
-            disableCollider.enabled = true;
+            disableCollider.enabled = colliderEnabled;
         }
     }
 }

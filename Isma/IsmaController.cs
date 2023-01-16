@@ -310,7 +310,6 @@ namespace FiveKnights.Isma
 
             if(onlyIsma)
             {
-                StartCoroutine(Agony());
                 StartCoroutine(AttackChoice());
             }
 			else
@@ -326,50 +325,64 @@ namespace FiveKnights.Isma
             // Always start with Seed Bomb
             yield return WaitToAttack();
             yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 0.8f) + offsetTime);
-            int lastA = 2;
-            SeedBomb();
+            _prev = SeedBomb;
+            _prev.Invoke();
 
             while (true)
             {
                 yield return new WaitWhile(() => _attacking);
                 yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 0.8f) + offsetTime);
-                yield return new WaitWhile(() => _attacking);
                 _attacking = true;
-                //= _rand.Next(100)
-                float plantPercent = 100f;
-                if (!_wallActive)
-                {
-                    plantPercent = (1f - (float) (EnemyPlantSpawn.FoolCount + EnemyPlantSpawn.TurretCount) / 
-                        (EnemyPlantSpawn.MAX_FOOL + EnemyPlantSpawn.MAX_TURRET)) * 100;
-                }
-                bool throwBomb = _rand.Next(100) < plantPercent;
-                int r = onlyIsma ? UnityEngine.Random.Range(0, 10) : UnityEngine.Random.Range(0, 7);
-                if(spawningWalls || (EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0 
-                    && lastA != 2 && UnityEngine.Random.Range(0, 2) == 0))
-                {
-                    lastA = 2;
+
+                if(spawningWalls)
+				{
+                    Log("Using Seed Bomb and spawning walls");
                     _prev = SeedBomb;
+                    _prev.Invoke();
+                    if(!usedAgony)
+					{
+                        yield return new WaitWhile(() => _attacking);
+                        yield return new WaitForSeconds(UnityEngine.Random.Range(0.5f, 0.8f) + offsetTime);
+                        _attacking = true;
+                        Log("Doing Agony");
+                        StartCoroutine(Agony());
+                    }
+                    continue;
                 }
-                else if (r < 4 && lastA != 0)
-                {
-                    lastA = 0;
-                    _prev = AirFist;
-                }
-                else if ((r < 8 && lastA != 1) || lastA == 0)
-                {
-                    lastA = 1;
-                    _prev = WhipAttack;
-                }
-                else if (throwBomb && onlyIsma && lastA != 2)
-                {
-                    lastA = 2;
-                    _prev = SeedBomb;
+                if(startedIsmaDeath)
+				{
+                    StartCoroutine(IsmaLoneDeath());
+                    break;
+				}
+
+                int[] weights = new int[] { 0, 2, 2 };
+                Action[] attacks = new Action[] { SeedBomb, AirFist, WhipAttack };
+
+                if(!_wallActive)
+				{
+                    if(EnemyPlantSpawn.FoolCount <= 1 && EnemyPlantSpawn.TurretCount <= 1) weights[0]++;
+                    if(EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0) weights[0] += 2;
                 }
                 else
-                {
-                    lastA = 3;
-                    _prev = AirFist;
+				{
+                    if(EnemyPlantSpawn.PillarCount <= 1) weights[0]++;
+                    if(EnemyPlantSpawn.PillarCount == 0) weights[0] += 2;
                 }
+                if(_prev.Method.Name == "SeedBomb") weights[1]++;
+                if(_prev.Method.Name == "AirFist") weights[1]--;
+                if(_prev.Method.Name == "WhipAttack") weights[2]--;
+
+                List<Action> attackTable = new List<Action>();
+
+                for(int i = 0; i < weights.Length; i++)
+				{
+                    for(int j = 0; j < weights[i]; j++)
+                    {
+                        attackTable.Add(attacks[i]);
+                    }
+				}
+
+                _prev = attackTable[UnityEngine.Random.Range(0, attackTable.Count)];
 
                 Log("Doing: " + _prev.Method.Name);
                 _prev.Invoke();
@@ -484,14 +497,12 @@ namespace FiveKnights.Isma
             // Ogrim Strike - After bouncing
             StartCoroutine(OgrimStrike());
 
-            yield return new WaitUntil(() => _thornWallActive);
-
             // Agony - Spike wave
             _ddFsm.InsertMethod("Under", () =>
             {
                 IEnumerator WaitForAgony()
                 {
-                    yield return new WaitForSeconds(0.5f);
+                    yield return new WaitForSeconds(0.6f);
                     yield return WaitToAttack();
                     yield return Agony();
                 }
@@ -500,7 +511,6 @@ namespace FiveKnights.Isma
         }
 
         private bool _wallActive;
-        private bool _thornWallActive;
         private GameObject wallR;
         private GameObject wallL;
 
@@ -550,9 +560,10 @@ namespace FiveKnights.Isma
                 GameObject frontWL = wallL.transform.Find("FrontW").gameObject;
                 frontWR.layer = 8;
                 frontWL.layer = 8;
-                wallR.transform.position = new Vector2(RIGHT_X - 2.25f, GROUND_Y);
-                wallL.transform.position = new Vector2(LEFT_X + 2.25f, GROUND_Y);
+                wallR.transform.position = new Vector2(RIGHT_X - 2.5f, GROUND_Y);
+                wallL.transform.position = new Vector2(LEFT_X + 2.5f, GROUND_Y);
                 Animator anim = frontWR.GetComponent<Animator>();
+                PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 3);
                 wallR.transform.Find("Petal").gameObject.SetActive(true);
                 wallL.transform.Find("Petal").gameObject.SetActive(true);
@@ -581,7 +592,6 @@ namespace FiveKnights.Isma
                     yield return new WaitForSeconds(1f);
                 }
                 preventDamage = false;
-                _thornWallActive = true;
 
                 foreach(GameObject wall in new[] { wallR, wallL })
                 {
@@ -593,6 +603,7 @@ namespace FiveKnights.Isma
                     spikeFront.AddComponent<PlantHitFx>();
                     spikeFront.AddComponent<NonBouncer>();
                     spike.SetActive(true);
+                    PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 }
 
                 eliminateMinions = false;
@@ -630,8 +641,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb");
-                _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _voice.DoPlayRandomClip();
+                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0, 0f);
@@ -665,8 +675,7 @@ namespace FiveKnights.Isma
                 rb.angularVelocity = 0f;
                 rb.gravityScale = 0f;
                 rb.velocity = Vector2.zero;
-                _ap.Clip = FiveKnights.Clips["IsmaAudSeedBomb"];
-                _ap.DoPlayRandomClip();
+                PlayClip(_ap, FiveKnights.Clips["IsmaAudSeedBomb"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() <= 2); //whip and boxcollider seed
                 if(firstBomb)
                 {
@@ -725,6 +734,8 @@ namespace FiveKnights.Isma
                 yield return _anim.PlayToFrame("ThrowBomb", 8);
                 yield return new WaitForSeconds(0.08f);
                 transform.position += new Vector3(0f, 0.2f);
+                yield return _anim.PlayToFrame("ThrowBomb", 10);
+                _bc.enabled = false;
                 yield return _anim.PlayToEnd();
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
@@ -760,8 +771,7 @@ namespace FiveKnights.Isma
                 
                 arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
-                _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _voice.DoPlayRandomClip();
+                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _rb.velocity = new Vector2(0f, 0f);
@@ -807,7 +817,7 @@ namespace FiveKnights.Isma
                 tentArm.AddComponent<AFistFlash>();
                 foreach(var i in tentArm.transform.GetComponentsInChildren<PolygonCollider2D>(true))
                 {
-                    i.gameObject.AddComponent<PlantHitFx>();
+                    i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 }
 
                 Animator tentAnim = tentArm.GetComponent<Animator>();
@@ -964,8 +974,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("GFistAntic");
-                _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _voice.DoPlayRandomClip();
+                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -981,10 +990,9 @@ namespace FiveKnights.Isma
                 whip.AddComponent<WhipFlash>();
                 foreach(var i in whip.transform.GetComponentsInChildren<PolygonCollider2D>(true))
                 {
-                    i.gameObject.AddComponent<PlantHitFx>();
+                    i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 }
-                _ap.Clip = FiveKnights.Clips["IsmaAudGroundWhip"];
-                _ap.DoPlayRandomClip();
+                PlayClip(_ap, FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
                 
                 yield return _anim.PlayToEndWithActions("GFistCopy",
            (0, () => { whip.Find("W1").SetActive(true); }),
@@ -1006,7 +1014,9 @@ namespace FiveKnights.Isma
                 );
                 
                 transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
-                yield return _anim.PlayBlocking("GFistEnd");
+                yield return _anim.PlayToFrame("GFistEnd", 2);
+                _bc.enabled = false;
+                yield return _anim.PlayToEnd();
                 ToggleIsma(false);
                 Destroy(whip);
                 StartCoroutine(IdleTimer(IDLE_TIME));
@@ -1018,8 +1028,7 @@ namespace FiveKnights.Isma
         private IEnumerator BowWhipAttack()
         {
             float dir = -1f * FaceHero(true);
-            _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-            _voice.DoPlayRandomClip();
+            PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
             _anim.Play("LoneDeath");
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
@@ -1044,8 +1053,11 @@ namespace FiveKnights.Isma
             whip.transform.localScale = oldWhip.transform.lossyScale;
             whip.SetActive(true);
             whip.AddComponent<WhipFlash>();
-            _ap.Clip = FiveKnights.Clips["IsmaAudGroundWhip"];
-            _ap.DoPlayRandomClip();
+            foreach(var i in whip.transform.GetComponentsInChildren<PolygonCollider2D>(true))
+            {
+                i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
+            }
+            PlayClip(_ap, FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
 
             yield return _anim.PlayToEndWithActions("GFistCopy",
        (0, () => { whip.Find("W1").SetActive(true); }),
@@ -1066,19 +1078,10 @@ namespace FiveKnights.Isma
                 (15, () => { whip.Find("W17").SetActive(false); })
             );
            
-            //_anim.Play("GFistEnd");
             transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
-            yield return _anim.PlayBlocking("GFistEnd");
-            //yield return null;
-            //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-            //_anim.enabled = false;
-            //yield return new WaitForSeconds(0.5f);
-            //_anim.enabled = true;
-            //yield return null;
-            //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-            //_rb.velocity = new Vector2(dir * -20f, 0f);
-            //yield return new WaitWhile(() => _anim.IsPlaying());
-            //_rb.velocity = Vector2.zero;
+            yield return _anim.PlayToFrame("GFistEnd", 2);
+            _bc.enabled = false;
+            yield return _anim.PlayToEnd();
             ToggleIsma(false);
             StartCoroutine(IdleTimer(IDLE_TIME));
         }
@@ -1110,8 +1113,7 @@ namespace FiveKnights.Isma
                     Vector2 pos = new Vector2(xPos, go.transform.GetPositionY());
 
                     ToggleIsma(true);
-                    _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                    _voice.DoPlayRandomClip();
+                    PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                     float side = go.GetComponent<Rigidbody2D>().velocity.x > 0f ? 1f : -1f;
                     gameObject.transform.position = new Vector2(pos.x + side * 1.77f, pos.y + 0.38f);
                     float dir = FaceHero();
@@ -1134,6 +1136,7 @@ namespace FiveKnights.Isma
                     {
                         Destroy(go);
                         squish.SetActive(true);
+                        PlayClip(_ap, FiveKnights.Clips["IsmaAudDungHit"], 0.8f);
                         yield return new WaitWhile(() => _anim.GetCurrentFrame() <= 2);
                         GameObject ballFx = ball.transform.Find("BallFx").gameObject;
                         squish.SetActive(false);
@@ -1215,8 +1218,7 @@ namespace FiveKnights.Isma
 
                 Vector2 pos = dd.transform.position;
 
-                _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _voice.DoPlayRandomClip();
+                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 float side = rb.velocity.x > 0f ? 1f : -1f;
                 gameObject.transform.position = new Vector2(pos.x, pos.y);
                 float dir = FaceHero();
@@ -1266,8 +1268,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("ThornPillarsAntic");
-                _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-                _voice.DoPlayRandomClip();
+                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1317,15 +1318,10 @@ namespace FiveKnights.Isma
         private float agonyAnimSpd = 1.2f;
         private Vector2 agonySpread = new Vector2(35f, 40f);
         private GameObject agonyThorns;
+        private bool usedAgony;
 
         private IEnumerator Agony()
         {
-            if(onlyIsma)
-			{
-                yield return new WaitUntil(() => _wallActive);
-                yield return WaitToAttack();
-            }
-
             ToggleIsma(true);
             Vector3 scIs = gameObject.transform.localScale;
             gameObject.transform.localScale = new Vector3(Mathf.Abs(scIs.x), scIs.y, scIs.z);
@@ -1345,8 +1341,7 @@ namespace FiveKnights.Isma
             _anim.Play("AgonyLoopIntro");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            _voice.Clip = _randAud[_rand.Next(0, _randAud.Count)];
-            _voice.DoPlayRandomClip();
+            PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
             _anim.speed = 1.7f;
 
             yield return PerformAgony(agonyThorns, tAnim, onlyIsma ? 3 : 1);
@@ -1358,6 +1353,8 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.speed = 1f;
             _rb.velocity = Vector2.zero;
+
+            usedAgony = true;
             ToggleIsma(false);
             StartCoroutine(IdleTimer(IDLE_TIME));
         }
@@ -1369,8 +1366,7 @@ namespace FiveKnights.Isma
             {
                 _anim.PlayAt("AgonyLoop", 0);
 
-                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyIntro"];
-                _ap.DoPlayRandomClip();
+                PlayClip(_ap, FiveKnights.Clips["IsmaAudAgonyIntro"], 1f);
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
@@ -1437,9 +1433,7 @@ namespace FiveKnights.Isma
                 }
 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
-                _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
-                _ap.DoPlayRandomClip();
-
+                PlayClip(_ap, FiveKnights.Clips["IsmaAudAgonyShoot"], 1f);
 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
@@ -1497,15 +1491,17 @@ namespace FiveKnights.Isma
             {
                 Log("Victory");
                 isDead = true;
+                preventDamage = true;
                 _healthPool = 100;
                 if(onlyIsma)
                 {
-                    StartCoroutine(IsmaLoneDeath());
+                    _hm.hp = 800;
+                    _hm.isDead = false;
+                    startedIsmaDeath = true;
                 }
                 else if(isIsmaHitLast)
                 {
                     startedOgrimRage = true;
-                    preventDamage = true;
                     StopAllCoroutines();
                     StartCoroutine(OgrimRage());
                     StartCoroutine(SpawnWalls());
@@ -1513,7 +1509,6 @@ namespace FiveKnights.Isma
                 else
                 {
                     startedIsmaRage = true;
-                    preventDamage = true;
                     StartCoroutine(IsmaRage());
                 }
             }
@@ -1521,6 +1516,7 @@ namespace FiveKnights.Isma
 
         private bool startedOgrimRage;
         private bool startedIsmaRage;
+        private bool startedIsmaDeath;
         private bool preventDamage;
 
         private IEnumerator OgrimRage()
@@ -1626,7 +1622,6 @@ namespace FiveKnights.Isma
 
             // Isma starts moving to catch Ogrim
             yield return new WaitWhile(() => ogrimRb.velocity.y > 0f);
-            Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
             Log("Catching ogrim");
             ToggleIsma(true);
             _anim.Play("OgrimCatchIntro");
@@ -1695,6 +1690,7 @@ namespace FiveKnights.Isma
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter += TransitionToAudioSnapshotOnEnter;
 
             //Make Ogrim get stunned
+            if(dd.transform.GetPositionY() < 9.1f) dd.transform.position = new Vector2(dd.transform.GetPositionX(), 9.1f);
             _ddFsm.SetState("Stun Set");
             yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
             _ddFsm.enabled = false;
@@ -1807,10 +1803,8 @@ namespace FiveKnights.Isma
 		private IEnumerator IsmaLoneDeath()
         {
             Log("Started Isma Lone Death");
-            yield return WaitToAttack();
-            _hm.hp = 800;
-            _hm.isDead = false;
             _healthPool = 300;
+            preventDamage = false;
             Coroutine c = StartCoroutine(LoopedAgony());
             Log("Test");
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -1923,6 +1917,7 @@ namespace FiveKnights.Isma
             if(self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
             {
                 hitInstance.DamageDealt = GulkaSpitEnemyDamage;
+                if(_hm.hp <= 0) _hm.hp = 1;
             }
             DoTakeDamage(self.gameObject, (int)(hitInstance.DamageDealt * hitInstance.Multiplier), hitInstance.Direction);
             if(self.gameObject.name.Contains("White Defender"))
@@ -1935,7 +1930,7 @@ namespace FiveKnights.Isma
 				}
 			}
             orig(self, hitInstance);
-            if(self.gameObject.name.Contains("White Defender")) _hmDD.hp = _healthPool;
+            _hmDD.hp = Math.Max(_healthPool, 1);
             _hm.hp = _healthPool;
         }
         
@@ -1950,7 +1945,6 @@ namespace FiveKnights.Isma
                     waitForHitStart = false;
                     StartCoroutine(BowWhipAttack());
                     StartCoroutine(SpawnWalls());
-                    StartCoroutine(Agony());
                     StartCoroutine(AttackChoice());
                 }
                 if(!preventDamage) _healthPool -= damage;
@@ -2005,11 +1999,18 @@ namespace FiveKnights.Isma
             _anim.PlayAt("Idle", 0);
         }
 
-        IEnumerator IdleTimer(float time)
+        private IEnumerator IdleTimer(float time)
         {
             yield return new WaitForSeconds(time);
             _attacking = false;
         }
+
+        private void PlayClip(MusicPlayer mp, AudioClip clip, float volume)
+		{
+            mp.Clip = clip;
+            mp.Volume = volume;
+            mp.DoPlayRandomClip();
+		}
 
         private void PositionIsma()
         {
@@ -2035,9 +2036,7 @@ namespace FiveKnights.Isma
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
-                _ap.Clip = FiveKnights.IsmaClips["IsmaAudDeath"];
-                _ap.DoPlayRandomClip();
-                //_aud.PlayOneShot(ArenaFinder.ismaAudioClips["IsmaAudDeath"]);
+                PlayClip(_ap, FiveKnights.IsmaClips["IsmaAudDeath"], 1f);
             }
         }
         

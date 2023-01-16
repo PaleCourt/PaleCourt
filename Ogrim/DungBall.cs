@@ -1,15 +1,35 @@
 ﻿using System.Collections;
 using FiveKnights.Isma;
+using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 
 namespace FiveKnights.Ogrim
 {
     internal class DungBall : MonoBehaviour
     {
+        private MusicPlayer _ap;
         private bool _hit;
+
         public GameObject particles;
         public bool usingThornPillars = false;
         
+        private void Start()
+		{
+            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
+            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
+            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
+            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
+
+            _ap = new MusicPlayer
+            {
+                Volume = 1.2f,
+                Player = actor,
+                MaxPitch = 1f,
+                MinPitch = 1f,
+                Spawn = gameObject
+            };
+        }
+
         private void FixedUpdate()
         {
             if (!_hit && gameObject.transform.GetPositionY() < 7.4f)
@@ -17,6 +37,8 @@ namespace FiveKnights.Ogrim
                 if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAX_PILLAR && 
                     transform.position.x > 67f && transform.position.x < 85f && !usingThornPillars)
 				{
+                    _ap.Clip = FiveKnights.Clips["IsmaAudDungBreak"];
+                    _ap.DoPlayRandomClip();
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
                     pillar.name = "PillarEnemy";
                     pillar.transform.position = new Vector2(transform.position.x, 6.1f);

@@ -8,15 +8,30 @@ namespace FiveKnights.Isma
 	// Recreation of the Thorn Collider - Slash Reaction FSM in Greenpath/Queen's Gardens
 	public class PlantHitFx : MonoBehaviour
 	{
-		private AudioClip hitSound;
+		private MusicPlayer _ap;
+		public AudioClip hitSound;
 		private GameObject hitEffectPrefab;
 		private GameObject thornCutGrassPrefab;
 		private GameObject spatterPrefab;
 
 		private void Start()
 		{
+			PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
+			GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
+			PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
+			GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
+
+			_ap = new MusicPlayer
+			{
+				Volume = 1f,
+				Player = actor,
+				MaxPitch = 1f,
+				MinPitch = 1f,
+				Spawn = gameObject
+			};
+
 			PlayMakerFSM thornFSM = FiveKnights.preloadedGO["Thorn Collider"].LocateMyFSM("Slash Reaction");
-			hitSound = thornFSM.GetAction<AudioPlay>("Get Direction", 3).oneShotClip.Value as AudioClip;
+			if(hitSound == null) hitSound = thornFSM.GetAction<AudioPlay>("Get Direction", 3).oneShotClip.Value as AudioClip;
 			hitEffectPrefab = thornFSM.GetAction<CreateObject>("Hit Right", 3).gameObject.Value;
 			thornCutGrassPrefab = thornFSM.GetAction<CreateObject>("Hit Right", 7).gameObject.Value;
 
@@ -36,7 +51,8 @@ namespace FiveKnights.Isma
 
 		private void DoStuff(Collider2D other)
 		{
-			HeroController.instance.GetComponent<AudioSource>().PlayOneShot(hitSound, 1f);
+			_ap.Clip = hitSound;
+			_ap.DoPlayRandomClip();
 
 			float dir = other.gameObject.LocateMyFSM("damages_enemy").FsmVariables.FindFsmFloat("direction").Value;
 			Vector2 effectOrigin = other.gameObject.transform.position;

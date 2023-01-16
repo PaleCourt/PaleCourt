@@ -417,6 +417,18 @@ namespace FiveKnights.BossManagement
         private IEnumerator LoadIsmaBundle()
         {
             Log("Loading Isma Bundle");
+
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            string[] arr = new string[]
+            {
+                "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", "IsmaAudVineGrow", "IsmaAudVineHit", 
+                "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak"
+            };
+            foreach(string name in arr)
+            {
+                FiveKnights.Clips[name] = snd.LoadAsset<AudioClip>(name);
+            }
+
             if (FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
             {
                 Log("Already loaded Isma");
@@ -491,12 +503,6 @@ namespace FiveKnights.BossManagement
                 AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.GArenaIsma];
                 FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
             }
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            FiveKnights.Clips["IsmaAudAgonyShoot"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyShoot");
-            FiveKnights.Clips["IsmaAudAgonyIntro"] = snd.LoadAsset<AudioClip>("IsmaAudAgonyIntro");
-            FiveKnights.Clips["IsmaAudGroundWhip"] = snd.LoadAsset<AudioClip>("IsmaAudGroundWhip");
-            FiveKnights.Clips["IsmaAudSeedBomb"] = snd.LoadAsset<AudioClip>("IsmaAudSeedBomb");
 
             Log("Finished Loading Isma Bundle");
         }
