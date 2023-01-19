@@ -22,7 +22,7 @@ namespace FiveKnights.Ogrim
 
             _ap = new MusicPlayer
             {
-                Volume = 1.2f,
+                Volume = 1f,
                 Player = actor,
                 MaxPitch = 1f,
                 MinPitch = 1f,

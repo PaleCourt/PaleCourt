@@ -306,8 +306,6 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
-            On.HeroController.TakeDamage += HCTakeDamage;
-
             // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
             _hm = dd.GetComponent<HealthManager>();
@@ -333,7 +331,6 @@ namespace FiveKnights.BossManagement
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
             burrow.SendEvent("BURROW END");
-            burrow.enabled = false;
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
 
@@ -365,8 +362,7 @@ namespace FiveKnights.BossManagement
 
 		private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
         {
-            orig(self, go, damageSide, 1, hazardType);
-            Log("Took damage from " + go);
+            orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
         public void BeforePlayerDied()
@@ -411,7 +407,7 @@ namespace FiveKnights.BossManagement
 
         private void Log(object o)
         {
-            Modding.Logger.Log("[White Defender] " + o);
+            Modding.Logger.Log("[GGBossManager] " + o);
         }
         
         private IEnumerator LoadIsmaBundle()
@@ -668,6 +664,7 @@ namespace FiveKnights.BossManagement
         {
             ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
+            On.HeroController.TakeDamage -= HCTakeDamage;
         }
     }
 }

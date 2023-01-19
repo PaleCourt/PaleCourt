@@ -43,7 +43,7 @@ namespace FiveKnights.Isma
             transform.position -= new Vector3(0f, 0.2f, 0f);
         }
 
-        private IEnumerator Start()
+		private IEnumerator Start()
         {
             yield return null;
 
@@ -63,8 +63,8 @@ namespace FiveKnights.Isma
             _ap.Clip = FiveKnights.Clips["IsmaAudVineGrow"];
             _ap.DoPlayRandomClip();
             yield return new WaitWhile(() => _anim.IsPlaying());
-            _bc.isTrigger = false;
-            _sp.colliderEnabled = true;
+			_bc.isTrigger = false;
+			_sp.colliderEnabled = true;
 
             GameObject bnc = new GameObject("PillarPogo")
             {
@@ -83,6 +83,7 @@ namespace FiveKnights.Isma
             col.offset = _bc.offset;
             bnc.SetActive(true);
             bnc.transform.parent = gameObject.transform;
+            bnc.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
 
             yield return new WaitForSeconds(0.55f);
         }

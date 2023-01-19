@@ -198,9 +198,7 @@ namespace FiveKnights.Isma
 				#endregion
 			}
 
-            if(!OWArenaFinder.IsInOverWorld && onlyIsma) Destroy(GameObject.Find("black_fader_GG"));
-
-			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
+            foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
             {
                 sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
                 sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
@@ -360,15 +358,18 @@ namespace FiveKnights.Isma
 
                 if(!_wallActive)
 				{
-                    if(EnemyPlantSpawn.FoolCount <= 1 && EnemyPlantSpawn.TurretCount <= 1) weights[0]++;
-                    if(EnemyPlantSpawn.FoolCount == 0 && EnemyPlantSpawn.TurretCount == 0) weights[0] += 2;
+                    weights[0] += EnemyPlantSpawn.MAX_FOOL - EnemyPlantSpawn.FoolCount - 1;
+                    weights[0] += EnemyPlantSpawn.MAX_TURRET - EnemyPlantSpawn.TurretCount - 1;
                 }
                 else
 				{
-                    if(EnemyPlantSpawn.PillarCount <= 1) weights[0]++;
-                    if(EnemyPlantSpawn.PillarCount == 0) weights[0] += 2;
+                    weights[0] += EnemyPlantSpawn.MAX_PILLAR - EnemyPlantSpawn.PillarCount - 1;
                 }
-                if(_prev.Method.Name == "SeedBomb") weights[1]++;
+                if(_prev.Method.Name == "SeedBomb")
+                {
+                    weights[0]--;
+                    weights[1]++;
+                }
                 if(_prev.Method.Name == "AirFist") weights[1]--;
                 if(_prev.Method.Name == "WhipAttack") weights[2]--;
 
@@ -522,6 +523,7 @@ namespace FiveKnights.Isma
                 preventDamage = true;
                 if(onlyIsma)
                 {
+                    yield return new WaitWhile(() => _attacking);
                     spawningWalls = true;
                     yield return new WaitWhile(() => spawningWalls);
                     yield return new WaitForSeconds(1f);
@@ -576,6 +578,7 @@ namespace FiveKnights.Isma
                 preventDamage = true;
                 if(onlyIsma)
                 {
+                    yield return new WaitWhile(() => _attacking);
                     spawningWalls = true;
                     yield return new WaitWhile(() => spawningWalls);
                     yield return new WaitForSeconds(1f);
@@ -600,7 +603,7 @@ namespace FiveKnights.Isma
                     spikeFront.layer = 17;
                     spikeFront.AddComponent<DamageHero>().damageDealt = 1;
 
-                    spikeFront.AddComponent<PlantHitFx>();
+                    spikeFront.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudWallHit"];
                     spikeFront.AddComponent<NonBouncer>();
                     spike.SetActive(true);
                     PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
@@ -1186,12 +1189,18 @@ namespace FiveKnights.Isma
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             Rigidbody2D rb = dd.GetComponent<Rigidbody2D>();
+            // Prevent Ogrim from diving without Isma hitting him
             _ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = false;
+            // Disable Ogrim's dive velocity change so we can add our own
             _ddFsm.GetAction<SetVelocity2d>("Air Dive", 4).Enabled = false;
+            // Disable Ogrim's uncurl animation
+            _ddFsm.GetAction<Tk2dPlayAnimationWithEvents>("Air Dive Antic", 1).Enabled = false;
+            // Make Ogrim stop moving horizontally when he hits the ground but continue moving down
             _ddFsm.InsertMethod("AD In", () =>
             {
                 rb.velocity = new Vector2(0f, rb.velocity.y);
             }, 1);
+            // Reset Ogrim's rotation after he goes underground
             _ddFsm.InsertMethod("Under", () =>
             {
                 dd.transform.SetRotation2D(0f);
@@ -1220,8 +1229,8 @@ namespace FiveKnights.Isma
 
                 PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
                 float side = rb.velocity.x > 0f ? 1f : -1f;
-                gameObject.transform.position = new Vector2(pos.x, pos.y);
                 float dir = FaceHero();
+                gameObject.transform.position = new Vector2(pos.x + side * 2f, pos.y + 0.38f);
 
                 Vector2 diff = dd.transform.position - new Vector3(_target.transform.GetPositionX(), GROUND_Y);
                 float offset2 = 0f;
@@ -1230,7 +1239,7 @@ namespace FiveKnights.Isma
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(40f * Mathf.Cos(rot), 35f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -1239,18 +1248,24 @@ namespace FiveKnights.Isma
                     setVel = true;
                 }, 2);
 
-                yield return new WaitForSeconds(0.2f);
                 ToggleIsma(true);
                 _anim.Play("BallStrike");
-                yield return new WaitForSeconds(0.05f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() <= 2);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+                _anim.enabled = false;
+                _rb.velocity = new Vector2(-dir * 5f, 0f);
+                yield return new WaitForSeconds(0.1f);
+                _rb.velocity = Vector2.zero;
+                yield return new WaitForSeconds(0.2f);
+                _anim.enabled = true;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                _ddFsm.SendEvent("FINISHED");
                 yield return new WaitUntil(() => setVel);
                 _ddFsm.RemoveAction("Air Dive", 2);
                 yield return new WaitForSeconds(0.2f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 _rb.velocity = new Vector2(dir * 20f, 0f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
-                _rb.velocity = new Vector2(0f, 0f);
+                _rb.velocity = Vector2.zero;
                 ToggleIsma(false);
                 yield return new WaitForEndOfFrame();
                 StartCoroutine(IdleTimer(IDLE_TIME));

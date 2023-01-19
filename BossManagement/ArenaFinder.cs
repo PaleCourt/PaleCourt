@@ -9,6 +9,7 @@ using FiveKnights.BossManagement;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using SFCore.Utils;
+using Vasi;
 using Logger = Modding.Logger;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -21,7 +22,7 @@ namespace FiveKnights
         public static Dictionary<string, tk2dSpriteCollection> spriteCollections;
 
         public static Dictionary<string, tk2dSpriteCollectionData> collectionData;
-        public static Dictionary<string, Sprite> Sprites { get; private set;} = new Dictionary<string, Sprite>();
+        public static Dictionary<string, Sprite> Sprites { get; private set; } = new Dictionary<string, Sprite>();
 
         public static int defeats;
 
@@ -32,22 +33,26 @@ namespace FiveKnights
         private bool hasKingFrag;
 
         private string prevScene;
-        
+
         private string currScene;
 
         public const string Isma2Scene = "GG_White_Defender";
 
         public const string GauntletArena = "Dream_04_White_Defender";
-            
+
         public const string DryyaScene = "gg dryya";
 
         public const string ZemerScene = "gg zemer";
-        
+
         public const string HegemolScene = "gg hegemol";
 
         public const string IsmaScene = "gg isma";
 
         private const string PrevFightScene = "White_Palace_09";
+
+        private int lastBossLevel;
+
+        private BossStatue lastBossStatue;
 
         private void Start()
         {
@@ -55,20 +60,73 @@ namespace FiveKnights
             On.SceneManager.Start += SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
-            spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
+			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
+			On.BossSceneController.Awake += BossSceneController_Awake;
+			spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
             hasKingFrag = PlayerData.instance.gotKingFragment;
             PlayerData.instance.gotKingFragment = true;
         }
 
-        private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
+		private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
+		{
+			lastBossLevel = level;
+            lastBossStatue = Mirror.GetField<BossChallengeUI, BossStatue>(self, "bossStatue");
+            orig(self, level, doHideAnim);
+		}
+
+		private void BossSceneController_Awake(On.BossSceneController.orig_Awake orig, BossSceneController self)
+		{
+			if(BossSceneController.SetupEvent == null)
+			{
+				Log("BSC SetupEvent is null");
+				BossSceneController.SetupEvent = delegate (BossSceneController self)
+				{
+					self.BossLevel = lastBossLevel;
+					self.DreamReturnEvent = "DREAM RETURN";
+					self.OnBossesDead += delegate ()
+					{
+                        string fieldName = lastBossStatue.UsingDreamVersion ? lastBossStatue.dreamStatueStatePD : lastBossStatue.statueStatePD;
+                        BossStatue.Completion playerDataVariable = GameManager.instance.GetPlayerDataVariable<BossStatue.Completion>(fieldName);
+                        switch(lastBossLevel)
+                        {
+                            case 0:
+                                playerDataVariable.completedTier1 = true;
+                                break;
+                            case 1:
+                                playerDataVariable.completedTier2 = true;
+                                break;
+                            case 2:
+                                playerDataVariable.completedTier3 = true;
+                                break;
+                        }
+                        GameManager.instance.SetPlayerDataVariable<BossStatue.Completion>(fieldName, playerDataVariable);
+                        GameManager.instance.playerData.SetString("currentBossStatueCompletionKey",
+                            lastBossStatue.UsingDreamVersion ? lastBossStatue.dreamStatueStatePD : lastBossStatue.statueStatePD);
+                        GameManager.instance.playerData.SetInt("bossStatueTargetLevel", lastBossLevel);
+                    };
+					self.OnBossSceneComplete += delegate ()
+					{
+						self.DoDreamReturn();
+					};
+				};
+			}
+			orig(self);
+		}
+
+		private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
         {
             Log("Changing SceneManager settings");
             if (currScene == ZemerScene)
             {
                 self.environmentType = 7;
             }
+            if(currScene == IsmaScene)
+			{
+                self.environmentType = 1;
+                self.darknessLevel = -1;
+			}
             else if (currScene == PrevFightScene)
             {
                 Log("Changed SceneManager settings for WP_09");

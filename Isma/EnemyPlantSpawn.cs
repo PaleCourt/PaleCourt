@@ -18,6 +18,8 @@ namespace FiveKnights.Isma
         public const int MAX_TURRET = 2;
         public const int MAX_FOOL = 3;
         public const int MAX_PILLAR = 3;
+        private List<GameObject> foolList = new List<GameObject>();
+
         private const float TIME_INC = 0.1f;
         private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
         private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 90.6f;
@@ -52,6 +54,21 @@ namespace FiveKnights.Isma
                         Log("Oh no too many");
                         Destroy(other.gameObject);
                         return;
+                    }
+                    for(int i = 0; i < foolList.Count; i++)
+                    {
+                        if(foolList[i] == null)
+                        {
+                            foolList.RemoveAt(i);
+                            i--;
+                            continue;
+                        }
+                        if(Mathf.Abs(foolList[i].transform.position.x - other.transform.position.x) < 2f)
+                        {
+                            Log("Fool is too close to another fool");
+                            Destroy(other.gameObject);
+                            return;
+                        }
                     }
                     SpawnFool(other.transform.position);
                 }
@@ -195,7 +212,6 @@ namespace FiveKnights.Isma
             private void Awake()
             {
                 gameObject.AddComponent<PlantCtrl>();
-                gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 PillarCount++;
                 IsmaController.offsetTime += TIME_INC;
             }
@@ -246,6 +262,7 @@ namespace FiveKnights.Isma
             finalFool.name = "final" + FoolName;
             finalFool.SetActive(false);
             parent.AddComponent<FoolMinion>();
+            foolList.Add(parent);
         }
 
         public class FoolMinion : MonoBehaviour
@@ -334,8 +351,6 @@ namespace FiveKnights.Isma
             public GameObject finalGulka;
             private HealthManager hm;
             private Vector2 pos;
-            private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
-            private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 90.6f;
             private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 75f;
 
             private void Awake()

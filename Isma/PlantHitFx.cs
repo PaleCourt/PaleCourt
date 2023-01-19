@@ -46,16 +46,16 @@ namespace FiveKnights.Isma
 
 		private void OnTriggerEnter2D(Collider2D other)
 		{
-			if(other.gameObject.tag == "Nail Attack") DoStuff(other);
+			if(other.gameObject.tag == "Nail Attack") DoStuff(other.gameObject);
 		}
 
-		private void DoStuff(Collider2D other)
+		public void DoStuff(GameObject other)
 		{
 			_ap.Clip = hitSound;
 			_ap.DoPlayRandomClip();
 
-			float dir = other.gameObject.LocateMyFSM("damages_enemy").FsmVariables.FindFsmFloat("direction").Value;
-			Vector2 effectOrigin = other.gameObject.transform.position;
+			float dir = other.LocateMyFSM("damages_enemy").FsmVariables.FindFsmFloat("direction").Value;
+			Vector2 effectOrigin = other.transform.position;
 
 			if(dir < 45f)
 			{

@@ -280,7 +280,7 @@ namespace FiveKnights
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
         {
-            UnityEngine.Object.DontDestroyOnLoad((UnityEngine.Object) GameManager.instance);
+            DontDestroyOnLoad(GameManager.instance);
             
             string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
             foreach (Boss b in Enum.GetValues(typeof(Boss)))
