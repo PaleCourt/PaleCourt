@@ -557,37 +557,18 @@ namespace FiveKnights.BossManagement
         private IEnumerator LoadHegemolBundle()
         {
             Log("Loading Hegemol Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Hegemol Collection Prefab", out var go) && go != null)
+            if(FiveKnights.preloadedGO.TryGetValue("Hegemol", out var go) && go != null)
             {
-                Log("broke Hegemol Collection Prefab");
+                Log("Already Loaded Hegemol");
                 yield break;
             }
+
+            yield return null;
+
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
-            foreach (var c in hegemolBundle.LoadAllAssets<AnimationClip>())
-            {
-                Log($"Name of anim adding is {c.name}");
-                FiveKnights.AnimClips[c.name] = c;
-            }
-            if (CustomWP.boss == CustomWP.Boss.All)
-            {
-                var r1 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteCollection");
-                var r2 = hegemolBundle.LoadAssetAsync<GameObject>("HegemolSpriteAnimation");
-                var r3 = hegemolBundle.LoadAssetAsync<GameObject>("Mace");
 
-                yield return r1;
-                yield return r2;
-                yield return r3;
-
-                FiveKnights.preloadedGO["Hegemol Collection Prefab"] = r1.asset as GameObject;
-                FiveKnights.preloadedGO["Hegemol Animation Prefab"] = r2.asset as GameObject;
-                FiveKnights.preloadedGO["Mace"] = r3.asset as GameObject;
-            }
-            else
-            {
-                FiveKnights.preloadedGO["Hegemol Collection Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteCollection");
-                FiveKnights.preloadedGO["Hegemol Animation Prefab"] = hegemolBundle.LoadAsset<GameObject>("HegemolSpriteAnimation");
-                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-            }
+            FiveKnights.preloadedGO["Hegemol"] = hegemolBundle.LoadAsset<GameObject>("Hegemol");
+            FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
             FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Hegemol Bundle");

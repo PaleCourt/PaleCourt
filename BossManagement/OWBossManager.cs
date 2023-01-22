@@ -418,17 +418,25 @@ namespace FiveKnights
         private HegemolController CreateHegemol()
         {
             Log("Creating Hegemol");
-            
+
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
-            
+            string[] arr = new[]
+            {
+                "HegemolMusic", "AudLand", "HegDamage"
+            };
+            foreach(var i in arr)
+            {
+                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+            }
+
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
             {
                 ArenaFinder.Sprites[i.name] = i;
             }
             
-            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(438.4f, 23), Quaternion.identity);
+            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(438.4f, 23), Quaternion.identity);
             hegemol.SetActive(false);
             Log("Adding HegemolController component");
             return hegemol.AddComponent<HegemolController>();

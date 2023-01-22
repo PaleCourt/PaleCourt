@@ -172,7 +172,7 @@ namespace FiveKnights
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             string[] arr = new[]
             {
-                "HegemolMusic", "AudLand"
+                "HegemolMusic", "AudLand", "HegDamage"
             };
             foreach(var i in arr)
             {
@@ -186,10 +186,10 @@ namespace FiveKnights
             }
             
             Log("Creating Hegemol");
-            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
+            _hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(87, 28), Quaternion.identity);
             _hegemol.SetActive(true);
             Log("Adding HegemolController component");
-            return _hegemol.AddComponent<HegemolController>(); 
+            return _hegemol.AddComponent<HegemolController>();
         }
         
         public ZemerController CreateZemer()

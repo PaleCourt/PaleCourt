@@ -4,8 +4,6 @@ namespace FiveKnights.Hegemol
 {
     public class Mace : MonoBehaviour
     {
-        private const float ProjectGravity = -9.81f;
-
         public float LaunchSpeed = 45f;
         public float SpinSpeed = -300f;
 
@@ -18,9 +16,7 @@ namespace FiveKnights.Hegemol
         
         private void OnEnable()
         {
-            FiveKnights.Instance.Log(Physics2D.gravity);
             _rb.velocity = new Vector3(0f, LaunchSpeed, 0f);
-            _rb.gravityScale *= ProjectGravity / Physics2D.gravity.y;
             transform.rotation = Quaternion.Euler(0f, 0f, 0f);
         }
 
