@@ -64,6 +64,7 @@ namespace FiveKnights.Hegemol
 
         private bool _attacking;
         private bool _isNextPhase = false;
+	private bool _isDead = false;
 
         private bool _grounded;
 
@@ -260,7 +261,8 @@ namespace FiveKnights.Hegemol
             {
                 yield return new WaitWhile(() => _attacking);
                 _attacking = true;
-
+		if(_isDead)
+			_attcking = true;
                 if (_hm.hp <= 0 && phase < 3)
                 {
                     phase++;
@@ -634,6 +636,7 @@ namespace FiveKnights.Hegemol
         private IEnumerator Die()
         {
             Log("Hegemol Death");
+	    _isDead = true;
             GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
             _anim.Play("Stagger");
