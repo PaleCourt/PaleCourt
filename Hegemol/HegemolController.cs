@@ -637,6 +637,7 @@ namespace FiveKnights.Hegemol
         {
             Log("Hegemol Death");
 	    _isDead = true;
+            yield return new WaitWhile(() => _attacking);
             GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
             _anim.Play("Stagger");
