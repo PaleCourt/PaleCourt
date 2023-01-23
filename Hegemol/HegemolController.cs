@@ -398,11 +398,6 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
 
-            _anim.Play("AttackAnticLoop");
-
-            yield return new WaitForSeconds(0.1f);
-
-            _anim.StopPlayback();
             _anim.Play("Attack");
             yield return null;
 
@@ -460,7 +455,7 @@ namespace FiveKnights.Hegemol
         private IEnumerator Charge()
 		{
             yield return _anim.PlayBlocking("RunAntic");
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.3f);
 
             _anim.Play("Run");
             _rb.velocity = new Vector2(18f * Mathf.Sign(transform.localScale.x), 0f);

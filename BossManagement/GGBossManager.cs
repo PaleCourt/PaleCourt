@@ -306,6 +306,8 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
+            On.HeroController.TakeDamage += HCTakeDamage;
+
             // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
             _hm = dd.GetComponent<HealthManager>();
@@ -357,6 +359,7 @@ namespace FiveKnights.BossManagement
             PlayerData.instance.isInvincible = false;
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
+
             On.HeroController.TakeDamage -= HCTakeDamage;
         }
 
