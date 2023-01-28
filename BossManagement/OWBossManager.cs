@@ -423,7 +423,9 @@ namespace FiveKnights
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             string[] arr = new[]
             {
-                "HegemolMusic", "AudLand", "HegDamage"
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegDamage", "HegDamageFinal", "HegJump", "HegLand",
+                "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge1", "HCharge2", "HDeath", "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4",
+                "HGrunt5", "HTired1", "HTired2", "HTired3"
             };
             foreach(var i in arr)
             {
@@ -435,8 +437,8 @@ namespace FiveKnights
             {
                 ArenaFinder.Sprites[i.name] = i;
             }
-            
-            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(438.4f, 23), Quaternion.identity);
+
+            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(438.4f, 28), Quaternion.identity);
             hegemol.SetActive(false);
             Log("Adding HegemolController component");
             return hegemol.AddComponent<HegemolController>();

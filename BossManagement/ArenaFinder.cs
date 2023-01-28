@@ -116,9 +116,9 @@ namespace FiveKnights
 		}
 
 		private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
-        {
-            Log("Changing SceneManager settings");
-            if (currScene == ZemerScene)
+		{
+			Log("Changing SceneManager settings");
+			if(currScene == ZemerScene)
             {
                 self.environmentType = 7;
             }
@@ -317,13 +317,13 @@ namespace FiveKnights
                         Log("Changed the hero's pos");
                     }
                     Log("Done trans in dream thing");
-                    while (GameObject.Find("Godseeker Crowd") == null) yield return null;
-                    GameObject oldGS = GameObject.Find("Godseeker Crowd");
-                    GameObject newGS = Instantiate(FiveKnights.preloadedGO["Godseeker"]);
-                    newGS.SetActive(true);
-                    newGS.transform.position = oldGS.transform.position;
-                    Destroy(oldGS);
-                }
+					while(GameObject.Find("Godseeker Crowd") == null) yield return null;
+					GameObject oldGS = GameObject.Find("Godseeker Crowd");
+					GameObject newGS = Instantiate(FiveKnights.preloadedGO["Godseeker"]);
+					newGS.SetActive(true);
+					newGS.transform.position = oldGS.transform.position;
+					Destroy(oldGS);
+				}
                 Log("Done dream entry");
             }
 

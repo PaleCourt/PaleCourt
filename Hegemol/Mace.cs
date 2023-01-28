@@ -23,7 +23,7 @@ namespace FiveKnights.Hegemol
         private void FixedUpdate()
         {
             Vector3 rot = transform.rotation.eulerAngles;
-            rot.z += SpinSpeed * Time.deltaTime;
+            rot.z += SpinSpeed * Time.fixedDeltaTime;
             transform.rotation = Quaternion.Euler(rot.x, rot.y, rot.z);
         }
     }

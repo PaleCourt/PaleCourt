@@ -568,10 +568,16 @@ namespace FiveKnights.BossManagement
 
             yield return null;
 
+            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
+            FiveKnights.preloadedGO["TraitorSlam"] =
+                fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
+            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
 
             FiveKnights.preloadedGO["Hegemol"] = hegemolBundle.LoadAsset<GameObject>("Hegemol");
             FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
+            FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
             FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Hegemol Bundle");

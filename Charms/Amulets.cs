@@ -583,7 +583,7 @@ namespace FiveKnights
             _hc.RUN_SPEED_CH = RUN_SPEED_37;
             _hc.RUN_SPEED_CH_COMBO = RUN_SPEED_31_37;
 
-            _pd.nailDamage = 5 + 4 * _pd.nailSmithUpgrades;
+            //_pd.nailDamage = 5 + 4 * _pd.nailSmithUpgrades;
 
             ModifyHeroControllerProperties(HeroUpdateType.Reset);
 
