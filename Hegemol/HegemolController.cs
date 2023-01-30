@@ -28,11 +28,9 @@ namespace FiveKnights.Hegemol
 
         private const float BRLeftX = 60.3f;
         private const float BRRightX = 91.6f;
-        private const float BRBottomY = 7.4f;
+        private const float BRGroundY = 7.4f;
         private const float BRCenterX = (BRLeftX + BRRightX) / 2;
 
-        
-        private const float DigInWalkSpeed = 8.0f;
         private const float IdleTime = 0f;
 	    private int phase = 1;
 
@@ -273,7 +271,7 @@ namespace FiveKnights.Hegemol
             _mace.gameObject.SetActive(true);
 
             bool right = transform.localScale.x > 0f;
-            _anim.speed = 0.9f;
+            _anim.speed = 1f;
             _anim.Play("Punch");
             for(int i = 0; i < 8; i++)
             {
@@ -288,18 +286,15 @@ namespace FiveKnights.Hegemol
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 
-                if(_usingGroundPunch)
-                {
-                    //code to spawn barrels from ceiling
-                }
-
                 PlayVoiceClip("HGrunt", true, 1f);
-                SpawnPillar(-Mathf.Sign(transform.localScale.x), new Vector2(1.5f, 1f), 7.5f);
-                _anim.speed = 0.7f;
+                PlayAudioClip(_ap, "HegAttackHit", 1f);
+                SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 50f, 2);
+                SpawnDebris(phase - 1);
+                _anim.speed = 0.8f;
 
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() == 0);
 
-                _anim.speed = 0.9f;
+                _anim.speed = 1f;
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
                 right = !right;
                 if(i == 0) _mace.gameObject.SetActive(false); 
@@ -343,7 +338,6 @@ namespace FiveKnights.Hegemol
             _anim.Play("Land");
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _rb.velocity = Vector2.zero;
-            SpawnDebris(phase);
             PlayAudioClip(_ap, "HegLand", 1f);
             yield return null;
 
@@ -361,17 +355,56 @@ namespace FiveKnights.Hegemol
             yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
 
             _anim.speed = 1f;
-            _anim.Play("Attack");
-            PlayAudioClip(_ap, "HegAttackSwing", 2f);
-            yield return null;
+            if(phase > 1 && Random.Range(0, 2) == 1)
+			{
+                float diff = HeroController.instance.transform.position.x - transform.position.x;
 
-            yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
+                _anim.Play("JumpAntic");
 
-            SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 50f, 2);
-            SpawnDebris(phase);
-            PlayAudioClip(_ap, "HegAttackHit", 1f);
+                yield return null;
+                yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
 
-            yield return _anim.PlayBlocking("AttackRecover");
+                _anim.Play("JumpAttackUp");
+                _rb.gravityScale = 3f;
+                _rb.velocity = new Vector2(diff, 60f);
+                PlayAudioClip(_ap, "HegJump", 2f);
+
+                yield return new WaitForSeconds(0.2f);
+                yield return new WaitWhile(() => _rb.velocity.y > 0f);
+                yield return new WaitUntil(() => CheckTerrain(Vector3.down, 2f));
+
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+                _anim.Play("JumpAttackHit");
+                PlayAudioClip(_ap, "HegAttackSwing", 2f);
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 50f, 2);
+                SpawnDebris(phase + 1);
+                PlayAudioClip(_ap, "HegAttackHit", 1f);
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+
+                GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+                _rb.velocity = Vector2.zero;
+                PlayAudioClip(_ap, "HegLand", 1f);
+
+                yield return new WaitWhile(() => _anim.IsPlaying("JumpAttackHit"));
+            }
+            else
+			{
+                _anim.Play("Attack");
+                PlayAudioClip(_ap, "HegAttackSwing", 2f);
+                yield return null;
+
+                yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
+
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 50f, 2);
+                SpawnDebris(phase + 1);
+                PlayAudioClip(_ap, "HegAttackHit", 1f);
+
+                yield return _anim.PlayBlocking("AttackRecover");
+            }
             yield return IdleTimer();
         }
 
@@ -390,10 +423,11 @@ namespace FiveKnights.Hegemol
             yield return new WaitWhile(() => _anim.IsPlaying("DigAntic"));
 
             PlayAudioClip(_ap, "HegAttackHit", 1f);
+            SpawnShockwaves(transform.localScale.x > 0f, -5f, 1.5f, 50f, 2);
             _anim.Play("Dig");
             _rb.velocity = 2f * Vector2.right * transform.localScale.x;
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(1.2f);
 
             _anim.Play("DigEnd");
             _rb.velocity = Vector2.zero;
@@ -417,7 +451,7 @@ namespace FiveKnights.Hegemol
                 debris.SetActive(false);
 
                 DigDebris dd = debris.AddComponent<DigDebris>();
-                dd.vel = new Vector2(velx, vely);
+                dd.vel = new Vector2(Random.Range(0.9f, 1.1f) * velx, vely);
                 dd.WallX = transform.localScale.x > 0f ? RightX : LeftX;
                 dd.GroundY = GroundY;
 
@@ -444,7 +478,7 @@ namespace FiveKnights.Hegemol
                 _anim.speed = 0.75f;
                 _rb.velocity = new Vector2(35f * Mathf.Sign(transform.localScale.x), 0f);
 
-                yield return new WaitUntil(() => CheckTerrain(transform.localScale.x * Vector2.right));
+                yield return new WaitUntil(() => CheckTerrain(transform.localScale.x * Vector2.right, 0.1f));
 
                 _anim.speed = 1f;
                 if(i == 0 || phase == 1) PlayVoiceClip("HGrunt", true, 1f);
@@ -453,7 +487,7 @@ namespace FiveKnights.Hegemol
                 _anim.Play("Jump");
                 _rb.gravityScale = 1.5f;
                 _rb.velocity = new Vector2(-7.5f * Mathf.Sign(transform.localScale.x), 25f);
-                SpawnDebris(i);
+                SpawnDebris(i + 1);
 
                 yield return new WaitForSeconds(0.1f);
                 yield return new WaitUntil(() => _grounded);
@@ -584,8 +618,8 @@ namespace FiveKnights.Hegemol
                 debris.SetActive(false);
 
                 Debris deb = debris.AddComponent<Debris>();
-                deb.delay = Random.Range(0f, 1f);
-                deb.vel = 15f * Vector2.down;
+                deb.delay = Random.Range(0f, 1.5f);
+                deb.vel = 10f * Vector2.down;
                 deb.GroundY = GroundY;
 
                 debris.transform.Find("Debris0").gameObject.SetActive(false);
@@ -668,6 +702,7 @@ namespace FiveKnights.Hegemol
             _rb.velocity = Vector2.zero;
             _anim.speed = 1f;
             _anim.Play("Stagger");
+            gameObject.AddComponent<NonBouncer>();
             PlayAudioClip(_ap, "HegDamageFinal", 1f);
             PlayVoiceClip("HDeath", false, 1f);
 
@@ -784,15 +819,15 @@ namespace FiveKnights.Hegemol
             ap.DoPlayRandomClip();
         }
 
-        private bool CheckTerrain(Vector3 dir)
+        private bool CheckTerrain(Vector3 dir, float distance)
 		{
             return Physics2D.BoxCast(_col.bounds.center, _col.bounds.size, 0f,
-                dir, 0.1f, 256);
+                dir, distance, 256);
         }
 
         private void FixedUpdate()
 		{
-            _grounded = CheckTerrain(Vector3.down);
+            _grounded = CheckTerrain(Vector3.down, 0.1f);
 		}
 
         private void OnDestroy()

@@ -21,7 +21,7 @@ namespace FiveKnights.Hegemol
 		{
             _rb.velocity = vel;
 			transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
-			rotSpeed = Random.Range(400f, 600f);
+			rotSpeed = (Random.Range(0, 2) == 0 ? -1 : 1) * Random.Range(400f, 600f);
 		}
 
         private void FixedUpdate()

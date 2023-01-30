@@ -19,9 +19,9 @@ namespace FiveKnights.Hegemol
 
 		private void OnEnable()
 		{
-			_rb.gravityScale = 0f;
+			_rb.gravityScale = 0.4f;
 			transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
-			rotSpeed = Random.Range(200f, 400f);
+			rotSpeed = (Random.Range(0, 2) == 0 ? -1 : 1) * Random.Range(200f, 400f);
 			StartCoroutine(WaitToMove());
 		}
 
