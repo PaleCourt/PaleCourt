@@ -19,7 +19,7 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private const int Health = 800; //1600; //2400; // 800 is 2400/3, did this because of the new phases
+        private int Health => phase == 1 ? 600 : 1000;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 420.7f : 11.2f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f : 45.7f;
@@ -83,7 +83,7 @@ namespace FiveKnights.Hegemol
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
             _hitFx.enabled = true;
-            _hm.hp = Health;
+            _hm.hp = 1000;
 
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -109,6 +109,7 @@ namespace FiveKnights.Hegemol
             AddDamageToGO(_hitter, 2, true);
 
             AssignFields();
+            _hm.hp = Health;
 
             StartCoroutine(IntroGreet());
         }
