@@ -1088,9 +1088,10 @@ namespace FiveKnights
 
         private void SetPuritySize()
         {
-
+            
             foreach (NailSlash nailSlash in _nailSlashes)
             {
+                if (nailSlash == null) break;
                 switch (nailSlash.name)
                 {
                     //Set nail size to 1.75x defaultz
@@ -1111,9 +1112,10 @@ namespace FiveKnights
         }
         private void RemovePuritySize()
         {
-
+            
             foreach (NailSlash nailSlash in _nailSlashes)
             {
+                if (nailSlash == null) break;
                 switch (nailSlash.name)
                 {
                     case "Slash":
