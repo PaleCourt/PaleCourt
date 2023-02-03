@@ -424,7 +424,7 @@ namespace FiveKnights
             string[] arr = new[]
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegJump", "HegLand",
-                "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge1", "HCharge2", "HDeath", "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4",
+                "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4",
                 "HGrunt5", "HTired1", "HTired2", "HTired3"
             };
             foreach(var i in arr)

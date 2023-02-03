@@ -377,7 +377,7 @@ namespace FiveKnights.BossManagement
                     FixHegemolArena();
                     AddSuperDashCancel();
                     FixPitDeath();
-                    AddBattleGate(432f, new Vector2(419.48f, 156.8f));
+                    AddBattleGate(432f, new Vector2(420.925f, 156.8f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
