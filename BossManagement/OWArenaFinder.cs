@@ -337,7 +337,7 @@ namespace FiveKnights.BossManagement
                     PlayerData.instance.dreamReturnScene = arg0.name;
                     FixBlur();
                     FixCameraDryya();
-                    AddBattleGate(422.5f,new Vector3(421.91f, 99.5f));
+                    AddBattleGate(422.5f,new Vector3(421.925f, 99.5f));
                     DreamEntry();
                     AddSuperDashCancel();
                     FixPitDeath();
@@ -655,7 +655,7 @@ namespace FiveKnights.BossManagement
         private IEnumerator LoadDryyaBundle()
         {
             Log("Loading Dryya Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Dryya", out var go) && go != null)
+            if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
             {
                 Log("Already have Dryya");
                 yield break;
@@ -675,10 +675,9 @@ namespace FiveKnights.BossManagement
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
             FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
             FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
-            //FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
+			FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
-            Log("Finished Loading Dryya Bundle");
+			Log("Finished Loading Dryya Bundle");
         }
         
         private IEnumerator LoadIsmaBundle()

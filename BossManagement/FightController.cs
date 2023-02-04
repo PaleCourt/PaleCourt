@@ -154,7 +154,6 @@ namespace FiveKnights
             {
                 var bc = _dryya.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                //yield return new WaitWhile(() => _dryya.transform.position.y > 20f);
                 while (_dryya.transform.position.y > 20f)
                     yield return new WaitForFixedUpdate();
                 bc.enabled = true;

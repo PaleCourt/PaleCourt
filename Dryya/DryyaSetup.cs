@@ -14,9 +14,13 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1650;
+        private int _hp = 1700;
 
+        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
+        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
+        private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
         private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
+
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
         
@@ -87,7 +91,9 @@ namespace FiveKnights.Dryya
             _control = gameObject.LocateMyFSM("Control");
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
-            _control.Fsm.GetFsmBool("GG Form").Value = !OWArenaFinder.IsInOverWorld;
+            //_control.Fsm.GetFsmBool("GG Form").Value = !OWArenaFinder.IsInOverWorld;
+            _control.Fsm.GetFsmBool("GG Form").Value = false;
+            _control.Fsm.GetFsmFloat("Ground").Value = GroundY;
 
             _control.InsertMethod("Activate", 0, () => _hm.enabled = true);
             
@@ -113,13 +119,28 @@ namespace FiveKnights.Dryya
 
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
             
-            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 40f, 1)); // 1.5f, 50f, 1
+            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 35f, 1));
 
             _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
 
-            var heroY = _control.GetFsmFloatVariable("Hero Y");
-            _control.InsertMethod("Choice Super", 2, () => transform.position += new Vector3(0f, 3.217f, 0f));
-            _control.InsertMethod("Air 4", 6, () => heroY.Value += 3.217f, true);
+            // Make sure Dryya stays inbounds
+            string[] superStates = new string[] { "Ground Stab 1", "Ground Air 1", "Air 1" };
+            foreach(string state in superStates)
+			{
+                _control.InsertMethod(state, () =>
+                {
+                    if(HeroController.instance.transform.position.x > RightX - 10f)
+                    {
+                        transform.position = new Vector3(RightX - 10f, GroundY);
+                        transform.localScale = new Vector3(1f, 1f);
+                    }
+                    if(HeroController.instance.transform.position.x < LeftX + 10f)
+                    {
+                        transform.position = new Vector3(LeftX + 10f, GroundY);
+                        transform.localScale = new Vector3(-1f, 1f);
+                    }
+                }, 2);
+            }
 
             //GameObject.Find("Burrow Effect").SetActive(false);
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
@@ -128,8 +149,6 @@ namespace FiveKnights.Dryya
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
-
-
 
         private IEnumerator Start()
         {
@@ -209,6 +228,7 @@ namespace FiveKnights.Dryya
         private EnemyHitEffectsUninfected _hitEffects;
         private HealthManager _hm;
         private SpriteFlash _spriteFlash;
+
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
@@ -282,13 +302,14 @@ namespace FiveKnights.Dryya
             float xDist = transform.position.x - HeroController.instance.transform.position.x;
             float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
             float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
-            int daggers = OWArenaFinder.IsInOverWorld ? 4 : 5;
+            int daggers = 5;
             float startAngle = (180f - ((daggers - 1) * 7.5f)) - angle;
             GameObject dagger = FiveKnights.preloadedGO["Dagger"];
             for (int i = 0; i < daggers; i++)
             {
                 GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle)).SetActive(true);
-                startAngle += 15f;
+                startAngle += 20f;
+                yield return new WaitForSeconds(0.06f);
             }
             yield return new WaitForSeconds(0.5f);
         }

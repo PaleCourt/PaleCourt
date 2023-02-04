@@ -552,7 +552,6 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
