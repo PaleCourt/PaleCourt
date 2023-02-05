@@ -1126,7 +1126,9 @@ namespace FiveKnights.Isma
                     ball.name = "IsmaHitBall";
                     ball.transform.localScale *= 1.4f;
                     ball.layer = 11;
-                    ball.AddComponent<DamageHero>().damageDealt = 1;
+                    DamageHero dh = ball.AddComponent<DamageHero>();
+                    dh.damageDealt = 1;
+                    dh.hazardType = (int)GlobalEnums.HazardType.SPIKES;
                     DungBall db = ball.AddComponent<DungBall>();
                     db.particles = particles;
                     db.usingThornPillars = usingThornPillars;

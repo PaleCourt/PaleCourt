@@ -303,7 +303,7 @@ namespace FiveKnights.Dryya
             float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
             float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
             int daggers = 5;
-            float startAngle = (180f - ((daggers - 1) * 7.5f)) - angle;
+            float startAngle = (180f - ((daggers - 1) * 10f)) - angle;
             GameObject dagger = FiveKnights.preloadedGO["Dagger"];
             for (int i = 0; i < daggers; i++)
             {

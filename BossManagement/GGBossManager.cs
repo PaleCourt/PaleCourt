@@ -30,12 +30,16 @@ namespace FiveKnights.BossManagement
         private IEnumerator Start()
         {
             // set damage level
-            BossSceneController.Instance.BossLevel = CustomWP.lev;
+            if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
+            {
+                BossSceneController.Instance.BossLevel = CustomWP.lev;
+            }
             
             Instance = this;
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender");
+                PlayerData.instance.SetBool(nameof(PlayerData.atBench), false);
             }
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
@@ -203,8 +207,8 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.All)
             {
                 yield return null;
-                bool flag = false;
-                StartCoroutine(Wow());
+                //bool flag = false;
+                //StartCoroutine(Wow());
                 var a1 = StartCoroutine(LoadHegemolBundle());
                 var a2 = StartCoroutine(LoadIsmaBundle());
                 var a3 = StartCoroutine(LoadDryyaAssets());
@@ -215,22 +219,27 @@ namespace FiveKnights.BossManagement
                 yield return a3;
                 yield return a4;
                 
-                flag = true;
-                HeroController.instance.RegainControl();
-                HeroController.instance.AcceptInput();
+                //flag = true;
+                //HeroController.instance.RegainControl();
+                //HeroController.instance.AcceptInput();
                 
-                IEnumerator Wow()
-                {
-                    while (!flag)
-                    {
-                        HeroController.instance.RelinquishControl();
-                        HeroController.instance.IgnoreInput();
-                        HeroController.instance.IgnoreInputWithoutReset();
-                        yield return null;
-                    }
-                }
+                //IEnumerator Wow()
+                //{
+                //    while (!flag)
+                //    {
+                //        HeroController.instance.RelinquishControl();
+                //        HeroController.instance.IgnoreInput();
+                //        HeroController.instance.IgnoreInputWithoutReset();
+                //        yield return null;
+                //    }
+                //}
+
+                AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return OgrimIsmaFight();
+
+                yield return new WaitForSeconds(1.5f);
                 
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
@@ -246,7 +255,9 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 
                 yield return new WaitWhile(() => dc != null);
-                
+
+                yield return new WaitForSeconds(1.5f);
+
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
@@ -264,22 +275,23 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                
-                yield return new WaitForSeconds(0.5f);
 
-                GameObject zemSil = GameObject.Find("Silhouette Zemer");
-                zemSil.transform.localScale *= 1.2f;
+                yield return new WaitForSeconds(1.5f);
+
+                // Silhouette is handled in Zemer code now
+                //GameObject zemSil = GameObject.Find("Silhouette Zemer");
+                //zemSil.transform.localScale *= 1.2f;
                 ZemerController zc = FightController.Instance.CreateZemer();
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
-                yield return new WaitForSeconds(0.1f);
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
-                yield return new WaitForSeconds(0.1f);
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
-                yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
+                //yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
+                //yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
+                //yield return new WaitForSeconds(0.1f);
                 GameObject zem = zc.gameObject;
 
                 yield return new WaitForSeconds(0.5f);
-                Destroy(zemSil);
+                //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);

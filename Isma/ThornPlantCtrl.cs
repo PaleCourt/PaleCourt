@@ -17,7 +17,7 @@ namespace FiveKnights.Isma
 
             DamageHero dh = gameObject.AddComponent<DamageHero>();
             dh.damageDealt = 1;
-            dh.hazardType = 0;
+            dh.hazardType = 1;
             dh.shadowDashHazard = false;
 
             PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");

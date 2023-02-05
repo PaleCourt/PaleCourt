@@ -21,9 +21,12 @@ namespace FiveKnights.Hegemol
     {
         private int Health => phase == 1 ? 500 : (phase == 2 ? 800 : 1000);
 
-        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 420.7f : 11.2f;
-        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f : 45.7f;
-        private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f : 27.4f;
+        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 420.7f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
+        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 91.7f : 45.7f);
+        private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.4f : 27.4f);
         private float CenterX => (LeftX + RightX) / 2;
 
         private const float BRLeftX = 60.3f;
@@ -145,7 +148,7 @@ namespace FiveKnights.Hegemol
             Log("Intro Grab");
             _anim.Play("IntroAttack");
 
-            _mace.gameObject.transform.position = transform.position + 60f * Vector3.up;
+            _mace.gameObject.transform.position = transform.position + 70f * Vector3.up;
             _mace.LaunchSpeed = -200f;
             _mace.SpinSpeed = 560f;
             _mace.gameObject.SetActive(true);
@@ -288,7 +291,7 @@ namespace FiveKnights.Hegemol
                 if(i == 7)
 				{
                     _mace.gameObject.SetActive(false);
-                    _mace.gameObject.transform.position = transform.position + 60f * Vector3.up;
+                    _mace.gameObject.transform.position = transform.position + 70f * Vector3.up;
                     _mace.LaunchSpeed = -69f;
                     _mace.SpinSpeed = 560f;
                     _mace.gameObject.SetActive(true);
@@ -1004,6 +1007,7 @@ namespace FiveKnights.Hegemol
             _anim.speed = 1f;
             _anim.Play("Stagger");
             _sr.material.SetFloat("_FlashAmount", 0f);
+            Destroy(_dh);
             gameObject.AddComponent<NonBouncer>();
             PlayAudioClip(_damage, "HegDamageFinal", 1f);
             PlayVoiceClip("HHeavy2", false, 1f);
@@ -1031,7 +1035,16 @@ namespace FiveKnights.Hegemol
 
             PlayVoiceClip("HCalm", true, 1f);
 
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
+
+            _anim.enabled = true;
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Stagger"));
+
+            _sr.enabled = false;
+
+            yield return new WaitForSeconds(1f);
 
             GetComponent<EnemyDeathEffects>().RecordJournalEntry();
 	    
