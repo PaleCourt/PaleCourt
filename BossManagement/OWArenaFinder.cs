@@ -597,7 +597,7 @@ namespace FiveKnights.BossManagement
         
         private void FixHegemolArena()
         {
-            foreach (var i in FindObjectsOfType<CameraLockArea>())
+            foreach(var i in FindObjectsOfType<CameraLockArea>())
             {
                 Destroy(i);
             }
@@ -608,8 +608,17 @@ namespace FiveKnights.BossManagement
             CreateCameraLock("CLA2", new Vector2(437.5f, 174f),new Vector2(5f, 1f),
                 new Vector2(10f, 45f), new Vector2(1f,1.4f), 
                 new Vector2(434.7f, 160f), new Vector2(442.7f, 160f), true);
-            
             Log("Fixed floor");
+
+            foreach(Renderer renderer in FindObjectsOfType<Renderer>())
+			{
+                if(renderer.gameObject.name.Contains("Arena Bottom Border") || renderer.gameObject.name.Contains("dream particles") ||
+                    renderer.gameObject.name.Contains("Dream Exit Particle Field"))
+				{
+                    renderer.sortingOrder = 1;
+				}
+			}
+            Log("Fixed renderer sorting orders");
         }
 
         private void AddBattleGate(float x, Vector2 pos)
