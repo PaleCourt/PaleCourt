@@ -19,7 +19,7 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private int Health => phase == 1 ? 500 : (phase == 2 ? 800 : 1000);
+        private int Health => phase == 1 ? 400 : (phase == 2 ? 700 : 900);
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
@@ -169,6 +169,7 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitWhile(() => _anim.IsPlaying());
 
+            yield return Turn();
             currAtt = Charge;
             Log("[Attack] " + currAtt.Method.Name);
             StartCoroutine(currAtt.Invoke());
@@ -209,11 +210,11 @@ namespace FiveKnights.Hegemol
                 float distToWall = Math.Abs(transform.position.x - (transform.localScale.x > 0f ? RightX : LeftX));
 
                 weights[0] += 2;
-                if(distToWall < Width / 3f)
+                if(distToWall < (Width / 3f) + 2f)
 				{
                     weights[3] += 4;
-                    if(phase > 1) weights[4]++;
-                    if(phase > 2) weights[5]++;
+                    if(phase > 1) weights[4] += 2;
+                    if(phase > 2) weights[5] += 2;
 				}
                 else if(distToWall < 2 * Width / 2f)
 				{
@@ -230,7 +231,20 @@ namespace FiveKnights.Hegemol
                     if(phase > 1) weights[4]++;
                     if(phase > 2) weights[5]++;
                 }
-                if(prevAtt != null) weights[attacks.IndexOf(prevAtt)] = 0;
+                if(prevAtt != null)
+                {
+                    weights[attacks.IndexOf(prevAtt)] = 0;
+                    if(prevAtt == Jump)
+					{
+                        weights[4] = 0;
+                        weights[5] = 0;
+                        if(prevAtt2 != null && prevAtt2 == Dig) weights[1]++;
+					}
+                    if(prevAtt == Dig)
+					{
+                        weights[1] = 0;
+					}
+                }
                 if(prevAtt2 != null) weights[attacks.IndexOf(prevAtt2)]--;
 
                 List<Func<IEnumerator>> attackTable = new List<Func<IEnumerator>>();
@@ -255,7 +269,7 @@ namespace FiveKnights.Hegemol
             if(_usingGroundPunch)
             {
                 _anim.Play("JumpAntic");
-                PlayVoiceClip("HHeavy1", false, 1f);
+                PlayVoiceClip("HCharge", false, 1f);
                 yield return null;
 
                 yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
@@ -493,7 +507,6 @@ namespace FiveKnights.Hegemol
 
                 GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
                 AddDamageToGO(debris, 1, true);
-                debris.transform.localScale *= 1.7f;
                 debris.SetActive(false);
 
                 Debris deb = debris.AddComponent<Debris>();
@@ -513,7 +526,7 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator Charge()
 		{
-            PlayVoiceClip("HHeavy1", false, 1f);
+            PlayVoiceClip("HCharge", false, 1f);
             for(int i = 0; i < phase; i++)
             {
                 // Turn towards the player first, then play antic
@@ -531,7 +544,7 @@ namespace FiveKnights.Hegemol
 
                 // Make him bounce off the wall a bit
                 _anim.speed = 1f;
-                if(i == phase - 1) PlayVoiceClip("HHeavy2", false, 1f);
+                if(i == phase - 1) PlayVoiceClip("HHeavy", true, 1f);
                 else PlayVoiceClip("HGrunt", true, 1f);
                 PlayAudioClip(_ap, "HegShockwave", 1f);
                 _anim.Play("Jump");
@@ -568,7 +581,7 @@ namespace FiveKnights.Hegemol
             yield return JumpBack();
 
             _anim.Play("AttackAntic");
-            PlayVoiceClip("HHeavy1", false, 1f);
+            PlayVoiceClip("HCharge", false, 1f);
             PlayAudioClip(_ap, "HegAttackCharge", 1f);
             yield return null;
 
@@ -641,7 +654,6 @@ namespace FiveKnights.Hegemol
 
                 GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
                 AddDamageToGO(debris, 1, true);
-                debris.transform.localScale *= 1.7f;
                 debris.SetActive(false);
 
                 Debris deb = debris.AddComponent<Debris>();
@@ -659,7 +671,7 @@ namespace FiveKnights.Hegemol
             yield return new WaitWhile(() => _anim.IsPlaying("DigEnd"));
 
             _anim.Play("JumpAntic");
-            PlayVoiceClip("HHeavy1", false, 1f);
+            PlayVoiceClip("HCharge", false, 1f);
 
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
@@ -674,7 +686,7 @@ namespace FiveKnights.Hegemol
 
             _anim.Play("JumpAttackHit");
             PlayAudioClip(_ap, "HegAttackSwing", 2f);
-            PlayVoiceClip("HHeavy2", false, 1f);
+            PlayVoiceClip("HHeavy", true, 1f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
 
@@ -861,7 +873,6 @@ namespace FiveKnights.Hegemol
                 Vector2 pos = new Vector2(Random.Range(minX, maxX), GroundY + 15f);
                 GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
                 AddDamageToGO(debris, 1, true);
-                debris.transform.localScale *= 1.7f;
                 debris.SetActive(false);
 
                 Debris deb = debris.AddComponent<Debris>();
@@ -902,7 +913,7 @@ namespace FiveKnights.Hegemol
             _sr.material.SetFloat("_FlashAmount", 0f);
             Destroy(_dh);
             PlayAudioClip(_damage, "HegDamageFinal", 1f);
-            PlayVoiceClip("HHeavy2", false, 1f);
+            PlayVoiceClip("HHeavy", true, 1f);
 
             float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
             _rb.gravityScale = 1.5f;
@@ -913,7 +924,14 @@ namespace FiveKnights.Hegemol
             _anim.enabled = false;
 
             yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => _grounded);
+            while(!_grounded)
+			{
+                yield return new WaitUntil(() => _grounded || CheckTerrain(transform.localScale.x * Vector3.right, 0.1f));
+                if(CheckTerrain(transform.localScale.x * Vector3.right, 0.1f))
+				{
+                    _rb.velocity = new Vector2(-_rb.velocity.x, _rb.velocity.y);
+				}
+            }
 
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
@@ -1009,7 +1027,7 @@ namespace FiveKnights.Hegemol
 
         private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
         {
-            if(go.name.Contains("Shockwave")) damageAmount = 2;
+            if(go.name.Contains("Shockwave") && damageAmount > 0) damageAmount = 2;
             orig(self, go, damageSide, damageAmount, hazardType);
         }
 
@@ -1027,7 +1045,7 @@ namespace FiveKnights.Hegemol
             Destroy(_dh);
             gameObject.AddComponent<NonBouncer>();
             PlayAudioClip(_damage, "HegDamageFinal", 1f);
-            PlayVoiceClip("HHeavy2", false, 1f);
+            PlayVoiceClip("HHeavy", true, 1f);
 
             float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
             _rb.gravityScale = 1.5f;
@@ -1038,7 +1056,14 @@ namespace FiveKnights.Hegemol
             _anim.enabled = false;
 
             yield return new WaitForSeconds(0.1f);
-            yield return new WaitUntil(() => _grounded);
+            while(!_grounded)
+            {
+                yield return new WaitUntil(() => _grounded || CheckTerrain(transform.localScale.x * Vector3.right, 0.1f));
+                if(CheckTerrain(transform.localScale.x * Vector3.right, 0.1f))
+                {
+                    _rb.velocity = new Vector2(-_rb.velocity.x, _rb.velocity.y);
+                }
+            }
 
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
@@ -1148,10 +1173,13 @@ namespace FiveKnights.Hegemol
                         num = Random.Range(1, 4);
                         break;
                     case "HGrunt":
-                        num = Random.Range(1, 6);
+                        num = Random.Range(1, 5);
                         break;
                     case "HTired":
                         num = Random.Range(1, 4);
+                        break;
+                    case "HHeavy":
+                        num = Random.Range(1, 3);
                         break;
                     default:
                         num = 0;

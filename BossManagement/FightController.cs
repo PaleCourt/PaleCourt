@@ -171,14 +171,20 @@ namespace FiveKnights
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             string[] arr = new[]
             {
-                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegJump", "HegLand", 
-                "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4",
-                "HGrunt5", "HTired1", "HTired2", "HTired3"
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump",
+                "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2",
+                "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
             };
-            foreach(var i in arr)
+
+            IEnumerator LoadSlow()
             {
-                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                foreach(var i in arr)
+                {
+                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                    yield return null;
+                }
             }
+            StartCoroutine(LoadSlow());
 
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
@@ -205,11 +211,16 @@ namespace FiveKnights
                 "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1", 
                 "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2"
             };
-            
-            foreach (var i in arr)
+
+            IEnumerator LoadSlow()
             {
-                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                foreach(var i in arr)
+                {
+                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                    yield return null;
+                }
             }
+            StartCoroutine(LoadSlow());
 
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             ArenaFinder.Sprites["ZemParticPetal"] = misc.LoadAsset<Sprite>("petal-test");

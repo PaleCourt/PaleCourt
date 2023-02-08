@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
+using Vasi;
 
 namespace FiveKnights.Isma
 {
@@ -51,6 +52,7 @@ namespace FiveKnights.Isma
             SetupHM();
             gameObject.AddComponent<Flash>();
             _hm.hp = PLANTHP;
+            Mirror.SetField(_hm, "enemyType", 3);
 
             gameObject.SetActive(true);
             _anim.enabled = true;

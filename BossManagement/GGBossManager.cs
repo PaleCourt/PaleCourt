@@ -45,6 +45,7 @@ namespace FiveKnights.BossManagement
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
             FiveKnights.preloadedGO["WD"] = dd;
+
             alone = true;
             _assetBundles= new List<AssetBundle>();
             Unload();
@@ -318,10 +319,12 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
-            On.HeroController.TakeDamage += HCTakeDamage;
+			On.HeroController.TakeDamage += HeroControllerTakeDamage;
 
             // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
+            dd.GetComponent<DamageHero>().damageDealt = 1;
+            dd.Find("Throw Swipe").gameObject.GetComponent<DamageHero>().damageDealt = 1;
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -344,7 +347,15 @@ namespace FiveKnights.BossManagement
 			PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
+
+            // Disable his burrow and ground spikes
+            burrow.enabled = true;
             burrow.SendEvent("BURROW END");
+            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
+			{
+                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit") pillar.SetState("Break");
+			}
+
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
 
@@ -372,15 +383,15 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
 
-            On.HeroController.TakeDamage -= HCTakeDamage;
+            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
 
-		private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
-        {
+		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+		{
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-        public void BeforePlayerDied()
+		public void BeforePlayerDied()
         {
             Log("RAN");
         }
@@ -665,7 +676,7 @@ namespace FiveKnights.BossManagement
         {
             ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
-            On.HeroController.TakeDamage -= HCTakeDamage;
+            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
     }
 }

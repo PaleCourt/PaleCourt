@@ -47,11 +47,11 @@ namespace FiveKnights.Isma
         private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
         private readonly float GROUND_Y = 5.9f;
         
-        private const int MAX_HP = 1500;
-        private const int WALL_HP = 1000;
+        private const int MAX_HP = 1400;
+        private const int WALL_HP = 950;
         private const int SPIKE_HP = 600;
-        private const int MAX_HP_DUO = 1700;
-        private const int WALL_HP_DUO = 1300;
+        private const int MAX_HP_DUO = 1600;
+        private const int WALL_HP_DUO = 1100;
         
         private const float IDLE_TIME = 0f; //0.1f;
         private const int GulkaSpitEnemyDamage = 20;
@@ -358,8 +358,8 @@ namespace FiveKnights.Isma
 
                 if(!_wallActive)
 				{
-                    weights[0] += EnemyPlantSpawn.MAX_FOOL - EnemyPlantSpawn.FoolCount - 1;
-                    weights[0] += EnemyPlantSpawn.MAX_TURRET - EnemyPlantSpawn.TurretCount - 1;
+                    weights[0] += Math.Max(EnemyPlantSpawn.MAX_FOOL - EnemyPlantSpawn.FoolCount - 1, 0);
+                    weights[0] += EnemyPlantSpawn.MAX_TURRET - EnemyPlantSpawn.TurretCount;
                 }
                 else
 				{
@@ -422,8 +422,8 @@ namespace FiveKnights.Isma
             }, 0);
 
 			// WD burrows for longer
-			_ddFsm.GetAction<RandomFloat>("Timer", 1).min.Value = 2f;
-			_ddFsm.GetAction<RandomFloat>("Timer", 1).max.Value = 2f;
+			_ddFsm.GetAction<RandomFloat>("Timer", 1).min.Value = 2.1f;
+			_ddFsm.GetAction<RandomFloat>("Timer", 1).max.Value = 2.1f;
 
             // Make WD bounce around the arena at a consistent speed
             _ddFsm.InsertMethod("RJ Launch", 6, () =>
@@ -788,15 +788,11 @@ namespace FiveKnights.Isma
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.3f);
                 
-                Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
-                //float predTime = 0.4f;
-                //float yOff = 0.5f;
-                //float xOff = 0.8f;
-                //Vector3 predPos = _target.transform.position + new Vector3(heroVel.x * xOff, heroVel.y * yOff) * predTime;
                 float rot = GetRot(arm, _target.transform.position, dir);
                 float rotD = rot * Mathf.Rad2Deg;
 
-                if(rotD is < -60f or > 50f)
+                // Will check 25 degrees on either side of her
+                if(rotD is < -65f or > 65f)
                 {
                     _anim.enabled = true;
                     spike.SetActive(false);
@@ -804,7 +800,7 @@ namespace FiveKnights.Isma
                     yield break;
                 }
                 
-                arm.transform.SetRotation2D(rot * Mathf.Rad2Deg);
+                arm.transform.SetRotation2D(rotD);
                 GameObject parArm = arm.transform.Find("TentArm").gameObject;
                 parArm.SetActive(false);
                 tentArm = Instantiate(parArm, parArm.transform.position, parArm.transform.rotation);
@@ -1121,7 +1117,7 @@ namespace FiveKnights.Isma
                     gameObject.transform.position = new Vector2(pos.x + side * 1.77f, pos.y + 0.38f);
                     float dir = FaceHero();
                     GameObject squish = gameObject.transform.Find("Squish").gameObject;
-                    GameObject ball = Instantiate(gameObject.transform.Find("Ball").gameObject);
+                    GameObject ball = Instantiate(gameObject.transform.Find(usingThornPillars ? "Ball" : "VineBall").gameObject);
                     GameObject particles = Instantiate(go.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value);
                     ball.name = "IsmaHitBall";
                     ball.transform.localScale *= 1.4f;
@@ -1217,7 +1213,7 @@ namespace FiveKnights.Isma
                 yield return WaitToAttack();
                 yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
                     && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(rb.velocity.x, 0f, 1f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    (FastApproximately(rb.velocity.y, 0f, 1f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 if(startedIsmaRage)
                 {
@@ -1241,7 +1237,7 @@ namespace FiveKnights.Isma
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(50f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -1257,7 +1253,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-dir * 5f, 0f);
                 yield return new WaitForSeconds(0.1f);
                 _rb.velocity = Vector2.zero;
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.1f);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _ddFsm.SendEvent("FINISHED");
@@ -1583,7 +1579,6 @@ namespace FiveKnights.Isma
             _rb.velocity = new Vector2(-side * 25f, 25f);
             yield return new WaitForSeconds(0.2f);
             _sr.enabled = false;
-            yield return new WaitForSeconds(0.75f);
 
             // FSM edits to start rage
             _ddFsm.GetAction<Wait>("AD In", 0).time.Value = 0.25f;
@@ -1610,6 +1605,7 @@ namespace FiveKnights.Isma
                 _healthPool = 180;
                 preventDamage = false;
             }, 0);
+            _ddFsm.InsertMethod("Set Rage", () => Destroy(_ddFsm.FsmVariables.FindFsmGameObject("Roar Emitter").Value), 0);
 
             // Wait until death and set variables
             yield return new WaitWhile(() => _healthPool > 0);
@@ -1718,6 +1714,14 @@ namespace FiveKnights.Isma
             }
             _ddFsm.enabled = true;
             _ddFsm.SetState("Stun Recover");
+            PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+            burrow.enabled = true;
+            burrow.SendEvent("BURROW END");
+            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
+            {
+                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit") pillar.SetState("Break");
+            }
+
             yield return new WaitForSeconds(1f);
             yield return new WaitWhile(() => !_ddFsm.ActiveStateName.Contains("Tunneling"));
             _ddFsm.enabled = false;
