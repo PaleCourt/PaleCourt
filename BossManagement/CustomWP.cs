@@ -23,9 +23,7 @@ namespace FiveKnights
             Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.TakeHealthHook += Instance_TakeHealthHook;
             boss = Boss.None;
-
             
             FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
             GameObject root = Instantiate(FiveKnights.preloadedGO["HubRoot"]);
@@ -86,11 +84,6 @@ namespace FiveKnights
                 bc.offset = new Vector2(-10, bc.offset.y);
                 Log("Fixed WP_09 camera at edges");
             }
-        }
-
-        private int Instance_TakeHealthHook(int damage)
-        {
-            return damage;
         }
 
         private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
@@ -478,7 +471,6 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.TakeHealthHook -= Instance_TakeHealthHook;
             
         }
         

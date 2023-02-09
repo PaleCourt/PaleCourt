@@ -30,17 +30,22 @@ namespace FiveKnights.BossManagement
         private IEnumerator Start()
         {
             // set damage level
-            BossSceneController.Instance.BossLevel = CustomWP.lev;
+            if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
+            {
+                BossSceneController.Instance.BossLevel = CustomWP.lev;
+            }
             
             Instance = this;
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender");
+                PlayerData.instance.SetBool(nameof(PlayerData.atBench), false);
             }
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
             FiveKnights.preloadedGO["WD"] = dd;
+
             alone = true;
             _assetBundles= new List<AssetBundle>();
             Unload();
@@ -203,8 +208,8 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.All)
             {
                 yield return null;
-                bool flag = false;
-                StartCoroutine(Wow());
+                //bool flag = false;
+                //StartCoroutine(Wow());
                 var a1 = StartCoroutine(LoadHegemolBundle());
                 var a2 = StartCoroutine(LoadIsmaBundle());
                 var a3 = StartCoroutine(LoadDryyaAssets());
@@ -215,22 +220,27 @@ namespace FiveKnights.BossManagement
                 yield return a3;
                 yield return a4;
                 
-                flag = true;
-                HeroController.instance.RegainControl();
-                HeroController.instance.AcceptInput();
+                //flag = true;
+                //HeroController.instance.RegainControl();
+                //HeroController.instance.AcceptInput();
                 
-                IEnumerator Wow()
-                {
-                    while (!flag)
-                    {
-                        HeroController.instance.RelinquishControl();
-                        HeroController.instance.IgnoreInput();
-                        HeroController.instance.IgnoreInputWithoutReset();
-                        yield return null;
-                    }
-                }
+                //IEnumerator Wow()
+                //{
+                //    while (!flag)
+                //    {
+                //        HeroController.instance.RelinquishControl();
+                //        HeroController.instance.IgnoreInput();
+                //        HeroController.instance.IgnoreInputWithoutReset();
+                //        yield return null;
+                //    }
+                //}
+
+                AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return OgrimIsmaFight();
+
+                yield return new WaitForSeconds(1.5f);
                 
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
@@ -246,7 +256,9 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 
                 yield return new WaitWhile(() => dc != null);
-                
+
+                yield return new WaitForSeconds(1.5f);
+
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
@@ -264,22 +276,23 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                
-                yield return new WaitForSeconds(0.5f);
 
-                GameObject zemSil = GameObject.Find("Silhouette Zemer");
-                zemSil.transform.localScale *= 1.2f;
+                yield return new WaitForSeconds(1.5f);
+
+                // Silhouette is handled in Zemer code now
+                //GameObject zemSil = GameObject.Find("Silhouette Zemer");
+                //zemSil.transform.localScale *= 1.2f;
                 ZemerController zc = FightController.Instance.CreateZemer();
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
-                yield return new WaitForSeconds(0.1f);
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
-                yield return new WaitForSeconds(0.1f);
-                sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
-                yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
+                //yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
+                //yield return new WaitForSeconds(0.1f);
+                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
+                //yield return new WaitForSeconds(0.1f);
                 GameObject zem = zc.gameObject;
 
                 yield return new WaitForSeconds(0.5f);
-                Destroy(zemSil);
+                //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
@@ -306,10 +319,12 @@ namespace FiveKnights.BossManagement
 
         private IEnumerator OgrimIsmaFight()
         {
-            On.HeroController.TakeDamage += HCTakeDamage;
+			On.HeroController.TakeDamage += HeroControllerTakeDamage;
 
             // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
+            dd.GetComponent<DamageHero>().damageDealt = 1;
+            dd.Find("Throw Swipe").gameObject.GetComponent<DamageHero>().damageDealt = 1;
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -332,7 +347,15 @@ namespace FiveKnights.BossManagement
 			PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
+
+            // Disable his burrow and ground spikes
+            burrow.enabled = true;
             burrow.SendEvent("BURROW END");
+            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
+			{
+                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit") pillar.SetState("Break");
+			}
+
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
 
@@ -360,15 +383,15 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
 
-            On.HeroController.TakeDamage -= HCTakeDamage;
+            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
 
-		private void HCTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
-        {
+		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+		{
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-        public void BeforePlayerDied()
+		public void BeforePlayerDied()
         {
             Log("RAN");
         }
@@ -552,7 +575,6 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            //FiveKnights.preloadedGO["Dagger"].transform.localScale *= 2f;
 
             Log("Finished Loading Dryya Bundle");
         }
@@ -654,7 +676,7 @@ namespace FiveKnights.BossManagement
         {
             ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
-            On.HeroController.TakeDamage -= HCTakeDamage;
+            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
     }
 }

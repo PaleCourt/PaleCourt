@@ -95,24 +95,8 @@ namespace FiveKnights
                 PlayerData.instance.disablePause = true;
                 
                 yield return new WaitForSeconds(1.0f);
-                /*GameObject.Find("Dream Exit Particle Field").GetComponent<ParticleSystem>().Play();
-                GameObject transDevice = Instantiate(_dd.transform.Find("Corpse White Defender(Clone)").gameObject);
-                transDevice.SetActive(true);
-                var fsm = transDevice.LocateMyFSM("Control");
-                GameManager.instance.TimePasses();
-                GameManager.instance.ResetSemiPersistentItems();
-                HeroController.instance.EnterWithoutInput(true);
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = OWArenaFinder.PrevIsmScene;
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door_dreamReturn";
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).visualization.Value = GameManager.SceneLoadVisualizations.Dream;
-                fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryDelay = 0;
-                fsm.GetAction<Wait>("Fade Out", 4).time.Value += 2f;
-                PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
-                fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
-                fsm.SetState("Fade Out");*/
                 WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 1);
-                Log("Done with Isma boss");
+                Log("Done with Dryya boss");
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Hegemol)
@@ -153,18 +137,23 @@ namespace FiveKnights
                 
                 HegemolController hegemolCtrl = CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+
                 yield return new WaitWhile(() => HeroController.instance == null);
+
+                PlayMusic(FiveKnights.Clips["HegAreaMusic"]);
+
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 432f);
+
                 PlayMusic(FiveKnights.Clips["HegemolMusic"]);
                 hegemolCtrl.gameObject.SetActive(true);
+
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                AwardCharms.firstClear[2] = true;
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
                 yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+                HeroController.instance.RelinquishControl();
+                PlayerData.instance.disablePause = true;
+                WinRoutine("HEG_OUTRO_1a", "HEG_OUTRO_1b", OWArenaFinder.PrevHegScene, 2);
+                Log("Done with Heg, transitioning out");
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze)
@@ -423,11 +412,12 @@ namespace FiveKnights
 
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
+            FiveKnights.Clips["HegAreaMusic"] = snd.LoadAsset<AudioClip>("HegAreaMusic");
             string[] arr = new[]
             {
-                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegDamage", "HegDamageFinal", "HegJump", "HegLand",
-                "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge1", "HCharge2", "HDeath", "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4",
-                "HGrunt5", "HTired1", "HTired2", "HTired3"
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump", 
+                "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2",
+                "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
             };
             foreach(var i in arr)
             {

@@ -19,17 +19,16 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private int Health => phase == 1 ? 600 : 1000;
+        private int Health => phase == 1 ? 400 : (phase == 2 ? 700 : 900);
 
-        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 420.7f : 11.2f;
-        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f : 45.7f;
-        private readonly float GroundY = 27.4f;
+        private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
+        private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 91.7f : 45.7f);
+        private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.4f : 27.4f);
         private float CenterX => (LeftX + RightX) / 2;
-
-        private const float BRLeftX = 60.3f;
-        private const float BRRightX = 91.6f;
-        private const float BRGroundY = 7.4f;
-        private const float BRCenterX = (BRLeftX + BRRightX) / 2;
+        private float Width => RightX - LeftX;
 
         private const float IdleTime = 0f;
 	    private int phase = 1;
@@ -42,6 +41,7 @@ namespace FiveKnights.Hegemol
         private MusicPlayer _voice;
         private MusicPlayer _damage;
 
+        private DamageHero _dh;
         private BoxCollider2D _col;
         private HealthManager _hm;
         private Rigidbody2D _rb;
@@ -63,10 +63,10 @@ namespace FiveKnights.Hegemol
             Log("Hegemol Awake");
 
             gameObject.name = "Hegemol";
-            transform.position = new Vector2(RightX - 7f, GroundY + 3f);
+            transform.position = new Vector2(RightX - 5f, GroundY + 3f);
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
-            AddDamageToGO(gameObject, 2, false);
+            _dh = AddDamageToGO(gameObject, 2, false);
 
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
@@ -88,6 +88,7 @@ namespace FiveKnights.Hegemol
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
+			On.HeroController.TakeDamage += HeroControllerTakeDamage;
         }
 
 		private IEnumerator Start()
@@ -144,7 +145,7 @@ namespace FiveKnights.Hegemol
             Log("Intro Grab");
             _anim.Play("IntroAttack");
 
-            _mace.gameObject.transform.position = transform.position + 50f * Vector3.up;
+            _mace.gameObject.transform.position = transform.position + 80f * Vector3.up;
             _mace.LaunchSpeed = -200f;
             _mace.SpinSpeed = 560f;
             _mace.gameObject.SetActive(true);
@@ -167,7 +168,11 @@ namespace FiveKnights.Hegemol
             PlayAudioClip(_ap, "HegAttackHit", 1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying());
-            yield return IdleTimer();
+
+            yield return Turn();
+            currAtt = Charge;
+            Log("[Attack] " + currAtt.Method.Name);
+            StartCoroutine(currAtt.Invoke());
         }
 
         private void MusicControl()
@@ -176,35 +181,12 @@ namespace FiveKnights.Hegemol
             GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
         }
 
+        private Func<IEnumerator> prevAtt2;
         private Func<IEnumerator> prevAtt;
         private Func<IEnumerator> currAtt;
-        private Func<IEnumerator> nextAtt;
 
         private IEnumerator AttackChoice()
         {
-            Dictionary<string, List<Func<IEnumerator>>> attacks = new Dictionary<string, List<Func<IEnumerator>>>();
-            attacks.Add("Jump", new List<Func<IEnumerator>>()
-            {
-                Slam, Charge
-            });
-            attacks.Add("Slam", new List<Func<IEnumerator>>()
-            {
-                Dig, Jump
-            });
-            attacks.Add("Dig", new List<Func<IEnumerator>>()
-            {
-                Slam, Jump
-            });
-            attacks.Add("Charge", new List<Func<IEnumerator>>()
-            {
-                Slam, Jump
-            });
-
-            // Always start with Charge so he immediately starts doing something
-            nextAtt = Charge;
-            // Prevent Heg from doing Slam after Charge
-            currAtt = Slam;
-
             while(true)
             {
                 yield return new WaitWhile(() => _attacking);
@@ -219,13 +201,64 @@ namespace FiveKnights.Hegemol
 
                 yield return Turn();
 
+                prevAtt2 = prevAtt;
                 prevAtt = currAtt;
-                currAtt = nextAtt;
-                do
+
+                int[] weights = new int[6];
+                List<Func<IEnumerator>> attacks = new List<Func<IEnumerator>>() { Jump, Slam, Dig, Charge, MightySlam, MightyDig };
+
+                float distToWall = Math.Abs(transform.position.x - (transform.localScale.x > 0f ? RightX : LeftX));
+
+                weights[0] += 2;
+                if(distToWall < (Width / 3f) + 2f)
+				{
+                    weights[3] += 4;
+                    if(phase > 1) weights[4] += 2;
+                    if(phase > 2) weights[5] += 2;
+				}
+                else if(distToWall < 2 * Width / 2f)
+				{
+                    weights[1]++;
+                    weights[2]++;
+                    weights[3]++;
+                    if(phase > 1) weights[4]++;
+                    if(phase > 2) weights[5]++;
+				}
+                else
+				{
+                    weights[1] += 2;
+                    weights[2] += 2;
+                    if(phase > 1) weights[4]++;
+                    if(phase > 2) weights[5]++;
+                }
+                if(prevAtt != null)
                 {
-                    nextAtt = attacks[currAtt.Method.Name][Random.Range(0, attacks[currAtt.Method.Name].Count)];
-                } while(prevAtt.Method.Name == nextAtt.Method.Name);
-                
+                    weights[attacks.IndexOf(prevAtt)] = 0;
+                    if(prevAtt == Jump)
+					{
+                        weights[4] = 0;
+                        weights[5] = 0;
+                        if(prevAtt2 != null && prevAtt2 == Dig) weights[1]++;
+					}
+                    if(prevAtt == Dig)
+					{
+                        weights[1] = 0;
+					}
+                }
+                if(prevAtt2 != null) weights[attacks.IndexOf(prevAtt2)]--;
+
+                List<Func<IEnumerator>> attackTable = new List<Func<IEnumerator>>();
+
+                for(int i = 0; i < weights.Length; i++)
+                {
+                    for(int j = 0; j < weights[i]; j++)
+                    {
+                        attackTable.Add(attacks[i]);
+                    }
+                }
+
+                currAtt = attackTable[Random.Range(0, attackTable.Count)];
+
                 Log("[Attack] " + currAtt.Method.Name);
                 StartCoroutine(currAtt.Invoke());
             }
@@ -236,7 +269,7 @@ namespace FiveKnights.Hegemol
             if(_usingGroundPunch)
             {
                 _anim.Play("JumpAntic");
-                PlayVoiceClip("HCharge1", false, 1f);
+                PlayVoiceClip("HCharge", false, 1f);
                 yield return null;
 
                 yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
@@ -247,7 +280,7 @@ namespace FiveKnights.Hegemol
 
                 _anim.Play("Jump");
 
-                yield return new WaitForSeconds(0.69f);
+                yield return new WaitForSeconds(0.2f);
                 yield return new WaitUntil(() => _grounded);
 
                 _anim.Play("Land");
@@ -259,6 +292,8 @@ namespace FiveKnights.Hegemol
 
                 _usingGroundPunch = false;
             }
+            yield return Turn();
+
             _anim.Play("PunchAntic");
             _rb.velocity = Vector2.zero;
             yield return null;
@@ -272,30 +307,28 @@ namespace FiveKnights.Hegemol
             _mace.gameObject.SetActive(true);
 
             bool right = transform.localScale.x > 0f;
-            _anim.speed = 1f;
             _anim.Play("Punch");
             for(int i = 0; i < 8; i++)
             {
                 if(i == 7)
 				{
                     _mace.gameObject.SetActive(false);
-                    _mace.gameObject.transform.position = transform.position + 50f * Vector3.up;
+                    _mace.gameObject.transform.position = transform.position + 70f * Vector3.up;
                     _mace.LaunchSpeed = -69f;
                     _mace.SpinSpeed = 560f;
                     _mace.gameObject.SetActive(true);
                 }
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                
+
+                int debrisAmount = phase == 3 ? 1 + i % 2 : 1;
                 PlayVoiceClip("HGrunt", true, 1f);
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
-                SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 50f, 2);
-                SpawnDebris(phase - 1);
-                _anim.speed = 0.8f;
+                SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 2);
+                StartCoroutine(SpawnDebris(debrisAmount, false, 0f));
 
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() == 0);
 
-                _anim.speed = 1f;
                 transform.localScale = new Vector3(-transform.localScale.x, transform.localScale.y, transform.localScale.z);
                 right = !right;
                 if(i == 0) _mace.gameObject.SetActive(false); 
@@ -311,8 +344,6 @@ namespace FiveKnights.Hegemol
 
             _anim.Play("Idle");
 
-            yield return new WaitForSeconds(0.75f);
-
             yield return IdleTimer();
         }
 
@@ -324,8 +355,8 @@ namespace FiveKnights.Hegemol
             else diff = (transform.localScale.x > 0f ? LeftX : RightX + transform.position.x) / 2 - transform.position.x;
 
             _anim.Play("JumpAntic");
-
             yield return null;
+
             yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
 
             _anim.Play("Jump");
@@ -354,15 +385,17 @@ namespace FiveKnights.Hegemol
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
-
+            
+            // If past phase 1, has a chance to do a fakeout instead
             _anim.speed = 1f;
             if(phase > 1 && Random.Range(0, 2) == 1)
 			{
+                // Jump for the fakeout
                 float diff = HeroController.instance.transform.position.x - transform.position.x;
 
                 _anim.Play("JumpAntic");
-
                 yield return null;
+
                 yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
 
                 _anim.Play("JumpAttackUp");
@@ -370,22 +403,38 @@ namespace FiveKnights.Hegemol
                 _rb.velocity = new Vector2(diff, 60f);
                 PlayAudioClip(_ap, "HegJump", 2f);
 
+                // Wait for him to start going down
                 yield return new WaitForSeconds(0.2f);
                 yield return new WaitWhile(() => _rb.velocity.y > 0f);
-                yield return new WaitUntil(() => CheckTerrain(Vector3.down, 2f));
+                yield return new WaitUntil(() => CheckTerrain(Vector3.down, 8f));
 
-                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+                // Start playing his jump attack animation
                 _anim.Play("JumpAttackHit");
                 PlayAudioClip(_ap, "HegAttackSwing", 2f);
+                transform.position -= 0.5f * Vector3.down;
+                yield return null;
+                _anim.enabled = false;
+
+                // Step forward the animation frames to be on the right frame when he lands
+                yield return new WaitUntil(() => CheckTerrain(Vector3.down, 5f));
+
+                _anim.enabled = true;
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
+
+                _anim.enabled = false;
+
+                // Landed, continue playing the rest of the animation, spawn shockwaves, etc.
+                yield return new WaitUntil(() => _grounded);
+
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+                _anim.enabled = true;
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
 
-                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 50f, 2);
-                SpawnDebris(phase + 1);
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 2);
+                StartCoroutine(SpawnDebris(phase, true, transform.position.x));
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
-
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
-
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                 _rb.velocity = Vector2.zero;
                 PlayAudioClip(_ap, "HegLand", 1f);
@@ -394,15 +443,17 @@ namespace FiveKnights.Hegemol
             }
             else
 			{
+                // Non fakeout, just swing and spawn shockwaves
                 _anim.Play("Attack");
                 PlayAudioClip(_ap, "HegAttackSwing", 2f);
                 yield return null;
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
 
-                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 50f, 2);
-                SpawnDebris(phase + 1);
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 2);
+                StartCoroutine(SpawnDebris(phase, true, transform.position.x));
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
+                GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return _anim.PlayBlocking("AttackRecover");
             }
@@ -411,50 +462,57 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator Dig()
         {
+            // Play antic for dig
             _anim.Play("DigAntic");
             yield return null;
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+
             _anim.enabled = false;
-            yield return new WaitForSeconds(0.1f);
+
+            yield return new WaitForSeconds(0.05f);
+
             _anim.enabled = true;
             PlayAudioClip(_ap, "HegAttackSwing", 1f);
             PlayVoiceClip("HGrunt", true, 1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying("DigAntic"));
 
+            // Mace hit ground, start walking forward
             PlayAudioClip(_ap, "HegAttackHit", 1f);
-            SpawnShockwaves(transform.localScale.x > 0f, -5f, 1.5f, 50f, 2);
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _anim.Play("Dig");
             _rb.velocity = 2f * Vector2.right * transform.localScale.x;
 
-            yield return new WaitForSeconds(1.2f);
+            yield return new WaitForSeconds(0.4f);
 
+            // Mace leaves ground, spawn shockwaves and debris
             _anim.Play("DigEnd");
             _rb.velocity = Vector2.zero;
             yield return null;
 			PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            SpawnShockwaves(transform.localScale.x > 0f, 5f, 1.5f, 15f, 2);
 
             // Debris logic
             Vector2 pos = transform.position + Mathf.Sign(transform.localScale.x) * Vector3.right * 5.5f + 2.6f * Vector3.down;
+            for(int i = -2; i < 3; i++)
+			{
+                float targetX = HeroController.instance.transform.position.x + Mathf.Sign(transform.localScale.x) * 10f * i;
+                Vector2 diff = new Vector2(targetX, GroundY) - pos;
 
-            for (int i = -2; i < 3; i++)
-            {
-                float yDiff = 6.5f + i * 2.5f;
-                float xDiff = (transform.localScale.x > 0f ? RightX : LeftX) - transform.position.x;
-                float t = 0.4f;
-                float velx = xDiff / t;
-                float vely = yDiff / t + 30f * t;
+                Vector2 vel = Vector2.zero;
+                float t = 1f;
+                vel.x = diff.x / t;
+                vel.y = diff.y / t + 45f * t;
 
                 GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
                 AddDamageToGO(debris, 1, true);
-                debris.transform.localScale *= 2f;
                 debris.SetActive(false);
 
-                DigDebris dd = debris.AddComponent<DigDebris>();
-                dd.vel = new Vector2(Random.Range(0.9f, 1.1f) * velx, vely);
-                dd.WallX = transform.localScale.x > 0f ? RightX : LeftX;
-                dd.GroundY = GroundY;
+                Debris deb = debris.AddComponent<Debris>();
+                deb.gravityScale = 1.5f;
+                deb.vel = vel;
+                deb.GroundY = GroundY;
 
                 debris.transform.Find("Debris0").gameObject.SetActive(false);
                 debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
@@ -468,34 +526,45 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator Charge()
 		{
-            PlayVoiceClip("HCharge1", false, 1f);
-            for(int i = 0; i < (phase > 1  && !_usingGroundPunch? 2 : 1); i++)
+            PlayVoiceClip("HCharge", false, 1f);
+            for(int i = 0; i < phase; i++)
             {
-                if(i == 1) yield return Turn();
+                // Turn towards the player first, then play antic
+                if(i > 0) yield return Turn();
                 yield return _anim.PlayBlocking("RunAntic");
                 if(i == 0) yield return new WaitForSeconds(0.3f);
 
+                // GAS GAS GAS
                 _anim.Play("Run");
                 _anim.speed = 0.75f;
-                _rb.velocity = new Vector2(35f * Mathf.Sign(transform.localScale.x), 0f);
+                _rb.velocity = new Vector2(30f * Mathf.Sign(transform.localScale.x), 0f);
 
+                // Wait until he hits the wall
                 yield return new WaitUntil(() => CheckTerrain(transform.localScale.x * Vector2.right, 0.1f));
 
+                // Make him bounce off the wall a bit
                 _anim.speed = 1f;
-                if(i == 0 || phase == 1) PlayVoiceClip("HGrunt", true, 1f);
-                else PlayVoiceClip("HCharge2", false, 1f);
+                if(i == phase - 1) PlayVoiceClip("HHeavy", true, 1f);
+                else PlayVoiceClip("HGrunt", true, 1f);
                 PlayAudioClip(_ap, "HegShockwave", 1f);
                 _anim.Play("Jump");
                 _rb.gravityScale = 1.5f;
                 _rb.velocity = new Vector2(-7.5f * Mathf.Sign(transform.localScale.x), 25f);
-                SpawnDebris(i + 1);
 
                 yield return new WaitForSeconds(0.1f);
                 yield return new WaitUntil(() => _grounded);
 
+                // Spawn shockwaves upon landing if it's past phase 1 and it's the final charge
                 _rb.velocity = Vector2.zero;
-                SpawnShockwaves(true, 0f, 1.5f, 40f, 2);
-                SpawnShockwaves(false, 0f, 1.5f, 40f, 2);
+                if(i != 0 && i == phase - 1)
+                {
+                    SpawnShockwaves(true, 0f, 1.5f, 20f, 2);
+                    SpawnShockwaves(false, 0f, 1.5f, 20f, 2);
+                }
+
+                // Spawn debris that targets the other side of the arena from where he is
+                StartCoroutine(SpawnDebris(i == phase - 1 ? 2 : 1, true, transform.position.x < CenterX ? RightX : LeftX));
+
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                 PlayAudioClip(_ap, "HegLand", 1f);
             }
@@ -507,6 +576,182 @@ namespace FiveKnights.Hegemol
             yield return IdleTimer();
         }
 
+        private IEnumerator MightySlam()
+		{
+            yield return JumpBack();
+
+            _anim.Play("AttackAntic");
+            PlayVoiceClip("HCharge", false, 1f);
+            PlayAudioClip(_ap, "HegAttackCharge", 1f);
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
+
+            _anim.Play("AttackAnticLoop");
+
+            yield return new WaitForSeconds(0.7f);
+
+            _anim.Play("Attack");
+            PlayVoiceClip("HGrunt", true, 1f);
+            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
+
+            SpawnPillar(-Mathf.Sign(transform.localScale.x), new Vector2(2f, 1f), 15f);
+            StartCoroutine(SpawnDebris(3, true, transform.position.x));
+            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+
+            yield return _anim.PlayBlocking("AttackRecover");
+            yield return IdleTimer();
+        }
+
+        private IEnumerator MightyDig()
+		{
+            yield return JumpBack();
+
+            _anim.Play("DigAntic");
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+
+            _anim.enabled = false;
+
+            yield return new WaitForSeconds(0.05f);
+
+            _anim.enabled = true;
+            PlayAudioClip(_ap, "HegAttackSwing", 1f);
+            PlayVoiceClip("HGrunt", true, 1f);
+
+            yield return new WaitWhile(() => _anim.IsPlaying("DigAntic"));
+
+            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            _anim.Play("Dig");
+            _rb.velocity = 2f * Vector2.right * transform.localScale.x;
+
+            yield return new WaitForSeconds(0.2f);
+
+            _anim.Play("DigEnd");
+            _rb.velocity = Vector2.zero;
+            yield return null;
+            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+
+            // Send debris up
+            Vector2 pos = transform.position + Mathf.Sign(transform.localScale.x) * Vector3.right * 5.5f + 2.6f * Vector3.down;
+
+            Debris[] debrisArr = new Debris[5];
+            for(int i = -2; i < 3; i++)
+            {
+                float targetX = pos.x + Mathf.Sign(transform.localScale.x) * 1f * i;
+                Vector2 diff = new Vector2(targetX, transform.position.y + 10f) - pos;
+
+                Vector2 vel = Vector2.zero;
+                float t = 0.8f;
+                vel.x = diff.x / t;
+                vel.y = diff.y / t + 45f * t;
+
+                GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
+                AddDamageToGO(debris, 1, true);
+                debris.SetActive(false);
+
+                Debris deb = debris.AddComponent<Debris>();
+                deb.gravityScale = 1.5f;
+                deb.vel = vel;
+                deb.GroundY = GroundY;
+                debrisArr[i + 2] = deb;
+
+                debris.transform.Find("Debris0").gameObject.SetActive(false);
+                debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
+
+                debris.SetActive(true);
+            }
+
+            yield return new WaitWhile(() => _anim.IsPlaying("DigEnd"));
+
+            _anim.Play("JumpAntic");
+            PlayVoiceClip("HCharge", false, 1f);
+
+            yield return null;
+            yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
+
+            _anim.Play("JumpAttackUp");
+            _rb.gravityScale = 3f;
+            _rb.velocity = new Vector2(0f, 60f);
+            PlayAudioClip(_ap, "HegJump", 2f);
+
+            yield return new WaitForSeconds(0.2f);
+            yield return new WaitWhile(() => _rb.velocity.y > 0f);
+
+            _anim.Play("JumpAttackHit");
+            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            PlayVoiceClip("HHeavy", true, 1f);
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+
+            // Redirect debris
+            for(int i = -2; i < 3; i++)
+			{
+                Debris deb = debrisArr[i + 2];
+
+                float targetX = transform.localScale.x > 0f ? (RightX + CenterX) / 2 : (LeftX + CenterX) / 2;
+                Vector2 target = new Vector2(targetX + 4f * i, GroundY);
+                Vector2 vel = target - (Vector2)deb.transform.position;
+
+                deb.rb.velocity = 50f * vel.normalized;
+                deb.rb.gravityScale = 0f;
+			}
+            _rb.velocity = Vector2.zero;
+            _rb.gravityScale = 0f;
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+
+            _rb.gravityScale = 3f;
+            _anim.Play("Jump");
+            yield return null;
+
+            yield return new WaitUntil(() => _grounded);
+
+            _anim.Play("Land");
+            _rb.velocity = Vector2.zero;
+            SpawnShockwaves(true, 0f, 1.5f, 40f, 2);
+            SpawnShockwaves(false, 0f, 1.5f, 40f, 2);
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            PlayAudioClip(_ap, "HegLand", 1f);
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Land"));
+            yield return IdleTimer();
+        }
+
+        private IEnumerator JumpBack()
+		{
+            float diff = ((transform.localScale.x > 0f ? LeftX : RightX) + transform.position.x) / 2 - transform.position.x;
+
+            _anim.Play("JumpAntic");
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
+
+            _anim.Play("Jump");
+            _rb.gravityScale = 3f;
+            _rb.velocity = new Vector2(diff, 60f);
+            PlayAudioClip(_ap, "HegJump", 2f);
+
+            yield return new WaitForSeconds(0.2f);
+            yield return new WaitUntil(() => _grounded);
+
+            _anim.Play("Land");
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            _rb.velocity = Vector2.zero;
+            PlayAudioClip(_ap, "HegLand", 1f);
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Land"));
+        }
+
+        // Dung Wave and Dung Side are obsolete, no longer used (even in CC)
         private IEnumerator DungWave()
         {
             Transform trans = transform;
@@ -535,7 +780,7 @@ namespace FiveKnights.Hegemol
                 yield return new WaitForSeconds(0.1f);
             }
         }
-     
+
         private IEnumerator DungSide(bool right)
         {
             Transform trans = transform;
@@ -608,18 +853,30 @@ namespace FiveKnights.Hegemol
             off.y = slam.transform.Find("slash_core").Find("hurtbox").GetComponent<PolygonCollider2D>().offset.y - 10f;
         }
 
-        private void SpawnDebris(int amount)
+        private IEnumerator SpawnDebris(int amount, bool useLogic, float targetX)
         {
             for(int i = 0; i < amount; i++)
             {
-                Vector2 pos = new Vector2(Random.Range(LeftX + 2f, RightX - 2f), GroundY + 15f);
+                float minX = LeftX;
+                float maxX = RightX;
+                if(!useLogic)
+                {
+                    minX += 2f;
+                    maxX -= 2f;
+                }
+                else
+				{
+                    if(targetX > CenterX) minX = CenterX;
+                    else maxX = CenterX;
+				}
+
+                Vector2 pos = new Vector2(Random.Range(minX, maxX), GroundY + 15f);
                 GameObject debris = Instantiate(FiveKnights.preloadedGO["Debris"], pos, Quaternion.identity);
                 AddDamageToGO(debris, 1, true);
-                debris.transform.localScale *= 2f;
                 debris.SetActive(false);
 
                 Debris deb = debris.AddComponent<Debris>();
-                deb.delay = Random.Range(0f, 1.5f);
+                deb.gravityScale = 0f;
                 deb.vel = 10f * Vector2.down;
                 deb.GroundY = GroundY;
 
@@ -627,6 +884,8 @@ namespace FiveKnights.Hegemol
                 debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
 
                 debris.SetActive(true);
+
+                yield return new WaitForSeconds(0.5f);
             }
         }
 
@@ -641,6 +900,71 @@ namespace FiveKnights.Hegemol
             }
         }
 
+        private bool _staggered;
+
+        private IEnumerator Stagger()
+		{
+            Log("Staggered");
+            _hm.hp = Health;
+
+            _anim.enabled = true;
+            _anim.speed = 1f;
+            _anim.Play("Stagger");
+            _sr.material.SetFloat("_FlashAmount", 0f);
+            Destroy(_dh);
+            PlayAudioClip(_damage, "HegDamageFinal", 1f);
+            PlayVoiceClip("HHeavy", true, 1f);
+
+            float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
+            _rb.gravityScale = 1.5f;
+            _rb.velocity = new Vector2(7.5f * dir, 25f);
+
+            yield return null;
+
+            _anim.enabled = false;
+
+            yield return new WaitForSeconds(0.1f);
+            while(!_grounded)
+			{
+                yield return new WaitUntil(() => _grounded || CheckTerrain(transform.localScale.x * Vector3.right, 0.1f));
+                if(CheckTerrain(transform.localScale.x * Vector3.right, 0.1f))
+				{
+                    _rb.velocity = new Vector2(-_rb.velocity.x, _rb.velocity.y);
+				}
+            }
+
+            _anim.enabled = true;
+            _rb.velocity = Vector2.zero;
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            PlayAudioClip(_ap, "HegLand", 1f);
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+            _anim.enabled = false;
+            _staggered = true;
+            _hm.IsInvincible = false;
+
+            yield return new WaitForSeconds(1f);
+
+            yield return StaggerEnd();
+        }
+
+        private IEnumerator StaggerEnd()
+		{
+            PlayVoiceClip("HCalm", true, 1f);
+            _anim.enabled = true;
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+
+            _anim.Play("Idle");
+
+            _rb.gravityScale = 3f;
+            _dh = AddDamageToGO(gameObject, 2, false);
+            _usingGroundPunch = true;
+            _attacking = false;
+            _staggered = false;
+            StartCoroutine(AttackChoice());
+        }
+
         private void Update()
 		{
             if(_hm.hp <= 0 && phase <= 3)
@@ -652,8 +976,8 @@ namespace FiveKnights.Hegemol
                     StartCoroutine(Die());
                     return;
                 }
-                _hm.hp = Health;
-                _usingGroundPunch = true;
+                StopAllCoroutines();
+                StartCoroutine(Stagger());
                 Log("Going to phase " + phase);
             }
         }
@@ -683,29 +1007,69 @@ namespace FiveKnights.Hegemol
 
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if(self.gameObject.name == "Hegemol") _hitFx.RecieveHitEffect(hitInstance.Direction);
             orig(self, hitInstance);
+            if(self.gameObject.name == "Hegemol")
+			{
+                if(_staggered)
+				{
+                    StopAllCoroutines();
+                    StartCoroutine(StaggerEnd());
+				}
+                _hitFx.RecieveHitEffect(hitInstance.Direction);
+            }
         }
 
         private void HealthManagerDie(On.HealthManager.orig_Die orig, HealthManager self, float? attackDirection, AttackTypes attackType, bool ignoreEvasion)
         {
-            if(self.gameObject.name == "Hegemol" && phase < 3) return;
+            if(self.gameObject.name.Contains("Hegemol") && phase < 3) return;
             orig(self, attackDirection, attackType, ignoreEvasion);
+        }
+
+        private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
+        {
+            if(go.name.Contains("Shockwave") && damageAmount > 0) damageAmount = 2;
+            orig(self, go, damageSide, damageAmount, hazardType);
         }
 
         private IEnumerator Die()
         {
             Log("Hegemol Death");
 
-            GGBossManager.Instance.PlayMusic(null, 1f);
+            if(OWArenaFinder.IsInOverWorld) OWBossManager.PlayMusic(null);
+            else GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
-            _sr.material.SetFloat("_FlashAmount", 0f);
-            _rb.velocity = Vector2.zero;
+            _anim.enabled = true;
             _anim.speed = 1f;
             _anim.Play("Stagger");
+            _sr.material.SetFloat("_FlashAmount", 0f);
+            Destroy(_dh);
             gameObject.AddComponent<NonBouncer>();
-            PlayAudioClip(_ap, "HegDamageFinal", 1f);
-            PlayVoiceClip("HDeath", false, 1f);
+            PlayAudioClip(_damage, "HegDamageFinal", 1f);
+            PlayVoiceClip("HHeavy", true, 1f);
+
+            float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
+            _rb.gravityScale = 1.5f;
+            _rb.velocity = new Vector2(7.5f * dir, 25f);
+
+            yield return null;
+
+            _anim.enabled = false;
+
+            yield return new WaitForSeconds(0.1f);
+            while(!_grounded)
+            {
+                yield return new WaitUntil(() => _grounded || CheckTerrain(transform.localScale.x * Vector3.right, 0.1f));
+                if(CheckTerrain(transform.localScale.x * Vector3.right, 0.1f))
+                {
+                    _rb.velocity = new Vector2(-_rb.velocity.x, _rb.velocity.y);
+                }
+            }
+
+            _anim.enabled = true;
+            _rb.velocity = Vector2.zero;
+            GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayVoiceClip("HTired", true, 1f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
             _anim.enabled = false;
@@ -714,7 +1078,16 @@ namespace FiveKnights.Hegemol
 
             PlayVoiceClip("HCalm", true, 1f);
 
-            yield return new WaitForSeconds(2f);
+            yield return new WaitForSeconds(1f);
+
+            _anim.enabled = true;
+            yield return null;
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Stagger"));
+
+            _sr.enabled = false;
+
+            yield return new WaitForSeconds(1f);
 
             GetComponent<EnemyDeathEffects>().RecordJournalEntry();
 	    
@@ -771,13 +1144,14 @@ namespace FiveKnights.Hegemol
             traitorSlam.SetActive(false);
         }
 
-        private void AddDamageToGO(GameObject go, int damage, bool isAttack)
+        private DamageHero AddDamageToGO(GameObject go, int damage, bool isAttack)
 		{
             go.layer = isAttack ? (int)PhysLayers.ENEMY_ATTACK : (int)PhysLayers.ENEMIES;
             DamageHero dh = go.AddComponent<DamageHero>();
             dh.damageDealt = damage;
             dh.hazardType = (int)HazardType.SPIKES;
             dh.shadowDashHazard = false;
+            return dh;
 		}
 
         private IEnumerator IdleTimer()
@@ -796,12 +1170,15 @@ namespace FiveKnights.Hegemol
                 switch(clip)
 				{
                     case "HCalm":
-                        num = Random.Range(1, 3);
+                        num = Random.Range(1, 4);
                         break;
                     case "HGrunt":
                         num = Random.Range(1, 5);
                         break;
                     case "HTired":
+                        num = Random.Range(1, 4);
+                        break;
+                    case "HHeavy":
                         num = Random.Range(1, 3);
                         break;
                     default:
@@ -836,6 +1213,7 @@ namespace FiveKnights.Hegemol
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
+            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
 
         private void Log(object message)

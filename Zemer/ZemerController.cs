@@ -26,10 +26,14 @@ namespace FiveKnights.Zemer
         private System.Random _rand;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
-        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
-        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 11.2f;
-        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
-        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9.4f : 28.8f;
+        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
+        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
+        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6.5f : 25.9f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
         private const int MaxHPV1 = 1200;
@@ -120,10 +124,10 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
             Destroy(GameObject.Find("Bounds Cage"));
             Destroy(GameObject.Find("World Edge v2"));
-            if (!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
-            else yield return new WaitForSeconds(1.7f);
-            //StartCoroutine(MusicControl());
-            gameObject.SetActive(true);
+			if(!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
+			else yield return new WaitForSeconds(1.7f);
+			//StartCoroutine(MusicControl());
+			gameObject.SetActive(true);
             gameObject.transform.position = OWArenaFinder.IsInOverWorld ? 
                     new Vector2(254f, GroundY + 0.5f) : 
                     new Vector2(RightX - 10f, GroundY + 0.5f);
