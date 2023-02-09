@@ -19,7 +19,7 @@ namespace FiveKnights
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
-            Misc, Charms, tk2dDep
+            Misc, Charms, tk2dDep, CharmUnlock
         }
 
         private static string BundleToString(Bundle bd)
@@ -50,6 +50,7 @@ namespace FiveKnights
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
                 Bundle.tk2dDep => "blendvertexcolor",
+                Bundle.CharmUnlock => "charmunlock",
                 _ => ""
             };
         }
@@ -58,7 +59,7 @@ namespace FiveKnights
         {
             if (AssetBundles.ContainsKey(bd) && AssetBundles[bd] != null) return AssetBundles[bd];
             using Stream s = _asm.GetManifestResourceStream($"FiveKnights.StreamingAssets.{BundleToString(bd)}");
-            var ab = AssetBundle.LoadFromStream(s);
+            var ab = AssetBundle.LoadFromStream(s); 
             AssetBundles[bd] = ab;
             s?.Dispose();
             return ab;

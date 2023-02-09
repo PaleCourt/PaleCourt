@@ -162,12 +162,12 @@ namespace FiveKnights
             ModifyFuryForAbyssalBloom();
 
 #if DEBUG
-            FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
+            //  FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
-            FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
+            /*FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[1] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[2] = true;
-            FiveKnights.Instance.SaveSettings.gotCharms[3] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[3] = true;*/
 
             /*PureAmulets.Settings.newCharm_41 = true;
             PureAmulets.Settings.newCharm_42 = true;
