@@ -349,8 +349,7 @@ namespace FiveKnights
             
             // Doing acid spit stuff
             var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
-            var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
-            acidOrig = Instantiate(acidOrig);
+            var acidOrig = Instantiate(noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value);
             acidOrig.SetActive(false);
             
             // Change particle color to green

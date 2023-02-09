@@ -198,8 +198,6 @@ namespace FiveKnights
             yield break;
         }
 
-        private void OnDestroy()
-        {
-        }
+        private void OnDestroy() { }
     }
 }

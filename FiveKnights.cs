@@ -353,6 +353,7 @@ namespace FiveKnights
             orig(self);
             self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
         }
+
         private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
         {
             orig(self);
@@ -583,6 +584,7 @@ namespace FiveKnights
             }
             return orig;
         }
+
         private bool ModHooks_SetPlayerBool(string target, bool orig)
         {
             if (target.StartsWith("gotCharm_"))

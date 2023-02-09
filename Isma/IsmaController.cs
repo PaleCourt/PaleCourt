@@ -38,6 +38,7 @@ namespace FiveKnights.Isma
         private GameObject dd;
         private PlayMakerFSM _ddFsm;
         private Animator _anim;
+        private Texture acidTexture;
         private List<AudioClip> _randAud;
         private System.Random _rand;
         private int _healthPool;
@@ -142,8 +143,7 @@ namespace FiveKnights.Isma
             {
                 #region Acid Spit
                 var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
-                var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
-                acidOrig = Instantiate(acidOrig);
+                var acidOrig = Instantiate(noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value);
                 acidOrig.SetActive(false);
 
                 // Change particle color to green
@@ -159,7 +159,7 @@ namespace FiveKnights.Isma
                     .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
                 // Change texture
                 tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
-                //acidOldTex = def.material.mainTexture;
+                acidTexture = def.material.mainTexture;
                 def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
                 // Store values
                 FiveKnights.Clips["AcidSpitSnd"] = clip;
@@ -2101,6 +2101,9 @@ namespace FiveKnights.Isma
         {
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
+
+            var def = FiveKnights.preloadedGO["AcidSpit"].GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+            def.material.mainTexture = acidTexture;
         }
 
         private void Log(object o)
