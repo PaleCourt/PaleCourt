@@ -11,7 +11,7 @@ namespace FiveKnights
 {
     public class  CustomWP : MonoBehaviour
     {
-        public static bool isFromGodhome;
+        public static bool isInGodhome;
         public static Boss boss;
         public static CustomWP Instance;
         public static bool wonLastFight;
@@ -20,11 +20,13 @@ namespace FiveKnights
 
         private void Start()
         {
+            if(!isInGodhome) return;
+
             Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
             boss = Boss.None;
-            
+
             FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
             GameObject root = Instantiate(FiveKnights.preloadedGO["HubRoot"]);
             
@@ -338,6 +340,9 @@ namespace FiveKnights
             var scene = ScriptableObject.CreateInstance<BossScene>();
             scene.sceneName = sceneName;
             var bs = statue.GetComponent<BossStatue>();
+            bs.bossScene = scene;
+            bs.statueStatePD = state;
+
             switch (name)
             {
                 case "ISMA_NAME":
@@ -359,8 +364,6 @@ namespace FiveKnights
                     bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionHegemol;
                     break;
             }
-            bs.bossScene = scene;
-            bs.statueStatePD = state;
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
             details.nameKey = name;
@@ -471,7 +474,6 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
-            
         }
         
         private static void Log(object o)

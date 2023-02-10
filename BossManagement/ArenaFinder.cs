@@ -10,6 +10,7 @@ using GlobalEnums;
 using HutongGames.PlayMaker;
 using SFCore.Utils;
 using Vasi;
+using Modding;
 using Logger = Modding.Logger;
 using USceneManager = UnityEngine.SceneManagement.SceneManager;
 
@@ -29,8 +30,6 @@ namespace FiveKnights
         private FightController fightCtrl;
 
         private static bool hasSummonElevator;
-
-        private bool hasKingFrag;
 
         private string prevScene;
 
@@ -62,11 +61,9 @@ namespace FiveKnights
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
 			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
 			On.BossSceneController.Awake += BossSceneController_Awake;
-			spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
+            spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
-            hasKingFrag = PlayerData.instance.gotKingFragment;
-            PlayerData.instance.gotKingFragment = true;
         }
 
 		private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
@@ -170,6 +167,8 @@ namespace FiveKnights
                 info.SceneName = PrevFightScene;
                 info.EntryGateName = "door_dreamReturnGGTestingIt";
             }
+            ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
+            if(info.SceneName == "White_Palace_09" && prevScene == "GG_Workshop") ModHooks.GetPlayerBoolHook += GetPlayerBoolHook;
             Log($"After: Going to {info.SceneName} from {prevScene} using gate {info.EntryGateName}");
             prevScene = info.SceneName;
             currScene = info.SceneName;
@@ -232,9 +231,12 @@ namespace FiveKnights
         
         private void SceneChanged(Scene arg0, Scene arg1)
         {
-            CustomWP.isFromGodhome = arg0.name == "GG_Workshop";
-            if (arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09") return;
-            
+            if(arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09")
+            {
+                CustomWP.isInGodhome = false;
+                return;
+            }
+
             if (arg1.name is DryyaScene or IsmaScene or HegemolScene or ZemerScene)
             {
                 // Done using SFGrenade code
@@ -351,7 +353,6 @@ namespace FiveKnights
             {
                 //GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 PlayerData.instance.isInvincible = false;
-                
             }
 
             if ((arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender") ||
@@ -369,6 +370,8 @@ namespace FiveKnights
             
             if (arg1.name == "White_Palace_09")
             {
+                CustomWP.isInGodhome = true;
+
                 ResetBossBundle();
                 LoadHubBundles();
                 if (CustomWP.Instance == null)
@@ -392,6 +395,15 @@ namespace FiveKnights
                     Log("Killed fightCtrl2");
                 }
             }
+        }
+
+        private bool GetPlayerBoolHook(string name, bool orig)
+        {
+            if(name == nameof(PlayerData.gotKingFragment))
+            {
+                return true;
+            }
+            return orig;
         }
 
         private void ResetBossBundle()
@@ -531,7 +543,7 @@ namespace FiveKnights
             USceneManager.activeSceneChanged -= SceneChanged;
             On.SceneManager.Start -= SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
-            PlayerData.instance.gotKingFragment = hasKingFrag;
+            ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
         }
 
         private void Log(object o)
