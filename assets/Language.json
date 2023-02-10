@@ -72,7 +72,7 @@
     },
     "UI": {
       "CHARM_NAME_PURITY": "Mark of Purity",
-      "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Tremendously increases the range of the bearer's nail, allowing them to strike foes from further away.",
+      "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Successful nail strikes in quick succession build vigor, increasing the speed of attacks. Hinders the reach of the nail.",
       "CHARM_NAME_LAMENT": "Vessel's Lament",
       "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
       "CHARM_NAME_BOON": "Boon of Hallownest",

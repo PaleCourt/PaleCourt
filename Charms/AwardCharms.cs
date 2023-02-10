@@ -51,7 +51,6 @@ namespace FiveKnights
         }
         private IEnumerator AwardCharm(string boss)
         {
-            Log(boss);
             yield return new WaitUntil(() => HeroController.instance != null);
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Prostrate Rise");
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
@@ -249,7 +248,6 @@ namespace FiveKnights
                 if (alpha > 0)
                 {
                     alpha = ((startTime + fadeTime) - Time.time);
-                    Log(alpha);
                     gameObject.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, alpha);
                 }
 
@@ -264,6 +262,6 @@ namespace FiveKnights
             audio.volume = volume;
             audio.PlayOneShot(clip);
         }
-        private static void Log(object message) => Modding.Logger.Log("[FiveKnights][Test] " + message);
+        private static void Log(object message) => Modding.Logger.Log("[FiveKnights][AwardCharms] " + message);
     }
 }

@@ -150,6 +150,9 @@ namespace FiveKnights
 
             //_pd.CalculateNotchesUsed();
 
+            self.gameObject.AddComponent<PurityTimer>().enabled = false;
+            self.gameObject.AddComponent<AutoSwing>().enabled = false;
+
             Log("Waiting for Audio Player Actor...");
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
@@ -378,11 +381,13 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
             {
-                SetPuritySize();
+                _hc.GetComponent<PurityTimer>().enabled = true;
+                _hc.GetComponent<AutoSwing>().enabled = true;
             }
             else
             {
-                RemovePuritySize();
+                _hc.GetComponent<PurityTimer>().enabled = false;
+                _hc.GetComponent<AutoSwing>().enabled = false;
             }
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
@@ -1086,7 +1091,8 @@ namespace FiveKnights
             }
         }*/
 
-        private void SetPuritySize()
+        //Old purity effect
+        /*private void SetPuritySize()
         {
             
             foreach (NailSlash nailSlash in _nailSlashes)
@@ -1132,7 +1138,7 @@ namespace FiveKnights
                         break;
                 }
             }
-        }
+        }*/
 
         private void AudioPlayerOneShotSingle(AudioClip clip, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 1.0f, float volume = 1.0f)
         {
