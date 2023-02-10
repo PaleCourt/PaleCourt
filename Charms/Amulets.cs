@@ -162,12 +162,12 @@ namespace FiveKnights
             ModifyFuryForAbyssalBloom();
 
 #if DEBUG
-            FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
+            //  FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
-            FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
+            /*FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[1] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[2] = true;
-            FiveKnights.Instance.SaveSettings.gotCharms[3] = true;
+            FiveKnights.Instance.SaveSettings.gotCharms[3] = true;*/
 
             /*PureAmulets.Settings.newCharm_41 = true;
             PureAmulets.Settings.newCharm_42 = true;
@@ -378,11 +378,11 @@ namespace FiveKnights
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
             {
-                ChangeSlashScale(2.835f, 2.879177f, 2.2362515f, true); // original * 1.75f
+                SetPuritySize();
             }
             else
             {
-                ChangeSlashScale(1.62f, 1.645244f, 1.277858f);
+                RemovePuritySize();
             }
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
@@ -583,7 +583,7 @@ namespace FiveKnights
             _hc.RUN_SPEED_CH = RUN_SPEED_37;
             _hc.RUN_SPEED_CH_COMBO = RUN_SPEED_31_37;
 
-            _pd.nailDamage = 5 + 4 * _pd.nailSmithUpgrades;
+            //_pd.nailDamage = 5 + 4 * _pd.nailSmithUpgrades;
 
             ModifyHeroControllerProperties(HeroUpdateType.Reset);
 
@@ -1074,7 +1074,8 @@ namespace FiveKnights
             _audio.Stop();
         }
 
-        private void ChangeSlashScale(float scaleX, float scaleY, float scaleZ, bool mantis = false)
+        //Old method of setting Purity nail size, caused default nail swings to be too large
+        /*private void ChangeSlashScale(float scaleX, float scaleY, float scaleZ, bool mantis = false)
         {
             Vector3 slashScale = new Vector3(scaleX, scaleY, scaleZ);
 
@@ -1082,6 +1083,54 @@ namespace FiveKnights
             {
                 nailSlash.SetMantis(mantis);
                 nailSlash.scale = slashScale;
+            }
+        }*/
+
+        private void SetPuritySize()
+        {
+            
+            foreach (NailSlash nailSlash in _nailSlashes)
+            {
+                if (nailSlash == null) break;
+                switch (nailSlash.name)
+                {
+                    //Set nail size to 1.75x defaultz
+                    case "Slash":
+                        nailSlash.scale = new Vector3(2.835f, 2.879177f, 2.2362515f);
+                        break;
+                    case "AltSlash":
+                        nailSlash.scale = new Vector3(2.19975f, 2.4892f, 1.9664575f);
+                        break;
+                    case "DownSlash":
+                        nailSlash.scale = new Vector3(1.96875f, 1.974f, 1.75f);
+                        break;
+                    case "UpSlash":
+                        nailSlash.scale = new Vector3(2.0125f, 2.45f, 2.179625f);
+                        break;
+                }
+            }
+        }
+        private void RemovePuritySize()
+        {
+            
+            foreach (NailSlash nailSlash in _nailSlashes)
+            {
+                if (nailSlash == null) break;
+                switch (nailSlash.name)
+                {
+                    case "Slash":
+                        nailSlash.scale = new Vector3(1.62f, 1.645244f, 1.277858f);
+                        break;
+                    case "AltSlash":
+                        nailSlash.scale = new Vector3(1.257f, 1.4224f, 1.12369f);
+                        break;
+                    case "DownSlash":
+                        nailSlash.scale = new Vector3(1.125f, 1.28f, 1f);
+                        break;
+                    case "UpSlash":
+                        nailSlash.scale = new Vector3(1.15f, 1.4f, 1.2455f);
+                        break;
+                }
             }
         }
 

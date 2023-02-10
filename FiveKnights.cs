@@ -189,7 +189,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "2022-10-28";
+        public override string GetVersion() => "2.7.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -202,11 +202,8 @@ namespace FiveKnights
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("GG_Failed_Champion","False Knight Dream"),
-                
-                
+                // The dust for when Zemer slams into walls
                 ("GG_Failed_Champion","Ceiling Dust"),
-                
-                
                 ("White_Palace_09","White King Corpse/Throne Sit"),
                 ("Fungus1_12","Plant Turret"),
                 ("Fungus1_12","simple_grass"),
@@ -235,20 +232,22 @@ namespace FiveKnights
                 ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
                 ("Dream_Final_Boss", "Boss Control/Radiance"),
                 ("GG_Nosk", "Mimic Spider"),
-                
-                ("GG_Hornet_1", "Boss Holder/Hornet Boss 1")
-                
+                // For the needle sphere snd Hornet makes (we can remove by updating soundbund to have the snd)
+                ("GG_Hornet_1", "Boss Holder/Hornet Boss 1"),
+                // For Isma's thorn walls
+                ("Fungus3_13", "Thorn Collider"),
+                // For charm collect/upgrade cutscene
+                ("Room_Queen", "UI Msg Get WhiteCharm")
+
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
-            
-            
-            preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
-            
             Log("Storing GOs");
+            preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
+            preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
+            preloadedGO["Thorn Collider"] = preloadedObjects["Fungus3_13"]["Thorn Collider"];
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
@@ -294,6 +293,8 @@ namespace FiveKnights
             preloadedGO["Radiance"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance"];
 
             preloadedGO["isma_stat"] = null;
+
+            preloadedGO["CharmGet"] = preloadedObjects["Room_Queen"]["UI Msg Get WhiteCharm"];
 
             #region Add Entries
             journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
@@ -367,6 +368,7 @@ namespace FiveKnights
             orig(self);
             self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
         }
+
         private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
         {
             orig(self);
@@ -486,6 +488,8 @@ namespace FiveKnights
         private void LoadCharms()
         {
             ABManager.Load(ABManager.Bundle.Charms);
+            ABManager.Load(ABManager.Bundle.CharmUnlock);
+
         }
 
         private void LoadBossBundles()
@@ -597,6 +601,7 @@ namespace FiveKnights
             }
             return orig;
         }
+
         private bool ModHooks_SetPlayerBool(string target, bool orig)
         {
             if (target.StartsWith("gotCharm_"))
@@ -711,8 +716,9 @@ namespace FiveKnights
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
+            GameManager.instance.gameObject.AddComponent<AwardCharms>();
         }
-        
+
         private void PlantChanger()
         {
             foreach (var trapType in new[] {"PTrap","PTurret"})

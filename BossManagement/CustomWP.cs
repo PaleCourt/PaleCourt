@@ -11,7 +11,7 @@ namespace FiveKnights
 {
     public class  CustomWP : MonoBehaviour
     {
-        public static bool isFromGodhome;
+        public static bool isInGodhome;
         public static Boss boss;
         public static CustomWP Instance;
         public static bool wonLastFight;
@@ -20,13 +20,13 @@ namespace FiveKnights
 
         private void Start()
         {
+            if(!isInGodhome) return;
+
             Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.TakeHealthHook += Instance_TakeHealthHook;
             boss = Boss.None;
 
-            
             FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
             GameObject root = Instantiate(FiveKnights.preloadedGO["HubRoot"]);
             
@@ -86,11 +86,6 @@ namespace FiveKnights
                 bc.offset = new Vector2(-10, bc.offset.y);
                 Log("Fixed WP_09 camera at edges");
             }
-        }
-
-        private int Instance_TakeHealthHook(int damage)
-        {
-            return damage;
         }
 
         private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
@@ -280,7 +275,7 @@ namespace FiveKnights
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
         {
-            UnityEngine.Object.DontDestroyOnLoad((UnityEngine.Object) GameManager.instance);
+            DontDestroyOnLoad(GameManager.instance);
             
             string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
             foreach (Boss b in Enum.GetValues(typeof(Boss)))
@@ -345,6 +340,9 @@ namespace FiveKnights
             var scene = ScriptableObject.CreateInstance<BossScene>();
             scene.sceneName = sceneName;
             var bs = statue.GetComponent<BossStatue>();
+            bs.bossScene = scene;
+            bs.statueStatePD = state;
+
             switch (name)
             {
                 case "ISMA_NAME":
@@ -366,8 +364,6 @@ namespace FiveKnights
                     bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionHegemol;
                     break;
             }
-            bs.bossScene = scene;
-            bs.statueStatePD = state;
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
             var details = new BossStatue.BossUIDetails();
             details.nameKey = name;
@@ -478,8 +474,6 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
-            ModHooks.TakeHealthHook -= Instance_TakeHealthHook;
-            
         }
         
         private static void Log(object o)

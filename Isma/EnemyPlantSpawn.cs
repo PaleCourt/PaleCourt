@@ -18,10 +18,12 @@ namespace FiveKnights.Isma
         public const int MAX_TURRET = 2;
         public const int MAX_FOOL = 3;
         public const int MAX_PILLAR = 3;
+        private List<GameObject> foolList = new List<GameObject>();
+
         private const float TIME_INC = 0.1f;
         private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
         private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 90.6f;
-        private static readonly float MIDDDLE = OWArenaFinder.IsInOverWorld ? 120 : 75f;
+        private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 75f;
         private readonly float GROUND_Y = 6.05f;
         private const String FoolName = "FoolEnemy";
         private const String SpecialName = "SpecialEnemy";
@@ -52,6 +54,21 @@ namespace FiveKnights.Isma
                         Log("Oh no too many");
                         Destroy(other.gameObject);
                         return;
+                    }
+                    for(int i = 0; i < foolList.Count; i++)
+                    {
+                        if(foolList[i] == null)
+                        {
+                            foolList.RemoveAt(i);
+                            i--;
+                            continue;
+                        }
+                        if(Mathf.Abs(foolList[i].transform.position.x - other.transform.position.x) < 2f)
+                        {
+                            Log("Fool is too close to another fool");
+                            Destroy(other.gameObject);
+                            return;
+                        }
                     }
                     SpawnFool(other.transform.position);
                 }
@@ -194,7 +211,7 @@ namespace FiveKnights.Isma
             private bool dying;
             private void Awake()
             {
-                gameObject.AddComponent<PlantCtrl>().IsmaFight = true;
+                gameObject.AddComponent<PlantCtrl>();
                 PillarCount++;
                 IsmaController.offsetTime += TIME_INC;
             }
@@ -215,6 +232,7 @@ namespace FiveKnights.Isma
 
             private IEnumerator PillarDeath()
             {
+                Destroy(GetComponent<BoxCollider2D>());
                 if (transform.Find("PillarPogo") != null) Destroy(transform.Find("PillarPogo").gameObject);
                 Animator anim = GetComponent<Animator>();
                 anim.Play("PlantDie");
@@ -244,6 +262,7 @@ namespace FiveKnights.Isma
             finalFool.name = "final" + FoolName;
             finalFool.SetActive(false);
             parent.AddComponent<FoolMinion>();
+            foolList.Add(parent);
         }
 
         public class FoolMinion : MonoBehaviour
@@ -332,6 +351,8 @@ namespace FiveKnights.Isma
             public GameObject finalGulka;
             private HealthManager hm;
             private Vector2 pos;
+            private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 75f;
+
             private void Awake()
             {
                 initGulka = transform.Find("init" + GulkaName).gameObject;
@@ -354,9 +375,8 @@ namespace FiveKnights.Isma
                 
                 initGulka.SetActive(true);
                 Animator anim = initGulka.GetComponent<Animator>();
-                float rot = pos.x > MIDDDLE ? 90f : -90f;
-                //initGulka.transform.SetPosition2D(pos.x + (pos.x > MIDDDLE ? 0f : -0.3f), pos.y);
-                initGulka.transform.SetPosition2D(pos.x > MIDDDLE ? 136.6651f : 105.4166f, pos.y);
+                float rot = pos.x > MIDDLE ? 90f : -90f;
+                initGulka.transform.SetPosition2D(pos.x > MIDDLE ? 136.6651f : 105.4166f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
                 initGulka.transform.localScale *= 1.4f;
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
@@ -369,6 +389,8 @@ namespace FiveKnights.Isma
                     ball.AddComponent<ModifiedSpit>();
                 }
                 //ball.layer = 11;
+
+                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();

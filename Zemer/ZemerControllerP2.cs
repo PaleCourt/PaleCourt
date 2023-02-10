@@ -36,11 +36,15 @@ namespace FiveKnights.Zemer
         private string[] _commonAtt;
 
         private readonly float PlayerGndY = CustomWP.boss == CustomWP.Boss.All ? 23.919f : 23.919f;
-        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : (CustomWP.boss == CustomWP.Boss.All) ? 9.4f : 28.8f;
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
-        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : (CustomWP.boss == CustomWP.Boss.All) ? 61.0f : 13.2f;
-        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 43.7f;
-        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9.4f : 28.8f;
+        private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
+        private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
+        private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f :
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6.5f : 25.9f;
         private readonly float NailHeightGrab = 19f;
         
         private const int Phase2HP = 1500;
@@ -820,9 +824,14 @@ namespace FiveKnights.Zemer
 
                 rot = tarX < MIDDLE ? rot + Mathf.PI : rot;
 
-                _rb.velocity = new Vector2(55f * Mathf.Cos(rot), 55f * Mathf.Sin(rot));
+                // Scuffed workaround for CC just to make it work for now
+                if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
+				{
+                    _rb.velocity = new Vector2(55f * Mathf.Cos(rot), 55f * Mathf.Sin(rot));
+                }
+                else _rb.velocity = new Vector2(55f * Mathf.Cos(rot), -Mathf.Abs(55f * Mathf.Sin(rot)));
 
-                yield return _anim.PlayBlockingWhile("Z1ZipIn", () => transform.position.y > GroundY - 0.95f);
+				yield return _anim.PlayBlockingWhile("Z1ZipIn", () => transform.position.y > GroundY - 0.95f);
 
                 transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
 
@@ -2979,6 +2988,7 @@ namespace FiveKnights.Zemer
             yield return new WaitForSeconds(1.75f);
             CustomWP.wonLastFight = true;
             // Stop music here.
+            Log("here");
             Destroy(this);
 
             IEnumerator PlayDeathSound()

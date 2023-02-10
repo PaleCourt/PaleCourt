@@ -154,7 +154,6 @@ namespace FiveKnights
             {
                 var bc = _dryya.GetComponent<BoxCollider2D>();
                 bc.enabled = false;
-                //yield return new WaitWhile(() => _dryya.transform.position.y > 20f);
                 while (_dryya.transform.position.y > 20f)
                     yield return new WaitForFixedUpdate();
                 bc.enabled = true;
@@ -170,7 +169,23 @@ namespace FiveKnights
         {
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
-            
+            string[] arr = new[]
+            {
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump",
+                "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2",
+                "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
+            };
+
+            IEnumerator LoadSlow()
+            {
+                foreach(var i in arr)
+                {
+                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                    yield return null;
+                }
+            }
+            StartCoroutine(LoadSlow());
+
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
             {
@@ -178,10 +193,10 @@ namespace FiveKnights
             }
             
             Log("Creating Hegemol");
-            _hegemol = Instantiate(FiveKnights.preloadedGO["fk"], new Vector2(87, 23), Quaternion.identity);
+            _hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(87, 28), Quaternion.identity);
             _hegemol.SetActive(true);
             Log("Adding HegemolController component");
-            return _hegemol.AddComponent<HegemolController>(); 
+            return _hegemol.AddComponent<HegemolController>();
         }
         
         public ZemerController CreateZemer()
@@ -197,11 +212,16 @@ namespace FiveKnights
                 "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
                 "breakable_wall_hit_1", "breakable_wall_hit_2"
             };
-            
-            foreach (var i in arr)
+
+            IEnumerator LoadSlow()
             {
-                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                foreach(var i in arr)
+                {
+                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
+                    yield return null;
+                }
             }
+            StartCoroutine(LoadSlow());
 
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             ArenaFinder.Sprites["ZemParticPetal"] = misc.LoadAsset<Sprite>("petal-test");
