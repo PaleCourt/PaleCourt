@@ -608,6 +608,9 @@ namespace FiveKnights.BossManagement
             FiveKnights.preloadedGO["TraitorSlam"] =
                 fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
             FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+            
+            FiveKnights.Clips["NeedleSphere"] = (AudioClip) FiveKnights.preloadedGO["HornetSphere"].LocateMyFSM("Control")
+                .GetAction<AudioPlaySimple>("Sphere A", 0).oneShotClip.Value;
 
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GZemer];
             
@@ -631,6 +634,8 @@ namespace FiveKnights.BossManagement
                 if (i.name == "TChild") FiveKnights.preloadedGO["TChild"] = i;
                 else if (i.name == "NewSlash") FiveKnights.preloadedGO["SlashBeam"] = i;
                 else if (i.name == "NewSlash2") FiveKnights.preloadedGO["SlashBeam2"] = i;
+                else if (i.name == "SlashRingController") FiveKnights.preloadedGO["SlashRingController"] = i;
+                else if (i.name == "SlashRingControllerNew") FiveKnights.preloadedGO["SlashRingControllerNew"] = i;
                 yield return null;
                 if (i.GetComponent<SpriteRenderer>() == null)
                 {

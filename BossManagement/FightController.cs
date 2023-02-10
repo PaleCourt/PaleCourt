@@ -194,7 +194,8 @@ namespace FiveKnights
                 "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
                 "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
                 "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1", 
-                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2"
+                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
+                "breakable_wall_hit_1", "breakable_wall_hit_2"
             };
             
             foreach (var i in arr)
@@ -226,6 +227,30 @@ namespace FiveKnights
                 
                 i.Find("HB1").gameObject.layer = 22;
                 i.Find("HB2").gameObject.layer = 22;
+            }
+            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingControllerNew"].transform)
+            {
+                foreach (Transform t in tRing)
+                {
+                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 2;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<Tink>();
+                    }
+                }
+            }
+            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingController"].transform)
+            {
+                foreach (Transform t in tRing)
+                {
+                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 2;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<Tink>();
+                    }
+                }
             }
             foreach (SpriteRenderer i in _zemer.GetComponentsInChildren<SpriteRenderer>(true))
             {

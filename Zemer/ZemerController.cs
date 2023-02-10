@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using FiveKnights.Ogrim;
 using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using SFCore.Utils;
 using UnityEngine;
 using Vasi;
@@ -31,8 +32,8 @@ namespace FiveKnights.Zemer
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : (CustomWP.boss == CustomWP.Boss.All) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f  : (CustomWP.boss == CustomWP.Boss.All) ? 6.5f : 25.9f;
         private const int Phase2HP = 200;
-        private const int MaxHPV2 = 500 + Phase2HP;
-        private const int MaxHPV1 = 1200;
+        private const int MaxHPV2 = 202;//500 + Phase2HP;
+        private const int MaxHPV1 = 202; //1200;
         private const int DoSpinSlashPhase = 900;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
@@ -109,10 +110,64 @@ namespace FiveKnights.Zemer
                 "","","",
                 "Ze'mer",title);
         }
+
+        IEnumerator BlastFx()
+        {
+            Transform tk = FiveKnights.preloadedGO["fk"].transform;
+            var rolldust = Instantiate(tk.Find("Roll Dust").gameObject);
+            var ciel = Instantiate(FiveKnights.preloadedGO["Ceiling Dust"].gameObject); //39.5
+            var slamrocks = Instantiate(tk.Find("Slam Rocks").gameObject);
+            var ragerocks = Instantiate(tk.Find("Rage Rocks").gameObject);
+
+            GameObject[] a = new[] { rolldust, ciel, slamrocks, ragerocks };
+
+            foreach (var i in a)
+            {
+                i.SetActive(false);
+            }
+
+            foreach (GameObject i in a)
+            {
+                Log($"Showing {i.name}");
+                i.SetActive(true);
+                i.transform.position = _target.transform.position;
+                if (i.GetComponent<ParticleSystem>())
+                {
+                    i.GetComponent<ParticleSystem>().Play();
+                }
+                yield return new WaitForSeconds(1.5f);
+                i.SetActive(false);
+            }
+
+        }
+        private IEnumerator Test()
+        {
+            Log("Testing thingies");
+            _target = HeroController.instance.gameObject;
+
+            while (true)
+            {
+                yield return null;
+                if (!Input.GetKey(KeyCode.R)) continue;
+
+
+                StartCoroutine(BlastFx());
+                yield return new WaitForSeconds(0.5f);
+                continue;
+
+                /*GameObject g = Instantiate(FiveKnights.preloadedGO["TraitorSlam"].transform.Find("Grass").gameObject);
+                g.SetActive(true);
+                g.transform.position = HeroController.instance.transform.position;
+                g.GetComponent<ParticleSystem>().Play();
+                yield return new WaitForSeconds(0.5f);
+                continue;*/
+                
+                yield return new WaitForSeconds(0.5f);
+            }
+        }
         
         private IEnumerator Start()
         {
-            Log("Start");
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
             gameObject.transform.localScale *= 0.8f;
@@ -132,8 +187,15 @@ namespace FiveKnights.Zemer
             AssignFields();
             _bc.enabled = false;
             _sr.enabled = false;
+
             //Spring(true, gameObject.transform.position);
             yield return new WaitForSeconds(0.2f);
+
+
+            /*StartCoroutine(Test());
+            yield break;*/
+            
+
             _anim.Play("ZIntro");
             _sr.enabled = true;
             yield return null;

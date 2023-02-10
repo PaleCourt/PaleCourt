@@ -202,6 +202,11 @@ namespace FiveKnights
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
                 ("GG_Failed_Champion","False Knight Dream"),
+                
+                
+                ("GG_Failed_Champion","Ceiling Dust"),
+                
+                
                 ("White_Palace_09","White King Corpse/Throne Sit"),
                 ("Fungus1_12","Plant Turret"),
                 ("Fungus1_12","simple_grass"),
@@ -229,13 +234,18 @@ namespace FiveKnights
                 ("Dream_04_White_Defender", "Dream Fall Catcher"),
                 ("Dream_Final_Boss", "Boss Control/Radiance/Death/Knight Split/Knight Ball"),
                 ("Dream_Final_Boss", "Boss Control/Radiance"),
-                ("GG_Nosk", "Mimic Spider")
+                ("GG_Nosk", "Mimic Spider"),
+                
+                ("GG_Hornet_1", "Boss Holder/Hornet Boss 1")
                 
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
+            
+            
             preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
             
             Log("Storing GOs");
@@ -254,6 +264,12 @@ namespace FiveKnights
             preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
+            
+            
+            preloadedGO["Ceiling Dust"] = preloadedObjects["GG_Failed_Champion"]["Ceiling Dust"];
+            
+            
+            
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];

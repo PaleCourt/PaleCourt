@@ -35,10 +35,5 @@ namespace FiveKnights
                 HeroController.instance.Bounce();
             }
         }
-
-        private void Log(object ob)
-        {
-            Modding.Logger.Log("[Parryable] " + ob);
-        }
     }
 }
