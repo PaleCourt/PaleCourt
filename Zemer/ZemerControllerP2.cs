@@ -198,12 +198,6 @@ namespace FiveKnights.Zemer
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
                 
-                // TODO: Remove this
-                float sig = Mathf.Sign(transform.localScale.x);
-                yield return RageCombo(sig, true, _spinType);
-                yield return new WaitForSeconds(1f);
-                continue;
-
                 if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
                     yield return SpinAttack();
