@@ -73,9 +73,6 @@
     <Reference Include="MMHOOK_PlayMaker">
       <HintPath>$(HollowKnightRefs)/MMHOOK_PlayMaker.dll</HintPath>
     </Reference>
-    <Reference Include="ModCommon">
-      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods\ModCommon\ModCommon.dll</HintPath>
-    </Reference>
     <Reference Include="Mono.Cecil">
       <HintPath>$(HollowKnightRefs)/Mono.Cecil.dll</HintPath>
     </Reference>
