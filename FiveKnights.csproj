@@ -244,5 +244,6 @@
     <EmbeddedResource Include="assets\acid_a.png" />
     <EmbeddedResource Include="assets\acid_b.png" />
     <EmbeddedResource Include="StreamingAssets\pureamulets" />
+    <EmbeddedResource Include="StreamingAssets\charmunlock" />
   </ItemGroup>
 </Project>

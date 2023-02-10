@@ -231,7 +231,9 @@ namespace FiveKnights
                 ("Dream_Final_Boss", "Boss Control/Radiance"),
                 ("GG_Nosk", "Mimic Spider"),
                 // For Isma's thorn walls
-                ("Fungus3_13", "Thorn Collider")
+                ("Fungus3_13", "Thorn Collider"),
+                // For charm collect/upgrade cutscene
+                ("Room_Queen", "UI Msg Get WhiteCharm")
             };
         }
 
@@ -280,6 +282,8 @@ namespace FiveKnights
             preloadedGO["Radiance"] = preloadedObjects["Dream_Final_Boss"]["Boss Control/Radiance"];
 
             preloadedGO["isma_stat"] = null;
+
+            preloadedGO["CharmGet"] = preloadedObjects["Room_Queen"]["UI Msg Get WhiteCharm"];
 
             #region Add Entries
             journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
@@ -473,6 +477,8 @@ namespace FiveKnights
         private void LoadCharms()
         {
             ABManager.Load(ABManager.Bundle.Charms);
+            ABManager.Load(ABManager.Bundle.CharmUnlock);
+
         }
 
         private void LoadBossBundles()
@@ -699,8 +705,9 @@ namespace FiveKnights
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
+            GameManager.instance.gameObject.AddComponent<AwardCharms>();
         }
-        
+
         private void PlantChanger()
         {
             foreach (var trapType in new[] {"PTrap","PTurret"})

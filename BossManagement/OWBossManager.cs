@@ -68,7 +68,7 @@ namespace FiveKnights
                 PlayMusic(null);
 
                 yield return new WaitForSeconds(1.0f);
-                WinRoutine("ISMA_OUTRO_1a","ISMA_OUTRO_1b", OWArenaFinder.PrevIsmScene);
+                WinRoutine("ISMA_OUTRO_1a","ISMA_OUTRO_1b", OWArenaFinder.PrevIsmScene, 3);
                 
                 Log("Done with Isma boss");
                 Destroy(this);
@@ -95,7 +95,7 @@ namespace FiveKnights
                 PlayerData.instance.disablePause = true;
                 
                 yield return new WaitForSeconds(1.0f);
-                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene);
+                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 1);
                 Log("Done with Dryya boss");
                 Destroy(this);
             }
@@ -152,7 +152,7 @@ namespace FiveKnights
 
                 HeroController.instance.RelinquishControl();
                 PlayerData.instance.disablePause = true;
-                WinRoutine("HEG_OUTRO_1a", "HEG_OUTRO_1b", OWArenaFinder.PrevHegScene);
+                WinRoutine("HEG_OUTRO_1a", "HEG_OUTRO_1b", OWArenaFinder.PrevHegScene, 2);
                 Log("Done with Heg, transitioning out");
                 Destroy(this);
             }
@@ -184,13 +184,14 @@ namespace FiveKnights
                 }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
-                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene);
+                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene, 0);
                 Destroy(this);
             }
         }
 
-        private void WinRoutine(string msg1Key, string msg2Key, string area, bool dungAnimation = true)
+        private void WinRoutine(string msg1Key, string msg2Key, string area, int index, bool dungAnimation = true)
         {
+            AwardCharms.firstClear[index] = true;
             HeroController.instance.RelinquishControl();
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
             if (dreambye != null)
@@ -209,7 +210,7 @@ namespace FiveKnights
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
             fsm.GetState("Fade Out").RemoveAction(0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
-            
+
             /*if (dungAnimation)
             {
                 IEnumerator PlayDungAnimation()
@@ -239,8 +240,7 @@ namespace FiveKnights
 
             fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = msg2Key;
             fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
-            
-            
+
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = area;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door_dreamReturn";
@@ -249,6 +249,7 @@ namespace FiveKnights
             HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
             fsm.SetState("Fade Out");
+
         }
 
         public static void PlayMusic(AudioClip clip)
