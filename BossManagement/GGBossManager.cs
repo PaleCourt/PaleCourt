@@ -295,6 +295,7 @@ namespace FiveKnights.BossManagement
                 //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
+                FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
                 yield return new WaitWhile(() => zc2 != null);
                 
                 Log("Won!");
@@ -342,7 +343,8 @@ namespace FiveKnights.BossManagement
 
 			// Transition to phase 2
 			yield return new WaitWhile(() => !HIT_FLAG);
-			PlayMusic(null, 1f);
+            FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
+            PlayMusic(null, 1f);
             if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
 			PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;

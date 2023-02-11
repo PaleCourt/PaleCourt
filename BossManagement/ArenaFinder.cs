@@ -140,11 +140,11 @@ namespace FiveKnights
             {
                 if (CustomWP.boss == CustomWP.Boss.Isma || CustomWP.boss == CustomWP.Boss.Ogrim)
                 {
-                    info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_ElderHu(Clone)(Clone)";
+                    info.EntryGateName = "door_dreamReturnGGstatueStateIsma_GG_Statue_Isma";
                 }
                 else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
                 {
-                    info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_TraitorLord(Clone)(Clone)";
+                    info.EntryGateName = "door_dreamReturnGGstatueStateZemer_GG_Statue_Zemer";
                 }
                 else if (CustomWP.boss == CustomWP.Boss.All)
                 {
@@ -152,13 +152,11 @@ namespace FiveKnights
                 } 
                 else if (CustomWP.boss == CustomWP.Boss.Dryya)
                 {
-                    info.EntryGateName = "door_dreamReturnGGstatueState" + CustomWP.boss +
-                                         "_GG_Statue_TraitorLord(Clone)(Clone)";
+                    info.EntryGateName = "door_dreamReturnGGstatueStateDryya_GG_Statue_Dryya";
                 } 
-                else if (CustomWP.boss == CustomWP.Boss.Hegemol || CustomWP.boss == CustomWP.Boss.Dryya)
+                else if (CustomWP.boss == CustomWP.Boss.Hegemol)
                 {
-                    info.EntryGateName = "door_dreamReturnGGstatueState" + CustomWP.boss +
-                                         "_GG_Statue_TraitorLord(Clone)(Clone)";
+                    info.EntryGateName = "door_dreamReturnGGstatueStateHegemol_GG_Statue_Hegemol";
                 }
             }
             else if (prevScene == "Dream_04_White_Defender" && info.SceneName == prevScene)
@@ -168,7 +166,7 @@ namespace FiveKnights
                 info.EntryGateName = "door_dreamReturnGGTestingIt";
             }
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
-            if(info.SceneName == "White_Palace_09" && prevScene == "GG_Workshop") ModHooks.GetPlayerBoolHook += GetPlayerBoolHook;
+            if(info.SceneName == "White_Palace_09" && prevScene != "White_Palace_13") ModHooks.GetPlayerBoolHook += GetPlayerBoolHook;
             Log($"After: Going to {info.SceneName} from {prevScene} using gate {info.EntryGateName}");
             prevScene = info.SceneName;
             currScene = info.SceneName;
@@ -335,7 +333,7 @@ namespace FiveKnights
                 CustomWP.Instance = null;
             }
             
-            if (arg1.name == "GG_Workshop" && FiveKnights.Instance.SaveSettings.UnlockedGodhome())
+            if (arg1.name == "GG_Workshop")
             {
                 StartCoroutine(CameraFixer());
                 Arena();

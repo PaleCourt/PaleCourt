@@ -39,7 +39,7 @@ namespace FiveKnights
                     _sr.sprite = FiveKnights.SPRITES["Isma"];
                     _fakeStat.transform.position = new Vector3(82.2f, 96.5f, 2.0f);
                     _fakeStatAlt2.transform.position = new Vector3(82.2f, 90.9f, 2.0f);
-                    _fakeStat.SetActive(true);
+                    _fakeStat.SetActive(_bs.StatueState.isUnlocked && _bs.StatueState.hasBeenSeen);
                 }
             }
             else
@@ -101,7 +101,7 @@ namespace FiveKnights
                 _bs.statueShakeLoop.Stop();
             }
             StartCoroutine(this.PlayAudioEventDelayed(_bs.statueDownSound, _bs.statueDownSoundDelay));
-            float time = (StatueName == "Isma") ? 0.5f : 1.5f;
+            float time = 0.5f;
             yield return StartCoroutine(PlayAnimWait(_fakeStat, "Down", time));
 
             yield return new WaitForSeconds(time);
@@ -135,7 +135,6 @@ namespace FiveKnights
             }
             lev.leverAnimator.Play("Shine");
             canToggle = true;
-            
         }
 
         private IEnumerator Jitter(float duration, float magnitude, GameObject obj)

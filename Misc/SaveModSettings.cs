@@ -5,36 +5,12 @@ namespace FiveKnights
     //[Serializable]
     public class SaveModSettings
     {
-        public BossStatue.Completion CompletionIsma = new BossStatue.Completion
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
-        public BossStatue.Completion CompletionIsma2 = new BossStatue.Completion()
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
-        public BossStatue.Completion CompletionZemer = new BossStatue.Completion
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
-        public BossStatue.Completion CompletionZemer2 = new BossStatue.Completion
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
-        public BossStatue.Completion CompletionDryya = new BossStatue.Completion
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
-        public BossStatue.Completion CompletionHegemol = new BossStatue.Completion
-        {
-            isUnlocked = true,
-            hasBeenSeen = true
-        };
+        public BossStatue.Completion CompletionIsma = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionIsma2 = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionZemer = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionZemer2 = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionDryya = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionHegemol = BossStatue.Completion.None;
 
         public JournalHelper.JournalPlayerData IsmaEntryData = new JournalHelper.JournalPlayerData
         {
@@ -100,8 +76,11 @@ namespace FiveKnights
             Charms.charmCost_43,
             Charms.charmCost_44,
         };
-        
-        public bool UnlockedGodhome() => Cheats || (IsmaEntryData.haskilled && ZemerEntryData.haskilled && DryyaEntryData.haskilled && HegemolEntryData.haskilled);
-        public const bool Cheats = true;
+
+        public bool UnlockedChampionsCall => (CompletionIsma.completedTier1 || CompletionIsma.completedTier2) &&
+            (CompletionZemer.completedTier1 || CompletionZemer.completedTier2) &&
+            (CompletionDryya.completedTier1 || CompletionDryya.completedTier2) &&
+            (CompletionHegemol.completedTier1 || CompletionHegemol.completedTier2);
+        public bool SeenChampionsCall = false;
     }
 }

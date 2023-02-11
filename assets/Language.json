@@ -1,120 +1,124 @@
 {
-  "DE": {
-  },
-  "EN": {
-    "Achievements": {
-      "DRYYA_ACH_TITLE": "Relentless",
-      "DRYYA_ACH_DESC": "Defeat Dryya in her Queen's Garden.",
-      "HEG_ACH_TITLE": "Indomitable",
-      "HEG_ACH_DESC": "Defeat Hegemol in the bustling City.",
-      "ISMA_ACH_TITLE": "Benevolent",
-      "ISMA_ACH_DESC": "Defeat Isma within her Grove.",
-      "ZEM_ACH_TITLE": "Mystical",
-      "ZEM_ACH_DESC": "Defeat Ze'mer in her secret Mansion.",
-      "PANTH_ACH_TITLE": "Champion",
-      "PANTH_ACH_DESC": "Challenge the Pale Court and win your place at its heart."
+    "DE": {
     },
-    "CP3": {
-      "UI_MENU_STYLE_PALE_COURT": "Pale Court"
-    },
-    "Minor NPC": {
-      "ISMA_OUTRO_1a": "ISMA_OUTRO_1a",
-      "ISMA_OUTRO_1b": "ISMA_OUTRO_1b",
-      "DRYYA_OUTRO_1a": "DRYYA_OUTRO_1a",
-      "DRYYA_OUTRO_1b": "DRYYA_OUTRO_1b",
-      "HEG_OUTRO_1a": "HEG_OUTRO_1a",
-      "HEG_OUTRO_1b": "HEG_OUTRO_1b",
-      "ZEM_OUTRO_1a": "ZEM_OUTRO_1a",
-      "ZEM_OUTRO_1b": "ZEM_OUTRO_1b"
-    },
-    "Speech": {
-      "ISMA_NAME": "Kindly Isma",
-      "ISMA_DESC": "Gentle god of moss and grove.",
-      "DD_ISMA_NAME": "Loyal Ogrim & Kindly Isma",
-      "DD_ISMA_DESC": "Loyal defender gods of land and beast.",
-      "HEG_NAME": "Mighty Hegemol",
-      "HEG_DESC": "Hegemol the danky dank",
-      "DRY_NAME": "Fierce Dryya",
-      "DRY_DESC": "Protective god of Root and King.",
-      "ZEM_NAME": "Mysterious Ze'mer",
-      "ZEM2_NAME": "Mystic Ze'mer",
-      "ZEM_DESC": "Grieving god of lands beyond.",
-      "ZEM2_DESC": "Strange god of a sacred land.",
-      "YN_THRONE": "Answer the Champions' Call?",
-      "ISMA_OUTRO_1a": "Remove if Minor NPC sheet is used",
-      "ISMA_OUTRO_1b": "Remove if Minor NPC sheet is used",
-      "DRYYA_OUTRO_1a": "Remove if Minor NPC sheet is used",
-      "DRYYA_OUTRO_1b": "Remove if Minor NPC sheet is used",
-      "HEG_OUTRO_1a": "Remove if Minor NPC sheet is used",
-      "HEG_OUTRO_1b": "Remove if Minor NPC sheet is used",
-      "ZEM_OUTRO_1a": "Remove if Minor NPC sheet is used",
-      "ZEM_OUTRO_1b": "Remove if Minor NPC sheet is used"
-    },
-    "Enemy Dreams": {
-      "ZEM_DREAM_1": "Shoutout to 56 (can't remove this can you)",
-      "ZEM_DREAM_2": "Similar to her normal dream nail dialogue",
-      "ZEM_DREAM_3": "Something pk related",
-      "ZEM_DREAM_4": "Something about her own land",
-      "DRYYA_DIALOG_1_1": "Must defend my Queen...",
-      "DRYYA_DIALOG_2_1": "Allow none to enter the glade...",
-      "DRYYA_DIALOG_3_1": "Protect...",
-      "DRYYA_DIALOG_4_1": "Kin...seeks to find her?",
-      "DRYYA_DIALOG_5_1": "...",
-      "ISMA_DREAM_1_1": "Something about her sacrifice",
-      "ISMA_DREAM_2_1": "Something about Ogrim",
-      "ISMA_DREAM_3_1": "Something about her grove",
-      "FALSE_KNIGHT_D_1": "Is that all you've got?",
-      "FALSE_KNIGHT_D_2": "Show me what you're made of!",
-      "FALSE_KNIGHT_D_3": "Prove to me you're a champion!",
-      "FALSE_KNIGHT_D_1_Unused": "Reveal thy true strength!",
-      "FALSE_KNIGHT_D_2_Unused": "Is that all little one?",
-      "FALSE_KNIGHT_D_3_Unused": "Prove to me you're a champion!"
-    },
-    "UI": {
-      "CHARM_NAME_PURITY": "Mark of Purity",
-      "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Successful nail strikes in quick succession build vigor, increasing the speed of attacks. Hinders the reach of the nail.",
-      "CHARM_NAME_LAMENT": "Vessel's Lament",
-      "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
-      "CHARM_NAME_BOON": "Boon of Hallownest",
-      "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
-      "CHARM_NAME_BLOOM": "Abyssal Bloom",
-      "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>As the bearer weakens this charm's strength will increase and become overpowering near death.",
-      "CHARM_NAME_HONOUR": "King's Honour",
-      "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
-    },
-    "Journal": {
-      "ENTRY_ISMA_NAME": "Isma",
-      "ENTRY_ISMA_LONGNAME": "Kindly Isma",
-      "ENTRY_ISMA_DESC": "Champion from a brighter age. Had an affinity for plant life and all things living, but when the kingdom crumbled, she retreated to her Grove, where she perished.",
-      "ENTRY_ISMA_NOTE": "<br>Ah, Isma... where do I begin? Such a kindly figure she is. She cares for everyone, and even in battle, I would sense some sorrow when we would prevail. While my oath forbids it, I must pay her a visit... someday...<br> - Ogrim of the Five Knights",
-      "ENTRY_HEG_NAME": "Hegemol",
-      "ENTRY_HEG_LONGNAME": "Mighty Hegemol",
-      "ENTRY_HEG_DESC": "Champion from a brighter age. Guarded the entrance to the kingdom's capital, but mysteriously disappeared after an unknown encounter.",
-      "ENTRY_HEG_NOTE": "<br>I can still hear your jolly chortle, Hegemol. For such a towering bug, you were so quiet! But your jokes were simply unrivaled. After all this time, I never got to see your face...what was hiding in your armour, dear friend?<br> - Ogrim of the Five Knights",
-      "ENTRY_DRY_NAME": "Dryya",
-      "ENTRY_DRY_LONGNAME": "Fierce Dryya",
-      "ENTRY_DRY_DESC": "Champion from a brighter age. Fiercely guarded the Queen's retreat, but was eventually overrun by a traitorous tribe.",
-      "ENTRY_DRY_NOTE": "<br>What a ferocious combatant Dryya was! It was almost like watching an elegant dance when she confronted the kingdom's foes. While she put on a hard front, I'm thankful I was able to witness her soft side.<br> - Ogrim of the Five Knights",
-      "ENTRY_ZEM_NAME": "Ze'mer",
-      "ENTRY_ZEM_LONGNAME": "Mysterious Ze'mer",
-      "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
-      "ENTRY_ZEM_NOTE": "<br>Ze'mer... what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
+    "EN": {
+        "Achievements": {
+            "DRYYA_ACH_TITLE": "Relentless",
+            "DRYYA_ACH_DESC": "Defeat Dryya in her Queen's Garden.",
+            "HEG_ACH_TITLE": "Indomitable",
+            "HEG_ACH_DESC": "Defeat Hegemol in the bustling City.",
+            "ISMA_ACH_TITLE": "Benevolent",
+            "ISMA_ACH_DESC": "Defeat Isma within her Grove.",
+            "ZEM_ACH_TITLE": "Mystical",
+            "ZEM_ACH_DESC": "Defeat Ze'mer in her secret Mansion.",
+            "PANTH_ACH_TITLE": "Champion",
+            "PANTH_ACH_DESC": "Challenge the Pale Court and win your place at its heart."
+        },
+        "CP3": {
+            "UI_MENU_STYLE_PALE_COURT": "Pale Court",
+            "ISMA_LOCKED_DESC": "I lie in a lush grove, defended by my beloved",
+            "DRY_LOCKED_DESC": "I defend true royalty from the claws of traitors",
+            "ZEM_LOCKED_DESC": "You probably already know and despise me for my side quest",
+            "HEG_LOCKED_DESC": "I stand guard at the gates of the capital"
+        },
+        "Minor NPC": {
+            "ISMA_OUTRO_1a": "ISMA_OUTRO_1a",
+            "ISMA_OUTRO_1b": "ISMA_OUTRO_1b",
+            "DRYYA_OUTRO_1a": "DRYYA_OUTRO_1a",
+            "DRYYA_OUTRO_1b": "DRYYA_OUTRO_1b",
+            "HEG_OUTRO_1a": "HEG_OUTRO_1a",
+            "HEG_OUTRO_1b": "HEG_OUTRO_1b",
+            "ZEM_OUTRO_1a": "ZEM_OUTRO_1a",
+            "ZEM_OUTRO_1b": "ZEM_OUTRO_1b"
+        },
+        "Speech": {
+            "ISMA_NAME": "Kindly Isma",
+            "ISMA_DESC": "Gentle god of moss and grove.",
+            "DD_ISMA_NAME": "Loyal Ogrim & Kindly Isma",
+            "DD_ISMA_DESC": "Loyal defender gods of land and beast.",
+            "HEG_NAME": "Mighty Hegemol",
+            "HEG_DESC": "Hegemol the danky dank",
+            "DRY_NAME": "Fierce Dryya",
+            "DRY_DESC": "Protective god of Root and King.",
+            "ZEM_NAME": "Mysterious Ze'mer",
+            "ZEM2_NAME": "Mystic Ze'mer",
+            "ZEM_DESC": "Grieving god of lands beyond.",
+            "ZEM2_DESC": "Strange god of a sacred land.",
+            "YN_THRONE": "Answer the Champion's Call?",
+            "ISMA_OUTRO_1a": "Remove if Minor NPC sheet is used",
+            "ISMA_OUTRO_1b": "Remove if Minor NPC sheet is used",
+            "DRYYA_OUTRO_1a": "Remove if Minor NPC sheet is used",
+            "DRYYA_OUTRO_1b": "Remove if Minor NPC sheet is used",
+            "HEG_OUTRO_1a": "Remove if Minor NPC sheet is used",
+            "HEG_OUTRO_1b": "Remove if Minor NPC sheet is used",
+            "ZEM_OUTRO_1a": "Remove if Minor NPC sheet is used",
+            "ZEM_OUTRO_1b": "Remove if Minor NPC sheet is used"
+        },
+        "Enemy Dreams": {
+            "ZEM_DREAM_1": "Shoutout to 56 (can't remove this can you)",
+            "ZEM_DREAM_2": "Similar to her normal dream nail dialogue",
+            "ZEM_DREAM_3": "Something pk related",
+            "ZEM_DREAM_4": "Something about her own land",
+            "DRYYA_DIALOG_1_1": "Must defend my Queen...",
+            "DRYYA_DIALOG_2_1": "Allow none to enter the glade...",
+            "DRYYA_DIALOG_3_1": "Protect...",
+            "DRYYA_DIALOG_4_1": "Kin...seeks to find her?",
+            "DRYYA_DIALOG_5_1": "...",
+            "ISMA_DREAM_1_1": "Something about her sacrifice",
+            "ISMA_DREAM_2_1": "Something about Ogrim",
+            "ISMA_DREAM_3_1": "Something about her grove",
+            "FALSE_KNIGHT_D_1": "Is that all you've got?",
+            "FALSE_KNIGHT_D_2": "Show me what you're made of!",
+            "FALSE_KNIGHT_D_3": "Prove to me you're a champion!",
+            "FALSE_KNIGHT_D_1_Unused": "Reveal thy true strength!",
+            "FALSE_KNIGHT_D_2_Unused": "Is that all little one?",
+            "FALSE_KNIGHT_D_3_Unused": "Prove to me you're a champion!"
+        },
+        "UI": {
+            "CHARM_NAME_PURITY": "Mark of Purity",
+            "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Successful nail strikes in quick succession build vigor, increasing the speed of attacks. Hinders the reach of the nail.",
+            "CHARM_NAME_LAMENT": "Vessel's Lament",
+            "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
+            "CHARM_NAME_BOON": "Boon of Hallownest",
+            "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
+            "CHARM_NAME_BLOOM": "Abyssal Bloom",
+            "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>As the bearer weakens this charm's strength will increase and become overpowering near death.",
+            "CHARM_NAME_HONOUR": "King's Honour",
+            "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
+        },
+        "Journal": {
+            "ENTRY_ISMA_NAME": "Isma",
+            "ENTRY_ISMA_LONGNAME": "Kindly Isma",
+            "ENTRY_ISMA_DESC": "Champion from a brighter age. Had an affinity for plant life and all things living, but when the kingdom crumbled, she retreated to her Grove, where she perished.",
+            "ENTRY_ISMA_NOTE": "<br>Ah, Isma... where do I begin? Such a kindly figure she is. She cares for everyone, and even in battle, I would sense some sorrow when we would prevail. While my oath forbids it, I must pay her a visit... someday...<br> - Ogrim of the Five Knights",
+            "ENTRY_HEG_NAME": "Hegemol",
+            "ENTRY_HEG_LONGNAME": "Mighty Hegemol",
+            "ENTRY_HEG_DESC": "Champion from a brighter age. Guarded the entrance to the kingdom's capital, but mysteriously disappeared after an unknown encounter.",
+            "ENTRY_HEG_NOTE": "<br>I can still hear your jolly chortle, Hegemol. For such a towering bug, you were so quiet! But your jokes were simply unrivaled. After all this time, I never got to see your face...what was hiding in your armour, dear friend?<br> - Ogrim of the Five Knights",
+            "ENTRY_DRY_NAME": "Dryya",
+            "ENTRY_DRY_LONGNAME": "Fierce Dryya",
+            "ENTRY_DRY_DESC": "Champion from a brighter age. Fiercely guarded the Queen's retreat, but was eventually overrun by a traitorous tribe.",
+            "ENTRY_DRY_NOTE": "<br>What a ferocious combatant Dryya was! It was almost like watching an elegant dance when she confronted the kingdom's foes. While she put on a hard front, I'm thankful I was able to witness her soft side.<br> - Ogrim of the Five Knights",
+            "ENTRY_ZEM_NAME": "Ze'mer",
+            "ENTRY_ZEM_LONGNAME": "Mysterious Ze'mer",
+            "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
+            "ENTRY_ZEM_NOTE": "<br>Ze'mer... what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
+        },
+        "ES": {
+        },
+        "FR": {
+        },
+        "IT": {
+        },
+        "JA": {
+        },
+        "KO": {
+        },
+        "PT": {
+        },
+        "RU": {
+        },
+        "ZH": {
+        }
     }
-  },
-  "ES": {
-  },
-  "FR": {
-  },
-  "IT": {
-  },
-  "JA": {
-  },
-  "KO": {
-  },
-  "PT": {
-  },
-  "RU": {
-  },
-  "ZH": {
-  }
 }

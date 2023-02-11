@@ -192,7 +192,22 @@ namespace FiveKnights
         private void WinRoutine(string msg1Key, string msg2Key, string area, int index, bool dungAnimation = true)
         {
             AwardCharms.firstClear[index] = true;
-            HeroController.instance.RelinquishControl();
+			switch(index)
+			{
+                case 0:
+                    FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                    break;
+                case 1:
+                    FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                    break;
+                case 2:
+                    FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
+                    break;
+                case 3:
+                    FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
+                    break;
+            }
+			HeroController.instance.RelinquishControl();
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
             if (dreambye != null)
             {

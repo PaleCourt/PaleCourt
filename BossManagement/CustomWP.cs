@@ -6,17 +6,21 @@ using Modding;
 using SFCore.Utils;
 using System.Collections;
 using UnityEngine.UI;
+using Vasi;
+using HutongGames.PlayMaker.Actions;
+using FiveKnights.Misc;
 
 namespace FiveKnights
 {
-    public class  CustomWP : MonoBehaviour
+    public class CustomWP : MonoBehaviour
     {
         public static bool isInGodhome;
         public static Boss boss;
+        public static Boss prevBoss;
         public static CustomWP Instance;
         public static bool wonLastFight;
         public static int lev;
-        public enum Boss { Ogrim, Dryya, Isma, Hegemol, All, None, Mystic, Ze };
+        public enum Boss { None, Ogrim, Dryya, Isma, Hegemol, All, Mystic, Ze };
 
         private void Start()
         {
@@ -25,6 +29,7 @@ namespace FiveKnights
             Instance = this;
             On.GameManager.EnterHero += GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
+            prevBoss = boss;
             boss = Boss.None;
 
             FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
@@ -70,12 +75,13 @@ namespace FiveKnights
             blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
             blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
             Log("Look for blur!");
-            foreach (var i in FindObjectsOfType<GameObject>()
+            foreach(var i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name == "BlurPlane"))
             {
                 Log("Found blur!");
                 i.SetActive(true);
                 i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
+                i.GetComponent<BlurPlane>().SetPlaneVisibility(true);
             }
             
             var cLock = GameObject.Find("CameraLockArea (2)");
@@ -136,20 +142,25 @@ namespace FiveKnights
 
         private void SetupThrone()
         {
-            GameObject go = Instantiate(FiveKnights.preloadedGO["throne"]);
-            go.SetActive(true);
-            go.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
-            PlayMakerFSM fsm = go.LocateMyFSM("Sit");
-            FiveKnights.preloadedGO["Statue"].transform.position =
-                new Vector3(48.2f, 98.4f, HeroController.instance.transform.position.z);
-            for (int i = 0; i < 3; i++)
-            {
-                GameObject s = Instantiate(FiveKnights.preloadedGO["Statue"]);
-                float y = s.transform.position.y;
-                s.transform.position = new Vector3(50.2f + i * 5f, y,
-                    HeroController.instance.transform.GetPositionZ());
-            }
-            
+            GameObject throne = Instantiate(FiveKnights.preloadedGO["throne"]);
+            throne.transform.position = new Vector3(60.5f, 97.7f, 0.2f);
+            PlayMakerFSM fsm = throne.LocateMyFSM("Sit");
+
+            GameObject effectParent = new GameObject("Throne Flash Effect");
+            effectParent.transform.position = new Vector3(60.5f, 102.62f, -2f);
+            effectParent.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
+
+            GameObject effect = Instantiate(FiveKnights.preloadedGO["Statue"].Find("Base").Find("GG_Statue_First_Appear"), 
+                effectParent.transform);
+            effect.name = "Throne First Appear";
+            effect.transform.position = new Vector3(60.5f, 102.62f, -2f);
+
+			Destroy(effect.Find("GG_statues_0027_26"));
+			Destroy(effect.GetComponent<BossStatueFlashEffect>());
+            effectParent.AddComponent<ThroneFlash>().throne = throne;
+
+            effectParent.SetActive(true);
+
             IEnumerator Throne()
             {
                 while (gameObject)
@@ -160,7 +171,7 @@ namespace FiveKnights
                     GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX UP YN");
                     GameObject.Find("DialogueManager").SetActive(true);
                     GameObject.Find("Text YN").SetActive(true);
-                    GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "YN_THRONE");
+                    GameObject.Find("Text YN").GetComponent<DialogueBox>().StartConversation("YN_THRONE", "Speech");
                     PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
                     textYN.FsmVariables.FindFsmInt("Toll Cost").Value = 0;
                     textYN.InsertCoroutine("Yes", 1, SaidYes);
@@ -196,7 +207,7 @@ namespace FiveKnights
                 boss = Boss.All;
                 ArenaFinder.defeats = PlayerData.instance.whiteDefenderDefeats;
                 PlayerData.instance.whiteDefenderDefeats = 0;
-                PlayerData.instance.respawnMarkerName = go.name;
+                PlayerData.instance.respawnMarkerName = throne.name;
                 GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
                 {
                     SceneName = "Dream_04_White_Defender",
@@ -214,6 +225,64 @@ namespace FiveKnights
             }
 
             StartCoroutine(Throne());
+            throne.SetActive(FiveKnights.Instance.SaveSettings.UnlockedChampionsCall && FiveKnights.Instance.SaveSettings.SeenChampionsCall);
+        }
+
+        private void HubRemove()
+        {
+            foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
+            string[] arr = { "Breakable Wall Waterways", "black_fader","White_Palace_throne_room_top_0000_2", "White_Palace_throne_room_top_0001_1",
+                             "Glow Response floor_ring large2 (1)", "core_extras_0006_wp", "msk_station",
+                             "core_extras_0028_wp (12)", "wp_additions_01",
+                             "Inspect Region (1)", "core_extras_0021_wp (4)", "core_extras_0021_wp (5)","core_extras_0021_wp (1)",
+                             "core_extras_0021_wp (6)", "core_extras_0021_wp (7)","core_extras_0021_wp (2)", "Darkness Region"};
+            foreach(var i in FindObjectsOfType<GameObject>().Where(x => x.activeSelf))
+            {
+                foreach(string j in arr)
+                {
+                    if(i.name.Contains(j))
+                    {
+                        Destroy(i);
+                    }
+                }
+            }
+            foreach(var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("abyss") || x.name.Contains("Abyss"))) Destroy(i);
+        }
+
+        private void AddLift()
+        {
+            IEnumerator FixArena()
+            {
+                yield return null;
+                string[] removes = {"white_palace_wall_set_01 (10)", "white_palace_wall_set_01 (18)",
+                    "_0028_white (4)", "_0028_white (3)"};
+                foreach(var i in FindObjectsOfType<GameObject>()
+                    .Where(x => removes.Contains(x.name)))
+                {
+                    Destroy(i);
+                }
+                yield return null;
+            }
+
+            StartCoroutine(FixArena());
+        }
+
+        private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
+        {
+            DontDestroyOnLoad(GameManager.instance);
+
+            string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
+            foreach(Boss b in Enum.GetValues(typeof(Boss)))
+            {
+                if(title.Contains(b.ToString()))
+                {
+                    boss = b;
+                    if(b != Boss.Isma) break;
+                    if(b != Boss.Ze) break;
+                }
+            }
+            lev = level;
+            orig(self, level, doHideAnim);
         }
 
         private void CreateGateway(string gateName, Vector2 pos, Vector2 size, string toScene, string entryGate,
@@ -240,30 +309,54 @@ namespace FiveKnights
             tp.sceneLoadVisualization = vis;
         }
 
+        private Dictionary<string, StatueControl> StatueControls = new Dictionary<string, StatueControl>();
         private void CreateStatues()
         {
+            // To manually change statues for Isma/Ze'mer
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D;
+            // To manually enable the statue sprite when unlocking
+            On.BossStatueFlashEffect.FlashApex -= BossStatueFlashEffect_FlashApex;
+            On.BossStatueFlashEffect.FlashApex += BossStatueFlashEffect_FlashApex;
+            // To manually change the locked dialogue box
+            On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter -= CallMethodProperOnEnter;
+            On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter += CallMethodProperOnEnter;
+            // Do win effect
+            GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
+            if(wonLastFight) GameManager.instance.OnFinishedEnteringScene += GMOnFinishedEnteringScene;
+            wonLastFight = false;
+
+            if(PlayerData.instance.GetBool(nameof(PlayerData.bossRushMode)))
+            {
+                FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
+                FiveKnights.Instance.SaveSettings.CompletionIsma.hasBeenSeen = true;
+                FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                FiveKnights.Instance.SaveSettings.CompletionDryya.hasBeenSeen = true;
+                FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                FiveKnights.Instance.SaveSettings.CompletionZemer.hasBeenSeen = true;
+                FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
+                FiveKnights.Instance.SaveSettings.CompletionHegemol.hasBeenSeen = true;
+            }
+
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
-            SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(-0f, -1f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRY_NAME", "DRY_DESC", "statueStateDryya");
-            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0.4f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
-            SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(-0.3f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(0f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
-        
-        private Dictionary<string, StatueControl> StatueControls = new Dictionary<string, StatueControl>();
-        private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+
+		private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
-            if (collision.tag != "Nail Attack") return;
+            if(collision.tag != "Nail Attack") return;
             string namePD = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
-            if (namePD.Contains("Isma"))
+            if(namePD.Contains("Isma"))
             {
                 StatueControls["Isma"].StartLever(self);
             }
-            else if (namePD.Contains("Zemer"))
+            else if(namePD.Contains("Zemer"))
             {
                 StatueControls["Zemer"].StartLever(self);
             }
@@ -273,98 +366,146 @@ namespace FiveKnights
             }
         }
 
-        private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
+        private void BossStatueFlashEffect_FlashApex(On.BossStatueFlashEffect.orig_FlashApex orig, BossStatueFlashEffect self)
         {
-            DontDestroyOnLoad(GameManager.instance);
-            
-            string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
-            foreach (Boss b in Enum.GetValues(typeof(Boss)))
+            BossStatue bs = Mirror.GetField<BossStatueFlashEffect, BossStatue>(self, "parentStatue");
+            switch(bs.bossScene.sceneName)
             {
-                if (title.Contains(b.ToString()))
-                {
-                    boss = b;
-                    if (b != Boss.Isma) break;
-                    if (b != Boss.Ze) break;
-                }
+                case ArenaFinder.IsmaScene:
+                    bs.gameObject.Find("FakeStatIsma").SetActive(true);
+                    break;
+                case ArenaFinder.DryyaScene:
+                    bs.gameObject.Find("FakeStatDryya").SetActive(true);
+                    break;
+                case ArenaFinder.ZemerScene:
+                    bs.gameObject.Find("FakeStatZemer").SetActive(true);
+                    break;
+                case ArenaFinder.HegemolScene:
+                    bs.gameObject.Find("FakeStatHegemol").SetActive(true);
+                    break;
             }
-            lev = level;
-            orig(self, level, doHideAnim);
+            orig(self);
         }
 
-        private void HubRemove()
-        {
-            foreach (var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
-            string[] arr = { "Breakable Wall Waterways", "black_fader","White_Palace_throne_room_top_0000_2", "White_Palace_throne_room_top_0001_1",
-                             "Glow Response floor_ring large2 (1)", "core_extras_0006_wp", "msk_station",
-                             "core_extras_0028_wp (12)", "wp_additions_01",
-                             "Inspect Region (1)", "core_extras_0021_wp (4)", "core_extras_0021_wp (5)","core_extras_0021_wp (1)", 
-                             "core_extras_0021_wp (6)", "core_extras_0021_wp (7)","core_extras_0021_wp (2)", "Darkness Region"};
-            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.activeSelf))
-            {
-                foreach (string j in arr)
+        private void CallMethodProperOnEnter(On.HutongGames.PlayMaker.Actions.CallMethodProper.orig_OnEnter orig, CallMethodProper self)
+		{
+            if(self.Fsm.Name == "inspect_region" && self.Fsm.GameObject.name == "Inspect_Locked" && self.State.Name == "Read")
+			{
+                BossStatue bs = self.Fsm.GameObject.transform.parent.gameObject.GetComponent<BossStatue>();
+                switch(bs.bossScene.sceneName)
                 {
-                    if (i.name.Contains(j))
-                    {
-                        Destroy(i);
-                    }
+                    case ArenaFinder.IsmaScene:
+                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "ISMA_LOCKED_DESC";
+                        break;
+                    case ArenaFinder.DryyaScene:
+                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "DRY_LOCKED_DESC";
+                        break;
+                    case ArenaFinder.ZemerScene:
+                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "ZEM_LOCKED_DESC";
+                        break;
+                    case ArenaFinder.HegemolScene:
+                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "HEG_LOCKED_DESC";
+                        break;
                 }
             }
-            foreach (var i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("abyss") || x.name.Contains("Abyss"))) Destroy(i);
-        }
+            orig(self);
+		}
 
-        private void AddLift()
-        {
-            IEnumerator FixArena()
+        private void GMOnFinishedEnteringScene() => DoWinEffect();
+
+        private void DoWinEffect()
+		{
+            GameObject plaque = null;
+            switch(prevBoss)
             {
-                yield return null;
-                string[] removes = {"white_palace_wall_set_01 (10)", "white_palace_wall_set_01 (18)",
-                    "_0028_white (4)", "_0028_white (3)"};
-                foreach (var i in FindObjectsOfType<GameObject>()
-                    .Where(x=>removes.Contains(x.name)))
-                {
-                    Destroy(i);
-                }
-                yield return null;
+                case Boss.Isma:
+                    plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
+                case Boss.Ogrim:
+                    plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
+                case Boss.Dryya:
+                    plaque = GameObject.Find("GG_Statue_Dryya").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
+                case Boss.Ze:
+                    plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
+                case Boss.Mystic:
+                    plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
+                case Boss.Hegemol:
+                    plaque = GameObject.Find("GG_Statue_Hegemol").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    break;
             }
-            
-            StartCoroutine(FixArena());
+            if(plaque != null)
+            {
+                plaque.GetComponent<BossStatueTrophyPlaque>().tierCompleteEffectDelay = 0.5f;
+                plaque.GetComponent<BossStatueTrophyPlaque>().DoTierCompleteEffect((BossStatueTrophyPlaque.DisplayType)lev);
+            }
         }
 
+        // WARNING: THIS METHOD IS EXTREMELY JANK, PROCEED AT YOUR OWN RISK
         private GameObject SetStatue(Vector2 pos, Vector2 offset, Vector2 nameOffset,
-                                    GameObject go, string sceneName, Sprite spr, 
+                                    GameObject go, string sceneName, Sprite spr,
                                     string name, string desc, string state)
         {
-            //Used 56's pale prince code here
+            // Used 56's pale prince code here
+            // Set statue info
             GameObject statue = Instantiate(go);
+            statue.name = "GG_Statue_" + state.Substring(11);
             statue.transform.SetPosition3D(pos.x, pos.y, 0f);
             var scene = ScriptableObject.CreateInstance<BossScene>();
             scene.sceneName = sceneName;
             var bs = statue.GetComponent<BossStatue>();
             bs.bossScene = scene;
-            bs.statueStatePD = state;
+            bs.statueStatePD = null;
 
             switch (name)
             {
                 case "ISMA_NAME":
-                    bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionIsma;
-                    SetStatue2(statue, "GG_White_Defender", "statueStateIsma2","DD_ISMA_NAME", "DD_ISMA_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionIsma2;
-                    bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueIsma, false, false);
+                    if(FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked)
+                    {
+                        bs.statueStatePD = state;
+                        bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionIsma;
+                    }
+                    if(FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked)
+                    {
+                        SetStatue2(statue, "GG_White_Defender", "statueStateIsma2", "DD_ISMA_NAME", "DD_ISMA_DESC");
+                        bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionIsma2;
+                        bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueIsma, false, false);
+                    }
                     break;
                 case "DRY_NAME":
-                    bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionDryya;
+                    if(FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked)
+                    {
+                        bs.statueStatePD = state;
+                        bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionDryya;
+                    }
                     break;
                 case "ZEM_NAME":
-                    bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionZemer;
-                    SetStatue2(statue, sceneName, "statueStateZemer2","ZEM2_NAME","ZEM2_DESC");
-                    bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionZemer2;
-                    bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueZemer, false, false);
+                    if(FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked)
+					{
+                        bs.statueStatePD = state;
+                        bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionZemer;
+					}
+                    if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
+					{
+                        SetStatue2(statue, sceneName, "statueStateZemer2", "ZEM2_NAME", "ZEM2_DESC");
+                        bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionZemer2;
+                        bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueZemer, false, false);
+                    }
                     break;
                 case "HEG_NAME":
-                    bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionHegemol;
+                    if(FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked)
+                    {
+                        bs.statueStatePD = state;
+                        bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionHegemol;
+                    }
                     break;
             }
             bs.SetPlaquesVisible(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
+
+            // Set statue UI details
             var details = new BossStatue.BossUIDetails();
             details.nameKey = name;
             details.nameSheet = "Speech";
@@ -378,51 +519,58 @@ namespace FiveKnights
                     i.name = "door_dreamReturnGG" + state;
                 }
             }
+
+            // Get info from old statues
             GameObject appearance = statue.transform.Find("Base").Find("Statue").gameObject;
             appearance.SetActive(true);
             SpriteRenderer sr = appearance.transform.Find("GG_statues_0006_5").GetComponent<SpriteRenderer>();
             sr.enabled = false;
             sr.sprite = spr;
-            var scaleX = sr.transform.GetScaleX();
-            var scaleY = sr.transform.GetScaleY();
-            float scaler = state.Contains("Hegemol") ? 1.5f : 1.4f;
-            scaler = state.Contains("Zemer") ? 1.2f : 1.4f;
+            float scaler = state.Contains("Zemer") ? 1.2f : 1.4f;
             sr.transform.localScale *= scaler;
             sr.transform.SetPosition3D(sr.transform.GetPositionX() + offset.x, sr.transform.GetPositionY() + offset.y, 2f);
-            if (bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen)
-            {
-                Sprite sprite = spr;
-                GameObject fakeStat = new GameObject("FakeStat");
-                SpriteRenderer sr2 = fakeStat.AddComponent<SpriteRenderer>();
-                sr2.sprite = sprite;
-                fakeStat.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale;
-                fakeStat.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
 
-                if (state.Contains("Isma") || state.Contains("Zemer"))
+            // Create fake statues
+            Sprite sprite = spr;
+            GameObject fakeStat = new GameObject("FakeStat" + state.Substring(11));
+            SpriteRenderer sr2 = fakeStat.AddComponent<SpriteRenderer>();
+            sr2.sprite = sprite;
+            fakeStat.transform.parent = statue.transform;
+            fakeStat.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale;
+            fakeStat.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
+            fakeStat.SetActive(bs.StatueState.isUnlocked && bs.StatueState.hasBeenSeen);
+            BossStatueFlashEffect flashFX = statue.Find("Base").Find("GG_Statue_First_Appear").GetComponent<BossStatueFlashEffect>();
+            Mirror.SetField(flashFX, "statueSprites", new SpriteRenderer[] { sr2 });
+
+            if (state.Contains("Isma") || state.Contains("Zemer"))
+            {
+                StatueControl sc = statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
+                sc.StatueName = state;
+                sc._bs = bs;
+                sc._sr = sr2;
+                if (state.Contains("Isma"))
                 {
-                    StatueControl sc = statue.transform.Find("Base").gameObject.AddComponent<StatueControl>();
-                    sc.StatueName = state;
-                    sc._bs = bs;
-                    sc._sr = sr2;
-                    if (state.Contains("Isma"))
-                    {
-                        GameObject fake2 = Instantiate(FiveKnights.preloadedGO["IsmaOgrimStatue"]);
-                        fake2.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale / 1.15f;
-                        fake2.transform.position =
-                            appearance.transform.Find("GG_statues_0006_5").position;
-                        sc._fakeStatAlt2 = fake2;
-                    }
-                    sc._fakeStatAlt = fakeStat;
-                    if (state.Contains("Isma")) StatueControls["Isma"] = sc;
-                    else StatueControls["Zemer"] = sc;
+                    GameObject fake2 = Instantiate(FiveKnights.preloadedGO["IsmaOgrimStatue"], statue.transform);
+                    fake2.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale / 1.15f;
+                    fake2.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
+                    sc._fakeStatAlt2 = fake2;
                 }
+                sc._fakeStatAlt = fakeStat;
+                if (state.Contains("Isma")) StatueControls["Isma"] = sc;
+                else StatueControls["Zemer"] = sc;
             }
+
             var tmp = statue.transform.Find("Inspect").Find("Prompt Marker").position;
             statue.transform.Find("Inspect").Find("Prompt Marker").position = new Vector3(tmp.x + nameOffset.x, tmp.y + nameOffset.y, tmp.z);
-            statue.transform.Find("Inspect").gameObject.SetActive(true);
-            statue.transform.Find("Spotlight").gameObject.SetActive(true);
+            bs.disableIfLocked = new GameObject[]
+            {
+                statue.transform.Find("Inspect").gameObject, statue.transform.Find("Spotlight").gameObject
+            };
+            bs.enableIfLocked = new GameObject[]
+            {
+                statue.transform.Find("Inspect_Locked").gameObject
+            };
             statue.SetActive(true);
-            wonLastFight = false;
             return statue;
         }
 
@@ -472,6 +620,9 @@ namespace FiveKnights
         private void OnDestroy()
         {
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D;
+            On.BossStatueFlashEffect.FlashApex -= BossStatueFlashEffect_FlashApex;
+            On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter -= CallMethodProperOnEnter;
+            GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
         }
