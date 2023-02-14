@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
-using FiveKnights.Ogrim;
 using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -850,16 +849,9 @@ namespace FiveKnights.Isma
                 _anim.Play("AFist2");
                 yield return new WaitForSeconds(0.05f);
                 spike.SetActive(false);
-                //_anim.Play("AFistEnd");
-                //yield return null;
-                yield return _anim.PlayBlocking("AFistEnd");
-                //transform.position += new Vector3(0.81f * Math.Sign(transform.localScale.x), 0.27f);
-                //_anim.enabled = false;
-                //yield return new WaitForSeconds(spd);
-                //_anim.enabled = true;
-                //_rb.velocity = new Vector2(dir * -20f, 0f);
-                //yield return new WaitWhile(() => _anim.IsPlaying());
-                //_rb.velocity = Vector2.zero;
+                yield return _anim.PlayToFrame("AFistEnd", 1);
+                _bc.enabled = false;
+                yield return _anim.PlayToEnd();
                 ToggleIsma(false);
             }
 
@@ -1097,41 +1089,64 @@ namespace FiveKnights.Isma
                     (tk.CurrentClip.name.Contains("Erupt") &&
                     (_ddFsm.FsmVariables.FindFsmInt("Rages").Value % 2 == 1 || prevRageBallMissed)))
                 {
+                    // Try to find a valid dung ball to hit each frame
                     GameObject go = LocateBall();
                     if(go == null)
 					{
+                        // Track if the player destroyed all possible balls in the previous rage so she can hit a ball in the next wave
                         if(_ddFsm.FsmVariables.FindFsmInt("Rages").Value % 2 == 1) prevRageBallMissed = true;
                         yield return new WaitForEndOfFrame();
                         continue;
                     }
+                    // Reset the tracker if she found a ball
                     prevRageBallMissed = false;
 
-                    Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
-                    float xPos = CalculateTrajectory(rb.velocity, 16f - go.transform.GetPositionY(), rb.gravityScale) + 
-                        rb.velocity.x * 0.05f + go.transform.GetPositionX();
-                    Vector2 pos = new Vector2(xPos, go.transform.GetPositionY());
+                    // Isma will move along with the ball and face the same direction as it, the animation starts moving left by default
+                    IEnumerator TrackBall()
+                    {
+                        Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
+                        while(go != null && go.transform.position.y < 16f)
+                        {
+                            Vector3 scale = transform.localScale;
+                            // Ball moving right, so flip sprite
+                            if(rb.velocity.x > 0f) transform.localScale = new Vector3(-Mathf.Abs(scale.x), scale.y, scale.z);
+                            // Ball moving left, so keep sprite normal
+                            else transform.localScale = new Vector3(Mathf.Abs(scale.x), scale.y, scale.z);
+                            // Track position
+                            transform.position = new Vector3(go.transform.position.x, 16f, transform.position.z);
+                            yield return null;
+                        }
+                        // Enable the animation again once the ball falls to the right level
+                        _anim.enabled = true;
+                    }
 
+                    // Start tracking the ball
+                    StartCoroutine(TrackBall());
+
+                    // Delay toggling visibility for 1 frame so she's oriented the right way
+                    yield return null;
                     ToggleIsma(true);
+                    _anim.Play("BallStrike");
+                    yield return new WaitUntil(() => _anim.IsPlaying("BallStrike"));
+                    _anim.enabled = false;
                     PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
-                    float side = go.GetComponent<Rigidbody2D>().velocity.x > 0f ? 1f : -1f;
-                    gameObject.transform.position = new Vector2(pos.x + side * 1.77f, pos.y + 0.38f);
-                    float dir = FaceHero();
+
+                    // Wait for the animation to reenable to hit the ball
+                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+
+                    // Create ball related objects
                     GameObject squish = gameObject.transform.Find("Squish").gameObject;
                     GameObject ball = Instantiate(gameObject.transform.Find(usingThornPillars ? "Ball" : "VineBall").gameObject);
                     GameObject particles = Instantiate(go.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value);
-                    ball.name = "IsmaHitBall";
-                    ball.transform.localScale *= 1.4f;
-                    ball.layer = 11;
-                    DamageHero dh = ball.AddComponent<DamageHero>();
-                    dh.damageDealt = 1;
-                    dh.hazardType = (int)GlobalEnums.HazardType.SPIKES;
                     DungBall db = ball.AddComponent<DungBall>();
                     db.particles = particles;
                     db.usingThornPillars = usingThornPillars;
+                    if(!_wallActive)
+                    {
+                        db.LeftX = LEFT_X + 1f;
+                        db.RightX = RIGHT_X - 1f;
+                    }
 
-                    _anim.Play("BallStrike");
-                    yield return new WaitForSeconds(0.05f);
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                     // Check if ball has been destroyed before hitting it
                     if(go != null)
                     {
@@ -1159,8 +1174,9 @@ namespace FiveKnights.Isma
                         yield return new WaitForSeconds(0.1f);
                         Destroy(ballFx);
                     }
+                    // Finish playing the animation, then exit
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
-                    _rb.velocity = new Vector2(dir * 20f, 0f);
+                    _rb.velocity = new Vector2(Mathf.Sign(transform.localScale.x) * 20f, 0f);
                     yield return new WaitWhile(() => _anim.IsPlaying());
                     _rb.velocity = new Vector2(0f, 0f);
                     ToggleIsma(false);
@@ -1176,7 +1192,7 @@ namespace FiveKnights.Isma
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             GameObject[] balls = FindObjectsOfType<GameObject>().Where(x =>
                 x.name.Contains("Dung Ball") && x.activeSelf &&
-                x.transform.GetPositionY() > 16f &&
+                x.transform.GetPositionY() > 13f &&
 				x.GetComponent<Rigidbody2D>().velocity.y > 0f &&
 				(tk.CurrentClip.name.Contains("Throw") || FastApproximately(x.transform.GetPositionX(), _target.transform.GetPositionX(), 7.5f))).ToArray();
             if(balls.Length > 0) return balls[_rand.Next(0, balls.Length)];
