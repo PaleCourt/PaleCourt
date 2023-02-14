@@ -35,14 +35,14 @@ namespace FiveKnights.Zemer
 
         private readonly float PlayerGndY = CustomWP.boss == CustomWP.Boss.All ? 23.919f : 23.919f;
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
-        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :
+        private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :   
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f :
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6.2f : 25.9f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
         private readonly float NailHeightGrab = 19f;
         
         private const int Phase2HP = 1500;
@@ -196,6 +196,11 @@ namespace FiveKnights.Zemer
 
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
+
+                yield return SweepDash();
+                yield return new WaitForSeconds(0.5f);
+                continue;
+                
                 
                 if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
@@ -1013,7 +1018,7 @@ namespace FiveKnights.Zemer
             {
 
                 float dir = Mathf.Sign(transform.localScale.x);
-                float XVel = 65f;
+                float XVel = 75f;
 
                 //_anim.speed = 2f;
                 _anim.PlayAt("ZThrow2", 4);
@@ -1021,10 +1026,18 @@ namespace FiveKnights.Zemer
                 transform.position += new Vector3(-dir * LeaveOffset.x, 0f);
                 yield return _anim.PlayToEnd();
                 ToggleZemer(false);
+                int maxCount = 6;
                 
                 yield return new WaitForSeconds(0.2f);
                 
-                for (int i = 0; i < 5; i++)
+                GameObject grass = Instantiate(FiveKnights.preloadedGO["TraitorSlam"].transform.Find("Grass").gameObject, transform, true);
+                ParticleSystem psGrass = grass.GetComponent<ParticleSystem>();
+                grass.SetActive(true);
+                psGrass.Stop();
+                grass.transform.position = transform.position;
+                grass.transform.parent = transform;
+                
+                for (int i = 0; i < maxCount; i++)
                 {
                     float heroX = _target.transform.position.x;
                     float zemY = transform.position.y;
@@ -1036,14 +1049,13 @@ namespace FiveKnights.Zemer
                     }
                     else if (heroX.Within(RightX, 7f))
                     {
-                        transform.position = new Vector3(heroX - 10f + offsetRand, zemY);
+                        transform.position = new Vector3(heroX - 10f - offsetRand, zemY);
                     }
                     else
                     {
-                        
                         Vector3 pos = i % 2 == 0
                             ? new Vector3(heroX + 10f + offsetRand, zemY)
-                            : new Vector3(heroX - 10f + offsetRand, zemY);
+                            : new Vector3(heroX - 10f - offsetRand, zemY);
                         if (pos.x > RightX) pos.x = RightX;
                         if (pos.x < LeftX) pos.x = LeftX;
                         transform.position = pos;
@@ -1054,23 +1066,19 @@ namespace FiveKnights.Zemer
                     float signX = FaceHero();
 
                     Spring(true, transform.position, 1.5f);
-                    //yield return new WaitForSeconds(0.07f);
                     ToggleZemer(true);
-                    if (i != 0)
-                    {
-                        _anim.enabled = false;
-                    }
 
                     Log("Doing special dash");
                     PlayAudioClip("AudDash",_ap);
-                    if (i == 0)
-                    {
-                        transform.Find("HyperCut").gameObject.SetActive(false);
-                        _anim.PlayAt("ZMultiDashAir", 0);
-                        yield return null;
-                        _anim.enabled = false;
-                    }
-                    float velX = -signX * (XVel + i * 1.5f);
+                    
+                    transform.Find("HyperCut").gameObject.SetActive(false);
+                    _anim.PlayAt("ZMultiDashAir", 1);
+                    _anim.enabled = true;
+                    _anim.speed = 0.5f;
+                    yield return null;
+                    // _anim.enabled = false;
+                    psGrass.Play();
+                    float velX = -signX * (XVel + i * 3f);
                     _rb.velocity = new Vector2(velX, 0f);
                     offsetRand = _rand.Next(1, 5);
 
@@ -1099,18 +1107,19 @@ namespace FiveKnights.Zemer
                         rot = xVel < 0 ? Mathf.PI - rot : rot;
                         PlayAudioClip("AudDashIntro",_ap);
                         _anim.speed = 3f;
-                        yield return _anim.WaitToFrame(9);
+                        psGrass.Stop();
+                        yield return _anim.PlayToEnd();
                         _anim.speed = 1f;
-                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
+                        _anim.PlayAt("ZSpin", 4);
                         _rb.velocity = new Vector2(60f * Mathf.Cos(rot), 60f * Mathf.Sin(rot));
-                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
+                        yield return new WaitForSeconds(1 / 12f);
                         _anim.enabled = false;
                         yield return new WaitWhile(() => transform.position.x > LeftX + 4f && transform.position.x < RightX - 4f);
                         _anim.enabled = true;
                         _rb.velocity = Vector2.zero;
-                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 15);
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                         PlayAudioClip("AudBigSlash2",_ap);
-                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 18);
+                        yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                         _rb.isKinematic = false;
                         _rb.gravityScale = 1.5f;
                         yield return new WaitWhile(() => transform.position.y > GroundY);
@@ -1121,17 +1130,19 @@ namespace FiveKnights.Zemer
                         transform.position = new Vector3(transform.position.x, GroundY);
                         yield return new WaitWhile(() => _anim.IsPlaying());
                         _anim.Play("ZIdle");
-                        
+
                         yield break;
                     }
                     
-                    if (i != 4)
+                    if (i != maxCount - 1)
                     {
                         float xNext = velX * 0.1f;
                         Vector3 newPos = transform.position + new Vector3(xNext, 0f, 0f);
                         if (newPos.x > RightX) newPos.x = RightX - 1f;
                         if (newPos.x < LeftX) newPos.x = LeftX + 1f;
                         Spring(false, newPos, 1.5f);
+                        _anim.speed = 1f;
+                        psGrass.Stop();
                         yield return new WaitWhile(() =>
                         {
                             if (_rb.velocity.x.Within(0f, 0.1f)) return false;
@@ -1153,7 +1164,8 @@ namespace FiveKnights.Zemer
                     }
 
                 }
-                
+                psGrass.Stop();
+                _anim.speed = 1f;
                 _anim.PlayAt("ZDash", 7);
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
@@ -1287,9 +1299,7 @@ namespace FiveKnights.Zemer
                     gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
                     _anim.enabled = true;
                     _anim.Play("ZIdle");
-                    // We want SpiralPassage instead of LaserNuts
                     yield return DoSpiralPassage();
-                    // yield return (LaserNuts(1, spinType));
                 }
                 else
                 {
@@ -1764,11 +1774,11 @@ namespace FiveKnights.Zemer
             // She then proceeds to play ZSpin (waiting a little on frame 2)
             // Jumps in the air in an arc then descends linearly to where the player was at the start of jump
             
-            // Next, have her 
+            // Next, have her disperse spiral with a traitor lord slash
             
             GameObject grass = Instantiate(FiveKnights.preloadedGO["TraitorSlam"].transform.Find("Grass").gameObject, transform, true);
             grass.SetActive(false);
-            grass.transform.position = transform.position;
+            grass.transform.parent = transform;
             
             var ciel = Instantiate(FiveKnights.preloadedGO["Ceiling Dust"].gameObject);
             ciel.SetActive(false);
@@ -2135,7 +2145,7 @@ namespace FiveKnights.Zemer
                 slash.SetActive(true);
                 slash.transform.position = targ;
                 slash.transform.localScale /= (scale * 2.5f);
-                float spd = 1.8f; // 2f
+                float spd = 2f; // 2f
                 StartCoroutine(LerpScale(slash.transform, 2.5f));
 
                 for (int i = 0; i < 3; i++)
