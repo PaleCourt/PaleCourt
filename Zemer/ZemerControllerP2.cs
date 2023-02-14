@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FiveKnights.BossManagement;
-using FiveKnights.Misc;
-using FiveKnights.Ogrim;
 using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
@@ -44,7 +42,7 @@ namespace FiveKnights.Zemer
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f :
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6.5f : 25.9f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6.2f : 25.9f;
         private readonly float NailHeightGrab = 19f;
         
         private const int Phase2HP = 1500;
