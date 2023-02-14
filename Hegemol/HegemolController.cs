@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
-using FiveKnights.Ogrim;
 using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -749,63 +748,6 @@ namespace FiveKnights.Hegemol
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
-        }
-
-        // Dung Wave and Dung Side are obsolete, no longer used (even in CC)
-        private IEnumerator DungWave()
-        {
-            Transform trans = transform;
-            Vector2 pos = trans.position;
-            float scaleX = trans.localScale.x;
-            float xLeft = pos.x + 5 * scaleX - 2;
-            float xRight = pos.x + 5 * scaleX + 2;
-            float pillarSpacing = 2;
-            while(xLeft >= LeftX || xRight <= RightX)
-            {
-                //_audio.Play("Dung Pillar", 0.9f, 1.1f);
-
-                GameObject dungPillarR = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(xRight, 12.0f), Quaternion.identity);
-                dungPillarR.SetActive(true);
-                dungPillarR.AddComponent<DungPillar>();
-
-                GameObject dungPillarL = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(xLeft, 12.0f), Quaternion.identity);
-                dungPillarL.SetActive(true);
-                Vector3 pillarRScale = dungPillarR.transform.localScale;
-                dungPillarL.transform.localScale = new Vector3(-pillarRScale.x, pillarRScale.y, pillarRScale.z);
-                dungPillarL.AddComponent<DungPillar>();
-
-                xLeft -= pillarSpacing;
-                xRight += pillarSpacing;
-
-                yield return new WaitForSeconds(0.1f);
-            }
-        }
-
-        private IEnumerator DungSide(bool right)
-        {
-            Transform trans = transform;
-            Vector2 pos = trans.position;
-            float scaleX = trans.localScale.x;
-            float x = pos.x + 5 * scaleX + (right ? 2 : -2);
-            float pillarSpacing = 2;
-            float xMaxMin = right ? RightX : LeftX;
-            while(right ? x <= xMaxMin : x >= xMaxMin)
-            {
-                //_audio.Play("Dung Pillar", 0.9f, 1.1f);
-
-                GameObject dungPillar = Instantiate(FiveKnights.preloadedGO["pillar"], new Vector2(x, 12.0f), Quaternion.identity);
-                dungPillar.SetActive(true);
-                dungPillar.AddComponent<DungPillar>();
-                if(!right)
-                {
-                    Vector3 pillarScale = dungPillar.transform.localScale;
-                    dungPillar.transform.localScale = new Vector3(-pillarScale.x, pillarScale.y, pillarScale.z);
-                }
-
-                x -= pillarSpacing;
-
-                yield return new WaitForSeconds(0.1f);
-            }
         }
 
         private void SpawnShockwaves(bool facingRight, float offset, float scale, float speed, int damage)
