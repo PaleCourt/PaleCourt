@@ -221,17 +221,21 @@ namespace FiveKnights.Isma
                 yield return new WaitWhile(() => GetComponent<HealthManager>() == null);
                 GetComponent<HealthManager>().OnDeath += () =>
                 {
-                    dying = true;
-                    StartCoroutine(PillarDeath());
+                    StartCoroutine(PillarDeath(0f));
                 };
                 if(!OWArenaFinder.IsInOverWorld && (transform.position.x < 60.3f || transform.position.x > 90.6f))
 				{
                     GetComponent<HealthManager>().SendDeathEvent();
                 }
+                StartCoroutine(PillarDeath(30f));
             }
 
-            private IEnumerator PillarDeath()
+            private IEnumerator PillarDeath(float delay)
             {
+                if(dying) yield break;
+                yield return new WaitForSeconds(delay);
+                if(dying) yield break;
+                dying = true;
                 Destroy(GetComponent<BoxCollider2D>());
                 if (transform.Find("PillarPogo") != null) Destroy(transform.Find("PillarPogo").gameObject);
                 Animator anim = GetComponent<Animator>();
@@ -246,8 +250,7 @@ namespace FiveKnights.Isma
             private void Update()
             {
                 if (!IsmaController.eliminateMinions || dying) return;
-                dying = true;
-                StartCoroutine(PillarDeath());
+                StartCoroutine(PillarDeath(0f));
             }
         }
         

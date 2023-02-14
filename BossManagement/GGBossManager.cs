@@ -111,7 +111,7 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
-                yield return LoadDryyaAssets();
+                yield return LoadDryyaBundle();
                 
                 dd.SetActive(false);
                 DryyaSetup dc = FightController.Instance.CreateDryya();
@@ -212,7 +212,7 @@ namespace FiveKnights.BossManagement
                 //StartCoroutine(Wow());
                 var a1 = StartCoroutine(LoadHegemolBundle());
                 var a2 = StartCoroutine(LoadIsmaBundle());
-                var a3 = StartCoroutine(LoadDryyaAssets());
+                var a3 = StartCoroutine(LoadDryyaBundle());
                 var a4 = StartCoroutine(LoadZemerBundle());
 
                 yield return a1;
@@ -355,7 +355,11 @@ namespace FiveKnights.BossManagement
             burrow.SendEvent("BURROW END");
             foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
 			{
-                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit") pillar.SetState("Break");
+                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit")
+                {
+                    pillar.SetState("Dormant");
+                    pillar.FsmVariables.FindFsmGameObject("Chunks").Value.GetComponent<ParticleSystem>().Play();
+                }
 			}
 
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
@@ -531,7 +535,7 @@ namespace FiveKnights.BossManagement
             Log("Finished Loading Isma Bundle");
         }
         
-        private IEnumerator LoadDryyaAssets()
+        private IEnumerator LoadDryyaBundle()
         {
             Log("Loading Dryya Bundle");
             if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
@@ -553,7 +557,7 @@ namespace FiveKnights.BossManagement
                 var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
                 var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
-                var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Elegy Beam");
+                var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Beams");
                 var r5 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dagger");
 
                 yield return r1;
@@ -563,19 +567,20 @@ namespace FiveKnights.BossManagement
                 yield return r5;
 
                 FiveKnights.preloadedGO["Dryya2"] = r1.asset as GameObject;
-                FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;;
-                FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;;
-                FiveKnights.preloadedGO["Elegy Beam"] = r4.asset as GameObject;;
-                FiveKnights.preloadedGO["Dagger"] = r5.asset as GameObject;;
+                FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;
+                FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;
+                FiveKnights.preloadedGO["Beams"] = r4.asset as GameObject;
+                FiveKnights.preloadedGO["Dagger"] = r5.asset as GameObject;
             }
             else
             {
                 FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
                 FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
                 FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
-                FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
+                FiveKnights.preloadedGO["Beams"] = dryyaAssetBundle.LoadAsset<GameObject>("Beams");
                 FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
             }
+            FiveKnights.preloadedGO["Beams"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Dryya Bundle");

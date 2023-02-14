@@ -682,11 +682,12 @@ namespace FiveKnights.BossManagement
             FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
             FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
             FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
-            FiveKnights.preloadedGO["Elegy Beam"] = dryyaAssetBundle.LoadAsset<GameObject>("Elegy Beam");
+            FiveKnights.preloadedGO["Beams"] = dryyaAssetBundle.LoadAsset<GameObject>("Beams");
+            FiveKnights.preloadedGO["Beams"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
 			FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
-			Log("Finished Loading Dryya Bundle");
+            Log("Finished Loading Dryya Bundle");
         }
         
         private IEnumerator LoadIsmaBundle()

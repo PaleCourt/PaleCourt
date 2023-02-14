@@ -1,25 +1,31 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using SFCore.Utils;
+using System.Collections;
 using FiveKnights.BossManagement;
-using UnityEngine;
+using GlobalEnums;
+using Random = UnityEngine.Random;
+using HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights.Dryya
 {
     public class ElegyBeam : MonoBehaviour
     {
         public GameObject parent;
-        
-        private tk2dSpriteAnimator _anim;
-        private BoxCollider2D _collider;
-        private float PosY = (OWArenaFinder.IsInOverWorld) ? 100.5f : 10f;
+        public Vector2 offset;
+        public bool activate = false;
+
+        private Animator _anim;
+        private float PosY = OWArenaFinder.IsInOverWorld ? 100.5f : 10f;
 
         private void Awake()
         {
-            GameObject go = gameObject;
-            go.SetActive(true);
-            go.layer = 22;
-            go.transform.localScale = new Vector3(1, 0.5f, 1);
-            _anim = GetComponent<tk2dSpriteAnimator>();
-            _collider = GetComponent<BoxCollider2D>();
+            gameObject.layer = (int)PhysLayers.ENEMY_ATTACK;
+            DamageHero dh = gameObject.AddComponent<DamageHero>();
+            dh.damageDealt = 1;
+            dh.hazardType = (int)HazardType.SPIKES;
+            dh.shadowDashHazard = false;
+
+            _anim = GetComponent<Animator>();
         }
 
         private void OnEnable()
@@ -30,21 +36,29 @@ namespace FiveKnights.Dryya
         private IEnumerator Beam()
         {
             Vector2 beamPos = new Vector2(HeroController.instance.transform.position.x, PosY);
-            Quaternion randomRot = Quaternion.Euler(0, 0, Random.Range(60, 120));
-            gameObject.transform.SetPositionAndRotation(beamPos, randomRot);
+            Quaternion randomRot = Quaternion.Euler(0, 0, Mathf.Sign(transform.localScale.x) * Random.Range(15, 105));
+            gameObject.transform.SetPositionAndRotation(beamPos + offset, randomRot);
             
-            _anim.Play("Beam Antic");
-            _collider.enabled = false;
-            yield return new WaitWhile(() => _anim.IsPlaying("Beam Antic"));
-            _anim.Play("Beam");
-            _collider.enabled = true;
-            yield return new WaitForSeconds(0.25f);
-            _anim.Play("Beam Off");
-            _collider.enabled = false;
-            yield return new WaitWhile(() => _anim.IsPlaying("Beam Off"));
+            _anim.Play("Beams");
 
-            gameObject.SetActive(false);
-            gameObject.transform.SetParent(parent.transform);
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+            _anim.enabled = false;
+
+            yield return new WaitUntil(() => activate);
+            yield return new WaitForSeconds(0.1f);
+            _anim.enabled = true;
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+            _anim.enabled = false;
+
+            yield return new WaitForSeconds(0.15f);
+            _anim.enabled = true;
+            Destroy(GetComponent<PolygonCollider2D>());
+            Destroy(GetComponent<DamageHero>());
+
+            yield return new WaitWhile(() => _anim.IsPlaying("Beams"));
+
+            Destroy(gameObject);
         }
     }
 }

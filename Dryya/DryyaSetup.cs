@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using SFCore.Utils;
-using FiveKnights.Ogrim;
 using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
@@ -23,10 +23,16 @@ namespace FiveKnights.Dryya
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
-        
+
+        private EnemyDeathEffectsUninfected _deathEffects;
+        private EnemyDreamnailReaction _dreamNailReaction;
+        private EnemyHitEffectsUninfected _hitEffects;
+        private HealthManager _hm;
+        private SpriteFlash _spriteFlash;
+        private GameObject _corpse;
+        private tk2dSprite _sprite;
+
         private GameObject _diveShockwave;
-        private GameObject _elegyBeam1;
-        private GameObject _elegyBeam2;
         private GameObject _ogrim;
         private GameObject _slash1Collider1;
         private GameObject _slash1Collider2;
@@ -39,6 +45,7 @@ namespace FiveKnights.Dryya
         private GameObject _cheekySlashCollider3;
         private List<GameObject> _slashes;
         private GameObject _stabFlash;
+        private List<ElegyBeam> _elegyBeams;
 
         private string[] _dreamNailDialogue =
         {
@@ -55,10 +62,9 @@ namespace FiveKnights.Dryya
             go.SetActive(true);
             go.layer = 11;
 
-            _corpse = gameObject.FindGameObjectInChildren("Corpse Dryya");
+			#region Colliders
+			_corpse = gameObject.FindGameObjectInChildren("Corpse Dryya");
             _diveShockwave = gameObject.FindGameObjectInChildren("Dive Shockwave");
-            _elegyBeam1 = gameObject.FindGameObjectInChildren("Elegy Beam 1");
-            _elegyBeam2 = gameObject.FindGameObjectInChildren("Elegy Beam 2");
             _slash1Collider1 = gameObject.FindGameObjectInChildren("Slash 1 Collider 1");
             _slash1Collider2 = gameObject.FindGameObjectInChildren("Slash 1 Collider 2");
             _slash2Collider1 = gameObject.FindGameObjectInChildren("Slash 2 Collider 1");
@@ -81,7 +87,8 @@ namespace FiveKnights.Dryya
                 _cheekySlashCollider3,
             };
             _slashes.AddRange(transform.Find("Super").gameObject.GetComponentsInChildren<DamageHero>().Select(d => d.gameObject));
-            
+            #endregion
+
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
             _ogrim = FiveKnights.preloadedGO["WD"];
             _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
@@ -91,7 +98,6 @@ namespace FiveKnights.Dryya
             _control = gameObject.LocateMyFSM("Control");
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
-            //_control.Fsm.GetFsmBool("GG Form").Value = !OWArenaFinder.IsInOverWorld;
             _control.Fsm.GetFsmBool("GG Form").Value = false;
             _control.Fsm.GetFsmFloat("Ground").Value = GroundY;
 
@@ -114,6 +120,7 @@ namespace FiveKnights.Dryya
                 GameObject counterFX = Instantiate(FiveKnights.preloadedGO["CounterFX"], fxPos, fxRot);
                 counterFX.SetActive(true);
             });
+
             _control.InsertMethod("Counter End", 0, () => _hm.IsInvincible = false);
             _control.InsertMethod("Counter Slash Antic", 0, () => _hm.IsInvincible = false);
 
@@ -123,27 +130,14 @@ namespace FiveKnights.Dryya
 
             _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
 
+            // Manually spawn beams
+            ModifyBeams();
             // Make sure Dryya stays inbounds
-            string[] superStates = new string[] { "Ground Stab 1", "Ground Air 1", "Air 1" };
-            foreach(string state in superStates)
-			{
-                _control.InsertMethod(state, () =>
-                {
-                    if(HeroController.instance.transform.position.x > RightX - 10f)
-                    {
-                        transform.position = new Vector3(RightX - 10f, GroundY);
-                        transform.localScale = new Vector3(1f, 1f);
-                    }
-                    if(HeroController.instance.transform.position.x < LeftX + 10f)
-                    {
-                        transform.position = new Vector3(LeftX + 10f, GroundY);
-                        transform.localScale = new Vector3(-1f, 1f);
-                    }
-                }, 2);
-            }
+            ModifySuper();
+			// Play audio clips at the right times
+			ModifyAudio();
 
-            //GameObject.Find("Burrow Effect").SetActive(false);
-            GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+			GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             AssignFields();
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -157,11 +151,11 @@ namespace FiveKnights.Dryya
             yield return new WaitWhile(()=> rb.velocity.y != 0f);
             MusicControl();
         }
-        
+
         private void MusicControl()
         {
-            if (!OWArenaFinder.IsInOverWorld)
-                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
+            if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(FiveKnights.Clips["DryyaMusic"], 1f);
+            else OWBossManager.PlayMusic(FiveKnights.Clips["DryyaMusic"]);
         }
         
         private void DeathHandler()
@@ -190,8 +184,36 @@ namespace FiveKnights.Dryya
             orig(self, hitInstance);
         }
         
-        private GameObject _corpse;
-        private tk2dSprite _sprite;
+        private void AddComponents()
+        {
+            _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathEffects.SetJournalEntry(FiveKnights.journalentries["Dryya"]);
+
+            _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
+            _dreamNailReaction.enabled = true;
+            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
+
+            _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
+            _hitEffects.enabled = true;
+
+            _hm = gameObject.AddComponent<HealthManager>();
+            _hm.enabled = false;
+            _hm.hp = _hp;
+
+            _spriteFlash = gameObject.AddComponent<SpriteFlash>();
+
+            PlayMakerFSM nailClashTink = FiveKnights.preloadedGO["Slash"].LocateMyFSM("nail_clash_tink");
+
+            foreach(GameObject slash in _slashes)
+            {
+                PlayMakerFSM pfsm = slash.AddComponent<PlayMakerFSM>();
+                foreach(FieldInfo fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
+                    fi.SetValue(pfsm, fi.GetValue(nailClashTink));
+            }
+
+            _stabFlash.AddComponent<DeactivateAfter2dtkAnimation>();
+        }
+
         private void GetComponents()
         {
             _sprite = GetComponent<tk2dSprite>();
@@ -209,58 +231,10 @@ namespace FiveKnights.Dryya
             tk2dSprite shockwaveSprite = _diveShockwave.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in shockwaveSprite.Collection.spriteDefinitions)
                 spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
-
-            tk2dSprite beam1Sprite = _elegyBeam1.GetComponent<tk2dSprite>();
-            foreach (tk2dSpriteDefinition spriteDef in beam1Sprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
-            
-            tk2dSprite beam2Sprite = _elegyBeam2.GetComponent<tk2dSprite>();
-            foreach (tk2dSpriteDefinition spriteDef in beam2Sprite.Collection.spriteDefinitions)
-                spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
             
             tk2dSprite flashSprite = _stabFlash.GetComponent<tk2dSprite>();
             foreach (tk2dSpriteDefinition spriteDef in flashSprite.Collection.spriteDefinitions)
                 spriteDef.material.shader = Shader.Find("tk2d/BlendVertexColor");
-        }
-        
-        private EnemyDeathEffectsUninfected _deathEffects;
-        private EnemyDreamnailReaction _dreamNailReaction;
-        private EnemyHitEffectsUninfected _hitEffects;
-        private HealthManager _hm;
-        private SpriteFlash _spriteFlash;
-
-        private void AddComponents()
-        {
-            _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEffects.SetJournalEntry(FiveKnights.journalentries["Dryya"]);
-
-            _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
-            _dreamNailReaction.enabled = true;
-            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
-            
-            _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
-            _hitEffects.enabled = true;
-
-            _hm = gameObject.AddComponent<HealthManager>();
-            _hm.enabled = false;
-            _hm.hp = _hp;
-
-            _spriteFlash = gameObject.AddComponent<SpriteFlash>();
-
-            _elegyBeam1.AddComponent<ElegyBeam>().parent = gameObject;
-
-            _elegyBeam2.AddComponent<ElegyBeam>().parent = gameObject;
-
-            PlayMakerFSM nailClashTink = FiveKnights.preloadedGO["Slash"].LocateMyFSM("nail_clash_tink");
-            
-            foreach (GameObject slash in _slashes)
-            {
-                PlayMakerFSM pfsm = slash.AddComponent<PlayMakerFSM>();
-                foreach (FieldInfo fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
-                    fi.SetValue(pfsm, fi.GetValue(nailClashTink));
-            }
-
-            _stabFlash.AddComponent<DeactivateAfter2dtkAnimation>();
         }
         
         private void AssignFields()
@@ -280,6 +254,7 @@ namespace FiveKnights.Dryya
 
         private void SpawnShockwaves(float vertScale, float speed, int damage)
         {
+            Log("Spawning shockwaves");
             bool[] facingRightBools = {false, true};
             Vector2 pos = transform.position;
             foreach (bool facingRight in facingRightBools)
@@ -313,12 +288,115 @@ namespace FiveKnights.Dryya
             }
             yield return new WaitForSeconds(0.5f);
         }
-        
+
+        private void ModifyBeams()
+        {
+            string[] elegyStates = new string[] { "Beams Slash 1", "Beams Slash 2", "Beams Slash 3", "Beams Slash 4", "Beams Slash 5" };
+            foreach(string state in elegyStates)
+            {
+                _control.InsertMethod(state, () =>
+                {
+                    GameObject beam = Instantiate(FiveKnights.preloadedGO["Beams"]);
+
+                    // Randomize direction
+                    beam.transform.localScale = new Vector3(beam.transform.localScale.x * Random.Range(0, 2) == 0 ? -1f : 1f,
+                        beam.transform.localScale.y * Random.Range(0, 2) == 0 ? -1f : 1f,
+                        beam.transform.localScale.z);
+
+                    // Randomize offset except for the first one so the player can't just stay still
+                    ElegyBeam elegy = beam.AddComponent<ElegyBeam>();
+                    elegy.offset = state != "Beams Slash 1" ? new Vector2(Random.Range(-15f, 15f), Random.Range(-7.5f, 7.5f)) : Vector2.zero;
+
+                    _elegyBeams.Add(elegy);
+                }, 1);
+            }
+            _control.InsertMethod("Beams Slash 1", () =>
+            {
+                _elegyBeams = new List<ElegyBeam>();
+            }, 1);
+            _control.InsertCoroutine("Beams Slash End", 1, ActivateBeams);
+        }
+
+        private IEnumerator ActivateBeams()
+		{
+            foreach(ElegyBeam elegy in _elegyBeams)
+            {
+                elegy.activate = true;
+                elegy.PlayAudio(_control.FsmVariables.FindFsmObject("Beams Clip").Value as AudioClip, 0.85f, 1.15f, 0.1f);
+                yield return new WaitForSeconds(0.05f);
+            }
+        }
+
+        private void ModifySuper()
+        {
+            string[] superStates = new string[] { "Ground Stab 1", "Ground Air 1", "Air 1" };
+            foreach(string state in superStates)
+            {
+                _control.InsertMethod(state, () =>
+                {
+                    if(HeroController.instance.transform.position.x > RightX - 10f)
+                    {
+                        transform.position = new Vector3(RightX - 10f, GroundY);
+                        transform.localScale = new Vector3(1f, 1f);
+                    }
+                    if(HeroController.instance.transform.position.x < LeftX + 10f)
+                    {
+                        transform.position = new Vector3(LeftX + 10f, GroundY);
+                        transform.localScale = new Vector3(-1f, 1f);
+                    }
+                }, 2);
+            }
+        }
+
+		private void ModifyAudio()
+		{
+			_control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
+			_control.InsertMethod("Countered", () => PlayAudio("Counter"), 0);
+			_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
+			_control.InsertMethod("Stab", () => PlayAudio("Dash"), 0);
+			_control.InsertMethod("Ground Stab 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Ground Air 11", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Super 18", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Air 1", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Ground Air 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Dive", () => PlayAudio("Dive"), 0);
+			_control.InsertMethod("Dive Land Heavy", () => PlayAudio("Dive Land Hard"), 0);
+			_control.InsertMethod("Dive Land Light", () => PlayAudio("Dive Land Soft"), 0);
+			_control.InsertMethod("Dive Jump", () => PlayAudio("Jump"), 0);
+			_control.InsertMethod("Ground Stab 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Dagger Jump", () => PlayAudio("Jump"), 0);
+			_control.InsertMethod("Ground Air 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Evade Recover", () => PlayAudio("Land"), 0);
+			_control.InsertMethod("Super 15", () => PlayAudio("Land", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Dagger End", () => PlayAudio("Land"), 0);
+			_control.InsertMethod("Counter Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Beams Slash 2", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Beams Slash 3", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Beams Slash 4", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Beams Slash 5", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Slash 1 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Slash 2 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Slash 3 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+			_control.InsertMethod("Cheeky Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+		}
+
+		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float delay = 0f)
+		{
+            this.PlayAudio(_control.Fsm.GetFsmObject(clip).Value as AudioClip, minPitch, maxPitch, delay);
+        }
+
         private void OnDestroy()
         {
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
+        }
+
+        private void Log(object o)
+		{
+            if(!FiveKnights.isDebug) return;
+            Modding.Logger.Log("[Dryya] " + o);
         }
     }
 }

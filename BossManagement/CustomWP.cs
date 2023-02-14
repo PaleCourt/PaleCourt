@@ -64,24 +64,25 @@ namespace FiveKnights
                 Destroy(i);
             }
             
-            Material[] blurPlaneMaterials = new Material[1];
-            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
-            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
-            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
-            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+            // Disabled the blur plane for now because I think it looks better without them, uncomment below code to reenable
+            //Material[] blurPlaneMaterials = new Material[1];
+            //blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
+            //blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
+            //blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
+            //blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
+            //blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            //blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
+            //blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            //blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            //blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
             Log("Look for blur!");
             foreach(var i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name == "BlurPlane"))
             {
                 Log("Found blur!");
-                i.SetActive(true);
-                i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
-                i.GetComponent<BlurPlane>().SetPlaneVisibility(true);
+                i.SetActive(false);
+                //i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
+                //i.SetActive(true);
             }
             
             var cLock = GameObject.Find("CameraLockArea (2)");
@@ -124,7 +125,7 @@ namespace FiveKnights
                     .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
                 secret.LocateMyFSM("Deactivate").enabled = false;
                 secret.SetActive(true);
-                
+
                 CreateStatues();
                 HubRemove();
                 AddLift();

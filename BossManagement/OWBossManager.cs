@@ -75,24 +75,11 @@ namespace FiveKnights
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
-                DryyaSetup dc = CreateDryya();
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 422.5f);
-                dc.gameObject.SetActive(true);
-                var bc = dc.GetComponent<BoxCollider2D>();
-                bc.enabled = false;
-                while (dc.transform.position.y > 103f)
-                    yield return new WaitForFixedUpdate();
-                // yield return new WaitWhile(() => dc.transform.position.y > 103f);
-                bc.enabled = true;
-                
-                var rb = dc.GetComponent<Rigidbody2D>();
-                yield return new WaitWhile(()=> rb.velocity.y != 0f);
-                PlayMusic(FiveKnights.Clips["DryyaMusic"]);
+                DryyaSetup dc = CreateDryya();
                 yield return new WaitWhile(() => dc != null);
                 PlayMusic(null);
-                HeroController.instance.RelinquishControl();
-                PlayerData.instance.disablePause = true;
                 
                 yield return new WaitForSeconds(1.0f);
                 WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 1);
@@ -150,8 +137,6 @@ namespace FiveKnights
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 yield return new WaitForSeconds(1.0f);
 
-                HeroController.instance.RelinquishControl();
-                PlayerData.instance.disablePause = true;
                 WinRoutine("HEG_OUTRO_1a", "HEG_OUTRO_1b", OWArenaFinder.PrevHegScene, 2);
                 Log("Done with Heg, transitioning out");
                 Destroy(this);
@@ -184,6 +169,8 @@ namespace FiveKnights
                 }
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
+
+                yield return new WaitForSeconds(1f);
                 WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene, 0);
                 Destroy(this);
             }
@@ -207,7 +194,8 @@ namespace FiveKnights
                     FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
                     break;
             }
-			HeroController.instance.RelinquishControl();
+            HeroController.instance.RelinquishControl();
+            PlayerData.instance.disablePause = true;
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
             if (dreambye != null)
             {
@@ -402,20 +390,21 @@ namespace FiveKnights
         private DryyaSetup CreateDryya()
         {
             Log("Creating Dryya");
-            
+
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
             
-            /*AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            ArenaFinder.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }*/
-
             Vector2 pos = new Vector2(457.6f, 112.5f);
             GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
-            dryya.SetActive(false);
+            IEnumerator DryyaIntro()
+            {
+                var bc = dryya.GetComponent<BoxCollider2D>();
+                bc.enabled = false;
+                while(dryya.transform.position.y > 103f)
+                    yield return new WaitForFixedUpdate();
+                bc.enabled = true;
+            }
+            StartCoroutine(DryyaIntro());
             Log("Done creating dryya");
             return dryya.AddComponent<DryyaSetup>();
         }
