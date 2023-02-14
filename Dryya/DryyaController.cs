@@ -13,7 +13,7 @@ namespace FiveKnights.Dryya
 {
     public class DryyaController : MonoBehaviour
     {
-        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 8.5f : 10.5f; 
+        private float GroundY = (CustomWP.boss == CustomWP.Boss.All) ? 8.35f : 10.5f; 
         private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
         private const float LeftY = 61.0f;
         private const float RightY = 91.0f;

@@ -295,6 +295,13 @@ namespace FiveKnights
                 i.gameObject.layer = 22;
                 
             }
+            
+            var bcMultiDashHB = _zemer.transform.Find("MultiDashParryHB").gameObject;
+            bcMultiDashHB.AddComponent<Tink>();
+            bcMultiDashHB.AddComponent<Pogoable>().tar = _zemer;
+            bcMultiDashHB.layer = 22;
+            bcMultiDashHB.SetActive(false);
+            
             _zemer.GetComponent<SpriteRenderer>();
             var zc = _zemer.AddComponent<ZemerController>();
             Log("Done creating Zemer");

@@ -38,7 +38,7 @@ namespace FiveKnights.Zemer
         private readonly float PlayerGndY = CustomWP.boss == CustomWP.Boss.All ? 23.919f : 23.919f;
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9.4f : 28.8f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
@@ -59,7 +59,7 @@ namespace FiveKnights.Zemer
         private const float LaserNutsEndDelay = 0.5f;
         private const float IdleDelay = 0.19f; //0.38
         private const float DashDelay = 0.18f;
-        private const float MIDDLE = 29f;
+        private float MIDDLE;
         private const float ThrowDelay = 0.2f;
         private const float SwingOutToInDelay = 0.75f;
         private const float GenericReturnDelay = 0.75f;
@@ -101,6 +101,7 @@ namespace FiveKnights.Zemer
         private void Awake()
         {
             DoneFrenzyAtt = 0;
+            MIDDLE = (RightX + LeftX) / 2f;
             
             OnDestroy();
 
@@ -1067,7 +1068,7 @@ namespace FiveKnights.Zemer
                     if (i == 0)
                     {
                         transform.Find("HyperCut").gameObject.SetActive(false);
-                        _anim.PlayAt("ZMultiDashAir", 6);
+                        _anim.PlayAt("ZMultiDashAir", 0);
                         yield return null;
                         _anim.enabled = false;
                     }

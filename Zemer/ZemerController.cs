@@ -27,7 +27,7 @@ namespace FiveKnights.Zemer
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : 
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9.4f : 28.8f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f;
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f : 
