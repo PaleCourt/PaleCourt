@@ -77,10 +77,8 @@ namespace FiveKnights
             Charms.charmCost_44,
         };
 
-        public bool UnlockedChampionsCall => (CompletionIsma.completedTier1 || CompletionIsma.completedTier2) &&
-            (CompletionZemer.completedTier1 || CompletionZemer.completedTier2) &&
-            (CompletionDryya.completedTier1 || CompletionDryya.completedTier2) &&
-            (CompletionHegemol.completedTier1 || CompletionHegemol.completedTier2);
+        public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
+                                             CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
         public bool SeenChampionsCall = false;
     }
 }
