@@ -14,7 +14,7 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private int Health => phase == 1 ? 400 : (phase == 2 ? 700 : 900);
+        private int Health => phase == 1 ? 350 : (phase == 2 ? 650 : 900);
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
