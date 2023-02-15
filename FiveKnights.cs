@@ -498,6 +498,8 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GHegemol);
             ABManager.Load(ABManager.Bundle.GIsma);
             ABManager.Load(ABManager.Bundle.GZemer);
+
+            ABManager.Load(ABManager.Bundle.Artist);
         }
         
         private void LoadDep()

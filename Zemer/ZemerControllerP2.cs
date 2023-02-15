@@ -196,11 +196,6 @@ namespace FiveKnights.Zemer
 
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
-
-                yield return SweepDash();
-                yield return new WaitForSeconds(0.5f);
-                continue;
-                
                 
                 if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
@@ -642,7 +637,7 @@ namespace FiveKnights.Zemer
                     yield return null;
                     yield return new WaitWhile(() => _anim.IsPlaying());
                     float sig = Mathf.Sign(transform.localScale.x);
-                    yield return RageCombo(sig, false, _spinType);
+                    yield return RageCombo(sig, false);
                     yield break;
                 }
 
@@ -766,7 +761,7 @@ namespace FiveKnights.Zemer
                 // If player has gone behind, do backward slash
                 if ((int) -xVel != FaceHero(true))
                 {
-                    yield return RageCombo(-xVel, false, _spinType); // changed so it only does dash
+                    yield return RageCombo(-xVel, false); // changed so it only does dash
                     _lastAtt = null;
                     yield break;
                 }
@@ -1041,7 +1036,7 @@ namespace FiveKnights.Zemer
                 {
                     float heroX = _target.transform.position.x;
                     float zemY = transform.position.y;
-                    float offsetRand = _rand.Next(0, 3);
+                    float offsetRand = _rand.Next(-3, 3);
 
                     if (heroX.Within(LeftX, 7f))
                     {
@@ -1196,7 +1191,7 @@ namespace FiveKnights.Zemer
             ToggleZemer(false, false);
         }
 
-        private IEnumerator RageCombo(float dir, bool special, int spinType)
+        private IEnumerator RageCombo(float dir, bool special)
         {
             IEnumerator Swing()
             {
@@ -1714,7 +1709,7 @@ namespace FiveKnights.Zemer
                 _rb.velocity = new Vector2(0f, 0f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 float sig = Mathf.Sign(transform.localScale.x);
-                yield return RageCombo(sig, true, _spinType);
+                yield return RageCombo(sig, true);
                 StartCoroutine(Attacks());
             }
         }
@@ -1868,6 +1863,10 @@ namespace FiveKnights.Zemer
                     float signX = Mathf.Sign(gameObject.transform.GetPositionX() - MIDDLE);
                     Vector3 pScale = gameObject.transform.localScale;
                     gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
+                    _anim.PlayAt("Z4AirSweep", 6);
+                    _anim.speed = 1f;
+                    yield return null;
+                    yield return _anim.PlayToEnd();
                     _anim.Play("Z5LandSlide", -1, 0f);
                     yield return null;
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
@@ -2642,7 +2641,7 @@ namespace FiveKnights.Zemer
             yield return new WaitForSeconds(TurnDelay);
         }
 
-        private void Spring(bool isIn, Vector2 pos, float speedSca = 1f)
+        private void Spring(bool isIn, Vector2 pos, float speedSca = 1f, bool parent=false)
         {
             string n = "VapeIn2";
             GameObject go = Instantiate(FiveKnights.preloadedGO[n]);
@@ -2652,6 +2651,11 @@ namespace FiveKnights.Zemer
             fsm.GetAction<Wait>("State 1", 0).time = 0f;
             go.transform.position = pos;
             go.SetActive(true);
+
+            if (parent)
+            {
+                go.transform.parent = transform;
+            }
         }
 
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
