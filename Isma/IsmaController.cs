@@ -47,12 +47,13 @@ namespace FiveKnights.Isma
         private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
         private readonly float GROUND_Y = 5.9f;
         
-        private const int MAX_HP = 1400;
+        private const int MAX_HP = 1250;
         private const int WALL_HP = 950;
         private const int SPIKE_HP = 600;
-        private const int MAX_HP_DUO = 1600;
-        private const int WALL_HP_DUO = 1100;
-        
+        private const int MAX_HP_DUO = 1800;
+        private const int WALL_HP_DUO = 1300;
+        private const int SPIKE_HP_DUO = 700;
+
         private const float IDLE_TIME = 0f; //0.1f;
         private const int GulkaSpitEnemyDamage = 20;
         public static float offsetTime;
@@ -399,29 +400,33 @@ namespace FiveKnights.Isma
             _ddFsm.GetAction<SendEventByName>("After Throw?", 0).delay = 0.2f;
             _ddFsm.InsertAction("After Throw?", _ddFsm.GetAction<Tk2dPlayAnimation>("Idle", 0), 0);
 
+            // Mark balls thrown by WD
+            _ddFsm.InsertMethod("Throw 1", () => _ddFsm.FsmVariables.FindFsmGameObject("Dung Ball").Value.name = "Ogrim Thrown Ball", 2);
+
             // Increase delay after ground slam
             _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
 
             // WD rolls before using Ground Slam if in the middle of the arena
-            _ddFsm.InsertMethod("G Slam Antic", () =>
-            {
-                if(!ogrimEvaded && (FastApproximately(dd.transform.GetPositionX(), 76f, 4f) || 
-                    (dd.transform.GetPositionX() < 72f && dd.transform.GetPositionX() - _target.transform.GetPositionX() > 0f) || 
+            void EvadeBeforeAttack()
+			{
+                if(!ogrimEvaded && (FastApproximately(dd.transform.GetPositionX(), 76f, 4f) ||
+                    (dd.transform.GetPositionX() < 72f && dd.transform.GetPositionX() - _target.transform.GetPositionX() > 0f) ||
                     (dd.transform.GetPositionX() > 80f && dd.transform.GetPositionX() - _target.transform.GetPositionX() < 0f)))
-				{
+                {
                     _ddFsm.SetState("Evade Dir");
                     _ddFsm.GetAction<SendRandomEvent>("After Evade", 0).weights[0].Value = 0f;
                     ogrimEvaded = true;
                 }
-				else
-				{
+                else
+                {
                     _ddFsm.GetAction<SendRandomEvent>("After Evade", 0).weights[0].Value = 0.5f;
                     ogrimEvaded = false;
                 }
-            }, 0);
+            }
+            _ddFsm.InsertMethod("G Slam Antic", EvadeBeforeAttack, 0);
 
-			// WD burrows for longer
-			_ddFsm.GetAction<RandomFloat>("Timer", 1).min.Value = 2.1f;
+            // WD burrows for longer
+            _ddFsm.GetAction<RandomFloat>("Timer", 1).min.Value = 2.1f;
 			_ddFsm.GetAction<RandomFloat>("Timer", 1).max.Value = 2.1f;
 
             // Make WD bounce around the arena at a consistent speed
@@ -430,11 +435,15 @@ namespace FiveKnights.Isma
                 _ddFsm.FsmVariables.FindFsmFloat("Throw Speed Crt").Value = 12f;
             });
 
-            // Add anticheese to bounce by adding to counter when knight hits WD
+            // Add anticheese to bounce by adding to counter when knight hits WD and make him dive if his vertical velocity is around 0f
             _ddFsm.InsertMethod("Ball Hit Up", () =>
             {
                 _ddFsm.FsmVariables.FindFsmInt("Bounces").Value--;
             }, 0);
+            _ddFsm.InsertMethod("RJ In Air", () =>
+            {
+                _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value = FastApproximately(dd.GetComponent<Rigidbody2D>().velocity.y, 0f, 2f);
+            }, 8);
             #endregion
 
             // Dung Strike - Always
@@ -519,7 +528,6 @@ namespace FiveKnights.Isma
             if(!startedOgrimRage && !startedIsmaRage)
             {
                 yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
-                preventDamage = true;
                 if(onlyIsma)
                 {
                     yield return new WaitWhile(() => _attacking);
@@ -551,7 +559,6 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.1f);
                 killAllMinions = false;
 
-                preventDamage = false;
                 _wallActive = true;
 
                 wallR = Instantiate(FiveKnights.preloadedGO["Wall"]);
@@ -572,9 +579,8 @@ namespace FiveKnights.Isma
                 if(hPos.x > RIGHT_X - 6f) _target.transform.position = new Vector2(RIGHT_X - 6f, hPos.y);
                 else if(hPos.x < LEFT_X + 6f) _target.transform.position = new Vector2(LEFT_X + 6f, hPos.y);
 
-                yield return new WaitWhile(() => _healthPool > SPIKE_HP);
+                yield return new WaitWhile(() => _healthPool > (onlyIsma ? SPIKE_HP : SPIKE_HP_DUO));
 
-                preventDamage = true;
                 if(onlyIsma)
                 {
                     yield return new WaitWhile(() => _attacking);
@@ -593,7 +599,6 @@ namespace FiveKnights.Isma
                     yield return new WaitWhile(() => spawningWalls);
                     yield return new WaitForSeconds(1f);
                 }
-                preventDamage = false;
 
                 foreach(GameObject wall in new[] { wallR, wallL })
                 {
@@ -693,17 +698,21 @@ namespace FiveKnights.Isma
                 }
                 else if(spawningWalls)
                 {
-                    for(int i = 0; i < 8; i++)
+                    for(int i = 0; i < 3; i++)
                     {
-                        Vector2 targetPos = new Vector2(i < 4 ? LEFT_X + 2f * (i + 1) : RIGHT_X + 2f * (i - 8), 7.3f);
-                        Vector2 path = targetPos - (Vector2)bomb.transform.position;
-                        float rot = Mathf.Atan2(path.y, path.x);
+                        for(int j = 0; j < 8; j++)
+                        {
+                            Vector2 targetPos = new Vector2(j < 4 ? LEFT_X + 2f * (j + 1) : RIGHT_X + 2f * (j - 8), 7.3f);
+                            Vector2 path = targetPos - (Vector2)bomb.transform.position;
+                            float rot = Mathf.Atan2(path.y, path.x);
 
-                        GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
-                        localSeed.name = "VineWallSeed";
-                        localSeed.SetActive(true);
-                        localSeed.GetComponent<Rigidbody2D>().velocity =
-                            new Vector2(30f * Mathf.Cos(rot), 30f * Mathf.Sin(rot));
+                            GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
+                            localSeed.name = "VineWallSeed";
+                            localSeed.SetActive(true);
+                            localSeed.GetComponent<Rigidbody2D>().velocity =
+                                new Vector2(30f * Mathf.Cos(rot), 30f * Mathf.Sin(rot));
+                        }
+                        yield return new WaitForSeconds(0.1f);
                     }
                     spawningWalls = false;
                 }
@@ -791,7 +800,7 @@ namespace FiveKnights.Isma
                 float rotD = rot * Mathf.Rad2Deg;
 
                 // Will check 25 degrees on either side of her
-                if(rotD is < -65f or > 65f)
+                if(rotD is < -60f or > 60f)
                 {
                     _anim.enabled = true;
                     spike.SetActive(false);
@@ -1105,7 +1114,7 @@ namespace FiveKnights.Isma
                     IEnumerator TrackBall()
                     {
                         Rigidbody2D rb = go.GetComponent<Rigidbody2D>();
-                        while(go != null && go.transform.position.y < 16f)
+                        while(go != null && go.transform.position.y < 16f && go.transform.position.y > 13f)
                         {
                             Vector3 scale = transform.localScale;
                             // Ball moving right, so flip sprite
@@ -1190,11 +1199,17 @@ namespace FiveKnights.Isma
         private GameObject LocateBall()
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
-            GameObject[] balls = FindObjectsOfType<GameObject>().Where(x =>
-                x.name.Contains("Dung Ball") && x.activeSelf &&
-                x.transform.GetPositionY() > 13f &&
-				x.GetComponent<Rigidbody2D>().velocity.y > 0f &&
-				(tk.CurrentClip.name.Contains("Throw") || FastApproximately(x.transform.GetPositionX(), _target.transform.GetPositionX(), 7.5f))).ToArray();
+            bool TestBall(GameObject x)
+			{
+                if(x.GetComponent<Rigidbody2D>() == null) return false;
+                if(!x.activeSelf || !(x.transform.GetPositionY() > 13f) || !(x.GetComponent<Rigidbody2D>().velocity.y > 0f)) return false;
+                if(tk.CurrentClip.name.Contains("Throw") && x.name.Contains("Ogrim Thrown Ball")) return true;
+                if(tk.CurrentClip.name.Contains("Erupt") && x.name.Contains("Dung Ball") && 
+                    _ddFsm.FsmVariables.FindFsmInt("Rages").Value > 0 &&
+                    FastApproximately(x.transform.GetPositionX(), _target.transform.GetPositionX(), 7.5f)) return true;
+                return false;
+			}
+            GameObject[] balls = FindObjectsOfType<GameObject>().Where(x => TestBall(x)).ToArray();
             if(balls.Length > 0) return balls[_rand.Next(0, balls.Length)];
             return null;
         }
@@ -1203,6 +1218,8 @@ namespace FiveKnights.Isma
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             Rigidbody2D rb = dd.GetComponent<Rigidbody2D>();
+            // Remove previous method that allows Ogrim to dive at any height
+            _ddFsm.RemoveAction("RJ In Air", 8);
             // Prevent Ogrim from diving without Isma hitting him
             _ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = false;
             // Disable Ogrim's dive velocity change so we can add our own
@@ -1735,7 +1752,13 @@ namespace FiveKnights.Isma
             burrow.SendEvent("BURROW END");
             foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
             {
-                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit") pillar.SetState("Break");
+                if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit")
+                {
+                    pillar.SetState("Dormant");
+                    pillar.FsmVariables.FindFsmGameObject("Chunks").Value.GetComponent<ParticleSystem>().Play();
+                    yield return null;
+                }
+                pillar.enabled = false;
             }
 
             yield return new WaitForSeconds(1f);
@@ -1954,7 +1977,12 @@ namespace FiveKnights.Isma
             if(self.gameObject.name.Contains("Isma") && hitInstance.Source.name.Contains("Spike Ball"))
             {
                 hitInstance.DamageDealt = GulkaSpitEnemyDamage;
-                if(_hm.hp <= 0) _hm.hp = 1;
+                if(_hm.hp - (int)(hitInstance.DamageDealt * hitInstance.Multiplier) <= 0)
+                {
+                    _hm.hp = 2;
+                    hitInstance.DamageDealt = 1;
+                    hitInstance.Multiplier = 1f;
+                }
             }
             DoTakeDamage(self.gameObject, (int)(hitInstance.DamageDealt * hitInstance.Multiplier), hitInstance.Direction);
             if(self.gameObject.name.Contains("White Defender"))
@@ -1984,13 +2012,13 @@ namespace FiveKnights.Isma
                     StartCoroutine(SpawnWalls());
                     StartCoroutine(AttackChoice());
                 }
-                if(!preventDamage) _healthPool -= damage;
+                if(!preventDamage) _healthPool -= spawningWalls ? damage / 2 : damage;
                 _hitEffects.RecieveHitEffect(dir);
                 isIsmaHitLast = true;
             }
             else if (tar.name.Contains("White Defender"))
             {
-                if(!preventDamage) _healthPool -= damage;
+                if(!preventDamage) _healthPool -= spawningWalls ? damage / 2 : damage;
                 isIsmaHitLast = false;
             }
         }

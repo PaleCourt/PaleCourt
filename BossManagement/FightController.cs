@@ -82,8 +82,9 @@ namespace FiveKnights
             {
                 foreach (var i in arr)
                 {
-                    FiveKnights.IsmaClips[i] = snd.LoadAsset<AudioClip>(i);
-                    yield return null;
+                    var r = snd.LoadAssetAsync<AudioClip>(i);
+                    yield return r;
+                    FiveKnights.IsmaClips[i] = r.asset as AudioClip;
                 }
             }
             
@@ -179,8 +180,9 @@ namespace FiveKnights
             {
                 foreach(var i in arr)
                 {
-                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
-                    yield return null;
+                    var r = snd.LoadAssetAsync<AudioClip>(i);
+                    yield return r;
+                    FiveKnights.Clips[i] = r.asset as AudioClip;
                 }
             }
             StartCoroutine(LoadSlow());
@@ -216,8 +218,9 @@ namespace FiveKnights
             {
                 foreach(var i in arr)
                 {
-                    FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
-                    yield return null;
+                    var r = snd.LoadAssetAsync<AudioClip>(i);
+                    yield return r;
+                    FiveKnights.Clips[i] = r.asset as AudioClip;
                 }
             }
             StartCoroutine(LoadSlow());

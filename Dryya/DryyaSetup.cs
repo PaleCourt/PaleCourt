@@ -14,7 +14,7 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1700;
+        private int _hp = 1500;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
@@ -254,7 +254,6 @@ namespace FiveKnights.Dryya
 
         private void SpawnShockwaves(float vertScale, float speed, int damage)
         {
-            Log("Spawning shockwaves");
             bool[] facingRightBools = {false, true};
             Vector2 pos = transform.position;
             foreach (bool facingRight in facingRightBools)

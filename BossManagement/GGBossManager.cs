@@ -257,7 +257,7 @@ namespace FiveKnights.BossManagement
                 
                 yield return new WaitWhile(() => dc != null);
 
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(3f);
 
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
@@ -280,15 +280,7 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(1.5f);
 
                 // Silhouette is handled in Zemer code now
-                //GameObject zemSil = GameObject.Find("Silhouette Zemer");
-                //zemSil.transform.localScale *= 1.2f;
                 ZemerController zc = FightController.Instance.CreateZemer();
-                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_1"];
-                //yield return new WaitForSeconds(0.1f);
-                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_2"];
-                //yield return new WaitForSeconds(0.1f);
-                //sr.sprite = ArenaFinder.Sprites["Zem_Sil_3"];
-                //yield return new WaitForSeconds(0.1f);
                 GameObject zem = zc.gameObject;
 
                 yield return new WaitForSeconds(0.5f);
@@ -359,8 +351,10 @@ namespace FiveKnights.BossManagement
                 {
                     pillar.SetState("Dormant");
                     pillar.FsmVariables.FindFsmGameObject("Chunks").Value.GetComponent<ParticleSystem>().Play();
+                    yield return null;
                 }
-			}
+                pillar.enabled = false;
+            }
 
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
@@ -379,6 +373,10 @@ namespace FiveKnights.BossManagement
             // WD scream
             burrow.enabled = true;
             burrow.SendEvent("BURROW END");
+            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
+            {
+                pillar.enabled = true;
+            }
             // This is to prevent WD from entering any other state after Stun Recover
             _fsm.InsertMethod("Idle", 1, () => _fsm.SetState("Rage Roar"));
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
@@ -604,9 +602,26 @@ namespace FiveKnights.BossManagement
 
             AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
 
-            FiveKnights.preloadedGO["Hegemol"] = hegemolBundle.LoadAsset<GameObject>("Hegemol");
-            FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-            FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
+            if(CustomWP.boss == CustomWP.Boss.All)
+            {
+                var r1 = hegemolBundle.LoadAssetAsync<GameObject>("Hegemol");
+                var r2 = hegemolBundle.LoadAssetAsync<GameObject>("Mace");
+                var r3 = hegemolBundle.LoadAssetAsync<GameObject>("Debris");
+
+                yield return r1;
+                yield return r2;
+                yield return r3;
+
+                FiveKnights.preloadedGO["Hegemol"] = r1.asset as GameObject;
+                FiveKnights.preloadedGO["Mace"] = r2.asset as GameObject;
+                FiveKnights.preloadedGO["Debris"] = r3.asset as GameObject;
+            }
+            else
+            {
+                FiveKnights.preloadedGO["Hegemol"] = hegemolBundle.LoadAsset<GameObject>("Hegemol");
+                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
+                FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
+            }
             FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
 
             Log("Finished Loading Hegemol Bundle");
