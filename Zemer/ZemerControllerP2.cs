@@ -986,7 +986,7 @@ namespace FiveKnights.Zemer
 
                 _anim.enabled = false;
 
-                yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f);
+                yield return new WaitWhile(() => transform.position.y > GroundY + 4.5f);
 
                 _anim.enabled = true;
 
@@ -1250,7 +1250,7 @@ namespace FiveKnights.Zemer
                 _rb.velocity = new Vector2(65f * Mathf.Cos(rot), 65f * Mathf.Sin(rot));
                 yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f && _anim.GetCurrentFrame() < 4);
                 _anim.enabled = false;
-                yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f);
+                yield return new WaitWhile(() => transform.position.y > GroundY + 4.5f);
                 _anim.enabled = true;
                 yield return null;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.3 && _anim.GetCurrentFrame() < 6);
@@ -2001,7 +2001,7 @@ namespace FiveKnights.Zemer
 
                 yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f && _anim.GetCurrentFrame() < 4 && CheckIfStuck());
                 _anim.enabled = false;
-                yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f && CheckIfStuck());
+                yield return new WaitWhile(() => transform.position.y > GroundY + 4.5f && CheckIfStuck());
                 _anim.enabled = true;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.3 && _anim.GetCurrentFrame() < 6 && CheckIfStuck());
                 _anim.enabled = false;
