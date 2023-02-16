@@ -368,7 +368,7 @@ namespace FiveKnights.Isma
             private IEnumerator Start()
             {
                 hm = finalGulka.GetComponent<HealthManager>();
-                hm.GetComponent<HealthManager>().hp = 30;
+                hm.GetComponent<HealthManager>().hp = 1;
                 RemoveGeo(hm);
                 hm.OnDeath += () =>
                 {
