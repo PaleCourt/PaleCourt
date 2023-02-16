@@ -22,17 +22,29 @@ namespace FiveKnights
         private AttackDirection attackDir = AttackDirection.normal;
         private HeroController _hc = HeroController.instance;
 
+        private void OnEnable()
+        {
+            On.HeroController.CanNailCharge += CancelNailArts;
+        }
+
+        private bool CancelNailArts(On.HeroController.orig_CanNailCharge orig, HeroController self)
+        {
+            if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .17f || !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f)
+            {
+                return false;
+            }
+            else
+            {
+                return orig(self);
+            }
+        }
+
+        private void OnDisable()
+        {
+
+        }
         private void Update()
         {
-            if (InputHandler.Instance.inputActions.attack.WasReleased)
-            {
-                if (!autoSwing)
-                {
-                    autoSwing = true;
-                }
-                else autoSwing = false;
-            }
-
             if (HeroController.instance.vertical_input > Mathf.Epsilon) { attackDir = AttackDirection.upward; }
             else if (HeroController.instance.vertical_input < 0f - Mathf.Epsilon)
             {
@@ -41,14 +53,18 @@ namespace FiveKnights
             }
             else { attackDir = AttackDirection.normal; }
 
-
-            if (autoSwing)
+            if (InputHandler.Instance.inputActions.attack.IsPressed)
             {
-                if (ReflectionHelper.CallMethod<HeroController, bool>(HeroController.instance, "CanAttack"))
+                if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .13f ||
+                    !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .17f)
                 {
-                    HeroController.instance.Attack(attackDir);
+                    if (ReflectionHelper.CallMethod<HeroController, bool>(HeroController.instance, "CanAttack"))
+                    {
+                        HeroController.instance.Attack(attackDir);
+                    }
                 }
             }
+
         }
         
         
