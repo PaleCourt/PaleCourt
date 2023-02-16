@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using FiveKnights.BossManagement;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
+using SFCore.Utils;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights.Isma
@@ -227,7 +228,7 @@ namespace FiveKnights.Isma
 				{
                     GetComponent<HealthManager>().SendDeathEvent();
                 }
-                StartCoroutine(PillarDeath(30f));
+                StartCoroutine(PillarDeath(15f));
             }
 
             private IEnumerator PillarDeath(float delay)
@@ -391,7 +392,8 @@ namespace FiveKnights.Isma
                 {
                     ball.AddComponent<ModifiedSpit>();
                 }
-                //ball.layer = 11;
+                // Prevent hiding
+                fsm.RemoveFsmGlobalTransition("HIDE");
 
                 if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 
