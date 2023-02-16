@@ -47,7 +47,7 @@ namespace FiveKnights.Isma
         private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
         private readonly float GROUND_Y = 5.9f;
         
-        private const int MAX_HP = 1250;
+        private const int MAX_HP = 1200;
         private const int WALL_HP = 950;
         private const int SPIKE_HP = 600;
         private const int MAX_HP_DUO = 1800;
@@ -440,14 +440,21 @@ namespace FiveKnights.Isma
             {
                 _ddFsm.FsmVariables.FindFsmInt("Bounces").Value--;
             }, 0);
-            _ddFsm.InsertMethod("RJ In Air", () =>
-            {
-                _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value = FastApproximately(dd.GetComponent<Rigidbody2D>().velocity.y, 0f, 2f);
-            }, 8);
-            #endregion
+			_ddFsm.GetAction<FloatTestToBool>("RJ In Air", 7).Enabled = false;
+            _ddFsm.InsertCoroutine("RJ In Air", 8, CheckPos);
+            IEnumerator CheckPos()
+			{
+                Rigidbody2D rb = dd.GetComponent<Rigidbody2D>();
+                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
+                    && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
+                    (FastApproximately(rb.velocity.y, 0f, 1f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    startedIsmaRage);
+                _ddFsm.SendEvent("AIR DIVE");
+            }
+			#endregion
 
-            // Dung Strike - Always
-            StartCoroutine(DungStrike());
+			// Dung Strike - Always
+			StartCoroutine(DungStrike());
 
             // Vine Whip - Burrowing
             _ddFsm.InsertMethod("Timer", () =>
@@ -1140,8 +1147,10 @@ namespace FiveKnights.Isma
                     _anim.enabled = false;
                     PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
 
-                    // Wait for the animation to reenable to hit the ball
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                    // Wait for the animation to reenable to hit the ball or if the ball was destroyed right when Isma went to hit it
+                    yield return new WaitWhile(() => go != null && _anim.GetCurrentFrame() < 2);
+                    // Make sure animation is enabled to avoid freezing Isma
+                    _anim.enabled = true;
 
                     // Create ball related objects
                     GameObject squish = gameObject.transform.Find("Squish").gameObject;
@@ -1218,10 +1227,11 @@ namespace FiveKnights.Isma
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
             Rigidbody2D rb = dd.GetComponent<Rigidbody2D>();
-            // Remove previous method that allows Ogrim to dive at any height
+			// Remove previous method that allows Ogrim to dive at any height
+			_ddFsm.GetAction<FloatTestToBool>("RJ In Air", 7).Enabled = true;
             _ddFsm.RemoveAction("RJ In Air", 8);
-            // Prevent Ogrim from diving without Isma hitting him
-            _ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = false;
+			// Prevent Ogrim from diving without Isma hitting him
+			_ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = false;
             // Disable Ogrim's dive velocity change so we can add our own
             _ddFsm.GetAction<SetVelocity2d>("Air Dive", 4).Enabled = false;
             // Disable Ogrim's uncurl animation

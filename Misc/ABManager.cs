@@ -19,7 +19,8 @@ namespace FiveKnights
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
-            Misc, Charms, tk2dDep, CharmUnlock
+            Misc, Charms, tk2dDep, CharmUnlock,
+            Artist
         }
 
         private static string BundleToString(Bundle bd)
@@ -51,6 +52,7 @@ namespace FiveKnights
                 Bundle.Charms => "pureamulets",
                 Bundle.tk2dDep => "blendvertexcolor",
                 Bundle.CharmUnlock => "charmunlock",
+                Bundle.Artist => "artistsbund",
                 _ => ""
             };
         }

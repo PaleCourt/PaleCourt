@@ -14,7 +14,7 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private int Health => phase == 1 ? 350 : (phase == 2 ? 650 : 900);
+        private int Health => phase == 1 ? 650 : (phase == 2 ? 700 : 850);
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
@@ -78,12 +78,11 @@ namespace FiveKnights.Hegemol
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
             _hitFx.enabled = true;
-            _hm.hp = 1000;
+            _hm.hp = 850;
 
             On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
-			On.HeroController.TakeDamage += HeroControllerTakeDamage;
         }
 
 		private IEnumerator Start()
@@ -115,7 +114,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
+            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 70f, _mace.transform.position.z);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
@@ -319,7 +318,7 @@ namespace FiveKnights.Hegemol
                 int debrisAmount = phase == 3 ? 1 + i % 2 : 1;
                 PlayVoiceClip("HGrunt", true, 1f);
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
-                SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 2);
+                SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(debrisAmount, false, 0f));
 
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() == 0);
@@ -427,7 +426,7 @@ namespace FiveKnights.Hegemol
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
 
-                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 2);
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(phase, true, transform.position.x));
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
@@ -445,7 +444,7 @@ namespace FiveKnights.Hegemol
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
 
-                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 2);
+                SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(phase, true, transform.position.x));
                 PlayAudioClip(_ap, "HegAttackHit", 1f);
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
@@ -486,7 +485,7 @@ namespace FiveKnights.Hegemol
             _rb.velocity = Vector2.zero;
             yield return null;
 			PlayAudioClip(_ap, "HegAttackSwing", 2f);
-            SpawnShockwaves(transform.localScale.x > 0f, 5f, 1.5f, 15f, 2);
+            SpawnShockwaves(transform.localScale.x > 0f, 5f, 1.5f, 15f, 1);
 
             // Debris logic
             Vector2 pos = transform.position + Mathf.Sign(transform.localScale.x) * Vector3.right * 5.5f + 2.6f * Vector3.down;
@@ -551,10 +550,10 @@ namespace FiveKnights.Hegemol
 
                 // Spawn shockwaves upon landing if it's past phase 1 and it's the final charge
                 _rb.velocity = Vector2.zero;
-                if(i != 0 && i == phase - 1)
+                if(i == phase - 1)
                 {
-                    SpawnShockwaves(true, 0f, 1.5f, 20f, 2);
-                    SpawnShockwaves(false, 0f, 1.5f, 20f, 2);
+                    SpawnShockwaves(true, 0f, 1.5f, 20f, 1);
+                    SpawnShockwaves(false, 0f, 1.5f, 20f, 1);
                 }
 
                 // Spawn debris that targets the other side of the arena from where he is
@@ -710,8 +709,8 @@ namespace FiveKnights.Hegemol
 
             _anim.Play("Land");
             _rb.velocity = Vector2.zero;
-            SpawnShockwaves(true, 0f, 1.5f, 40f, 2);
-            SpawnShockwaves(false, 0f, 1.5f, 40f, 2);
+            SpawnShockwaves(true, 0f, 1.5f, 40f, 1);
+            SpawnShockwaves(false, 0f, 1.5f, 40f, 1);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             PlayAudioClip(_ap, "HegLand", 1f);
             yield return null;
@@ -963,12 +962,6 @@ namespace FiveKnights.Hegemol
             orig(self, attackDirection, attackType, ignoreEvasion);
         }
 
-        private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, CollisionSide damageSide, int damageAmount, int hazardType)
-        {
-            if(go.name.Contains("Shockwave") && damageAmount > 0) damageAmount = 2;
-            orig(self, go, damageSide, damageAmount, hazardType);
-        }
-
         private IEnumerator Die()
         {
             Log("Hegemol Death");
@@ -1151,7 +1144,6 @@ namespace FiveKnights.Hegemol
             On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
-            On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
 
         private void Log(object message)

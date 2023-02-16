@@ -256,7 +256,7 @@ namespace FiveKnights
                 {
                     foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
                     {
-                        i.gameObject.AddComponent<DamageHero>().damageDealt = 2;
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                         i.gameObject.layer = 22;
                         i.gameObject.AddComponent<Tink>();
                     }
@@ -268,7 +268,7 @@ namespace FiveKnights
                 {
                     foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
                     {
-                        i.gameObject.AddComponent<DamageHero>().damageDealt = 2;
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                         i.gameObject.layer = 22;
                         i.gameObject.AddComponent<Tink>();
                     }
