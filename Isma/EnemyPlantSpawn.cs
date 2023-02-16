@@ -368,7 +368,7 @@ namespace FiveKnights.Isma
             private IEnumerator Start()
             {
                 hm = finalGulka.GetComponent<HealthManager>();
-                hm.GetComponent<HealthManager>().hp = 1;
+                hm.GetComponent<HealthManager>().hp = 30;
                 RemoveGeo(hm);
                 hm.OnDeath += () =>
                 {
@@ -395,7 +395,7 @@ namespace FiveKnights.Isma
                 // Prevent hiding
                 fsm.RemoveFsmGlobalTransition("HIDE");
 
-                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
+                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 0.8f;
 
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();
