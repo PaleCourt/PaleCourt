@@ -48,8 +48,8 @@ namespace FiveKnights.Isma
         private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
         private readonly float GROUND_Y = 5.9f;
         
-        private const int MAX_HP = 1400;
-        private const int WALL_HP = 1000;
+        private const int MAX_HP = 1700;
+        private const int WALL_HP = 1100;
         private const int SPIKE_HP = 600;
         private const int MAX_HP_DUO = 1800;
         private const int WALL_HP_DUO = 1300;
@@ -1148,7 +1148,7 @@ namespace FiveKnights.Isma
 
                     // Freeze animation on the first frame
                     Log("Disabling animation");
-                    yield return new WaitForEndOfFrame();
+                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                     _anim.enabled = false;
 
                     // Start tracking the ball

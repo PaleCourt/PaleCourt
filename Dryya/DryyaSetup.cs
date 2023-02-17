@@ -19,7 +19,7 @@ namespace FiveKnights.Dryya
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
-        private float SlamY = (OWArenaFinder.IsInOverWorld) ? 96.5f : 6f;
+        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : 5.9f;
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -31,6 +31,7 @@ namespace FiveKnights.Dryya
         private SpriteFlash _spriteFlash;
         private GameObject _corpse;
         private tk2dSprite _sprite;
+        private GameObject _ap;
 
         private GameObject _diveShockwave;
         private GameObject _ogrim;
@@ -217,6 +218,7 @@ namespace FiveKnights.Dryya
         private void GetComponents()
         {
             _sprite = GetComponent<tk2dSprite>();
+            _ap = transform.Find("Audio Player").gameObject;
             EnemyDeathEffects deathEffects = GetComponent<EnemyDeathEffects>();
             deathEffects.corpseSpawnPoint = transform.position + Vector3.up * 2;
             
@@ -314,6 +316,20 @@ namespace FiveKnights.Dryya
                 _elegyBeams = new List<ElegyBeam>();
             }, 1);
             _control.InsertCoroutine("Beams Slash End", 1, ActivateBeams);
+
+            // Do a single elegy beam when doing the cheeky slash
+            _control.InsertMethod("Cheeky Collider 1", () =>
+            {
+                GameObject beam = Instantiate(FiveKnights.preloadedGO["Beams"]);
+
+                beam.transform.localScale = new Vector3(beam.transform.localScale.x * Random.Range(0, 2) == 0 ? -1f : 1f,
+                    beam.transform.localScale.y * Random.Range(0, 2) == 0 ? -1f : 1f,
+                    beam.transform.localScale.z);
+
+                ElegyBeam elegy = beam.AddComponent<ElegyBeam>();
+                elegy.offset = Vector2.zero;
+                StartCoroutine(ActivateSingleBeam(elegy));
+            }, 1);
         }
 
         private IEnumerator ActivateBeams()
@@ -321,9 +337,16 @@ namespace FiveKnights.Dryya
             foreach(ElegyBeam elegy in _elegyBeams)
             {
                 elegy.activate = true;
-                elegy.PlayAudio(_control.FsmVariables.FindFsmObject("Beams Clip").Value as AudioClip, 0.85f, 1.15f, 0.1f);
+                PlayAudio("Beams Clip", 0.85f, 1.15f, 0.1f);
                 yield return new WaitForSeconds(0.05f);
             }
+        }
+
+        private IEnumerator ActivateSingleBeam(ElegyBeam elegy)
+		{
+            yield return new WaitForSeconds(0.5f);
+            elegy.activate = true;
+            PlayAudio("Beams Clip", 0.85f, 1.15f, 0.1f);
         }
 
         private void ModifySuper()
@@ -382,7 +405,20 @@ namespace FiveKnights.Dryya
 
 		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float delay = 0f)
 		{
-            this.PlayAudio(_control.Fsm.GetFsmObject(clip).Value as AudioClip, minPitch, maxPitch, delay);
+            IEnumerator Play()
+            {
+                AudioClip audioClip= _control.Fsm.GetFsmObject(clip).Value as AudioClip;
+                yield return new WaitForSeconds(delay);
+                GameObject audioPlayerInstance = _ap.Spawn(transform.position, Quaternion.identity);
+                AudioSource audio = audioPlayerInstance.GetComponent<AudioSource>();
+                audio.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+                audio.pitch = Random.Range(minPitch, maxPitch);
+                audio.volume = 1f;
+                audio.PlayOneShot(audioClip);
+                yield return new WaitForSeconds(audioClip.length + 3f);
+                Destroy(audioPlayerInstance);
+            }
+            GameManager.instance.StartCoroutine(Play());
         }
 
         private void OnDestroy()
