@@ -176,7 +176,7 @@ namespace FiveKnights
 
         private bool FixDoubleJump(On.HeroController.orig_CanDoubleJump orig, HeroController self)
         {
-            return self.playerData.GetBool("hasDoubleJump") && !self.controlReqlinquished && ReflectionHelper.GetField<HeroController, bool>(self, "doubleJumped") && !self.inAcid && self.hero_state != ActorStates.no_input 
+            return self.playerData.GetBool("hasDoubleJump") && !self.controlReqlinquished && !ReflectionHelper.GetField<HeroController, bool>(self, "doubleJumped") && !self.inAcid && self.hero_state != ActorStates.no_input 
                 && self.hero_state != ActorStates.hard_landing && self.hero_state != ActorStates.dash_landing && !self.cState.dashing && !self.cState.wallSliding &&
                 !self.cState.backDashing && /*!self.cState.attacking &&*/ !self.cState.bouncing && !self.cState.shroomBouncing && !self.cState.onGround;
         }
