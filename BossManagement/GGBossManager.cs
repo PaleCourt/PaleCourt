@@ -64,9 +64,8 @@ namespace FiveKnights.BossManagement
 
                 yield return LoadIsmaBundle();
                 dd.SetActive(false);
-                FightController.Instance.CreateIsma();
+                FightController.Instance.CreateIsma(true);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
-                ic.onlyIsma = true;
                 yield return new WaitWhile(() => ic != null);
                 if (CustomWP.wonLastFight)
                 {
@@ -349,11 +348,14 @@ namespace FiveKnights.BossManagement
 			{
                 if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit")
                 {
+                    pillar.gameObject.GetComponent<MeshRenderer>().enabled = false;
                     pillar.SetState("Dormant");
                     pillar.FsmVariables.FindFsmGameObject("Chunks").Value.GetComponent<ParticleSystem>().Play();
-                    yield return null;
                 }
-                pillar.enabled = false;
+                else
+				{
+                    pillar.enabled = false;
+                }
             }
 
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
@@ -361,7 +363,7 @@ namespace FiveKnights.BossManagement
 
             // Delay Isma appearing slightly
             yield return new WaitForSeconds(1f);
-            FightController.Instance.CreateIsma();
+            FightController.Instance.CreateIsma(false);
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
 
             // After Isma falls down

@@ -381,7 +381,7 @@ namespace FiveKnights
             var sr = isma.GetComponent<SpriteRenderer>();
             sr.material = FiveKnights.Materials["flash"];
 
-            isma.AddComponent<IsmaController>();
+            isma.AddComponent<IsmaController>().onlyIsma = false;
             isma.SetActive(false);
             
             Log("Done creating Isma");

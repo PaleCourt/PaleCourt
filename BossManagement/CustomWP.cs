@@ -419,19 +419,27 @@ namespace FiveKnights
             switch(prevBoss)
             {
                 case Boss.Isma:
-                    plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    if(FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked)
+					{
+                        plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Left");
+                    }
+                    else plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
                     break;
                 case Boss.Ogrim:
-                    plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Right");
                     break;
                 case Boss.Dryya:
                     plaque = GameObject.Find("GG_Statue_Dryya").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
                     break;
                 case Boss.Ze:
-                    plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
+                    {
+                        plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Left");
+                    }
+                    else plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
                     break;
                 case Boss.Mystic:
-                    plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
+                    plaque = GameObject.Find("GG_Statue_Zemer").Find("Base").Find("Plaque").Find("Plaque_Trophy_Right");
                     break;
                 case Boss.Hegemol:
                     plaque = GameObject.Find("GG_Statue_Hegemol").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");

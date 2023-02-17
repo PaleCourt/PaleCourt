@@ -114,7 +114,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 70f, _mace.transform.position.z);
+            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 80f, _mace.transform.position.z);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
