@@ -360,6 +360,7 @@ namespace FiveKnights.BossManagement
 
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
+            burrow.enabled = false;
 
             // Delay Isma appearing slightly
             yield return new WaitForSeconds(1f);
@@ -373,12 +374,6 @@ namespace FiveKnights.BossManagement
             yield return null;
 
             // WD scream
-            burrow.enabled = true;
-            burrow.SendEvent("BURROW END");
-            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
-            {
-                pillar.enabled = true;
-            }
             // This is to prevent WD from entering any other state after Stun Recover
             _fsm.InsertMethod("Idle", 1, () => _fsm.SetState("Rage Roar"));
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
@@ -386,6 +381,11 @@ namespace FiveKnights.BossManagement
             _fsm.RemoveAction("Idle", 1);
             dd.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
             PlayerData.instance.isInvincible = false;
+            burrow.enabled = true;
+            foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
+            {
+                pillar.enabled = true;
+            }
             yield return new WaitWhile(() => !_fsm.ActiveStateName.Contains("Tunneling"));
             yield return new WaitWhile(() => ic != null);
 

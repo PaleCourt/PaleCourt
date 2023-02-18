@@ -219,6 +219,7 @@ namespace FiveKnights.Isma
 			On.HealthManager.Die += HealthManagerDie;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
+			On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter += MarkDungBalls;
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
             _hm.hp = _hmDD.hp = (onlyIsma ? MAX_HP : MAX_HP_DUO) + 200;
@@ -413,7 +414,7 @@ namespace FiveKnights.Isma
             // WD rolls before using Ground Slam if in the middle of the arena
             void EvadeBeforeAttack()
 			{
-                if(!ogrimEvaded && (FastApproximately(dd.transform.GetPositionX(), 76f, 4f) ||
+                if(!ogrimEvaded && _wallActive && (FastApproximately(dd.transform.GetPositionX(), 76f, 4f) ||
                     (dd.transform.GetPositionX() < 72f && dd.transform.GetPositionX() - _target.transform.GetPositionX() > 0f) ||
                     (dd.transform.GetPositionX() > 80f && dd.transform.GetPositionX() - _target.transform.GetPositionX() < 0f)))
                 {
@@ -439,25 +440,24 @@ namespace FiveKnights.Isma
                 _ddFsm.FsmVariables.FindFsmFloat("Throw Speed Crt").Value = 12f;
             });
 
-            // Add anticheese to bounce by adding to counter when knight hits WD and make him dive if his vertical velocity is around 0f
+            // Add anticheese to bounce by adding to counter when knight hits WD and make him dive if he's been juggled too long
             _ddFsm.InsertMethod("Ball Hit Up", () =>
             {
                 _ddFsm.FsmVariables.FindFsmInt("Bounces").Value--;
             }, 0);
-			_ddFsm.GetAction<FloatTestToBool>("RJ In Air", 7).Enabled = false;
             _ddFsm.InsertCoroutine("RJ In Air", 8, CheckPos);
             IEnumerator CheckPos()
-			{
+            {
                 yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
                     && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(_rbDD.velocity.y, 0f, 1f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    (FastApproximately(dd.transform.position.y, 14f, 1.5f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 _ddFsm.SendEvent("AIR DIVE");
             }
-			#endregion
+            #endregion
 
-			// Dung Strike - Always
-			StartCoroutine(DungStrike());
+            // Dung Strike - Always
+            StartCoroutine(DungStrike());
 
             // Vine Whip - Burrowing
             _ddFsm.InsertMethod("Timer", () =>
@@ -529,7 +529,7 @@ namespace FiveKnights.Isma
             }, 0);
         }
 
-        private bool _wallActive;
+		private bool _wallActive;
         private GameObject wallR;
         private GameObject wallL;
 
@@ -1111,13 +1111,9 @@ namespace FiveKnights.Isma
                     GameObject go = LocateBall();
                     if(go == null)
 					{
-                        // Track if the player destroyed all possible balls in the previous rage so she can hit a ball in the next wave
-                        if(_ddFsm.FsmVariables.FindFsmInt("Rages").Value % 2 == 1) prevRageBallMissed = true;
                         yield return new WaitForEndOfFrame();
                         continue;
-                    }
-                    // Reset the tracker if she found a ball
-                    prevRageBallMissed = false;
+					}
 
                     // Isma will move along with the ball and face the same direction as it, the animation starts moving left by default
                     IEnumerator TrackBall()
@@ -1136,6 +1132,15 @@ namespace FiveKnights.Isma
                         }
                         // Enable the animation again once the ball falls to the right level
                         _anim.enabled = true;
+                        // Restart tracking while the dung ball is still in motion
+                        while(go != null && go.GetComponent<Renderer>().enabled)
+						{
+                            Vector3 scale = transform.localScale;
+                            if(rb.velocity.x > 0f) transform.localScale = new Vector3(-Mathf.Abs(scale.x), scale.y, scale.z);
+                            else transform.localScale = new Vector3(Mathf.Abs(scale.x), scale.y, scale.z);
+                            transform.position = new Vector3(go.transform.position.x, 16f, transform.position.z);
+                            yield return null;
+                        }
                     }
 
                     // Make sure she's oriented the right way
@@ -1204,20 +1209,23 @@ namespace FiveKnights.Isma
                         yield return new WaitForSeconds(0.1f);
                         Destroy(ballFx);
                     }
+                    else
+					{
+                        if(_ddFsm.FsmVariables.FindFsmInt("Rages").Value % 2 == 1) prevRageBallMissed = true;
+                    }
+                    prevRageBallMissed = false;
                     // Finish playing the animation, then exit
                     Log("After hitting ball");
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
-                    Log("Leaving");
                     _rb.velocity = new Vector2(Mathf.Sign(transform.localScale.x) * 20f, 0f);
                     yield return new WaitWhile(() => _anim.IsPlaying());
-                    Log("Left");
                     _rb.velocity = new Vector2(0f, 0f);
                     ToggleIsma(false);
                     yield return new WaitForEndOfFrame();
                     Log("End of DungStrike");
                 }
                 StartCoroutine(IdleTimer(IDLE_TIME));
-                yield return new WaitForSeconds(0.75f);
+                yield return new WaitForSeconds(0.8f);
             }
         }
 
@@ -1242,9 +1250,10 @@ namespace FiveKnights.Isma
         private IEnumerator OgrimStrike()
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
-			// Remove previous method that allows Ogrim to dive at any height
-			_ddFsm.GetAction<FloatTestToBool>("RJ In Air", 7).Enabled = true;
+			// Remove previous method that allows Ogrim to dive at a lower height when by himself
             _ddFsm.RemoveAction("RJ In Air", 8);
+            // Allow Ogrim to dive at lower height
+            _ddFsm.GetAction<FloatTestToBool>("RJ In Air", 7).float2.Value = 13f;
 			// Prevent Ogrim from diving without Isma hitting him
 			_ddFsm.GetAction<BoolTestMulti>("RJ In Air", 8).Enabled = false;
             // Disable Ogrim's dive velocity change so we can add our own
@@ -1271,7 +1280,7 @@ namespace FiveKnights.Isma
                 yield return WaitToAttack();
                 yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
                     && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(_rbDD.velocity.y, 0f, 1f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    (FastApproximately(dd.transform.position.y, 14f, 1.5f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 if(startedIsmaRage)
                 {
@@ -1295,7 +1304,7 @@ namespace FiveKnights.Isma
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(50f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(60f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -2055,6 +2064,15 @@ namespace FiveKnights.Isma
             }
         }
 
+        private void MarkDungBalls(On.HutongGames.PlayMaker.Actions.ReceivedDamage.orig_OnEnter orig, ReceivedDamage self)
+        {
+            orig(self);
+            if(self.fsmName.Value.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
+            {
+                self.Fsm.GameObject.name = "Player Hit Ball";
+            }
+        }
+
         IEnumerator FlashWhite()
         {
             _sr.material.SetFloat("_FlashAmount", 1f);
@@ -2178,6 +2196,7 @@ namespace FiveKnights.Isma
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
+            On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter -= MarkDungBalls;
 
             var def = FiveKnights.preloadedGO["AcidSpit"].GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
             def.material.mainTexture = acidTexture;
