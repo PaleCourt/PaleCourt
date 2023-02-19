@@ -85,6 +85,7 @@ namespace FiveKnights
                     var r = snd.LoadAssetAsync<AudioClip>(i);
                     yield return r;
                     FiveKnights.IsmaClips[i] = r.asset as AudioClip;
+                    Log("Loaded Isma Clip " + FiveKnights.IsmaClips[i]);
                 }
             }
             

@@ -39,7 +39,7 @@ namespace FiveKnights.Isma
         private PlayMakerFSM _ddFsm;
         private Animator _anim;
         private Texture acidTexture;
-        private List<AudioClip> _randAud;
+        private List<AudioClip> _randAud => FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")).ToList();
         private System.Random _rand;
         private int _healthPool;
         private bool waitForHitStart;
@@ -87,7 +87,6 @@ namespace FiveKnights.Isma
             _dnailReac.enabled = true;
             Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
             _rand = new System.Random();
-            _randAud = new List<AudioClip>();
             _healthPool = 9999; // Just a dummy health value while waiting for onlyIsma to be set
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
@@ -450,7 +449,7 @@ namespace FiveKnights.Isma
             {
                 yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
                     && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(dd.transform.position.y, 14f, 1.5f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 _ddFsm.SendEvent("AIR DIVE");
             }
@@ -1130,7 +1129,8 @@ namespace FiveKnights.Isma
                             transform.position = new Vector3(go.transform.position.x, 16f, transform.position.z);
                             yield return null;
                         }
-                        // Enable the animation again once the ball falls to the right level
+                        // Wait for the animation to be disabled, then reenable the animation again once the ball falls to the right level
+                        yield return new WaitUntil(() => !_anim.enabled);
                         _anim.enabled = true;
                         // Restart tracking while the dung ball is still in motion
                         while(go != null && go.GetComponent<Renderer>().enabled)
@@ -1151,14 +1151,14 @@ namespace FiveKnights.Isma
                     ToggleIsma(true);
                     _anim.Play("BallStrike");
 
+                    // Start tracking the ball
+                    Log("Starting coroutine");
+                    StartCoroutine(TrackBall());
+
                     // Freeze animation on the first frame
                     Log("Disabling animation");
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                     _anim.enabled = false;
-
-                    // Start tracking the ball
-                    Log("Starting coroutine");
-                    StartCoroutine(TrackBall());
                     PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
 
                     // Wait for the animation to reenable to hit the ball or if the ball was destroyed right when Isma went to hit it
@@ -1280,7 +1280,7 @@ namespace FiveKnights.Isma
                 yield return WaitToAttack();
                 yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
                     && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(dd.transform.position.y, 14f, 1.5f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 if(startedIsmaRage)
                 {
@@ -1653,6 +1653,7 @@ namespace FiveKnights.Isma
             _ddFsm.GetAction<SetVelocity2d>("Air Dive", 4).Enabled = true;
             _ddFsm.GetAction<Tk2dPlayAnimationWithEvents>("Air Dive Antic", 1).Enabled = true;
             _ddFsm.GetAction<SetIntValue>("Set Rage", 1).intValue = 999;
+            Coroutine waitToRage = null;
             foreach(string state in new string[] { "Idle", "Move Choice", "After Throw?", "After Evade" })
 			{
                 _ddFsm.InsertMethod(state, () =>
@@ -1662,7 +1663,7 @@ namespace FiveKnights.Isma
                         yield return new WaitWhile(() => dd.GetComponent<tk2dSpriteAnimator>().Playing);
                         _ddFsm.SetState("Rage Roar");
                     }
-                    StartCoroutine(WaitToRage());
+                    if(waitToRage == null) waitToRage = StartCoroutine(WaitToRage());
                 }, 0);
             }
             _ddFsm.GetAction<Tk2dPlayAnimation>("Rage Roar", 1).Enabled = true;
@@ -1771,15 +1772,8 @@ namespace FiveKnights.Isma
             //Make Ogrim get stunned
             if(dd.transform.GetPositionY() < 9.1f) dd.transform.position = new Vector2(dd.transform.GetPositionX(), 9.1f);
             _ddFsm.SetState("Stun Set");
-            yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
-            _ddFsm.enabled = false;
-            yield return new WaitForSeconds(1f);
-            foreach(FsmTransition i in _ddFsm.GetState("Idle").Transitions)
-            {
-                SFCore.Utils.FsmUtil.ChangeTransition(_ddFsm, "Idle", i.EventName, "Timer");
-            }
-            _ddFsm.enabled = true;
-            _ddFsm.SetState("Stun Recover");
+
+            // Disable burrow and pillars
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
             burrow.enabled = true;
             burrow.SendEvent("BURROW END");
@@ -1797,7 +1791,23 @@ namespace FiveKnights.Isma
                 }
             }
 
+            // Wait when he's down and make some changes
+            yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
+            _ddFsm.enabled = false;
+            burrow.enabled = false;
             yield return new WaitForSeconds(1f);
+            foreach(FsmTransition i in _ddFsm.GetState("Idle").Transitions)
+            {
+                SFCore.Utils.FsmUtil.ChangeTransition(_ddFsm, "Idle", i.EventName, "Timer");
+            }
+
+            // Get up
+            _ddFsm.enabled = true;
+            _ddFsm.SetState("Stun Recover");
+
+            // Reenable burrow effect and his fsm
+            yield return new WaitForSeconds(0.5f);
+            burrow.enabled = true;
             yield return new WaitWhile(() => !_ddFsm.ActiveStateName.Contains("Tunneling"));
             _ddFsm.enabled = false;
 
@@ -2173,11 +2183,6 @@ namespace FiveKnights.Isma
                     fi.Name.Contains("Origin") ? new Vector3(-0.2f, 1.3f, 0f) : fi.GetValue(ogrimHitEffects));
             }
             _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
-
-            foreach (AudioClip i in FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")))
-            {
-                _randAud.Add(i);
-            }
         }
 
         private bool FastApproximately(float a, float b, float threshold)
