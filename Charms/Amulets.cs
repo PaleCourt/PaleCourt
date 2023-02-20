@@ -16,8 +16,6 @@ namespace FiveKnights
 {
     internal partial class Amulets : MonoBehaviour
     {
-        private const int SmallShotSpeed = 50;
-
         private const float ATTACK_COOLDOWN_REGULAR = 0.41f; 
         private const float ATTACK_COOLDOWN_32 = 0.25f;
         private const float ATTACK_DURATION_REGULAR = 0.36f;
@@ -57,8 +55,6 @@ namespace FiveKnights
         private const float RUN_SPEED_37_44_L2 = RUN_SPEED_37 * 1.2f;
         private const float RUN_SPEED_31_37_44_L2 = RUN_SPEED_31_37 * 1.2f;
 
-        public static int SmallShotDamage = 20;
-
         private HeroController _hc;// = HeroController.instance;
         private PlayerData _pd;// = PlayerData.instance;
 
@@ -73,8 +69,6 @@ namespace FiveKnights
         private PlayMakerFSM _radControl;
         private GameObject _audioPlayerActor;
         private GameObject _knightBall;
-        private GameObject _plume;
-        private GameObject _smallShot;
 
         private tk2dSpriteAnimator _knightBallAnim;
         private tk2dSpriteAnimator _hcAnim;
@@ -143,8 +137,6 @@ namespace FiveKnights
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
             blast.SetActive(true);
             _blastControl = blast.LocateMyFSM("Control");
-            _plume = _pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value;
-            _smallShot = _pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value;
 
             _radControl = Instantiate(FiveKnights.preloadedGO["Radiance"].LocateMyFSM("Control"), self.transform);
 
@@ -152,6 +144,7 @@ namespace FiveKnights
 
             self.gameObject.AddComponent<PurityTimer>().enabled = false;
             self.gameObject.AddComponent<AutoSwing>().enabled = false;
+            self.gameObject.AddComponent<BoonSpells>().enabled = false;
 
             Log("Waiting for Audio Player Actor...");
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
@@ -202,14 +195,37 @@ namespace FiveKnights
 
             _spellControl.RemoveAction<SpawnObjectFromGlobalPool>("Fireball 1 SmallShots");
             _spellControl.RemoveAction<SpawnObjectFromGlobalPool>("Fireball 2 SmallShots");
-            _spellControl.InsertMethod("Fireball 1 SmallShots", 3, () => CastShootSmallDaggers(-10, 10));
-            _spellControl.InsertMethod("Fireball 2 SmallShots", 3, () => CastShootSmallDaggers(-20, 20));
+            _spellControl.InsertMethod("Fireball 1 SmallShots", 3, () => HeroController.instance.GetComponent<BoonSpells>().CastDaggers(false));
+            _spellControl.InsertMethod("Fireball 2 SmallShots", 3, () => HeroController.instance.GetComponent<BoonSpells>().CastDaggers(true));
 
             _spellControl.CopyState("Quake1 Land", "Q1 Land Plumes");
             _spellControl.CopyState("Q2 Land", "Q2 Land Plumes");
             _spellControl.ChangeTransition("Q2 Land Plumes", "FINISHED", "Quake Finish");
-            _spellControl.InsertCoroutine("Q1 Land Plumes", 0, SpawnPlumes);
-            _spellControl.InsertCoroutine("Q2 Land Plumes", 0, SpawnPlumes);
+            _spellControl.InsertMethod("Q1 Land Plumes", () => HeroController.instance.GetComponent<BoonSpells>().CastPlumes(false), 0);
+            _spellControl.InsertMethod("Q2 Land Plumes", () => HeroController.instance.GetComponent<BoonSpells>().CastPlumes(true), 0);
+
+            _spellControl.CopyState("Scream Antic1", "Scream Antic1 Blasts");
+            _spellControl.CopyState("Scream Burst 1", "Scream Burst 1 Blasts");
+            _spellControl.CopyState("Scream Antic2", "Scream Antic2 Blasts");
+            _spellControl.CopyState("Scream Burst 2", "Scream Burst 2 Blasts");
+            _spellControl.ChangeTransition("Scream Antic1 Blasts", "FINISHED", "Scream Burst 1 Blasts");
+            _spellControl.ChangeTransition("Scream Antic2 Blasts", "FINISHED", "Scream Burst 2 Blasts");
+
+            _spellControl.RemoveAction<AudioPlay>("Scream Antic1 Blasts");
+            _spellControl.RemoveAction<CreateObject>("Scream Burst 1 Blasts");
+            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 1 Blasts");
+            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 1 Blasts");
+            _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
+            _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
+            _spellControl.InsertMethod("Scream Burst 1 Blasts", 0, () => HeroController.instance.GetComponent<BoonSpells>().CastBlasts(false));
+
+            _spellControl.RemoveAction<AudioPlay>("Scream Antic2 Blasts");
+            _spellControl.RemoveAction<CreateObject>("Scream Burst 2 Blasts");
+            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 2 Blasts");
+            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 2 Blasts");
+            _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
+            _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
+            _spellControl.InsertMethod("Scream Burst 2 Blasts", 0, () => HeroController.instance.GetComponent<BoonSpells>().CastBlasts(true));
 
             _spellControl.CopyState("Focus", "Focus Blast");
             _spellControl.CopyState("Focus Heal", "Focus Heal Blast");
@@ -221,120 +237,8 @@ namespace FiveKnights
             _spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
             _spellControl.InsertMethod("Cancel All", 0, CancelBlast);
 
-            _spellControl.CopyState("Scream Antic1", "Scream Antic1 Blasts");
-            _spellControl.CopyState("Scream Burst 1", "Scream Burst 1 Blasts");
-            _spellControl.CopyState("Scream Antic2", "Scream Antic2 Blasts");
-            _spellControl.CopyState("Scream Burst 2", "Scream Burst 2 Blasts");
-            _spellControl.ChangeTransition("Scream Antic1 Blasts", "FINISHED", "Scream Burst 1 Blasts");
-            _spellControl.ChangeTransition("Scream Antic2 Blasts", "FINISHED", "Scream Burst 2 Blasts");
-
             _spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
             _spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
-
-            _spellControl.RemoveAction<AudioPlay>("Scream Antic1 Blasts");
-            _spellControl.RemoveAction<CreateObject>("Scream Burst 1 Blasts");
-            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 1 Blasts");
-            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 1 Blasts");
-            _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
-            _spellControl.RemoveAction<SendEventByName>("Scream Burst 1 Blasts");
-            _spellControl.InsertCoroutine("Scream Burst 1 Blasts", 0, () => UpCastScreamBlasts(2));
-
-            _spellControl.RemoveAction<AudioPlay>("Scream Antic2 Blasts");
-            _spellControl.RemoveAction<CreateObject>("Scream Burst 2 Blasts");
-            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 2 Blasts");
-            _spellControl.RemoveAction<ActivateGameObject>("Scream Burst 2 Blasts");
-            _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
-            _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
-            _spellControl.InsertCoroutine("Scream Burst 2 Blasts", 0, () => UpCastScreamBlasts(4));
-        }
-
-        private void CastShootSmallDaggers(int angleMin, int angleMax)
-        {
-            for (int angle = angleMin; angle <= angleMax; angle += 10)
-            {
-                GameObject smallShot =
-                    Instantiate(_smallShot, HeroController.instance.transform.position, Quaternion.identity);
-                smallShot.SetActive(true);
-                smallShot.layer = 17;
-                Destroy(smallShot.GetComponent<DamageHero>());
-                Destroy(smallShot.LocateMyFSM("Control"));
-                if (angle != 0) Destroy(smallShot.GetComponent<AudioSource>());
-                smallShot.FindGameObjectInChildren("Dribble L").layer = 9;
-                smallShot.FindGameObjectInChildren("Glow").layer = 9;
-                smallShot.FindGameObjectInChildren("Beam").layer = 9;
-
-                /*DamageEnemies damageEnemies = smallShot.AddComponent<DamageEnemies>();
-                damageEnemies.enabled = true;
-                damageEnemies.attackType = AttackTypes.Spell;
-                damageEnemies.ignoreInvuln = false;
-                damageEnemies.damageDealt = 40;*/
-
-                Rigidbody2D rb = smallShot.GetComponent<Rigidbody2D>();
-                rb.isKinematic = true;
-                float xVel = SmallShotSpeed * Mathf.Cos(Mathf.Deg2Rad * angle) * -HeroController.instance.transform.localScale.x;
-                float yVel = SmallShotSpeed * Mathf.Sin(Mathf.Deg2Rad * angle);
-                rb.velocity = new Vector2(xVel, yVel);
-                smallShot.AddComponent<SmallShot>();
-                Destroy(smallShot, 5);
-            }
-        }
-
-        private IEnumerator UpCastScreamBlasts(int numBlasts)
-        {
-            List<GameObject> blasts = new List<GameObject>();
-            GameObject blastMain = Instantiate
-            (
-                FiveKnights.preloadedGO["Blast"],
-                HeroController.instance.transform.position + Vector3.up * 4.0f,
-                Quaternion.identity
-            );
-            blastMain.SetActive(true);
-            blasts.Add(blastMain);
-            Destroy(blastMain.FindGameObjectInChildren("hero_damager"));
-            Animator anim = blastMain.GetComponent<Animator>();
-            int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
-            anim.PlayInFixedTime(hash, -1, 0.8f);
-            CircleCollider2D blastCollider = blastMain.AddComponent<CircleCollider2D>();
-            blastCollider.radius = 2.5f;
-            blastCollider.isTrigger = true;
-            DamageEnemies damageEnemies = blastMain.AddComponent<DamageEnemies>();
-            damageEnemies.damageDealt = 30;
-            damageEnemies.attackType = AttackTypes.Spell;
-            damageEnemies.ignoreInvuln = false;
-            damageEnemies.enabled = true;
-            AudioPlayerOneShotSingle("Burst", 1.2f, 1.5f);
-
-            yield return new WaitForSeconds(0.1f);
-
-            for (int i = 0; i < numBlasts; i++)
-            {
-                GameObject blast = Instantiate
-                (
-                    FiveKnights.preloadedGO["Blast"],
-                    HeroController.instance.transform.position + Vector3.up * Random.Range(4, 10) + Vector3.right * Random.Range(-6, 6),
-                    Quaternion.identity
-                );
-                blast.SetActive(true);
-                blasts.Add(blast);
-                Destroy(blast.FindGameObjectInChildren("hero_damager"));
-                anim = blast.GetComponent<Animator>();
-                anim.PlayInFixedTime(hash, -1, 0.75f);
-                blastCollider = blastMain.AddComponent<CircleCollider2D>();
-                blastCollider.radius = 2.5f;
-                blastCollider.isTrigger = true;
-                damageEnemies = blast.AddComponent<DamageEnemies>();
-                damageEnemies.damageDealt = 30;
-                damageEnemies.attackType = AttackTypes.Spell;
-                damageEnemies.ignoreInvuln = false;
-                damageEnemies.enabled = true;
-                AudioPlayerOneShotSingle("Burst", 1.2f, 1.5f);
-                yield return new WaitForSeconds(0.1f);
-            }
-
-            foreach (GameObject blast in blasts)
-            {
-                Destroy(blast);
-            }
         }
 
         private void ModifyFuryForAbyssalBloom()
@@ -405,28 +309,7 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
             }
 
-            if (FiveKnights.Instance.SaveSettings.equippedCharms[2])
-            {
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2 Blasts");
-
-                _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Q1 Land Plumes");
-                _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land Plumes");
-
-                _spellControl.ChangeTransition("Level Check", "LEVEL 1", "Fireball 1 SmallShots");
-                _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2 SmallShots");
-            }
-            else
-            {
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1");
-                _spellControl.ChangeTransition("Level Check 3", "LEVEL 2", "Scream Antic2");
-
-                _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Quake1 Land");
-                _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land");
-
-                _spellControl.ChangeTransition("Level Check", "LEVEL 1", "Fireball 1");
-                _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2");
-            }
+            _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 
             if (!FiveKnights.Instance.SaveSettings.equippedCharms[3])
             {
@@ -941,26 +824,6 @@ namespace FiveKnights
             // Destroy(GameObject.Find("Dung"));
             GameObject dung = GameObject.Find("Dung");
             if (!dung.GetComponent<Dung>()) dung.AddComponent<Dung>();
-        }
-
-        private IEnumerator SpawnPlumes()
-        {
-            for (float x = 2; x <= 10; x += 2)
-            {
-                Vector2 pos = HeroController.instance.transform.position;
-                float plumeY = pos.y - 1.8f;
-
-                GameObject plumeL = Instantiate(_plume, new Vector2(pos.x - x, plumeY), Quaternion.identity);
-                plumeL.SetActive(true);
-                plumeL.AddComponent<Plume>();
-
-                GameObject plumeR = Instantiate(_plume, new Vector2(pos.x + x, plumeY), Quaternion.identity);
-                plumeR.SetActive(true);
-                plumeR.AddComponent<Plume>();
-            }
-
-            yield return new WaitForSeconds(0.25f);
-            AudioPlayerOneShotSingle("Plume Up", 1.5f, 1.5f);
         }
 
         private void Update()
