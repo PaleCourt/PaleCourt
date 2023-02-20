@@ -336,7 +336,6 @@
     <EmbeddedResource Include="assets\ach_isma.png" />
     <EmbeddedResource Include="assets\ach_zem.png" />
     <EmbeddedResource Include="assets\ach_panth.png" />
-    <EmbeddedResource Include="StreamingAssets\blendvertexcolor" />
     <EmbeddedResource Include="StreamingAssets\ismawin" />
     <EmbeddedResource Include="StreamingAssets\artistsbund" />
     <EmbeddedResource Include="StreamingAssets\dryyawin" />

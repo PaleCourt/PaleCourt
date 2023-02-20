@@ -67,22 +67,16 @@ namespace FiveKnights
             {
                 case "BLOOM_NAME":
                     return "Abyssal Bloom";
-                    break;
                 case "LAMENT_NAME":
                     return"Vessel's Lament";
-                        break;
                 case "PURITY_NAME":
                     return "Mark of Purity";
-                    break;
                 case "BOON_NAME":
                     return "Boon of Hallownest";
-                    break;
                 case "CREST_NAME":
                     return "King's Honour";
-                    break;
                 case "CUSTOM_ITEM_INTROS":
                     return "Received the";
-                    break;
             }
             
             return orig; 
