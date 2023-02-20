@@ -16,10 +16,10 @@ namespace FiveKnights
         {
             Sound, TitleScreen, 
             GIsma, GDryya, GHegemol, GZemer, 
-            GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI,
+            GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI, GReward,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
-            Misc, Charms, tk2dDep, CharmUnlock,
+            Misc, Charms, CharmUnlock,
             Artist
         }
 
@@ -41,6 +41,7 @@ namespace FiveKnights
                 Bundle.GArenaD => "ggArenaDryya",
                 Bundle.GArenaI => "ggArenaIsma",
                 Bundle.GArenaZ => "ggArenaZemer",
+                Bundle.GReward => "rewardRoom",
                 Bundle.OWArenaD => "owArenaDryya",
                 Bundle.OWArenaH => "owArenaHegemol",
                 Bundle.OWArenaZ => "owArenaZemer",
@@ -50,7 +51,6 @@ namespace FiveKnights
                 Bundle.WSArena => "workShopEntrance",
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
-                Bundle.tk2dDep => "blendvertexcolor",
                 Bundle.CharmUnlock => "charmunlock",
                 Bundle.Artist => "artistsbund",
                 _ => ""

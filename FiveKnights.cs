@@ -153,6 +153,7 @@ namespace FiveKnights
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             On.UIManager.Start += ApplyMenuTextOutline;
+            RewardRoom.Hook();
 
             #endregion
             #region Load Assetbundles
@@ -520,7 +521,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaH);
             ABManager.Load(ABManager.Bundle.OWArenaI);
             ABManager.Load(ABManager.Bundle.GArenaIsma);
-            ABManager.Load(ABManager.Bundle.tk2dDep);
+            ABManager.Load(ABManager.Bundle.GReward);
 
             Log("Finished bundling");
         }
