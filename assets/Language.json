@@ -74,18 +74,18 @@
             "FALSE_KNIGHT_D_2_Unused": "Is that all little one?",
             "FALSE_KNIGHT_D_3_Unused": "Prove to me you're a champion!"
         },
-      "UI": {
-        "CHARM_NAME_PURITY": "Mark of Purity",
-        "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Gradually increases the bearer's rate of attack as they land nail strikes in quick succession.",
-        "CHARM_NAME_LAMENT": "Vessel's Lament",
-        "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
-        "CHARM_NAME_BOON": "Boon of Hallownest",
-        "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
-        "CHARM_NAME_BLOOM": "Abyssal Bloom",
-        "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>As the bearer weakens this charm's strength will increase and become overpowering near death.",
-        "CHARM_NAME_HONOUR": "King's Honour",
-        "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
-      },
+        "UI": {
+            "CHARM_NAME_PURITY": "Mark of Purity",
+            "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Gradually increases the bearer's rate of attack as they land nail strikes in quick succession.",
+            "CHARM_NAME_LAMENT": "Vessel's Lament",
+            "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
+            "CHARM_NAME_BOON": "Boon of Hallownest",
+            "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
+            "CHARM_NAME_BLOOM": "Abyssal Bloom",
+            "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>The bearer grows stronger as they draw nearer to death, sacrificing soul and the protection of masks for overwhelming power.",
+            "CHARM_NAME_HONOUR": "King's Honour",
+            "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
+        },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
             "ENTRY_ISMA_LONGNAME": "Kindly Isma",
