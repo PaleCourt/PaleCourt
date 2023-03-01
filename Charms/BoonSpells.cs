@@ -18,6 +18,8 @@ namespace FiveKnights
         private GameObject _plume;
 
         private const float DaggerSpeed = 50f;
+        private const int BlastDamage = 20;
+        private const int BlastDamageUpgraded = 30;
 
         private void OnEnable()
 		{
@@ -161,7 +163,7 @@ namespace FiveKnights
             col.isTrigger = true;
 
             DamageEnemies de = blast.AddComponent<DamageEnemies>();
-            de.damageDealt = upgraded ? 30 : 20;
+            de.damageDealt = upgraded ? BlastDamageUpgraded : BlastDamage;
             de.attackType = AttackTypes.Spell;
             de.ignoreInvuln = false;
             de.enabled = true;

@@ -69,7 +69,7 @@ namespace FiveKnights
             if (arg1.name == "White_Palace_09")
             {
                 DialogueNPC entrance = DialogueNPC.CreateInstance();
-                entrance.transform.position = new Vector3(60.5f, 98.4f, 0f);
+                entrance.transform.position = new Vector3(65f, 98.4f, 0f);
                 entrance.DialogueSelector = EntranceDialogue;
                 entrance.SetTitle("TITLE_ENTER_RR");
                 entrance.SetDreamKey("TITLE_ENTER_RR_SUB");
