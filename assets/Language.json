@@ -104,21 +104,47 @@
             "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
             "ENTRY_ZEM_NOTE": "<br>Ze'mer... what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
         },
-        "ES": {
-        },
-        "FR": {
-        },
-        "IT": {
-        },
-        "JA": {
-        },
-        "KO": {
-        },
-        "PT": {
-        },
-        "RU": {
-        },
-        "ZH": {
+        "Reward Room": {
+            "ENTER_RR": "Enter Reward Room?",
+            "TITLE_ENTER_RR_SUPER": "The one and only",
+            "TITLE_ENTER_RR_MAIN": "REWARD ROOM NPC",
+            "TITLE_ENTER_RR_SUB": "placeholder",
+            "TITLE_RR_DRYYA_SUPER": "Fierce",
+            "TITLE_RR_DRYYA_MAIN": "DRYYA",
+            "TITLE_RR_DRYYA_SUB": "",
+            "TITLE_RR_ISMA_SUPER": "Kindly",
+            "TITLE_RR_ISMA_MAIN": "ISMA",
+            "TITLE_RR_ISMA_SUB": "",
+            "TITLE_RR_OGRIM_SUPER": "Loyal",
+            "TITLE_RR_OGRIM_MAIN": "OGRIM",
+            "TITLE_RR_OGRIM_SUB": "",
+            "TITLE_RR_HEGEMOL_SUPER": "Mighty",
+            "TITLE_RR_HEGEMOL_MAIN": "HEGEMOL",
+            "TITLE_RR_HEGEMOL_SUB": "",
+            "TITLE_RR_ZEMER_SUPER": "Mysterious",
+            "TITLE_RR_ZEMER_MAIN": "ZE'MER",
+            "TITLE_RR_ZEMER_SUB": "",
+            "RR_DRYYA_MEET": "dryya placeholder",
+            "RR_ISMA_MEET": "isma placeholder",
+            "RR_OGRIM_MEET": "ogrim placeholder",
+            "RR_HEGEMOL_MEET": "hegemol placeholder",
+            "RR_ZEMER_MEET": "zemer placeholder"
         }
+    },
+    "ES": {
+    },
+    "FR": {
+    },
+    "IT": {
+    },
+    "JA": {
+    },
+    "KO": {
+    },
+    "PT": {
+    },
+    "RU": {
+    },
+    "ZH": {
     }
 }

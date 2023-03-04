@@ -12,56 +12,28 @@ namespace FiveKnights
 {
     public static class RewardRoom
     {
+        private static LanguageCtrl langCtrl;
+
         public static void Hook()
         {
-            ModHooks.LanguageGetHook += ModHooks_LanguageGetHook;
+            langCtrl = new LanguageCtrl();
+            ModHooks.LanguageGetHook += LangGet;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += SceneManager_activeSceneChanged;
         }
 
-        public static void UnHook()
+		public static void UnHook()
         {
-            ModHooks.LanguageGetHook -= ModHooks_LanguageGetHook;
+            ModHooks.LanguageGetHook -= LangGet;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= SceneManager_activeSceneChanged;
         }
 
-        private static string ModHooks_LanguageGetHook(string key, string sheetTitle, string orig)
+        private static string LangGet(string key, string sheet, string orig)
         {
-            switch (key)
+            if(key.StartsWith("TITLE_") || key.Contains("_RR"))
             {
-                case "ENTER_RR":
-                    return "Enter Reward Room?";
-                case "TITLE_ENTER_RR_SUPER":
-                    return "The one and only";
-                case "TITLE_ENTER_RR_MAIN":
-                    return "REWARD ROOM NPC";
-                case "TITLE_ENTER_RR_SUB":
-                    return "placeholder";
-                case "TITLE_RR_DRYYA_SUPER":
-                case "TITLE_RR_DRYYA_MAIN":
-                case "TITLE_RR_DRYYA_SUB":
-                    return "dryya placeholder";
-                case "TITLE_RR_ISMA_SUPER":
-                case "TITLE_RR_ISMA_MAIN":
-                case "TITLE_RR_ISMA_SUB":
-                    return "isma placeholder";
-                case "TITLE_RR_HEGEMOL_SUPER":
-                case "TITLE_RR_HEGEMOL_MAIN":
-                case "TITLE_RR_HEGEMOL_SUB":
-                    return "hegemol placeholder";
-                case "TITLE_RR_ZEMER_SUPER":
-                case "TITLE_RR_ZEMER_MAIN":
-                case "TITLE_RR_ZEMER_SUB":
-                    return "zemer placeholder";
-                case "RR_DRYYA_MEET":
-                    return "dryya meet placeholder";
-                case "RR_ISMA_MEET":
-                    return "isma meet placeholder";
-                case "RR_HEGEMOL_MEET":
-                    return "hegemol meet placeholder";
-                case "RR_ZEMER_MEET":
-                    return "zemer meet placeholder";
+                sheet = "Reward Room";
             }
-            return orig;
+            return langCtrl.ContainsKey(key, sheet) ? langCtrl.Get(key, sheet) : orig;
         }
 
         private static void SceneManager_activeSceneChanged(UnityEngine.SceneManagement.Scene arg0, UnityEngine.SceneManagement.Scene arg1)
@@ -78,28 +50,35 @@ namespace FiveKnights
             if (arg1.name == "hidden_reward_room")
             {
                 DialogueNPC dryya = DialogueNPC.CreateInstance();
-                dryya.transform.position = new Vector3(295.02f, 129.67f, 0f);
+                dryya.transform.position = new Vector3(298.74f, 129.67f, 0f);
                 dryya.DialogueSelector = DryyaDialogue;
                 dryya.SetTitle("TITLE_RR_DRYYA");
                 dryya.SetDreamKey("TITLE_RR_DRYYA_SUB");
                 dryya.SetUp();
 
                 DialogueNPC isma = DialogueNPC.CreateInstance();
-                isma.transform.position = new Vector3(306.6366f, 129.0865f, 0f);
+                isma.transform.position = new Vector3(306.73f, 129.0865f, 0f);
                 isma.DialogueSelector = IsmaDialogue;
                 isma.SetTitle("TITLE_RR_ISMA");
                 isma.SetDreamKey("TITLE_RR_ISMA_SUB");
                 isma.SetUp();
 
+                DialogueNPC ogrim = DialogueNPC.CreateInstance();
+                ogrim.transform.position = new Vector3(302.69f, 129.0865f, 0f);
+                ogrim.DialogueSelector = OgrimDialogue;
+                ogrim.SetTitle("TITLE_RR_OGRIM");
+                ogrim.SetDreamKey("TITLE_RR_OGRIM_SUB");
+                ogrim.SetUp();
+
                 DialogueNPC hegemol = DialogueNPC.CreateInstance();
-                hegemol.transform.position = new Vector3(302.23f, 129.38f, 0f);
+                hegemol.transform.position = new Vector3(293.92f, 129.38f, 0f);
                 hegemol.DialogueSelector = HegemolDialogue;
                 hegemol.SetTitle("TITLE_RR_HEGEMOL");
                 hegemol.SetDreamKey("TITLE_RR_HEGEMOL_SUB");
                 hegemol.SetUp();
 
                 DialogueNPC zemer = DialogueNPC.CreateInstance();
-                zemer.transform.position = new Vector3(309.7428f, 129.0576f, 0f);
+                zemer.transform.position = new Vector3(310.33f, 129.0576f, 0f);
                 zemer.DialogueSelector = ZemerDialogue;
                 zemer.SetTitle("TITLE_RR_ZEMER");
                 zemer.SetDreamKey("TITLE_RR_ZEMER_SUB");
@@ -119,7 +98,7 @@ namespace FiveKnights
         private static DialogueOptions EntranceDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "ENTER_RR", Sheet = "", Cost = 0, Type = DialogueType.YesNo, Continue = true };
+                return new() { Key = "ENTER_RR", Sheet = "Reward Room", Cost = 0, Type = DialogueType.YesNo, Continue = true };
             else
             {
                 if (prev.Response == DialogueResponse.Yes)
@@ -131,28 +110,35 @@ namespace FiveKnights
         private static DialogueOptions DryyaDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "RR_DRYYA_MEET", Sheet = "", Type = DialogueType.Normal, Continue = true };
+                return new() { Key = "RR_DRYYA_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
             return new() { Continue = false };
         }
 
         private static DialogueOptions IsmaDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "RR_ISMA_MEET", Sheet = "", Type = DialogueType.Normal, Continue = true };
+                return new() { Key = "RR_ISMA_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+            return new() { Continue = false };
+        }
+
+        private static DialogueOptions OgrimDialogue(DialogueCallbackOptions prev)
+        {
+            if(prev.Continue == false)
+                return new() { Key = "RR_OGRIM_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
             return new() { Continue = false };
         }
 
         private static DialogueOptions HegemolDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "RR_HEGEMOL_MEET", Sheet = "", Type = DialogueType.Normal, Continue = true };
+                return new() { Key = "RR_HEGEMOL_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
             return new() { Continue = false };
         }
 
         private static DialogueOptions ZemerDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "RR_ZEMER_MEET", Sheet = "", Type = DialogueType.Normal, Continue = true };
+                return new() { Key = "RR_ZEMER_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
             return new() { Continue = false };
         }
     }
