@@ -114,7 +114,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 70f, _mace.transform.position.z);
+            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
@@ -139,7 +139,7 @@ namespace FiveKnights.Hegemol
             Log("Intro Grab");
             _anim.Play("IntroAttack");
 
-            _mace.gameObject.transform.position = transform.position + 80f * Vector3.up;
+            _mace.gameObject.transform.position = transform.position + 50f * Vector3.up;
             _mace.LaunchSpeed = -200f;
             _mace.SpinSpeed = 560f;
             _mace.gameObject.SetActive(true);
@@ -148,7 +148,7 @@ namespace FiveKnights.Hegemol
 
             _anim.enabled = false;
 
-            yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y);
+            yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y + 3f);
 
             _anim.enabled = true;
             _mace.gameObject.SetActive(false);

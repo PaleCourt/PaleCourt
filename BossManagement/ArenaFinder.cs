@@ -323,6 +323,8 @@ namespace FiveKnights
 					newGS.SetActive(true);
 					newGS.transform.position = oldGS.transform.position;
 					Destroy(oldGS);
+                    GameObject.Find("GG_Arena_Prefab").GetComponent<AudioSource>().outputAudioMixerGroup = 
+                        HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
 				}
                 Log("Done dream entry");
             }
@@ -359,6 +361,7 @@ namespace FiveKnights
             {
                 On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
+                HeroController.instance.EnterWithoutInput(true);
             }
 
             if (arg1.name == "White_Palace_09" && arg0.name == "Dream_04_White_Defender") //DO arg1.name == "White_Palace_09" EVENTUALLY

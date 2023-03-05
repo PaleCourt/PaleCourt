@@ -190,26 +190,5 @@ namespace FiveKnights
                 return withoutnotes;
             }
         }
-
-        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float minPitch = 1f, float maxPitch = 1f, float delay = 0f)
-		{
-			if(!FiveKnights.preloadedGO.ContainsKey("Audio Player") || FiveKnights.preloadedGO["Audio Player"] == null)
-            {
-                FiveKnights.preloadedGO["Audio Player"] = ObjectPool.instance.startupPools.First(o => o.prefab.name == "Audio Player Actor").prefab;
-            }
-            IEnumerator Play()
-            {
-                yield return new WaitForSeconds(delay);
-                GameObject audioPlayerInstance = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["Audio Player"], 
-                    mb.transform.position, Quaternion.identity);
-                AudioSource audio = audioPlayerInstance.GetComponent<AudioSource>();
-                audio.pitch = UnityEngine.Random.Range(minPitch, maxPitch);
-                audio.volume = 1f;
-                audio.PlayOneShot(clip);
-                yield return new WaitForSeconds(5f);
-				UnityEngine.Object.Destroy(audioPlayerInstance);
-            }
-            GameManager.instance.StartCoroutine(Play());
-        }
     }
 }

@@ -2,20 +2,21 @@
 
 namespace FiveKnights
 {
-    public class SmallShot : MonoBehaviour
+    public class Dagger : MonoBehaviour
     {
-        private int _damage = 20;
+        private int damage => upgraded ? 15 : 8;
+        public bool upgraded;
 
         private void OnTriggerEnter2D(Collider2D collider)
         {
             if (collider.gameObject.layer == 11)
             {
                 HitInstance smallShotHit = new HitInstance();
-                smallShotHit.DamageDealt = _damage;
-                smallShotHit.AttackType = AttackTypes.NailBeam;
+                smallShotHit.DamageDealt = damage;
+                smallShotHit.AttackType = AttackTypes.Spell;
                 smallShotHit.IgnoreInvulnerable = true;
                 smallShotHit.Source = gameObject;
-                smallShotHit.Multiplier = 1.0f;
+                smallShotHit.Multiplier = 1f;
                 HealthManager hm = collider.gameObject.GetComponent<HealthManager>();
                 hm.Hit(smallShotHit);
                 Destroy(gameObject);

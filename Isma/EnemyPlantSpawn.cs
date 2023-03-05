@@ -265,8 +265,8 @@ namespace FiveKnights.Isma
             GameObject finalFool = Instantiate(FiveKnights.preloadedGO["PTrap"], parent.transform, true);
             finalFool.name = "final" + FoolName;
             finalFool.SetActive(false);
+            foolList.Add(finalFool);
             parent.AddComponent<FoolMinion>();
-            foolList.Add(parent);
         }
 
         public class FoolMinion : MonoBehaviour

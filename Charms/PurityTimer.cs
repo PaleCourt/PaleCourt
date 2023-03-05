@@ -49,6 +49,10 @@ namespace FiveKnights
             ModHooks.CharmUpdateHook += SetDuration;
             On.NailSlash.SetLongnail += CancelLongnail;
             On.NailSlash.SetMantis += CancelMantis;
+            On.HeroController.CanDoubleJump += FixDoubleJump;
+            On.HeroController.CanCast += FixCast;
+
+
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
@@ -65,6 +69,8 @@ namespace FiveKnights
             ModHooks.CharmUpdateHook -= SetDuration;
             On.NailSlash.SetMantis -= CancelMantis;
             On.NailSlash.SetLongnail -= CancelLongnail;
+            On.HeroController.CanDoubleJump -= FixDoubleJump;
+            On.HeroController.CanCast -= FixCast;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_DEFAULT;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_DEFAULT_32;
@@ -91,19 +97,25 @@ namespace FiveKnights
         private void IncrementSpeed(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             orig(self, hitInstance);
+            if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
+            {
+                ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
+            }
+            if (hitInstance.AttackType == AttackTypes.Nail)
+            {
+                timer = 0;
+                timerRunning = true;
 
-            timer = 0;
-            timerRunning = true;
+                _hc.ATTACK_COOLDOWN_TIME -= .038f;
+                _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
+                _hc.ATTACK_DURATION -= .038f;
+                _hc.ATTACK_DURATION_CH -= .038f;
 
-            _hc.ATTACK_COOLDOWN_TIME -= .038f;
-            _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
-            _hc.ATTACK_DURATION -= .038f;
-            _hc.ATTACK_DURATION_CH -= .038f;
-
-            if (_hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44) { _hc.ATTACK_COOLDOWN_TIME = COOLDOWN_CAP_44; }
-            if (_hc.ATTACK_COOLDOWN_TIME_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_COOLDOWN_TIME_CH = COOLDOWN_CAP_44_32; }
-            if (_hc.ATTACK_DURATION <= COOLDOWN_CAP_44) { _hc.ATTACK_DURATION = COOLDOWN_CAP_44; }
-            if (_hc.ATTACK_DURATION_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_DURATION_CH = COOLDOWN_CAP_44_32; }
+                if (_hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44) { _hc.ATTACK_COOLDOWN_TIME = COOLDOWN_CAP_44; }
+                if (_hc.ATTACK_COOLDOWN_TIME_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_COOLDOWN_TIME_CH = COOLDOWN_CAP_44_32; }
+                if (_hc.ATTACK_DURATION <= COOLDOWN_CAP_44) { _hc.ATTACK_DURATION = COOLDOWN_CAP_44; }
+                if (_hc.ATTACK_DURATION_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_DURATION_CH = COOLDOWN_CAP_44_32; }
+            }
         }
 
         private void SetDuration(PlayerData data, HeroController controller)
@@ -153,6 +165,20 @@ namespace FiveKnights
 
             }
 
+        }
+        private bool FixCast(On.HeroController.orig_CanCast orig, HeroController self)
+        {
+            return !GameManager.instance.isPaused && !self.cState.dashing && self.hero_state != ActorStates.no_input && !self.cState.backDashing &&
+                /*(!self.cState.attacking || ReflectionHelper.GetField<HeroController, float>(self, "attack_time") >= self.ATTACK_RECOVERY_TIME) &&*/ !self.cState.recoiling &&
+                !self.cState.recoilFrozen && !self.cState.transitioning && !self.cState.hazardDeath && !self.cState.hazardRespawning && self.CanInput() &&
+                ReflectionHelper.GetField<HeroController, float>(self, "preventCastByDialogueEndTimer") <= 0f;
+        }
+
+        private bool FixDoubleJump(On.HeroController.orig_CanDoubleJump orig, HeroController self)
+        {
+            return self.playerData.GetBool("hasDoubleJump") && !self.controlReqlinquished && !ReflectionHelper.GetField<HeroController, bool>(self, "doubleJumped") && !self.inAcid && self.hero_state != ActorStates.no_input 
+                && self.hero_state != ActorStates.hard_landing && self.hero_state != ActorStates.dash_landing && !self.cState.dashing && !self.cState.wallSliding &&
+                !self.cState.backDashing && /*!self.cState.attacking &&*/ !self.cState.bouncing && !self.cState.shroomBouncing && !self.cState.onGround;
         }
         private void CancelMantis(On.NailSlash.orig_SetMantis orig, NailSlash self, bool set) { orig(self, false); }
         private void CancelLongnail(On.NailSlash.orig_SetLongnail orig, NailSlash self, bool set) { orig(self, false); }

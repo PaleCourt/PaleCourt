@@ -67,7 +67,7 @@ namespace FiveKnights
             }
         }
 
-        public void CreateIsma()
+        public void CreateIsma(bool onlyIsma)
         {
             Log("Creating Isma");
 
@@ -85,6 +85,7 @@ namespace FiveKnights
                     var r = snd.LoadAssetAsync<AudioClip>(i);
                     yield return r;
                     FiveKnights.IsmaClips[i] = r.asset as AudioClip;
+                    Log("Loaded Isma Clip " + FiveKnights.IsmaClips[i]);
                 }
             }
             
@@ -97,7 +98,7 @@ namespace FiveKnights
             StartCoroutine(LoadSlow());
             
             _isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
-            
+
             FiveKnights.preloadedGO["Isma2"] = _isma;
             
             _isma.SetActive(true);
@@ -134,7 +135,7 @@ namespace FiveKnights
             var _sr = _isma.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];
             
-            _isma.AddComponent<IsmaController>();
+            _isma.AddComponent<IsmaController>().onlyIsma = onlyIsma;
             
             Log("Done creating Isma");
         }

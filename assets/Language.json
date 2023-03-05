@@ -95,13 +95,13 @@
         },
         "UI": {
             "CHARM_NAME_PURITY": "Mark of Purity",
-            "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Successful nail strikes in quick succession build vigor, increasing the speed of attacks. Hinders the reach of the nail.",
+            "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient forgotten craftsmanship.<br><br>Gradually increases the bearer's rate of attack as they land nail strikes in quick succession.",
             "CHARM_NAME_LAMENT": "Vessel's Lament",
             "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>When focusing SOUL, unleash a devastating blast of energy.",
             "CHARM_NAME_BOON": "Boon of Hallownest",
             "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessings and power bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells causing them to take on a purified form.",
             "CHARM_NAME_BLOOM": "Abyssal Bloom",
-            "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>As the bearer weakens this charm's strength will increase and become overpowering near death.",
+            "CHARM_DESC_BLOOM": "A pale blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>The bearer grows stronger as they draw nearer to death, sacrificing soul and the protection of masks for overwhelming power.",
             "CHARM_NAME_HONOUR": "King's Honour",
             "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its ultimate state.<br><br>Surrounds the bearer in a royal aura."
         },
@@ -123,21 +123,47 @@
             "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
             "ENTRY_ZEM_NOTE": "<br>Ze'mer... what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
         },
-        "ES": {
-        },
-        "FR": {
-        },
-        "IT": {
-        },
-        "JA": {
-        },
-        "KO": {
-        },
-        "PT": {
-        },
-        "RU": {
-        },
-        "ZH": {
+        "Reward Room": {
+            "ENTER_RR": "Enter Reward Room?",
+            "TITLE_ENTER_RR_SUPER": "The one and only",
+            "TITLE_ENTER_RR_MAIN": "REWARD ROOM NPC",
+            "TITLE_ENTER_RR_SUB": "placeholder",
+            "TITLE_RR_DRYYA_SUPER": "Fierce",
+            "TITLE_RR_DRYYA_MAIN": "DRYYA",
+            "TITLE_RR_DRYYA_SUB": "",
+            "TITLE_RR_ISMA_SUPER": "Kindly",
+            "TITLE_RR_ISMA_MAIN": "ISMA",
+            "TITLE_RR_ISMA_SUB": "",
+            "TITLE_RR_OGRIM_SUPER": "Loyal",
+            "TITLE_RR_OGRIM_MAIN": "OGRIM",
+            "TITLE_RR_OGRIM_SUB": "",
+            "TITLE_RR_HEGEMOL_SUPER": "Mighty",
+            "TITLE_RR_HEGEMOL_MAIN": "HEGEMOL",
+            "TITLE_RR_HEGEMOL_SUB": "",
+            "TITLE_RR_ZEMER_SUPER": "Mysterious",
+            "TITLE_RR_ZEMER_MAIN": "ZE'MER",
+            "TITLE_RR_ZEMER_SUB": "",
+            "RR_DRYYA_MEET": "dryya placeholder",
+            "RR_ISMA_MEET": "isma placeholder",
+            "RR_OGRIM_MEET": "ogrim placeholder",
+            "RR_HEGEMOL_MEET": "hegemol placeholder",
+            "RR_ZEMER_MEET": "zemer placeholder"
         }
+    },
+    "ES": {
+    },
+    "FR": {
+    },
+    "IT": {
+    },
+    "JA": {
+    },
+    "KO": {
+    },
+    "PT": {
+    },
+    "RU": {
+    },
+    "ZH": {
     }
 }
