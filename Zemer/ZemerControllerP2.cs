@@ -1650,7 +1650,7 @@ namespace FiveKnights.Zemer
                 if (DoPhase)
                 {
                     _anim.enabled = false;
-                    // This is breaking stuff, idk yall figure it out smh
+                    // TODO This is breaking stuff, idk yall figure it out smh
                     // _deathEff.RecordWithoutNotes();
                     yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
@@ -1666,17 +1666,17 @@ namespace FiveKnights.Zemer
                     float t = firstDeath ? StunTimeFirst : StunTimeRest;
                     yield return new WaitSecWhile(() => !isHit, t);
                     _anim.enabled = true;
-                    yield return Recover();
+                    yield return Recover(firstDeath);
                 }
             }
 
-            IEnumerator Recover()
+            IEnumerator Recover(bool firstDeath=false)
             {
                 yield return _anim.PlayBlocking("ZRecover");
                 
                 float t = firstDeath ? RecoveryReturnFirstDelay : RecoveryReturnRestDelay;
 
-                yield return LeaveTemp(dir, t);
+                yield return LeaveTemp(dir, t, firstDeath);
                 
                 if (firstDeath) StartCoroutine(MusicControl());
 
@@ -1713,8 +1713,35 @@ namespace FiveKnights.Zemer
                 StartCoroutine(Attacks());
             }
         }
+
+        IEnumerator FlowerBloomer()
+        {
+            StartCoroutine(GGBossManager.Instance.PlayFlowers());
+            GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
+            GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+            //List<Transform> children = GGBossManager.Instance.flowersAnim.SelectMany(i => i.transform.Cast<Transform>()).ToList();
+            foreach (var child in GGBossManager.Instance.flowersAnim.OrderBy(_ => Guid.NewGuid()))
+            {
+                GameObject whiteFlash = Instantiate(whiteflashOld);
+                whiteFlash.SetActive(true);
+                whiteFlash.transform.position = child.transform.position;
+                whiteFlash.transform.localScale /= 15f;
+                whiteFlash.LocateMyFSM("fade and destroy").GetAction<EaseColor>("Idle", 0).fromValue.Value =
+                    new Color(1, 1, 1, 0.3f);
+                if (UnityEngine.Random.Range(0, 2) == 1)
+                {
+                    yield return new WaitForSeconds(0.01f);
+                }
+            }
+            for (int i = 0; i < 5; i++)
+            {
+                GameObject whiteFlash2 = Instantiate(whiteflashOld);
+                whiteFlash2.SetActive(true);
+                whiteFlash2.transform.position = _target.transform.position;
+            }
+        }
         
-        IEnumerator LeaveTemp(float dir, float delay)
+        IEnumerator LeaveTemp(float dir, float delay, bool firstDeath=false)
         {
             _anim.PlayAt("ZThrow2B", 0);
 
@@ -1723,7 +1750,12 @@ namespace FiveKnights.Zemer
             transform.position += new Vector3(dir * LeaveOffset.x / 2, LeaveOffset.y / 2);
             
             Spring(false, transform.position + new Vector3(dir * LeaveOffset.x, LeaveOffset.y,0f),1.5f);
-            
+
+            if (firstDeath && CustomWP.boss == CustomWP.Boss.All)
+            {
+                StartCoroutine(FlowerBloomer());
+            }
+
             yield return _anim.PlayToEnd();
             //_anim.speed = 1f;
                 
@@ -1781,6 +1813,8 @@ namespace FiveKnights.Zemer
             yield return PassageAcrossArena(4);
 
             yield return SomersaultAntic();
+
+            bool continueWithSpiral;
             
             IEnumerator PassageAcrossArena(int numTimes)
             {
@@ -1809,22 +1843,43 @@ namespace FiveKnights.Zemer
                     _anim.enabled = false;
                     _anim.speed = 1f;
 
-                    yield return WaitByVelocity(2.5f);
+                    yield return WaitByVelocity(4f);
                 
                     grass.GetComponent<ParticleSystem>().Stop();
-                    _rb.velocity = Vector2.zero;
+                    _rb.velocity = new Vector2(dir * 50f, 0f);
                     _anim.enabled = true;
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
-                    _anim.enabled = false;
-                    yield return new WaitForSeconds(0.2f);
-                    
-                    StartCoroutine(numTimes == 0
-                        ? SpawnSpirals(new Vector2(MIDDLE, GroundY), 0.9f)
-                        : SpawnSpirals(_target.transform.position, 1.2f));
+                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+                    //_anim.enabled = false;
 
-                    yield return new WaitForSeconds(0.05f);
-                    _anim.enabled = true;
+                    continueWithSpiral = false;
+                    StartCoroutine(numTimes == 0
+                        ? SpawnSpirals(new Vector2(MIDDLE, GroundY), 0.9f, true)
+                        : SpawnSpirals(_target.transform.position, 1.2f, false));
+
+                    yield return new WaitForSeconds(0.1f);
+
+                    //_anim.enabled = true;
                     yield return _anim.PlayToEnd();    
+                    
+                   //_anim.Play("Z5LandSlide", -1, 0f);
+                    
+                    _anim.PlayAt("ZThrow2", 4);
+                    Vector3 pScale = gameObject.transform.localScale;
+                    gameObject.transform.localScale = new Vector3(-pScale.x, pScale.y, 1f);
+                    Spring(false, transform.position + new Vector3(dir * LeaveOffset.x, 0f,0f), 1.5f);
+                    transform.position += new Vector3(dir * LeaveOffset.x, 0f);
+                    yield return _anim.PlayToEnd();
+                    ToggleZemer(false);
+
+                    yield return new WaitWhile(() => !continueWithSpiral);
+                    
+                    transform.position = dir > 0
+                        ? new Vector3(RightX - 1.5f, transform.position.y)
+                        : new Vector3(LeftX + 1.5f, transform.position.y);
+                    Spring(true, transform.position);
+                    yield return new WaitForSeconds(0.15f);
+                    ToggleZemer(true);
+                    _anim.enabled = true;
                 }
             }
 
@@ -1991,8 +2046,7 @@ namespace FiveKnights.Zemer
                 Vector2 p3 = transform.position;
                 _anim.PlayAt("Z4AirSweep", 1);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-               
-                
+
                 Vector2 diff = p3 - tarPos;
                 float rot = Mathf.Atan(diff.y / diff.x);
                 if (side > 0 && p3.x > tarPos.x) rot += Mathf.PI;
@@ -2118,18 +2172,22 @@ namespace FiveKnights.Zemer
                     return new Vector2(x, y);
                 }
             }
-
-            // Spawn the spiral slash on top of the player
-            IEnumerator SpawnSpirals(Vector2 targ, float scale)
+            
+            IEnumerator Preload(Vector2 targ, bool extended)
             {
-                PlayAudioClip("NeedleSphere",_ap);
+                GameObject heartOld = FiveKnights.preloadedGO["Heart"];
+                GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
+                GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
+                GameObject glowOld = heartOld.transform.Find("Get Anim").Find("Get Glow").gameObject;
+                GameObject startCircleNew = Instantiate(startCircle);
+                
                 GameObject fxOrig = FiveKnights.preloadedGO["HornetSphere"].transform.Find("Flash Effect").gameObject;
                 foreach (float i in new [] {0f, 90f, 180f, 270f})
                 {
                     var fx = Instantiate(fxOrig);
                     fx.transform.SetRotationZ(i + UnityEngine.Random.Range(10, 30));
-                    fx.transform.position = _target.transform.position;
-                    fx.transform.parent = _target.transform;
+                    fx.transform.position = transform.position;
+                    fx.transform.parent = transform;
                     fx.SetActive(true);
                     var fsm = fx.LocateMyFSM("FSM");
                     fsm.enabled = true;
@@ -2138,8 +2196,43 @@ namespace FiveKnights.Zemer
                     fsm.FsmVariables.FindFsmBool("Reset Rotation").Value = false;
                     fsm.SetState("Init");
                 }
-                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
                 
+                startCircleNew.SetActive(true);
+                startCircleNew.transform.position = targ;
+                startCircleNew.transform.localScale *= extended ? 3f : 2f;
+                startCircleNew.GetComponent<ParticleSystem>().Play();
+                GameObject glowOne = Instantiate(glowOld);
+                glowOne.SetActive(true);
+                glowOne.transform.position = targ;
+                glowOne.transform.SetRotation2D(UnityEngine.Random.Range(0,360));
+
+                yield return extended ? new WaitForSeconds(0.75f) : new WaitForSeconds(0.3f);
+
+                Destroy(startCircleNew);
+                
+                GameObject whiteFlash = Instantiate(whiteflashOld);
+                whiteFlash.SetActive(true);
+                whiteFlash.transform.position = targ;
+                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+                PlayAudioClip("NeedleSphere",_ap, 0.7f, 1f);
+                
+                for (int i = 0; i < 5; i++)
+                {
+                    GameObject glow = Instantiate(glowOld);
+                    glow.SetActive(true);
+                    glow.transform.position = targ;
+                    glow.transform.SetRotation2D(i * 90 + UnityEngine.Random.Range(20,70));
+                }
+                yield return new WaitForSeconds(0.15f);
+            }
+
+            // Spawn the spiral slash on top of the player
+            IEnumerator SpawnSpirals(Vector2 targ, float scale, bool extended)
+            {
+                yield return Preload(targ, extended);
+                
+                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+
                 var slash = Instantiate(FiveKnights.preloadedGO["SlashRingControllerNew"]);
                 slash.SetActive(true);
                 slash.transform.position = targ;
@@ -2152,11 +2245,9 @@ namespace FiveKnights.Zemer
                     GameObject spiral = slash.transform.Find($"SlashRing{i}").gameObject;
                     ActivateSpiral(spiral, spd);
                 }
-        
                 // Wait for first set to do non-hitbox part of animation
                 Animator oldAnim = slash.transform.Find("SlashRing0").Find("1").gameObject.GetComponent<Animator>();
                 yield return new WaitWhile(() => oldAnim.GetCurrentFrame() < 7);
-
 
                 for (int i = 3; i < 5; i++)
                 {
@@ -2167,7 +2258,6 @@ namespace FiveKnights.Zemer
                 System.Random rnd = new System.Random();
                 int[] randSlashes = new [] {5, 6, 7}.OrderBy(x => rnd.Next()).ToArray();
                 GameObject lastSpiral = null;
-                
                 foreach (int i in randSlashes)
                 {
                     GameObject spiral = slash.transform.Find($"SlashRing{i}").gameObject;
@@ -2175,35 +2265,33 @@ namespace FiveKnights.Zemer
                     lastSpiral = spiral;
                     yield return new WaitForSeconds(rnd.Next(5, 10) * 0.01f);
                 }
-
-                oldAnim = lastSpiral.Find("1").gameObject.GetComponent<Animator>();
+                oldAnim = lastSpiral.transform.Find("1").gameObject.GetComponent<Animator>();
                 yield return new WaitWhile(() => oldAnim.GetCurrentFrame() < 8);
-
                 Transform tBlast = FiveKnights.preloadedGO["Blast"].transform;
                 var middle = Instantiate(tBlast.Find("Particle middle").gameObject);
                 middle.transform.position = slash.transform.position;
                 middle.SetActive(true);
                 //middle.transform.localScale *= 2f;
-
                 yield return new WaitWhile(() => oldAnim.GetCurrentFrame() < 10);
                 yield return LerpScale2(slash.transform);
                 StartCoroutine(LerpOpacity(slash.transform));
 
                 // Terrible way to check if animation is over
+                Log("Pankcake");
                 foreach (Transform t in slash.transform)
                 {
-                    foreach (var anim in t.GetComponentsInChildren<Animator>(true))
+                    foreach (var anim in t.GetComponentsInChildren<Animator>())
                     {
-                        yield return anim.PlayToEnd();
+                        yield return anim.WaitToFrame(10);
                     }
                 }
-
-
-                Destroy(slash);
-
+                Log("Pankcake 2");
+                continueWithSpiral = true;
+                //Destroy(slash);
+                
                 IEnumerator LerpScale(Transform trans, float scale)
                 {
-                    float lerpDuration = (5f / 12f) / 1.8f;
+                    float lerpDuration = 0.15f;
                     Vector2 startValue = trans.localScale;
                     Vector2 endValue = trans.localScale * scale;
                     float timeElapsed = 0;

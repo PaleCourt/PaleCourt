@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using FiveKnights.Dryya;
@@ -11,6 +12,7 @@ using Modding;
 using UnityEngine;
 using UnityEngine.Audio;
 using Vasi;
+using Object = UnityEngine.Object;
 using ReflectionHelper = Modding.ReflectionHelper;
 
 namespace FiveKnights.BossManagement
@@ -27,6 +29,33 @@ namespace FiveKnights.BossManagement
         public static GGBossManager Instance;
         public Dictionary<string, AnimationClip> clips;
 
+        public List<Animator> flowersAnim;
+
+        public IEnumerator PlayFlowers(int toFrame=-1) 
+        {
+            foreach (var anim in flowersAnim) anim.enabled = true;
+            yield return null;
+            foreach (var anim in flowersAnim)
+            {
+                switch (anim.transform.parent.name)
+                {
+                    case "FlowersA":
+                        if (toFrame == -1) yield return anim.PlayToEnd();
+                        else yield return anim.WaitToFrame(toFrame + 1);
+                        break;
+                    case "FlowersB":
+                        if (toFrame == -1) yield return anim.PlayToEnd();
+                        else yield return anim.WaitToFrame(toFrame);
+                        break;
+                    case "FlowersC":
+                        if (toFrame == -1) yield return anim.PlayToEnd();
+                        else yield return anim.WaitToFrame(toFrame + 2);
+                        break;
+                }
+                anim.enabled = false;
+            }
+        }
+        
         private IEnumerator Start()
         {
             // set damage level
@@ -220,20 +249,36 @@ namespace FiveKnights.BossManagement
                 yield return a3;
                 yield return a4;
                 
-                //flag = true;
-                //HeroController.instance.RegainControl();
-                //HeroController.instance.AcceptInput();
-                
-                //IEnumerator Wow()
-                //{
-                //    while (!flag)
-                //    {
-                //        HeroController.instance.RelinquishControl();
-                //        HeroController.instance.IgnoreInput();
-                //        HeroController.instance.IgnoreInputWithoutReset();
-                //        yield return null;
-                //    }
-                //}
+
+                GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
+                flowersAnim = new List<Animator>();
+                flowers.SetActive(true);
+                foreach (Transform t in flowers.transform)
+                {
+                    foreach (Animator anim in t.GetComponentsInChildren<Animator>(true))
+                    {
+                        flowersAnim.Add(anim);
+                        switch (anim.transform.parent.name)
+                        {
+                            case "FlowersA":
+                                anim.Play("F1Grow", -1, 0f);
+                                break;
+                            case "FlowersB":
+                                anim.Play("F2Grow", -1, 0f);
+                                break;
+                            case "FlowersC":
+                                anim.Play("F3Grow", -1, 0f);
+                                break;
+                        }
+                        anim.enabled = true;
+                    }
+                }
+                yield return null;
+
+                foreach (Animator anim in flowersAnim)
+                {
+                    anim.enabled = false;
+                }
 
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
@@ -284,10 +329,15 @@ namespace FiveKnights.BossManagement
                 GameObject zem = zc.gameObject;
 
                 yield return new WaitForSeconds(0.5f);
+                
+                // Grow flowers if in pantheon
+                StartCoroutine(PlayFlowers( 7));
+
                 //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
+                
                 yield return new WaitWhile(() => zc2 != null);
                 
                 Log("Won!");
@@ -333,7 +383,7 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => _hm.hp > 600);
             HIT_FLAG = false;
 
-			// Transition to phase 2
+            // Transition to phase 2
 			yield return new WaitWhile(() => !HIT_FLAG);
             FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
             PlayMusic(null, 1f);
@@ -363,6 +413,12 @@ namespace FiveKnights.BossManagement
             yield return new WaitForSeconds(1f);
             FightController.Instance.CreateIsma();
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            
+            // Grow flowers if in pantheon
+            if (flowersAnim != null)
+            {
+                StartCoroutine(PlayFlowers(2));
+            }
 
             // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
@@ -466,7 +522,6 @@ namespace FiveKnights.BossManagement
             
             if (CustomWP.boss == CustomWP.Boss.All)
             {  
-                // TODO: REMOVE BELOW DEBUG STATEMENT
                 FiveKnights.Instance.SaveSettings.gotCharms[3] = false;
                 var r1 = ab.LoadAssetAsync<GameObject>("Isma");
                 var r2 = ab.LoadAssetAsync<GameObject>("Gulka");
@@ -648,7 +703,7 @@ namespace FiveKnights.BossManagement
                 .GetAction<AudioPlaySimple>("Sphere A", 0).oneShotClip.Value;
 
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GZemer];
-            
+
             if (CustomWP.boss == CustomWP.Boss.All)
             {
                 var r1 = ab.LoadAllAssetsAsync<GameObject>();
@@ -661,7 +716,7 @@ namespace FiveKnights.BossManagement
             {
                 allassets = ab.LoadAllAssets<GameObject>();
             }
-            
+
             foreach (var o in allassets)
             {
                 var i = (GameObject) o;
@@ -671,6 +726,7 @@ namespace FiveKnights.BossManagement
                 else if (i.name == "NewSlash2") FiveKnights.preloadedGO["SlashBeam2"] = i;
                 else if (i.name == "SlashRingController") FiveKnights.preloadedGO["SlashRingController"] = i;
                 else if (i.name == "SlashRingControllerNew") FiveKnights.preloadedGO["SlashRingControllerNew"] = i;
+                else if (i.name == "AllFlowers") FiveKnights.preloadedGO["AllFlowers"] = i;
                 yield return null;
                 if (i.GetComponent<SpriteRenderer>() == null)
                 {

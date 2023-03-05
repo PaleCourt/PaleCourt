@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FiveKnights.Misc;
+using FrogCore;
 using HutongGames.PlayMaker.Actions;
+using SFCore.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Logger = Modding.Logger;
@@ -99,59 +101,20 @@ namespace FiveKnights.BossManagement
             FindObjectOfType<GameMap>().SetManualTilemap(0, 0, 500, 500);
         }
 
-        private IEnumerator Test()
-        {
-            yield return LoadArtist();
-            Log("Instantiate artist");
-            var parent = Instantiate(FiveKnights.preloadedGO["Artist"]);
-            parent.transform.position = FiveKnights.preloadedGO["Artist"].transform.position;
-            parent.SetActive(true);
-            GameObject sheo = parent.transform.Find("CuteScene").Find("Sheo").gameObject;
-            GameObject smith = parent.transform.Find("CuteScene").Find("Smith").gameObject;
-            
-            var oldSheo = Instantiate(GameObject.Find("NM Parent").transform.Find("Painting").Find("NM Sheo NPC").gameObject);
-            oldSheo.SetActive(true);
-            oldSheo.transform.position = sheo.transform.position;
-            PlayMakerFSM fsm = oldSheo.LocateMyFSM("Conversation Control");
-            PlayMakerFSM fsm2 = oldSheo.LocateMyFSM("npc_control");
-            StartCoroutine(test(fsm, fsm2));
-            
-            foreach (var remName in new[] { "Painting Parent", "NM Parent" })
-            {
-                GameObject.Find(remName).SetActive(false);
-            }
-            
-            
-            Log("Instantiate artist 2");
-        }
-
-        IEnumerator test(PlayMakerFSM fsm, PlayMakerFSM fsm2)
-        {
-            fsm.enabled = true;
-            fsm2.enabled = true;
-            fsm.SetState("Idle");
-            fsm2.SetState("Idle");
-            while (true)
-            {
-                fsm2.FsmVariables.FindFsmBool("Can Talk").Value = true;
-                Log(fsm.ActiveStateName);
-                Log(fsm2.ActiveStateName);
-                yield return null;
-            }
-        }
-        
         private void GameManagerOnEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additivegatesearch)
         {
             switch (self.sceneName)
             {
                 case SheoScene:
+                {
                     Log("Sheo scene");
-                    StartCoroutine(Test());
-                    /*PlayerData.instance.nailsmithSheo = true;
-                    PlayerData.instance.sheoConvoNailsmith = true;
-                    PlayerData.instance.nailsmithConvoArt = true;*/
+                    if (PlayerData.instance.nailsmithSheo && PlayerData.instance.sheoConvoNailsmith &&
+                        PlayerData.instance.nailsmithConvoArt)
+                    {
+                        GameManager.instance.gameObject.AddComponent<Artists>();
+                    }
                     break;
-                
+                }
                 case DryyaScene:
                 {
                     CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
@@ -740,30 +703,7 @@ namespace FiveKnights.BossManagement
 
             Log("Finished Loading Dryya Bundle");
         }
-        
-        private IEnumerator LoadArtist()
-        {
-            Log("Loading Artist Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Artist", out var go) && go != null)
-            {
-                Log("Already Loaded Artist");
-                yield break;
-            }
 
-            yield return null;
-            yield return null;
-            AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.Artist];
-            foreach (var c in ab.LoadAllAssets<AnimationClip>())
-            {
-                Log($"Name of anim adding is {c.name}");
-                FiveKnights.AnimClips[c.name] = c;
-            }
-
-            FiveKnights.preloadedGO["Artist"] = ab.LoadAsset<GameObject>("Artists");
-
-            Log("Finished Loading Artist Bundle");
-        }
-        
         private IEnumerator LoadIsmaBundle()
         {
             Log("Loading Isma Bundle");

@@ -9,6 +9,7 @@ using UnityEngine.UI;
 using Vasi;
 using HutongGames.PlayMaker.Actions;
 using FiveKnights.Misc;
+using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
@@ -92,7 +93,51 @@ namespace FiveKnights
                 bc.offset = new Vector2(-10, bc.offset.y);
                 Log("Fixed WP_09 camera at edges");
             }
+
+
+            /*StartCoroutine(DebugMyThing());*/
         }
+
+        /*private IEnumerator DebugMyThing()
+        {
+            GameObject heartOld = FiveKnights.preloadedGO["Heart"];
+            GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
+            GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
+            GameObject glowOld = heartOld.transform.Find("Get Anim").Find("Get Glow").gameObject;
+            
+
+            while (true)
+            {
+
+                Log("Waiting for R bitch");
+                yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+                Log("Done waiting for R");
+
+                GameObject startCircleNew = Instantiate(startCircle);
+                startCircleNew.SetActive(true);
+                startCircleNew.transform.position = HeroController.instance.transform.position;
+                startCircleNew.GetComponent<ParticleSystem>().Play();
+
+                yield return new WaitForSeconds(0.2f);
+                
+                Destroy(startCircleNew);
+                
+                GameObject whiteFlash = Instantiate(whiteflashOld);
+                whiteFlash.SetActive(true);
+                whiteFlash.transform.position = HeroController.instance.transform.position;
+                Log("Created glow can you see it tho?");
+
+                for (int i = 0; i < 5; i++)
+                {
+                    GameObject glow = Instantiate(glowOld);
+                    glow.SetActive(true);
+                    glow.transform.position = HeroController.instance.transform.position;
+                    glow.transform.SetRotation2D(i * 90 + Random.Range(20,70));
+                }
+                
+                yield return new WaitForSeconds(0.5f);
+            }
+        }*/
 
         private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {

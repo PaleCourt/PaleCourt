@@ -56,6 +56,8 @@ namespace FiveKnights
         
         public FiveKnights() : base("Pale Court")
         {
+            //On.GameCameras.Awake += (orig, self) => self.gameObject.AddComponent<PostProcessing>();
+            
             #region Load Embedded Images
 
             int ind = 0;
@@ -96,7 +98,7 @@ namespace FiveKnights
                     Log("Created sprite from embedded image: " + resName + " at ind " + ++ind);
                 }
             }
-
+            
             #endregion
             #region Menu Customization
 
@@ -237,13 +239,20 @@ namespace FiveKnights
                 // For Isma's thorn walls
                 ("Fungus3_13", "Thorn Collider"),
                 // For charm collect/upgrade cutscene
-                ("Room_Queen", "UI Msg Get WhiteCharm")
+                ("Room_Queen", "UI Msg Get WhiteCharm"),
+                
+                ("Room_Mansion","Heart Piece Folder/Heart Piece"),
+                ("Room_Mansion","Xun NPC/White Flash"),
 
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            // TODO: For debugging reasons
+            preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"];
+            preloadedGO["WhiteFlashZem"] = preloadedObjects["Room_Mansion"]["Xun NPC/White Flash"];
+            
             Log("Storing GOs");
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
             preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
@@ -279,6 +288,9 @@ namespace FiveKnights
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
 
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
+            
+            
+            
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
             preloadedGO["StartDoor"] = preloadedObjects["GG_Atrium_Roof"]["Land of Storms Doors"];

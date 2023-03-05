@@ -76,6 +76,9 @@ namespace FiveKnights
             Charms.charmCost_43,
             Charms.charmCost_44,
         };
+        
+        public bool GreetedNailsmith = false;
+        public bool GreetedSheo = false;
 
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;

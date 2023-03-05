@@ -395,7 +395,7 @@ namespace FiveKnights.Isma
                 // Prevent hiding
                 fsm.RemoveFsmGlobalTransition("HIDE");
 
-                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 0.8f;
+                if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 
                 mesh.enabled = false;
                 List<MeshRenderer> lst = new List<MeshRenderer>();

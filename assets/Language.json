@@ -29,9 +29,28 @@
             "HEG_OUTRO_1a": "HEG_OUTRO_1a",
             "HEG_OUTRO_1b": "HEG_OUTRO_1b",
             "ZEM_OUTRO_1a": "ZEM_OUTRO_1a",
-            "ZEM_OUTRO_1b": "ZEM_OUTRO_1b"
+            "ZEM_OUTRO_1b": "ZEM_OUTRO_1b",
+            "SHEO_PC_1": "Hello you little piece of shit.",
+            "SHEO_PC_2": "The toast on an age ago's bread has dried by now.",
+            "SHEO_PC_3": "You should make sure it doesn't get moldy.",
+            "SMITH_PC_1": "You are so right Sheo.",
+            "SMITH_PC_2": "The bread may be moldy by now however.",
+            "SMITH_PC_3": "Insanely gay moment."
+        },
+        "Titles": {
+            "SHEO_TITLE_MAIN": "Sheo",
+            "SHEO_TITLE_SUPER": "Nailmaster",
+            "SHEO_TITLE_SUB": "",
+            "SMITH_TITLE_SUB": "",
+            "SMITH_TITLE_SUPER": "",
+            "SMITH_TITLE_MAIN": "Nailsmith"
+        },
+        "Zote": {
+            "SMITH_DREAM": "i sculpt",
+            "SHEO_DREAM": "bread"
         },
         "Speech": {
+            "SHEO_DREAM": "Dream dream dream.",
             "ISMA_NAME": "Kindly Isma",
             "ISMA_DESC": "Gentle god of moss and grove.",
             "DD_ISMA_NAME": "Loyal Ogrim & Kindly Isma",
