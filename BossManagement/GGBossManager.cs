@@ -348,8 +348,8 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
                 {
-                    SceneName = "White_Palace_09",
-                    EntryGateName = "door_dreamReturnGGTestingIt(Clone)(Clone)",
+                    SceneName = "hidden_reward_room",
+                    EntryGateName = "door_reward_room",
                     Visualization = GameManager.SceneLoadVisualizations.Default,
                     WaitForSceneTransitionCameraFade = false,
                     PreventCameraFadeOut = true,
