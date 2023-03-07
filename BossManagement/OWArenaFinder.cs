@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -335,7 +336,7 @@ namespace FiveKnights.BossManagement
                 }
             }
         }
-        
+
         private void USceneManagerOnactiveSceneChanged(Scene arg0, Scene arg1)
         {
             _currScene = arg1.name;
@@ -457,34 +458,6 @@ namespace FiveKnights.BossManagement
             o.GetComponent<SceneManager>().noLantern = true;
             o.GetComponent<SceneManager>().darknessLevel = -1;
             o.SetActive(true);
-
-
-            /*
-            foreach (var i in FindObjectsOfType<GameObject>()
-                .Where(x => x.name.Contains("BlurPlane")))
-            {
-                var mat = i.GetComponent<MeshRenderer>().materials[0];
-                mat.SetFloat(Shader.PropertyToID("_Size"), 25f);
-                Modding.Logger.Log(mat.GetFloat(Shader.PropertyToID("_Size")));
-                i.transform.position += Vector3.forward * 5f;
-            }*/
-
-            /*Material[] blurPlaneMaterials = new Material[1];
-            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
-            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
-            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
-            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
-            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
-                
-            foreach (var i in FindObjectsOfType<GameObject>()
-                .Where(x => x.name.Contains("BlurPlane")))
-            {
-                i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
-            }*/
         }
 
         private void FixCameraDryya()
