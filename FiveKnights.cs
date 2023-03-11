@@ -244,6 +244,7 @@ namespace FiveKnights
                 
                 ("Room_Mansion","Heart Piece Folder/Heart Piece"),
                 ("Room_Mansion","Xun NPC/White Flash"),
+                ("GG_Radiance", "Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)")
 
             };
         }
@@ -253,6 +254,7 @@ namespace FiveKnights
             // TODO: For debugging reasons
             preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"];
             preloadedGO["WhiteFlashZem"] = preloadedObjects["Room_Mansion"]["Xun NPC/White Flash"];
+            preloadedGO["RadPlat"] = preloadedObjects["GG_Radiance"]["Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"];
             
             Log("Storing GOs");
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];

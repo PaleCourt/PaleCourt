@@ -28,14 +28,14 @@ namespace FiveKnights
             return bd switch
             {
                 Bundle.Sound => "soundbund",
-                Bundle.TitleScreen => "titleScreen",
+                Bundle.TitleScreen => "titlescreen",
                 Bundle.GIsma => "isma" + FiveKnights.OS,
                 Bundle.GDryya => "dryya" + FiveKnights.OS,
                 Bundle.GHegemol => "hegemol" + FiveKnights.OS,
                 Bundle.GZemer => "zemer" + FiveKnights.OS,
                 Bundle.GArenaIsma => "ismabg",
                 Bundle.GArenaDep => "ggArenaDep",
-                Bundle.GArenaHub => "ggArenaHub",
+                Bundle.GArenaHub => "ggarenahub",
                 Bundle.GArenaHub2 => "hubasset1",
                 Bundle.GArenaH => "ggArenaHegemol",
                 Bundle.GArenaD => "ggArenaDryya",
@@ -47,12 +47,12 @@ namespace FiveKnights
                 Bundle.OWArenaZ => "owarenazemer",
                 Bundle.OWArenaI => "owarenaisma",
                 Bundle.OWArenaDep => "owarenadep",
-                Bundle.WSArenaDep => "workShopEntranceDep",
-                Bundle.WSArena => "workShopEntrance",
+                Bundle.WSArenaDep => "workshopdep",
+                Bundle.WSArena => "workshopentrance",
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
                 Bundle.CharmUnlock => "charmunlock",
-                Bundle.Artist => "artistsbund",
+                Bundle.Artist => "artistsbund", 
                 _ => ""
             };
         }

@@ -507,23 +507,47 @@ namespace FiveKnights
             Log("Loading hub bundle");
         }
 
-        void Arena()
+        void Arena() 
         {
             CustomWP.boss = CustomWP.Boss.None;
+
+            Log("Found the defedenr");
+            GameObject.Find("GG_Statue_Defender").transform.position = new Vector3(56.65f, 44.45f, 0.2f);
 
             FiveKnights.preloadedGO["Entrance"] = ABManager.AssetBundles[ABManager.Bundle.WSArena].LoadAsset<GameObject>("gg_workshop_pale_court_entrance");
             
             GameObject go = Instantiate(FiveKnights.preloadedGO["Entrance"]);
             go.SetActive(true);
-            go.transform.position -= new Vector3(23.6f, 0f);
-            foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
+            go.transform.position = new Vector3(55.6f, 30.7f,2.1054f);
+            /*foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
+            }*/
+
+            foreach (Transform platPos in go.transform.Find("Platforms"))
+            {
+                GameObject plat = Instantiate(FiveKnights.preloadedGO["RadPlat"]);
+                plat.transform.position = platPos.position;
+                plat.SetActive(true);
+                PlayMakerFSM fsm = plat.LocateMyFSM("radiant_plat");
+                fsm.SetState("Init");
+                StartCoroutine(Test(fsm));
+            }
+
+            IEnumerator Test(PlayMakerFSM fsm)
+            {
+                while (true)
+                {
+                    yield return new WaitWhile((() => !Input.GetKey(KeyCode.R)));
+                    fsm.SendEvent("APPEAR");
+                    Log("Forcing to appear??");
+                    yield break;
+                }
             }
             
             GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
             crack.SetActive(true);
-            crack.transform.position = new Vector3(28.07f, 37.68f, 4.21f);
+            crack.transform.position = new Vector3(56.25f, 37.68f, 4.21f);
             crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
             GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
             secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));

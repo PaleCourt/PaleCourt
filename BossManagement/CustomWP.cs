@@ -35,8 +35,9 @@ namespace FiveKnights
 
             FiveKnights.preloadedGO["HubRoot"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub].LoadAsset<GameObject>("pale court gg throne aditions");
             GameObject root = Instantiate(FiveKnights.preloadedGO["HubRoot"]);
-            
-            
+            FiveKnights.preloadedGO["ThroneCovered"] = root.transform.Find("throne_covered").gameObject;
+            FiveKnights.preloadedGO["ThroneCovered"].SetActive(!FiveKnights.Instance.SaveSettings.UnlockedChampionsCall || !FiveKnights.Instance.SaveSettings.SeenChampionsCall);
+
             root.SetActive(true);
             foreach (var i in root.transform.GetComponentsInChildren<SpriteRenderer>(true))
             {
@@ -200,8 +201,8 @@ namespace FiveKnights
             effect.name = "Throne First Appear";
             effect.transform.position = new Vector3(60.5f, 102.62f, -2f);
 
-			Destroy(effect.Find("GG_statues_0027_26"));
-			Destroy(effect.GetComponent<BossStatueFlashEffect>());
+            Destroy(effect.Find("GG_statues_0027_26"));
+            Destroy(effect.GetComponent<BossStatueFlashEffect>());
             effectParent.AddComponent<ThroneFlash>().throne = throne;
 
             effectParent.SetActive(true);
@@ -270,7 +271,9 @@ namespace FiveKnights
             }
 
             StartCoroutine(Throne());
+            GameObject.Find("throne").transform.Find("core_extras_0029_wp").gameObject.SetActive(FiveKnights.Instance.SaveSettings.UnlockedChampionsCall && FiveKnights.Instance.SaveSettings.SeenChampionsCall);
             throne.SetActive(FiveKnights.Instance.SaveSettings.UnlockedChampionsCall && FiveKnights.Instance.SaveSettings.SeenChampionsCall);
+            FiveKnights.preloadedGO["ThroneCovered"].SetActive(!FiveKnights.Instance.SaveSettings.UnlockedChampionsCall || !FiveKnights.Instance.SaveSettings.SeenChampionsCall);
         }
 
         private void HubRemove()
