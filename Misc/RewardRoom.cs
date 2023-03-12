@@ -112,7 +112,7 @@ namespace FiveKnights
                     new Vector2(302f, yLvl), new Vector2(302f, yLvl), true, true);
                 
                 DialogueNPC dryya = DialogueNPC.CreateInstance();
-                dryya.transform.position = new Vector3(298.74f, 129.67f, 0f);
+                dryya.transform.position = new Vector3(293.38f, 129.67f, 0f);
                 dryya.DialogueSelector = DryyaDialogue;
                 dryya.GetComponent<MeshRenderer>().enabled = false;
                 dryya.SetTitle("TITLE_RR_DRYYA");
@@ -120,7 +120,7 @@ namespace FiveKnights
                 dryya.SetUp();
 
                 DialogueNPC isma = DialogueNPC.CreateInstance();
-                isma.transform.position = new Vector3(306.73f, 129.0865f, 0f);
+                isma.transform.position = new Vector3(300.79f, 129.0865f, 0f);
                 isma.DialogueSelector = IsmaDialogue;
                 isma.GetComponent<MeshRenderer>().enabled = false;
                 isma.SetTitle("TITLE_RR_ISMA");
@@ -128,7 +128,7 @@ namespace FiveKnights
                 isma.SetUp();
 
                 DialogueNPC ogrim = DialogueNPC.CreateInstance();
-                ogrim.transform.position = new Vector3(302.69f, 129.0865f, 0f);
+                ogrim.transform.position = new Vector3(297.35f, 129.0865f, 0f);
                 ogrim.DialogueSelector = OgrimDialogue;
                 ogrim.GetComponent<MeshRenderer>().enabled = false;
                 ogrim.SetTitle("TITLE_RR_OGRIM");
@@ -136,7 +136,7 @@ namespace FiveKnights
                 ogrim.SetUp();
 
                 DialogueNPC hegemol = DialogueNPC.CreateInstance();
-                hegemol.transform.position = new Vector3(293.92f, 129.38f, 0f);
+                hegemol.transform.position = new Vector3(305.08f, 129.38f, 0f);
                 hegemol.DialogueSelector = HegemolDialogue;
                 hegemol.SetTitle("TITLE_RR_HEGEMOL");
                 hegemol.GetComponent<MeshRenderer>().enabled = false;
@@ -144,7 +144,7 @@ namespace FiveKnights
                 hegemol.SetUp();
 
                 DialogueNPC zemer = DialogueNPC.CreateInstance();
-                zemer.transform.position = new Vector3(310.33f, 129.0576f, 0f);
+                zemer.transform.position = new Vector3(311.03f, 129.0576f, 0f);
                 zemer.DialogueSelector = ZemerDialogue;
                 zemer.GetComponent<MeshRenderer>().enabled = false;
                 zemer.SetTitle("TITLE_RR_ZEMER");
@@ -154,7 +154,7 @@ namespace FiveKnights
                 dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();
                 ismaAnim = GameObject.Find("Isma").GetComponent<Animator>();
                 ogrimAnim = GameObject.Find("Ogrim").GetComponent<Animator>();
-                hegemolAnim = GameObject.Find("Hegemol").Find("Head").GetComponent<Animator>();
+                hegemolAnim = GameObject.Find("Hegemol").GetComponent<Animator>();
                 zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
             }
         }
@@ -249,7 +249,22 @@ namespace FiveKnights
                     }
                     else
 					{
-                        key = "RR_DRYYA_FIRST_REPEAT";
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
+                        {
+                            key = "RR_DRYYA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
+                        {
+                            key = "RR_DRYYA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_DRYYA_FIRST_REPEAT";
+                        }
                     }
                 }
                 else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
@@ -266,7 +281,22 @@ namespace FiveKnights
                     }
                     else
                     {
-                        key = "RR_DRYYA_SECOND_REPEAT";
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
+                        {
+                            key = "RR_DRYYA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
+                        {
+                            key = "RR_DRYYA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_DRYYA_SECOND_REPEAT";
+                        }
                     }
                 }
                 else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
@@ -278,7 +308,22 @@ namespace FiveKnights
                     }
                     else
                     {
-                        key = "RR_DRYYA_THIRD_REPEAT";
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
+                        {
+                            key = "RR_DRYYA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
+                        {
+                            key = "RR_DRYYA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_DRYYA_THIRD_REPEAT";
+                        }
                     }
                 }
                 else
@@ -319,6 +364,14 @@ namespace FiveKnights
                     return new() { Key = "RR_DRYYA_SECOND_2_3_ALT", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_THIRD_1_1":
                     return new() { Key = "RR_DRYYA_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_CHARM_1":
+                    return new() { Key = "RR_DRYYA_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_CHARM_2":
+                    return new() { Key = "RR_DRYYA_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_OLDNAIL_1":
+                    return new() { Key = "RR_DRYYA_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_OLDNAIL_2":
+                    return new() { Key = "RR_DRYYA_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 default:
                     return new() { Continue = false, Wait = StopAnimDryya() };
             }
@@ -345,30 +398,618 @@ namespace FiveKnights
 
         private static DialogueOptions IsmaDialogue(DialogueCallbackOptions prev)
         {
-            if (prev.Continue == false)
-                return new() { Key = "RR_ISMA_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-            return new() { Continue = false };
+            if(!prev.Continue)
+            {
+                string key;
+                if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.IsmaFirstConvo1)
+                    {
+                        key = "RR_ISMA_FIRST_1_1";
+                        FiveKnights.Instance.SaveSettings.IsmaFirstConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.IsmaFirstConvo2)
+                    {
+                        key = "RR_ISMA_FIRST_2_1";
+                        FiveKnights.Instance.SaveSettings.IsmaFirstConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        {
+                            key = "RR_ISMA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
+                        {
+                            key = "RR_ISMA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ISMA_FIRST_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.IsmaSecondConvo1)
+                    {
+                        key = "RR_ISMA_SECOND_1_1";
+                        FiveKnights.Instance.SaveSettings.IsmaSecondConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.IsmaSecondConvo2)
+                    {
+                        key = "RR_ISMA_SECOND_2_1";
+                        FiveKnights.Instance.SaveSettings.IsmaSecondConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        {
+                            key = "RR_ISMA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
+                        {
+                            key = "RR_ISMA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ISMA_SECOND_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.IsmaThirdConvo1)
+                    {
+                        key = "RR_ISMA_THIRD_1_1";
+                        FiveKnights.Instance.SaveSettings.IsmaThirdConvo1 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        {
+                            key = "RR_ISMA_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
+                        {
+                            key = "RR_ISMA_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ISMA_THIRD_REPEAT";
+                        }
+                    }
+                }
+                else
+                {
+                    key = "RR_ISMA_CHEATER";
+                }
+                return new()
+                {
+                    Key = key,
+                    Sheet = "Reward Room",
+                    Type = DialogueType.Normal,
+                    Wait = PlayAnimIsma(),
+                    Continue = true
+                };
+            }
+            switch(prev.Key)
+            {
+                case "RR_ISMA_FIRST_1_1":
+                    return new() { Key = "RR_ISMA_FIRST_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_FIRST_1_2":
+                    return new() { Key = "RR_ISMA_FIRST_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_FIRST_2_1":
+                    return new() { Key = "RR_ISMA_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_FIRST_2_2":
+                    return new() { Key = "RR_ISMA_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_SECOND_1_1":
+                    return new() { Key = "RR_ISMA_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_SECOND_1_2":
+                    return new() { Key = "RR_ISMA_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_SECOND_2_1":
+                    return new() { Key = "RR_ISMA_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_SECOND_2_2":
+                    return new() { Key = "RR_ISMA_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_THIRD_1_1":
+                    return new() { Key = "RR_ISMA_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_CHARM_1":
+                    return new() { Key = "RR_ISMA_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_CHARM_2":
+                    return new() { Key = "RR_ISMA_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_OLDNAIL_1":
+                    return new() { Key = "RR_ISMA_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ISMA_OLDNAIL_2":
+                    return new() { Key = "RR_ISMA_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                default:
+                    return new() { Continue = false, Wait = StopAnimIsma() };
+            }
+
+            IEnumerator PlayAnimIsma()
+            {
+                yield return ismaAnim.PlayBlocking("TurnRight");
+                ismaAnim.Play("TalkRight");
+            }
+
+            IEnumerator StopAnimIsma()
+            {
+                yield return ismaAnim.PlayBlocking("TurnLeft");
+                ismaAnim.Play("Idle");
+            }
         }
 
         private static DialogueOptions OgrimDialogue(DialogueCallbackOptions prev)
         {
-            if(prev.Continue == false)
-                return new() { Key = "RR_OGRIM_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-            return new() { Continue = false };
+            if(!prev.Continue)
+            {
+                string key;
+                if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.OgrimFirstConvo1)
+                    {
+                        key = "RR_OGRIM_FIRST_1_1";
+                        FiveKnights.Instance.SaveSettings.OgrimFirstConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.OgrimFirstConvo2)
+                    {
+                        key = "RR_OGRIM_FIRST_2_1";
+                        FiveKnights.Instance.SaveSettings.OgrimFirstConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        {
+                            key = "RR_OGRIM_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
+                        {
+                            key = "RR_OGRIM_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_OGRIM_FIRST_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.OgrimSecondConvo1)
+                    {
+                        key = "RR_OGRIM_SECOND_1_1";
+                        FiveKnights.Instance.SaveSettings.OgrimSecondConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.OgrimSecondConvo2)
+                    {
+                        key = "RR_OGRIM_SECOND_2_1";
+                        FiveKnights.Instance.SaveSettings.OgrimSecondConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        {
+                            key = "RR_OGRIM_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
+                        {
+                            key = "RR_OGRIM_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_OGRIM_SECOND_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.OgrimThirdConvo1)
+                    {
+                        key = "RR_OGRIM_THIRD_1_1";
+                        FiveKnights.Instance.SaveSettings.OgrimThirdConvo1 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        {
+                            key = "RR_OGRIM_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
+                        {
+                            key = "RR_OGRIM_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_OGRIM_THIRD_REPEAT";
+                        }
+                    }
+                }
+                else
+                {
+                    key = "RR_OGRIM_CHEATER";
+                }
+                return new()
+                {
+                    Key = key,
+                    Sheet = "Reward Room",
+                    Type = DialogueType.Normal,
+                    Wait = PlayAnimOgrim(),
+                    Continue = true
+                };
+            }
+            switch(prev.Key)
+            {
+                case "RR_OGRIM_FIRST_1_1":
+                    return new() { Key = "RR_OGRIM_FIRST_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_FIRST_1_2":
+                    return new() { Key = "RR_OGRIM_FIRST_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_FIRST_2_1":
+                    return new() { Key = "RR_OGRIM_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_FIRST_2_2":
+                    return new() { Key = "RR_OGRIM_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_SECOND_1_1":
+                    return new() { Key = "RR_OGRIM_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_SECOND_1_2":
+                    return new() { Key = "RR_OGRIM_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_SECOND_2_1":
+                    return new() { Key = "RR_OGRIM_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_SECOND_2_2":
+                    return new() { Key = "RR_OGRIM_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_THIRD_1_1":
+                    return new() { Key = "RR_OGRIM_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_CHARM_1":
+                    return new() { Key = "RR_OGRIM_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_CHARM_2":
+                    return new() { Key = "RR_OGRIM_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_OLDNAIL_1":
+                    return new() { Key = "RR_OGRIM_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_OGRIM_OLDNAIL_2":
+                    return new() { Key = "RR_OGRIM_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                default:
+                    return new() { Continue = false, Wait = StopAnimOgrim() };
+            }
+
+            IEnumerator PlayAnimOgrim()
+            {
+                yield return ogrimAnim.PlayBlocking("TurnLeft");
+                ogrimAnim.Play("TalkLeft");
+            }
+
+            IEnumerator StopAnimOgrim()
+            {
+                yield return ogrimAnim.PlayBlocking("TurnRight");
+                ogrimAnim.Play("TalkRight");
+            }
         }
 
         private static DialogueOptions HegemolDialogue(DialogueCallbackOptions prev)
         {
-            if (prev.Continue == false)
-                return new() { Key = "RR_HEGEMOL_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-            return new() { Continue = false };
+            if(!prev.Continue)
+            {
+                string key;
+                if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.HegemolFirstConvo1)
+                    {
+                        key = "RR_HEGEMOL_FIRST_1_1";
+                        FiveKnights.Instance.SaveSettings.HegemolFirstConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.HegemolFirstConvo2)
+                    {
+                        key = "RR_HEGEMOL_FIRST_2_1";
+                        FiveKnights.Instance.SaveSettings.HegemolFirstConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        {
+                            key = "RR_HEGEMOL_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
+                        {
+                            key = "RR_HEGEMOL_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_HEGEMOL_FIRST_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.HegemolSecondConvo1)
+                    {
+                        key = "RR_HEGEMOL_SECOND_1_1";
+                        FiveKnights.Instance.SaveSettings.HegemolSecondConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.HegemolSecondConvo2)
+                    {
+                        key = "RR_HEGEMOL_SECOND_2_1";
+                        FiveKnights.Instance.SaveSettings.HegemolSecondConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        {
+                            key = "RR_HEGEMOL_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
+                        {
+                            key = "RR_HEGEMOL_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_HEGEMOL_SECOND_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.HegemolThirdConvo1)
+                    {
+                        key = "RR_HEGEMOL_THIRD_1_1";
+                        FiveKnights.Instance.SaveSettings.HegemolThirdConvo1 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        {
+                            key = "RR_HEGEMOL_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
+                        {
+                            key = "RR_HEGEMOL_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_HEGEMOL_THIRD_REPEAT";
+                        }
+                    }
+                }
+                else
+                {
+                    key = "RR_HEGEMOL_CHEATER";
+                }
+                return new()
+                {
+                    Key = key,
+                    Sheet = "Reward Room",
+                    Type = DialogueType.Normal,
+                    Wait = PlayAnimHegemol(),
+                    Continue = true
+                };
+            }
+            switch(prev.Key)
+            {
+                case "RR_HEGEMOL_FIRST_1_1":
+                    return new() { Key = "RR_HEGEMOL_FIRST_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_FIRST_1_2":
+                    return new() { Key = "RR_HEGEMOL_FIRST_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_FIRST_2_1":
+                    return new() { Key = "RR_HEGEMOL_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_FIRST_2_2":
+                    return new() { Key = "RR_HEGEMOL_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_SECOND_1_1":
+                    return new() { Key = "RR_HEGEMOL_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_SECOND_1_2":
+                    return new() { Key = "RR_HEGEMOL_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_SECOND_2_1":
+                    return new() { Key = "RR_HEGEMOL_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_SECOND_2_2":
+                    return new() { Key = "RR_HEGEMOL_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_THIRD_1_1":
+                    return new() { Key = "RR_HEGEMOL_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_CHARM_1":
+                    return new() { Key = "RR_HEGEMOL_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_CHARM_2":
+                    return new() { Key = "RR_HEGEMOL_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_OLDNAIL_1":
+                    return new() { Key = "RR_HEGEMOL_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_OLDNAIL_2":
+                    return new() { Key = "RR_HEGEMOL_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                default:
+                    return new() { Continue = false, Wait = StopAnimHegemol() };
+            }
+
+            IEnumerator PlayAnimHegemol()
+            {
+                yield return hegemolAnim.PlayBlocking("TurnLeft");
+                hegemolAnim.Play("Talk");
+            }
+
+            IEnumerator StopAnimHegemol()
+            {
+                yield return hegemolAnim.PlayBlocking("TurnRight");
+                hegemolAnim.Play("Idle");
+            }
         }
 
         private static DialogueOptions ZemerDialogue(DialogueCallbackOptions prev)
         {
-            if (prev.Continue == false)
-                return new() { Key = "RR_ZEMER_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-            return new() { Continue = false };
+            if(!prev.Continue)
+            {
+                string key;
+                if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo1)
+                    {
+                        key = "RR_ZEMER_FIRST_1_1";
+                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo2)
+                    {
+                        key = "RR_ZEMER_FIRST_2_1";
+                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
+                        {
+                            key = "RR_ZEMER_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
+                        {
+                            key = "RR_ZEMER_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ZEMER_FIRST_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.ZemerSecondConvo1)
+                    {
+                        key = "RR_ZEMER_SECOND_1_1";
+                        FiveKnights.Instance.SaveSettings.ZemerSecondConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.ZemerSecondConvo2)
+                    {
+                        key = "RR_ZEMER_SECOND_2_1";
+                        FiveKnights.Instance.SaveSettings.ZemerSecondConvo2 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
+                        {
+                            key = "RR_ZEMER_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
+                        {
+                            key = "RR_ZEMER_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ZEMER_SECOND_REPEAT";
+                        }
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.ZemerThirdConvo1)
+                    {
+                        key = "RR_ZEMER_THIRD_1_1";
+                        FiveKnights.Instance.SaveSettings.ZemerThirdConvo1 = true;
+                    }
+                    else
+                    {
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                            !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
+                        {
+                            key = "RR_ZEMER_CHARM_1";
+                            FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
+                        }
+                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
+                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
+                        {
+                            key = "RR_ZEMER_OLDNAIL_1";
+                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
+                        }
+                        else
+                        {
+                            key = "RR_ZEMER_THIRD_REPEAT";
+                        }
+                    }
+                }
+                else
+                {
+                    key = "RR_ZEMER_CHEATER";
+                }
+                return new()
+                {
+                    Key = key,
+                    Sheet = "Reward Room",
+                    Type = DialogueType.Normal,
+                    Wait = PlayAnimZemer(),
+                    Continue = true
+                };
+            }
+            switch(prev.Key)
+            {
+                case "RR_ZEMER_FIRST_1_1":
+                    return new() { Key = "RR_ZEMER_FIRST_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_FIRST_1_2":
+                    return new() { Key = "RR_ZEMER_FIRST_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_FIRST_2_1":
+                    return new() { Key = "RR_ZEMER_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_FIRST_2_2":
+                    return new() { Key = "RR_ZEMER_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_SECOND_1_1":
+                    return new() { Key = "RR_ZEMER_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_SECOND_1_2":
+                    return new() { Key = "RR_ZEMER_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_SECOND_2_1":
+                    return new() { Key = "RR_ZEMER_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_SECOND_2_2":
+                    return new() { Key = "RR_ZEMER_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_THIRD_1_1":
+                    return new() { Key = "RR_ZEMER_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_CHARM_1":
+                    return new() { Key = "RR_ZEMER_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_CHARM_2":
+                    return new() { Key = "RR_ZEMER_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_OLDNAIL_1":
+                    return new() { Key = "RR_ZEMER_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_OLDNAIL_2":
+                    return new() { Key = "RR_ZEMER_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                default:
+                    return new() { Continue = false, Wait = StopAnimZemer() };
+            }
+
+            IEnumerator PlayAnimZemer()
+            {
+                // Nothing for now, need turn right and talk animation
+                yield break;
+            }
+
+            IEnumerator StopAnimZemer()
+            {
+                // Nothing for now, need turn right and talk animation
+                yield break;
+            }
         }
     }
 }
