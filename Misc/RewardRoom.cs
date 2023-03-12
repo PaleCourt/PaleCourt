@@ -16,6 +16,11 @@ namespace FiveKnights
     public static class RewardRoom
     {
         private static LanguageCtrl langCtrl;
+        private static Animator dryyaAnim;
+        private static Animator ismaAnim;
+        private static Animator ogrimAnim;
+        private static Animator hegemolAnim;
+        private static Animator zemerAnim;
 
         public static void Hook()
         {
@@ -96,7 +101,7 @@ namespace FiveKnights
                     UnityEngine.Object.Destroy(g.gameObject);
                 }
 
-                float yLvl = 134.5f;
+                float yLvl = 132.5f;
                 
                 CreateCameraLock("CameraLockOuter", new Vector2(300f, 132f), new Vector2(3f, 1f),
                     new Vector2(37f, 23f), new Vector2(0f, 0f),
@@ -145,6 +150,12 @@ namespace FiveKnights
                 zemer.SetTitle("TITLE_RR_ZEMER");
                 zemer.SetDreamKey("TITLE_RR_ZEMER_SUB");
                 zemer.SetUp();
+
+                dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();
+                ismaAnim = GameObject.Find("Isma").GetComponent<Animator>();
+                ogrimAnim = GameObject.Find("Ogrim").GetComponent<Animator>();
+                hegemolAnim = GameObject.Find("Hegemol").Find("Head").GetComponent<Animator>();
+                zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
             }
         }
 
@@ -171,6 +182,7 @@ namespace FiveKnights
             tp.respawnMarker = rm.GetComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
         }
+
         private static void CreateCameraLock(string n, Vector2 pos, Vector2 scl, Vector2 cSize, Vector2 cOff,
                                       Vector2 min, Vector2 max, bool preventLookDown = false, bool maxPriority = false)
         {
@@ -220,9 +232,115 @@ namespace FiveKnights
 
         private static DialogueOptions DryyaDialogue(DialogueCallbackOptions prev)
         {
-            if (prev.Continue == false)
-                return new() { Key = "RR_DRYYA_MEET", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-            return new() { Continue = false };
+            if(!prev.Continue)
+            {
+                string key;
+                if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.DryyaFirstConvo1)
+                    {
+                        key = "RR_DRYYA_FIRST_1_1";
+                        FiveKnights.Instance.SaveSettings.DryyaFirstConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.DryyaFirstConvo2)
+                    {
+                        key = "RR_DRYYA_FIRST_2_1";
+                        FiveKnights.Instance.SaveSettings.DryyaFirstConvo2 = true;
+                    }
+                    else
+					{
+                        key = "RR_DRYYA_FIRST_REPEAT";
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.DryyaSecondConvo1)
+                    {
+                        key = "RR_DRYYA_SECOND_1_1";
+                        FiveKnights.Instance.SaveSettings.DryyaSecondConvo1 = true;
+                    }
+                    else if(!FiveKnights.Instance.SaveSettings.DryyaSecondConvo2)
+                    {
+                        key = "RR_DRYYA_SECOND_2_1";
+                        FiveKnights.Instance.SaveSettings.DryyaSecondConvo2 = true;
+                    }
+                    else
+                    {
+                        key = "RR_DRYYA_SECOND_REPEAT";
+                    }
+                }
+                else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears >= 3)
+                {
+                    if(!FiveKnights.Instance.SaveSettings.DryyaThirdConvo1)
+                    {
+                        key = "RR_DRYYA_THIRD_1_1";
+                        FiveKnights.Instance.SaveSettings.DryyaThirdConvo1 = true;
+                    }
+                    else
+                    {
+                        key = "RR_DRYYA_THIRD_REPEAT";
+                    }
+                }
+                else
+				{
+                    key = "RR_DRYYA_CHEATER";
+                }
+                return new()
+                {
+                    Key = key,
+                    Sheet = "Reward Room",
+                    Type = DialogueType.Normal,
+                    Wait = PlayAnimDryya(),
+                    Continue = true
+                };
+            }
+            switch(prev.Key)
+            {
+                case "RR_DRYYA_FIRST_1_1":
+                    return new() { Key = "RR_DRYYA_FIRST_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_FIRST_1_2":
+                    return new() { Key = "RR_DRYYA_FIRST_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_FIRST_1_3":
+                    return new() { Key = "RR_DRYYA_FIRST_1_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_FIRST_2_1":
+                    return new() { Key = "RR_DRYYA_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_FIRST_2_2":
+                    return new() { Key = "RR_DRYYA_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_SECOND_1_1":
+                    return new() { Key = "RR_DRYYA_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_SECOND_1_2":
+                    return new() { Key = "RR_DRYYA_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_SECOND_2_1":
+                    if(PlayerData.instance.nailSmithUpgrades == 0) return new() { Key = "RR_DRYYA_SECOND_2_2_ALT", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                    return new() { Key = "RR_DRYYA_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_SECOND_2_2":
+                    return new() { Key = "RR_DRYYA_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_SECOND_2_2_ALT":
+                    return new() { Key = "RR_DRYYA_SECOND_2_3_ALT", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_THIRD_1_1":
+                    return new() { Key = "RR_DRYYA_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                default:
+                    return new() { Continue = false, Wait = StopAnimDryya() };
+            }
+
+            IEnumerator PlayAnimDryya()
+            {
+                if(HeroController.instance.transform.position.x < dryyaAnim.gameObject.transform.position.x)
+                {
+                    dryyaAnim.Play("TalkLeft");
+                }
+                else
+				{
+                    dryyaAnim.Play("TalkRight");
+                }
+                yield break;
+            }
+
+            IEnumerator StopAnimDryya()
+            {
+                dryyaAnim.Play("Idle");
+                yield break;
+            }
         }
 
         private static DialogueOptions IsmaDialogue(DialogueCallbackOptions prev)

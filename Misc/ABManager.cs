@@ -41,7 +41,7 @@ namespace FiveKnights
                 Bundle.GArenaD => "ggArenaDryya",
                 Bundle.GArenaI => "ggArenaIsma",
                 Bundle.GArenaZ => "ggArenaZemer",
-                Bundle.GReward => "rewardRoom",
+                Bundle.GReward => "rewardroom",
                 Bundle.OWArenaD => "owarenadryya",
                 Bundle.OWArenaH => "owarenahegemol",
                 Bundle.OWArenaZ => "owarenazemer",

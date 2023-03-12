@@ -68,7 +68,7 @@ namespace FiveKnights
                 case "BLOOM_NAME":
                     return "Abyssal Bloom";
                 case "LAMENT_NAME":
-                    return"Vessel's Lament";
+                    return "Vessel's Lament";
                 case "PURITY_NAME":
                     return "Mark of Purity";
                 case "BOON_NAME":

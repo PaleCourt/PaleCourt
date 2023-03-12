@@ -80,8 +80,15 @@ namespace FiveKnights
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 
+        public bool DryyaFirstConvo1 = false;
+        public bool DryyaFirstConvo2 = false;
+        public bool DryyaSecondConvo1 = false;
+        public bool DryyaSecondConvo2 = false;
+        public bool DryyaThirdConvo1 = false;
+
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
         public bool SeenChampionsCall = false;
+        public int ChampionsCallClears = 0;
     }
 }
