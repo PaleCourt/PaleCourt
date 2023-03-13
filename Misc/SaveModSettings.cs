@@ -80,8 +80,49 @@ namespace FiveKnights
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 
+        public bool DryyaFirstConvo1 = false;
+        public bool DryyaFirstConvo2 = false;
+        public bool DryyaSecondConvo1 = false;
+        public bool DryyaSecondConvo2 = false;
+        public bool DryyaThirdConvo1 = false;
+        public bool DryyaCharmConvo = false;
+        public bool DryyaOldNailConvo = false;
+
+        public bool IsmaFirstConvo1 = false;
+        public bool IsmaFirstConvo2 = false;
+        public bool IsmaSecondConvo1 = false;
+        public bool IsmaSecondConvo2 = false;
+        public bool IsmaThirdConvo1 = false;
+        public bool IsmaCharmConvo = false;
+        public bool IsmaOldNailConvo = false;
+
+        public bool OgrimFirstConvo1 = false;
+        public bool OgrimFirstConvo2 = false;
+        public bool OgrimSecondConvo1 = false;
+        public bool OgrimSecondConvo2 = false;
+        public bool OgrimThirdConvo1 = false;
+        public bool OgrimCharmConvo = false;
+        public bool OgrimOldNailConvo = false;
+
+        public bool HegemolFirstConvo1 = false;
+        public bool HegemolFirstConvo2 = false;
+        public bool HegemolSecondConvo1 = false;
+        public bool HegemolSecondConvo2 = false;
+        public bool HegemolThirdConvo1 = false;
+        public bool HegemolCharmConvo = false;
+        public bool HegemolOldNailConvo = false;
+
+        public bool ZemerFirstConvo1 = false;
+        public bool ZemerFirstConvo2 = false;
+        public bool ZemerSecondConvo1 = false;
+        public bool ZemerSecondConvo2 = false;
+        public bool ZemerThirdConvo1 = false;
+        public bool ZemerCharmConvo = false;
+        public bool ZemerOldNailConvo = false;
+
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
         public bool SeenChampionsCall = false;
+        public int ChampionsCallClears = 0;
     }
 }

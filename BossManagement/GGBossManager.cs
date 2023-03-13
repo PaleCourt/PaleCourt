@@ -361,6 +361,7 @@ namespace FiveKnights.BossManagement
                     PreventCameraFadeOut = true,
                     EntryDelay = 0
                 });
+                FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
                 Destroy(this);
             }
         }
