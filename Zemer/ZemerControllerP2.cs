@@ -1716,11 +1716,25 @@ namespace FiveKnights.Zemer
 
         IEnumerator FlowerBloomer()
         {
-            StartCoroutine(GGBossManager.Instance.PlayFlowers());
+            yield return GGBossManager.Instance.PlayFlowers();
             GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             //List<Transform> children = GGBossManager.Instance.flowersAnim.SelectMany(i => i.transform.Cast<Transform>()).ToList();
-            foreach (var child in GGBossManager.Instance.flowersAnim.OrderBy(_ => Guid.NewGuid()))
+            foreach (var glow in GGBossManager.Instance.flowersGlow)
+            {
+                glow.gameObject.SetActive(true); 
+                glow.enabled = true;
+                glow.Play("Glow", -1, 0f);
+            }
+
+            yield return null;
+            foreach (var glow in GGBossManager.Instance.flowersGlow)
+            {
+                yield return glow.WaitToFrame(2);
+            }
+            foreach (var glow in GGBossManager.Instance.flowersGlow) glow.enabled = false;
+
+            /*foreach (var child in GGBossManager.Instance.flowersAnim.OrderBy(_ => Guid.NewGuid()))
             {
                 GameObject whiteFlash = Instantiate(whiteflashOld);
                 whiteFlash.SetActive(true);
@@ -1728,17 +1742,23 @@ namespace FiveKnights.Zemer
                 whiteFlash.transform.localScale /= 15f;
                 whiteFlash.LocateMyFSM("fade and destroy").GetAction<EaseColor>("Idle", 0).fromValue.Value =
                     new Color(1, 1, 1, 0.3f);
+
+                
+                
                 if (UnityEngine.Random.Range(0, 2) == 1)
                 {
                     yield return new WaitForSeconds(0.01f);
                 }
-            }
+            }*/
             for (int i = 0; i < 5; i++)
             {
                 GameObject whiteFlash2 = Instantiate(whiteflashOld);
                 whiteFlash2.SetActive(true);
                 whiteFlash2.transform.position = _target.transform.position;
             }
+
+            yield return new WaitForSeconds(0.2f);
+            foreach (var glow in GGBossManager.Instance.flowersGlow) glow.enabled = true;
         }
         
         IEnumerator LeaveTemp(float dir, float delay, bool firstDeath=false)

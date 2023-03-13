@@ -216,9 +216,9 @@ namespace FiveKnights.Dryya
         }
 
         private void GetComponents()
-        {
+        { 
             _sprite = GetComponent<tk2dSprite>();
-            _ap = transform.Find("Audio Player").gameObject;
+            _ap = transform.Find("Audio Player").gameObject; 
             EnemyDeathEffects deathEffects = GetComponent<EnemyDeathEffects>();
             deathEffects.corpseSpawnPoint = transform.position + Vector3.up * 2;
             

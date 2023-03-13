@@ -30,6 +30,7 @@ namespace FiveKnights.BossManagement
         public Dictionary<string, AnimationClip> clips;
 
         public List<Animator> flowersAnim;
+        public List<Animator> flowersGlow;
 
         public IEnumerator PlayFlowers(int toFrame=-1) 
         {
@@ -251,42 +252,47 @@ namespace FiveKnights.BossManagement
 
                 GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
                 flowersAnim = new List<Animator>();
+                flowersGlow = new List<Animator>();
                 flowers.SetActive(true);
-                foreach (Transform t in flowers.transform)
+                foreach (Transform group in flowers.transform)
                 {
-                    foreach (Animator anim in t.GetComponentsInChildren<Animator>(true))
+                    GameObject glowOld = group.Find("Flower").Find("Glow").gameObject;
+                    glowOld.SetActive(false);
+                    flowersGlow.Add(glowOld.GetComponent<Animator>());
+                    foreach (Transform flower in group)
                     {
+                        Animator anim = flower.GetComponent<Animator>();
                         flowersAnim.Add(anim);
-                        switch (anim.transform.parent.name)
-                        {
-                            case "FlowersA":
-                                anim.Play("F1Grow", -1, 0f);
-                                break;
-                            case "FlowersB":
-                                anim.Play("F2Grow", -1, 0f);
-                                break;
-                            case "FlowersC":
-                                anim.Play("F3Grow", -1, 0f);
-                                break;
-                        }
+                        anim.Play("Grow", -1, 0f);
                         anim.enabled = true;
+                        if (anim.name == "Flower" || anim.GetComponent<SpriteRenderer>().color == Color.black) continue;
+                        GameObject newGlow = Instantiate(glowOld, anim.transform, false);
+                        newGlow.name = "Glow";
+                        newGlow.transform.localPosition = new Vector3(glowOld.transform.localPosition.x,
+                            glowOld.transform.localPosition.y, -0.0001f);
+                        Animator anim2 = newGlow.GetComponent<Animator>();
+                        flowersGlow.Add(anim2);
+                        anim2.enabled = false;
+                        newGlow.SetActive(false);
                     }
                 }
                 yield return null;
-
-                foreach (Animator anim in flowersAnim)
-                {
-                    anim.enabled = false;
-                }
 
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return OgrimIsmaFight();
 
+                foreach (Animator anim in flowersAnim)
+                {
+                    anim.enabled = false;
+                }
+                
+                Log("FOR SOME REASON HERE????");
+                
                 yield return new WaitForSeconds(1.5f);
                 
-                GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+                /*GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
                 DryyaSetup dc = FightController.Instance.CreateDryya();
@@ -301,9 +307,9 @@ namespace FiveKnights.BossManagement
                 
                 yield return new WaitWhile(() => dc != null);
 
-                yield return new WaitForSeconds(3f);
+                yield return new WaitForSeconds(3f);*/
 
-                GameObject hegSil = GameObject.Find("Silhouette Hegemol");
+                /*GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
                 HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
@@ -321,7 +327,7 @@ namespace FiveKnights.BossManagement
                 Destroy(hegSil);
                 yield return new WaitWhile(() => hegemolCtrl != null);
 
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1.5f);*/
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = FightController.Instance.CreateZemer();
@@ -384,6 +390,16 @@ namespace FiveKnights.BossManagement
 
             // Transition to phase 2
 			yield return new WaitWhile(() => !HIT_FLAG);
+            
+            
+            // TODO REMOVE
+            dd.SetActive(false);
+            if (flowersAnim != null)
+            {
+                StartCoroutine(PlayFlowers(2));
+            }
+            yield break;
+            
             FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
             PlayMusic(null, 1f);
             if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
