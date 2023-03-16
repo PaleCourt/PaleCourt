@@ -60,13 +60,19 @@ namespace FiveKnights
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
 			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
+            On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
 			On.BossSceneController.Awake += BossSceneController_Awake;
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
         }
 
-		private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
+        private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
+        {
+            return currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.GODS_GLORY.ToString() : orig(self);
+        }
+
+        private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
 		{
 			lastBossLevel = level;
             lastBossStatue = Mirror.GetField<BossChallengeUI, BossStatue>(self, "bossStatue");
@@ -302,18 +308,19 @@ namespace FiveKnights
                     FiveKnights.preloadedGO["BSCW"].SetActive(false);
                     var bsc = Instantiate(FiveKnights.preloadedGO["BSCW"]);
                     bsc.SetActive(false);
+                    //BossSceneController.Instance = bsc.GetComponent<BossSceneController>();
                     BossSceneController.Instance.transitionInHoldTime = 0;
                     var dreamEntryControlFsm = bsc.FindGameObjectInChildren("Dream Entry").LocateMyFSM("Control");
                     dreamEntryControlFsm.RemoveAction("Pause", 0);
                     dreamEntryControlFsm.AddAction("Pause", new NextFrameEvent() { sendEvent = FsmEvent.Finished });
-                    bsc.SetActive(true);
+                    bsc.SetActive(true); 
                     yield return null;
                     EventRegister.SendEvent("GG TRANSITION IN");
                     BossSceneController.Instance.GetType().GetProperty("HasTransitionedIn").SetValue(BossSceneController.Instance, true, null);
                     if (arg1.name == ZemerScene || arg1.name == HegemolScene)
                     {
                         bsc.GetComponent<BossSceneController>().heroSpawn.position = new Vector3(25.0f, 27.4f);
-                        HeroController.instance.transform.position = new Vector3(25.0f, 27.4f);
+                        HeroController.instance.transform.position = new Vector3(25.0f, 27.4f); 
                         Log("Changed the hero's pos");
                     }
                     Log("Done trans in dream thing");

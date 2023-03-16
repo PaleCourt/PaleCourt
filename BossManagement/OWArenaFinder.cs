@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using FiveKnights.Misc;
 using FrogCore;
+using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
@@ -59,7 +60,7 @@ namespace FiveKnights.BossManagement
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
-            return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? "DREAM_WORLD" : orig(self);
+            return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.DREAM_WORLD.ToString() : orig(self);
         }
 
         private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
