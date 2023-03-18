@@ -51,9 +51,9 @@ namespace FiveKnights.Isma
         private const int MAX_HP = 1700;
         private const int WALL_HP = 1100;
         private const int SPIKE_HP = 600;
-        private const int MAX_HP_DUO = 500;
-        private const int WALL_HP_DUO = 300;
-        private const int SPIKE_HP_DUO = 200;
+        private const int MAX_HP_DUO = 1800;
+        private const int WALL_HP_DUO = 1300;
+        private const int SPIKE_HP_DUO = 700;
 
         private const float IDLE_TIME = 0f; //0.1f;
         private const int GulkaSpitEnemyDamage = 20;

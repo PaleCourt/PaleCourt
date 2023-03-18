@@ -1920,7 +1920,7 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 //_anim.enabled = false;
                 
-                StartCoroutine(FlashAppear(new Vector2(MIDDLE, GroundY + 5f)));
+                StartCoroutine(FlashAppear(new Vector2(MIDDLE, GroundY + 4f)));
 
                 yield return new WaitForSeconds(0.1f);
 
@@ -1976,7 +1976,7 @@ namespace FiveKnights.Zemer
                 Destroy(startCircleNew);
 
                 GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
-                for (int i = 0; i < 3; i++)
+                for (int i = 0; i < 4; i++)
                 {
                     GameObject whiteFlash = Instantiate(whiteflashOld);
                     whiteFlash.SetActive(true);
@@ -1992,7 +1992,7 @@ namespace FiveKnights.Zemer
                 yield return null;
                 _anim.enabled = false;
 
-                yield return new WaitForSeconds(0.4f);
+                yield return new WaitForSeconds(0.2f);
                 StartCoroutine(Falling());
                 
                 

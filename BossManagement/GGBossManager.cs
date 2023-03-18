@@ -291,7 +291,7 @@ namespace FiveKnights.BossManagement
 
                 yield return new WaitForSeconds(1.5f);
                 
-                GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+                /*GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
                 DryyaSetup dc = FightController.Instance.CreateDryya();
@@ -306,9 +306,9 @@ namespace FiveKnights.BossManagement
                 
                 yield return new WaitWhile(() => dc != null);
 
-                yield return new WaitForSeconds(3f);
+                yield return new WaitForSeconds(3f);*/
 
-                GameObject hegSil = GameObject.Find("Silhouette Hegemol");
+                /*GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
                 HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
@@ -326,7 +326,7 @@ namespace FiveKnights.BossManagement
                 Destroy(hegSil);
                 yield return new WaitWhile(() => hegemolCtrl != null);
 
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1.5f);*/
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = FightController.Instance.CreateZemer();
@@ -392,13 +392,13 @@ namespace FiveKnights.BossManagement
 			yield return new WaitWhile(() => !HIT_FLAG);
             
             
-            /*// TODO REMOVE
+            // TODO REMOVE
             dd.SetActive(false);
             if (flowersAnim != null)
             {
                 StartCoroutine(PlayFlowers(2));
             }
-            yield break;*/
+            yield break;
             
             FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
             PlayMusic(null, 1f);
