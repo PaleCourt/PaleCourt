@@ -217,22 +217,7 @@ namespace FiveKnights
             altLever.transform.position = new Vector2(57.4f,37.5f);
             
         }
-        
-        private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
-        {
-            switch (currScene)
-            {
-                case ZemerScene:
-                    self.cameraXMin = 22.3f;
-                    self.cameraYMin = self.cameraYMax = 31.6f;
-                    break;
-                case HegemolScene:
-                    self.cameraXMin = 22.3f;
-                    self.cameraYMin = self.cameraYMax = 31.6f;
-                    break;
-            }
-        }                                                                                                            
-        
+
         private void SceneChanged(Scene arg0, Scene arg1)
         {
             if(arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09")
@@ -351,7 +336,7 @@ namespace FiveKnights
             if (arg0.name == "White_Palace_09" && 
                 arg1.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
             {
-                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
+                SetSceneSettings(arg1);
                 StartCoroutine(AddComponent());
             }
 
@@ -366,7 +351,6 @@ namespace FiveKnights
                 (arg0.name == "Dream_04_White_Defender" && arg1.name == "Dream_04_White_Defender" 
                                                         && CustomWP.boss == CustomWP.Boss.All))
             {
-                On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
                 StartCoroutine(AddComponent());
                 HeroController.instance.EnterWithoutInput(true);
             }
@@ -396,7 +380,6 @@ namespace FiveKnights
                                   && arg1.name != ZemerScene)
             {
                 Log("Destroying fightctrl");
-                On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
                 if (fightCtrl != null)
                 { 
                     Destroy(fightCtrl);
@@ -569,6 +552,41 @@ namespace FiveKnights
             secret.SetActive(true);
             Log("Finished with crack setting");
         }
+        
+        void SetSceneSettings(Scene arg1)
+        {
+            GameObject pref = null;
+            foreach (var i in FindObjectsOfType<SceneManager>())
+            {
+                var j = i.borderPrefab;
+                pref = j;
+                Destroy(i.gameObject);
+            }
+            GameObject o = Instantiate(FiveKnights.preloadedGO["SMTest"]);
+            SceneManager sm = o.GetComponent<SceneManager>();
+            if (pref != null) sm.borderPrefab = pref;
+            sm.noLantern = true;
+            sm.darknessLevel = -1;
+            sm.saturation = 0.78f;
+            sm.defaultIntensity = 0.9f;
+            sm.defaultColor = new Color(1f, 1f, 1f, 1f);
+            sm.mapZone = MapZone.GODS_GLORY;
+            sm.noParticles = true;
+            switch (arg1.name)
+            {
+                case ZemerScene:
+                    sm.environmentType = 7;
+                    break;
+                case DryyaScene:
+                case IsmaScene:
+                    sm.environmentType = 1;
+                    break;
+                case HegemolScene:
+                    sm.environmentType = 0;
+                    break;
+            }
+            o.SetActive(true);
+        }
 
         private void OnDestroy() 
         {
@@ -582,58 +600,5 @@ namespace FiveKnights
         {
             Logger.Log("[Scene] " + o);
         }
-        
-        // ------------------UNUSED------------------
-        
-        //Code from SFGrenade
-        
-        /*private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
-        {
-            if (info.SceneName == "Waterways_13")
-            {
-                GameObject dn = GameObject.Find("Dream Dialogue");
-                if (dn != null) Destroy(dn);
-                CreateDreamGateway("Dream Enter", "door_dreamEnter", new Vector2(93.5f, 19.3f), 
-                    new Vector2(5.25f, 5.25f),
-                    "GG_White_Defender", "Waterways_13");
-                Log(info.EntryGateName);
-            }
-            orig(self, info);
-        }
-        private void CreateDreamGateway(string gateName, string toGate, Vector2 pos, Vector2 size, string toScene, string returnScene)
-        {
-            Log("Creating Dream Gateway");
-            
-            GameObject dreamEnter = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal"]);
-            dreamEnter.name = gateName;
-            dreamEnter.SetActive(true);
-            dreamEnter.transform.position = pos;
-            dreamEnter.transform.localScale = Vector3.one;
-            dreamEnter.transform.eulerAngles = Vector3.zero;
-
-            dreamEnter.GetComponent<BoxCollider2D>().size = size;
-            dreamEnter.GetComponent<BoxCollider2D>().offset = Vector2.zero;
-
-            foreach (var pfsm in dreamEnter.GetComponents<PlayMakerFSM>())
-            {
-                if (pfsm.FsmName == "Control")
-                {
-                    pfsm.FsmVariables.GetFsmString("Return Scene").Value = returnScene;
-                    pfsm.FsmVariables.GetFsmString("To Scene").Value = toScene;
-                    pfsm.GetAction<BeginSceneTransition>("Change Scene", 4).entryGateName = toGate;
-                }
-            }
-
-            GameObject dreamPT = GameObject.Instantiate(FiveKnights.preloadedGO["DPortal2"]);
-            dreamPT.SetActive(true);
-            dreamPT.transform.position = new Vector3(pos.x, pos.y, -0.002f);
-            dreamPT.transform.localScale = Vector3.one;
-            dreamPT.transform.eulerAngles = Vector3.zero;
-
-            var shape = dreamPT.GetComponent<ParticleSystem>().shape;
-            shape.scale = new Vector3(size.x, size.y, 0.001f);
-
-            Log("Done Creating Dream Gateway");
-        }*/
     }
 }
