@@ -16,8 +16,8 @@ namespace FiveKnights
 {
     internal partial class Amulets : MonoBehaviour
     {
-        private HeroController _hc;// = HeroController.instance;
-        private PlayerData _pd;// = PlayerData.instance;
+        private HeroController _hc => HeroController.instance;
+        private PlayerData _pd => PlayerData.instance;
 
         private AudioSource _audio;
 
@@ -29,7 +29,7 @@ namespace FiveKnights
 
         public void Awake()
         {
-            On.HeroController.Awake += On_HeroController_Awake;
+            On.HeroController.Start += On_HeroController_Start;
             On.CharmIconList.GetSprite += CharmIconList_GetSprite;
             ModHooks.CharmUpdateHook += CharmUpdate;
         }
@@ -48,22 +48,20 @@ namespace FiveKnights
             return orig(self, id);
         }
 
-        public void On_HeroController_Awake(On.HeroController.orig_Awake orig, HeroController self)
+        public void On_HeroController_Start(On.HeroController.orig_Start orig, HeroController self)
         {
             orig(self);
-            _hc = self;
-            _pd = PlayerData.instance;
 
-            Log("Amulets Awake");
+            Log("Amulets Start");
 
-            Log("Dash Cooldown: " + self.DASH_COOLDOWN);
-            Log("Dash Cooldown Charm: " + self.DASH_COOLDOWN_CH);
-            Log("Dash Speed: " + self.DASH_SPEED);
-            Log("Dash Speed Sharp: " + self.DASH_SPEED_SHARP);
+            Log("Dash Cooldown: " + _hc.DASH_COOLDOWN);
+            Log("Dash Cooldown Charm: " + _hc.DASH_COOLDOWN_CH);
+            Log("Dash Speed: " + _hc.DASH_SPEED);
+            Log("Dash Speed Sharp: " + _hc.DASH_SPEED_SHARP);
 
             //RepositionCharmsInInventory();
 
-            _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), self.transform);
+            _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), _hc.transform);
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
             blast.SetActive(true);
             _blastControl = blast.LocateMyFSM("Control");
@@ -71,7 +69,7 @@ namespace FiveKnights
             //_pd.CalculateNotchesUsed();
 
             Log("Waiting for Audio Player Actor...");
-            _spellControl = self.spellControl;
+            _spellControl = _hc.spellControl;
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
             _audioPlayerActor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
@@ -80,21 +78,20 @@ namespace FiveKnights
             _audio.pitch = 1.5f;
 
             // Mark of Purity
-            self.gameObject.AddComponent<PurityTimer>().enabled = false;
-            self.gameObject.AddComponent<AutoSwing>().enabled = false;
+            _hc.gameObject.AddComponent<PurityTimer>().enabled = false;
+            _hc.gameObject.AddComponent<AutoSwing>().enabled = false;
 
             // Boon of Hallownest
-            self.gameObject.AddComponent<BoonSpells>().enabled = false;
+            _hc.gameObject.AddComponent<BoonSpells>().enabled = false;
             InsertCharmSpellEffectsInFsm();
 
             // Abyssal Bloom
-            self.gameObject.AddComponent<ModifyBloomProps>().enabled = true;
-            self.gameObject.AddComponent<AbyssalBloom>().enabled = false;
-            self.gameObject.AddComponent<CheckBloomStage>().enabled = true;
-            AddVoidAttacks(self);
+            _hc.gameObject.AddComponent<ModifyBloomProps>().enabled = true;
+            _hc.gameObject.AddComponent<AbyssalBloom>().enabled = false;
+            _hc.gameObject.AddComponent<CheckBloomStage>().enabled = true;
+            AddVoidAttacks(_hc);
             ModifyFuryForAbyssalBloom();
 
-#if DEBUG
             //  FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
             /*FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
@@ -120,7 +117,6 @@ namespace FiveKnights
             Log("Equipped Charm 43: " + FiveKnights.Instance.SaveSettings.equippedCharms[2]);
             Log("Equipped Charm 44: " + FiveKnights.Instance.SaveSettings.equippedCharms[3]);
             Log("Upgraded Charm 10: " + FiveKnights.Instance.SaveSettings.upgradedCharm_10);
-#endif
         }
 
         private GameObject _royalAura;
@@ -172,8 +168,8 @@ namespace FiveKnights
             _spellControl.InsertCoroutine("Focus Heal Blast", 0, PureVesselBlast);
             _spellControl.InsertCoroutine("Start MP Drain Blast", 0, PureVesselBlastFadeIn);
             _spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
-            _spellControl.InsertMethod("Cancel All", 0, CancelBlast);
 
+            _spellControl.InsertMethod("Cancel All", 0, CancelBlast);
             _spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
             _spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
         }
@@ -400,16 +396,8 @@ namespace FiveKnights
                 if (_royalAura != null) Destroy(_royalAura);
             }
 
-            if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
-            {
-                _hc.GetComponent<PurityTimer>().enabled = true;
-                _hc.GetComponent<AutoSwing>().enabled = true;
-            }
-            else
-            {
-                _hc.GetComponent<PurityTimer>().enabled = false;
-                _hc.GetComponent<AutoSwing>().enabled = false;
-            }
+            _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
+            _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
 
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
             {
@@ -615,7 +603,7 @@ namespace FiveKnights
 
         private void OnDestroy()
         {
-            On.HeroController.Awake -= On_HeroController_Awake;
+            On.HeroController.Start -= On_HeroController_Start;
             ModHooks.CharmUpdateHook -= CharmUpdate;
         }
 
