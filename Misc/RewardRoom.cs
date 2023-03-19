@@ -56,9 +56,9 @@ namespace FiveKnights
                 CreateGateway("door_reward_room", new Vector2(266f, 129.38f), Vector2.zero,
                     null, null, false, true, true,
                     GameManager.SceneLoadVisualizations.Dream);
+                GameCameras.instance.hudCamera.gameObject.transform.Find("Blanker White").gameObject.LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
             }
             orig(self, false);
-			GameCameras.instance.hudCamera.gameObject.transform.Find("Blanker White").gameObject.LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
 		}
         
         private static void FixBlur()
