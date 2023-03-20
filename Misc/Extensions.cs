@@ -6,6 +6,7 @@ using FrogCore.Ext;
 using JetBrains.Annotations;
 using Modding;
 using UnityEngine;
+using Logger = Modding.Logger;
 
 namespace FiveKnights
 {
@@ -48,6 +49,11 @@ namespace FiveKnights
         /// </returns>
         public static int GetCurrentFrame(this Animator anim)
         {
+            if (anim.GetCurrentAnimatorClipInfo(0).Length == 0)
+            {
+                Logger.Log($"Warning: Could not find animator {anim.name} clip in GetCurrentFrame.");
+                return 999999;
+            }
             AnimatorClipInfo att = anim.GetCurrentAnimatorClipInfo(0)[0];
             int currentFrame = (int)(anim.GetCurrentAnimatorStateInfo(0).normalizedTime % 1f * (att.clip.length * att.clip.frameRate));
             return currentFrame;

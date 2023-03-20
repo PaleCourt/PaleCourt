@@ -35,7 +35,7 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
         private const int Phase2HP = 200;
         private const int MaxHPV2 = 500 + Phase2HP;
-        private const int MaxHPV1 = 1200;
+        private const int MaxHPV1 = 200;//1200;
         private const int DoSpinSlashPhase = 900;
         private bool doingIntro;
         private PlayMakerFSM _pvFsm;
