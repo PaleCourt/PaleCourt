@@ -1965,7 +1965,7 @@ namespace FiveKnights.Zemer
                 startCircleNew.transform.localScale *= 3f;
                 startCircleNew.GetComponent<ParticleSystem>().Play();
                 
-                yield return new WaitForSeconds(0.5f);
+                yield return new WaitForSeconds(0.5f); 
 
                 yield return FlashRepeat(targ);
 
