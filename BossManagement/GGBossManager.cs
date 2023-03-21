@@ -11,9 +11,9 @@ using SFCore.Utils;
 using Modding;
 using UnityEngine;
 using UnityEngine.Audio;
-using Vasi;
 using Object = UnityEngine.Object;
 using ReflectionHelper = Modding.ReflectionHelper;
+using TMPro;
 
 namespace FiveKnights.BossManagement
 {
@@ -335,7 +335,7 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 
                 // Grow flowers if in pantheon
-                StartCoroutine(PlayFlowers( 7));
+                StartCoroutine(PlayFlowers(7));
 
                 //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
@@ -345,28 +345,17 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => zc2 != null);
                 
                 Log("Won!");
-                
-                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-                pm.SendEvent("FADE OUT");
-                yield return null;
-                HeroController.instance.MaxHealth();
-                yield return new WaitForSeconds(0.5f);
-                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-                {
-                    SceneName = "hidden_reward_room",
-                    EntryGateName = "door_reward_room",
-                    Visualization = GameManager.SceneLoadVisualizations.Default,
-                    WaitForSceneTransitionCameraFade = false,
-                    PreventCameraFadeOut = true,
-                    EntryDelay = 0
-                });
+
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
+                yield return new WaitForSeconds(0.5f);
+                CCDreamExit();
                 Destroy(this);
             }
         }
 
         private IEnumerator OgrimIsmaFight()
         {
+            // This is to prevent Ogrim from dealing 2 masks of damage with certain attacks, which happens for...some reason
 			On.HeroController.TakeDamage += HeroControllerTakeDamage;
 
             // Set variables and edit FSM
@@ -464,6 +453,65 @@ namespace FiveKnights.BossManagement
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
         }
 
+        private void CCDreamExit()
+		{
+            HeroController.instance.RelinquishControl();
+            PlayerData.instance.disablePause = true;
+            GameObject dreamPts = GameObject.Find("Dream Exit Particle Field");
+            if(dreamPts != null)
+            {
+                dreamPts.GetComponent<ParticleSystem>().Play();
+            }
+
+            // Hijacking the vanilla transition where Ogrim looks up at the other knights to do the same thing, without him looking up
+            EnemyDeathEffects deathfx = dd.GetComponent<EnemyDeathEffectsUninfected>();
+            GameObject corpsePrefab = Vasi.Mirror.GetField<EnemyDeathEffects, GameObject>(deathfx, "corpsePrefab");
+            GameObject transition = Instantiate(corpsePrefab);
+            transition.GetComponent<Renderer>().enabled = false;
+
+            PlayMakerFSM transitionFSM = transition.LocateMyFSM("Control");
+            GameObject text = transitionFSM.GetAction<SetTextMeshProAlignment>("New Scene", 1).gameObject.GameObject.Value;
+            TextMeshPro tmp = text.GetComponent<TextMeshPro>();
+            tmp.color = Color.black;
+            tmp.alignment = TextAlignmentOptions.Center;
+
+            // Change fade times
+            transitionFSM.GetAction<Wait>("Fade Out", 4).time.Value += 2f;
+            PlayMakerFSM fsm2 = GameObject.Find("Blanker White").LocateMyFSM("Blanker Control");
+            fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
+
+            // Skip states that affect vanilla WD stuff
+            transitionFSM.GetState("Fade Out").RemoveAction(0);
+            transitionFSM.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
+            transitionFSM.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
+
+            // Set win dialogue
+            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
+            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
+            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
+            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
+
+            // Set fields for room transition
+            transitionFSM.RemoveAction("New Scene", 6);
+            transitionFSM.InsertMethod("New Scene", () =>
+            {
+                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
+                {
+                    SceneName = "hidden_reward_room",
+                    EntryGateName = "door_reward_room",
+                    Visualization = GameManager.SceneLoadVisualizations.Default,
+                    WaitForSceneTransitionCameraFade = false,
+                    PreventCameraFadeOut = true,
+                    EntryDelay = 0,
+                    HeroLeaveDirection = GlobalEnums.GatePosition.door
+                });
+            }, 6);
+
+            HeroController.instance.EnterWithoutInput(true);
+            HeroController.instance.MaxHealth();
+            transitionFSM.SetState("Fade Out");
+        }
+
 		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
 		{
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
@@ -496,13 +544,13 @@ namespace FiveKnights.BossManagement
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
-            Mirror.SetField(channelInfo, "clip", clip);
+            Vasi.Mirror.SetField(channelInfo, "clip", clip);
             //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
-            Mirror.SetField(musicCue, "channelInfos", channelInfos);
+            Vasi.Mirror.SetField(musicCue, "channelInfos", channelInfos);
             //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);

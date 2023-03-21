@@ -140,7 +140,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.8f);
             }
 
-            // Create missing objects for Godhome arena
+            // Create missing objects for Godhome arena and remove foreground objects
             if(!OWArenaFinder.IsInOverWorld)
             {
                 #region Acid Spit
@@ -197,10 +197,16 @@ namespace FiveKnights.Isma
                     slcol.size = new Vector2(1f, 7f);
                     sl.transform.parent = sc.transform;
                 }
+                #endregion
+
+                #region Remove vines
+                Destroy(GameObject.Find("acid_plant_0000_root9"));
+                Destroy(GameObject.Find("acid_plant_0000_root9 (1)"));
+                Destroy(GameObject.Find("acid_plant_0006_acid_leaf1"));
 				#endregion
 			}
 
-            foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
+			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
             {
                 sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
                 sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
@@ -222,7 +228,7 @@ namespace FiveKnights.Isma
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
             _hm.hp = _hmDD.hp = (onlyIsma ? MAX_HP : MAX_HP_DUO) + 200;
-            _sr.sortingOrder = 1;
+
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
             if (!onlyIsma) PositionIsma();
@@ -283,14 +289,23 @@ namespace FiveKnights.Isma
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
-            if (!onlyIsma) StartCoroutine(ChangeIntroText(area, "Ogrim", "", "Loyal", true));
+            if(!onlyIsma)
+            {
+                if(transform.position.x > dd.transform.position.x) StartCoroutine(ChangeIntroText(area, "Isma", "", "Kindly", true));
+                else StartCoroutine(ChangeIntroText(area, "Ogrim", "", "Loyal", true));
+            }
             
             GameObject area2 = Instantiate(area);
             area2.SetActive(true);
-            AreaTitleCtrl.ShowBossTitle(
-                this, area2, 2f, 
-                "","","",
-                "Isma","Kindly");
+            if(!onlyIsma && transform.position.x > dd.transform.position.x)
+            {
+                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", "Ogrim", "Loyal");
+            }
+            else
+            {
+                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", "Isma", "Kindly");
+            }
+
             if(onlyIsma) _bc.enabled = true;
             waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
@@ -658,7 +673,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb");
                 PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0, 0f);
                 yield return new WaitForSeconds(0.3f);
@@ -671,6 +686,7 @@ namespace FiveKnights.Isma
                 Rigidbody2D rb = bomb.GetComponent<Rigidbody2D>();
                 Animator anim = bomb.GetComponent<Animator>();
                 bomb.transform.localScale *= 1.4f;
+                bomb.SetActive(false);
                 Vector3 scale = seed.transform.localScale;
                 scale *= 2f;
                 scale.x *= -1f;
@@ -678,7 +694,7 @@ namespace FiveKnights.Isma
                 seed.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
                 Destroy(seed.GetComponent<DamageHero>());
 
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 5);
                 bomb.SetActive(true);
                 rb.gravityScale = 1.3f;
                 StartCoroutine(AnimEnder());
@@ -702,6 +718,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(i * Mathf.Deg2Rad), 30f * Mathf.Sin(i * Mathf.Deg2Rad));
+                        DestroySeedAfter(localSeed, 3f);
                     }
                     firstBomb = false;
                 }
@@ -720,6 +737,7 @@ namespace FiveKnights.Isma
                             localSeed.SetActive(true);
                             localSeed.GetComponent<Rigidbody2D>().velocity =
                                 new Vector2((25f + i * 5f) * Mathf.Cos(rot), (25f + i * 5f) * Mathf.Sin(rot));
+                            DestroySeedAfter(localSeed, 3f);
                         }
                     }
                     spawningWalls = false;
@@ -735,6 +753,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(rot * Mathf.Deg2Rad), 30f * Mathf.Sin(rot * Mathf.Deg2Rad));
+                        DestroySeedAfter(localSeed, 3f);
                     }
                 }
                 yield return new WaitWhile(() => anim.IsPlaying());
@@ -759,6 +778,12 @@ namespace FiveKnights.Isma
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
+
+            IEnumerator DestroySeedAfter(GameObject seed, float delay)
+			{
+                yield return new WaitForSeconds(delay);
+                Destroy(seed);
+			}
 
             StartCoroutine(BombThrow());
         }
@@ -2077,8 +2102,9 @@ namespace FiveKnights.Isma
         private void MarkDungBalls(On.HutongGames.PlayMaker.Actions.ReceivedDamage.orig_OnEnter orig, ReceivedDamage self)
         {
             orig(self);
-            if(self.fsmName.Value.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
+            if(self.Fsm.Name.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
             {
+                Log("Player hit a ball, changing name to prevent Isma hitting it");
                 self.Fsm.GameObject.name = "Player Hit Ball";
             }
         }

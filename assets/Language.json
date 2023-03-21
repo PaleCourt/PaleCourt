@@ -71,7 +71,9 @@
             "HEG_OUTRO_1a": "Remove if Minor NPC sheet is used",
             "HEG_OUTRO_1b": "Remove if Minor NPC sheet is used",
             "ZEM_OUTRO_1a": "Remove if Minor NPC sheet is used",
-            "ZEM_OUTRO_1b": "Remove if Minor NPC sheet is used"
+            "ZEM_OUTRO_1b": "Remove if Minor NPC sheet is used",
+            "CC_OUTRO_1a": "Wow you beat CC",
+            "CC_OUTRO_1b": "That's crazy"
         },
         "Enemy Dreams": {
             "ZEM_DREAM_1": "Shoutout to 56 (can't remove this can you)",

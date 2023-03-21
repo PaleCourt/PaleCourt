@@ -12,7 +12,6 @@ namespace FiveKnights.Isma
 
         public GameObject particles;
         public bool usingThornPillars = false;
-        public bool wallActive;
         public float LeftX = 67f;
         public float RightX = 85f;
         
@@ -55,7 +54,7 @@ namespace FiveKnights.Isma
                     _ap.DoPlayRandomClip();
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
                     pillar.name = "PillarEnemy";
-                    pillar.transform.position = new Vector2(transform.position.x, 6.1f);
+                    pillar.transform.position = new Vector3(transform.position.x, 6.1f, 0.1f);
                     pillar.AddComponent<EnemyPlantSpawn.PillarMinion>();
                 }
                 StartCoroutine(DelayedKill());

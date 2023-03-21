@@ -203,7 +203,7 @@ namespace FiveKnights.Isma
         {
             GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
             pillar.name = PillarName;
-            pillar.transform.position = new Vector2(pos.x, 6.1f);
+            pillar.transform.position = new Vector3(pos.x, 6.1f, 0.1f);
             pillar.AddComponent<PillarMinion>();
         }
 
@@ -374,6 +374,7 @@ namespace FiveKnights.Isma
                 {
                     IsmaController.offsetTime -= TIME_INC;
                     TurretCount--;
+                    GameManager.instance.StartCoroutine(CorpseDropThroughFloor());
                     Destroy(gameObject);
                 };
                 
@@ -434,6 +435,27 @@ namespace FiveKnights.Isma
                 {
                     hm.Die(new float?(0f), AttackTypes.Nail, true);
                 }
+            }
+
+            // Recreation of DropThroughFloor from the Corpse MonoBehaviour
+            private IEnumerator CorpseDropThroughFloor()
+			{
+                yield return null;
+                GameObject corpse = GameObject.Find("Corpse Plant Turret(Clone)");
+                corpse.name = "Corpse Plant Turret that will fall through the floor soon";
+                yield return new WaitForSeconds(Random.Range(3f, 6f));
+                Collider2D[] cols = corpse.GetComponentsInChildren<Collider2D>();
+                for(int i = 0; i < cols.Length; i++)
+                {
+                    cols[i].enabled = false;
+                }
+                if(corpse.GetComponent<Rigidbody2D>())
+                {
+                    corpse.GetComponent<Rigidbody2D>().isKinematic = false;
+                }
+                yield return new WaitForSeconds(1f);
+                Destroy(corpse);
+                yield break;
             }
         }
         

@@ -260,14 +260,13 @@ namespace FiveKnights
                     EntryGateName = "door1",
                     Visualization = GameManager.SceneLoadVisualizations.Dream,
                     WaitForSceneTransitionCameraFade = false,
-
+                    EntryDelay = 2f
                 });
 
                 textYN.RemoveAction("Yes", 1);
                 textYN.RemoveAction("No", 1);
                 textYN.enabled = true;
                 fsm.enabled = true;
-                
             }
 
             StartCoroutine(Throne());
