@@ -383,6 +383,7 @@ namespace FiveKnights
                 }
                 else
 				{
+                    yield return dryyaAnim.PlayBlocking("TurnRight");
                     dryyaAnim.Play("TalkRight");
                 }
                 yield break;
@@ -390,6 +391,10 @@ namespace FiveKnights
 
             IEnumerator StopAnimDryya()
             {
+                if(HeroController.instance.transform.position.x > dryyaAnim.gameObject.transform.position.x)
+                {
+                    yield return dryyaAnim.PlayBlocking("TurnLeft");
+                }
                 dryyaAnim.Play("Idle");
                 yield break;
             }

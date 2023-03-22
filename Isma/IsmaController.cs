@@ -2102,11 +2102,12 @@ namespace FiveKnights.Isma
         private void MarkDungBalls(On.HutongGames.PlayMaker.Actions.ReceivedDamage.orig_OnEnter orig, ReceivedDamage self)
         {
             orig(self);
-            if(self.Fsm.Name.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
-            {
-                Log("Player hit a ball, changing name to prevent Isma hitting it");
-                self.Fsm.GameObject.name = "Player Hit Ball";
-            }
+            // TODO - This currently does not work
+            //if(self.Fsm.Name.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
+            //{
+            //    Log("Player hit a ball, changing name to prevent Isma hitting it");
+            //    self.Fsm.GameObject.name = "Player Hit Ball";
+            //}
         }
 
         IEnumerator FlashWhite()
