@@ -51,7 +51,7 @@ namespace FiveKnights.Dryya
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
             _anim.enabled = false;
 
-            yield return new WaitForSeconds(0.15f);
+            yield return new WaitForSeconds(0.17f);
             _anim.enabled = true;
             Destroy(GetComponent<PolygonCollider2D>());
             Destroy(GetComponent<DamageHero>());

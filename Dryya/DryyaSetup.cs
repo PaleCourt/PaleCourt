@@ -356,14 +356,14 @@ namespace FiveKnights.Dryya
             {
                 _control.InsertMethod(state, () =>
                 {
-                    if(HeroController.instance.transform.position.x > RightX - 10f)
+                    if(HeroController.instance.transform.position.x > RightX - 6.5f)
                     {
-                        transform.position = new Vector3(RightX - 10f, GroundY);
+                        transform.position = new Vector3(RightX - 4.5f, GroundY);
                         transform.localScale = new Vector3(1f, 1f);
                     }
-                    if(HeroController.instance.transform.position.x < LeftX + 10f)
+                    if(HeroController.instance.transform.position.x < LeftX + 6.5f)
                     {
-                        transform.position = new Vector3(LeftX + 10f, GroundY);
+                        transform.position = new Vector3(LeftX + 4.5f, GroundY);
                         transform.localScale = new Vector3(-1f, 1f);
                     }
                 }, 2);
