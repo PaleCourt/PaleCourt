@@ -141,6 +141,7 @@ namespace FiveKnights.Isma
         {
             Vector2 pos = go.transform.position;
             yield return new WaitForSeconds(2f);
+
             GameObject gulk = Instantiate(FiveKnights.preloadedGO["Gulka"]);
             gulk.name = SpecialName;
             Animator anim = gulk.GetComponent<Animator>();
@@ -148,6 +149,12 @@ namespace FiveKnights.Isma
             gulk.transform.SetPosition2D(pos);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
+
+            GameObject seal = Instantiate(FiveKnights.preloadedGO["Seal"], gulk.transform.position + Vector3.down, Quaternion.identity);
+            seal.transform.localScale = new Vector3(2f, 2f, 1f);
+            seal.layer = (int)GlobalEnums.PhysLayers.INTERACTIVE_OBJECT;
+            seal.AddComponent<GulkaSeal>();
+
             var hm = turret.GetComponent<HealthManager>();
             RemoveGeo(hm);
             turret.name = SpecialName;
@@ -276,6 +283,7 @@ namespace FiveKnights.Isma
             private HealthManager hm;
             private const float InitY = 6.01f;
             private const float FinalY = 8.61f; //.65
+            private readonly float OffsetY = CustomWP.boss == CustomWP.Boss.Isma && !OWArenaFinder.IsInOverWorld ? 0.57f : 0f;
             private float xPos;
             private void Awake()
             {
@@ -298,11 +306,11 @@ namespace FiveKnights.Isma
                 initFool.SetActive(true);
                 hm.IsInvincible = true;
                 Animator anim = initFool.GetComponent<Animator>();
-                initFool.transform.SetPosition2D(xPos, InitY); //6.2
+                initFool.transform.SetPosition2D(xPos, InitY + OffsetY);
                 initFool.transform.localScale *= 1.4f;
                 yield return anim.PlayBlocking("SpawnFool");
                 Destroy(initFool);
-                finalFool.transform.SetPosition2D(xPos, FinalY); //8.8
+                finalFool.transform.SetPosition2D(xPos, FinalY + OffsetY);
                 tk2dSpriteAnimator tk = finalFool.GetComponent<tk2dSpriteAnimator>();
                 PlayMakerFSM fsm = finalFool.LocateMyFSM("Plant Trap Control");
                 fsm.enabled = false;

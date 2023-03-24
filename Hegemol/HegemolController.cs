@@ -21,7 +21,7 @@ namespace FiveKnights.Hegemol
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 91.7f : 45.7f);
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f :
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.4f : 27.4f);
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.3f : 27.4f);
         private float CenterX => (LeftX + RightX) / 2;
         private float Width => RightX - LeftX;
 
@@ -507,15 +507,8 @@ namespace FiveKnights.Hegemol
                 deb.gravityScale = 1.5f;
                 deb.vel = vel;
                 deb.GroundY = GroundY;
+                deb.type = CustomWP.boss == CustomWP.Boss.All ? Debris.DebrisType.DUNG : Debris.DebrisType.NORMAL;
 
-                if(CustomWP.boss == CustomWP.Boss.All)
-                {
-                    debris.transform.Find("DebrisDung").gameObject.SetActive(true);
-                }
-                else
-                {
-                    debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
-                }
                 debris.SetActive(true);
             }
 
@@ -659,16 +652,9 @@ namespace FiveKnights.Hegemol
                 deb.gravityScale = 1.5f;
                 deb.vel = vel;
                 deb.GroundY = GroundY;
+                deb.type = CustomWP.boss == CustomWP.Boss.All ? Debris.DebrisType.DUNG : Debris.DebrisType.NORMAL;
                 debrisArr[i + 2] = deb;
 
-                if(CustomWP.boss == CustomWP.Boss.All)
-                {
-                    debris.transform.Find("DebrisDung").gameObject.SetActive(true);
-                }
-                else
-                {
-                    debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
-                }
                 debris.SetActive(true);
             }
 
@@ -826,12 +812,9 @@ namespace FiveKnights.Hegemol
                 deb.gravityScale = 0f;
                 deb.vel = 10f * Vector2.down;
                 deb.GroundY = GroundY;
+                deb.type = CustomWP.boss == CustomWP.Boss.All ? Debris.DebrisType.CC : Debris.DebrisType.NORMAL;
 
-                debris.transform.Find("Debris0").gameObject.SetActive(false);
-                if(CustomWP.boss == CustomWP.Boss.All) debris.transform.Find("Debris" + Random.Range(3, 6)).gameObject.SetActive(true);
-                else debris.transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
                 debris.SetActive(true);
-
                 yield return new WaitForSeconds(0.5f);
             }
         }

@@ -62,9 +62,9 @@ namespace FiveKnights.BossManagement
             // set damage level
             if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
             {
-                // TODO UNCOMMENT
-                //BossSceneController.Instance.BossLevel = CustomWP.lev;
-            }
+				// TODO UNCOMMENT
+				BossSceneController.Instance.BossLevel = CustomWP.lev;
+			}
             
             Instance = this;
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
@@ -117,9 +117,12 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
             {
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return LoadIsmaBundle();
+                // Manually play music for now because the original scene is missing it
+                PlayMusic(FiveKnights.Clips["OgrimMusic"], 1f);
                 yield return OgrimIsmaFight();
                 
                 if (CustomWP.wonLastFight)
@@ -280,6 +283,7 @@ namespace FiveKnights.BossManagement
                 yield return null;
 
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return OgrimIsmaFight();
@@ -374,6 +378,7 @@ namespace FiveKnights.BossManagement
             // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+
             yield return new WaitWhile(() => _hm.hp > 600);
             HIT_FLAG = false;
 
@@ -595,6 +600,7 @@ namespace FiveKnights.BossManagement
                 var r4 = ab.LoadAssetAsync<GameObject>("Wall");
                 var r5 = ab.LoadAssetAsync<GameObject>("Fool");
                 var r6 = ab.LoadAssetAsync<GameObject>("ThornPlant");
+                var r7 = ab.LoadAssetAsync<GameObject>("Seal");
 
                 yield return r1;
                 yield return r2;
@@ -602,6 +608,7 @@ namespace FiveKnights.BossManagement
                 yield return r4;
                 yield return r5;
                 yield return r6;
+                yield return r7;
 
                 gos = new List<GameObject>
                 {
@@ -610,7 +617,8 @@ namespace FiveKnights.BossManagement
                     r3.asset as GameObject, 
                     r4.asset as GameObject,
                     r5.asset as GameObject,
-                    r6.asset as GameObject
+                    r6.asset as GameObject,
+                    r7.asset as GameObject
                 };
             }
             else
@@ -622,7 +630,8 @@ namespace FiveKnights.BossManagement
                     ab.LoadAsset<GameObject>("Plant"),
                     ab.LoadAsset<GameObject>("Wall"),
                     ab.LoadAsset<GameObject>("Fool"),
-                    ab.LoadAsset<GameObject>("ThornPlant")
+                    ab.LoadAsset<GameObject>("ThornPlant"),
+                    ab.LoadAsset<GameObject>("Seal")
                 };
             }
             
@@ -744,6 +753,8 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
             }
             FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            GameObject ball = dd.LocateMyFSM("Dung Defender").GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
+            FiveKnights.preloadedGO["DungBreakChunks"] = ball.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value;
 
             Log("Finished Loading Hegemol Bundle");
         }

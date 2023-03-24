@@ -132,6 +132,8 @@ namespace FiveKnights
                 ogrim.GetComponent<MeshRenderer>().enabled = false;
                 ogrim.SetTitle("TITLE_RR_OGRIM");
                 ogrim.SetDreamKey("TITLE_RR_OGRIM_SUB");
+                ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 ogrim.SetUp();
 
                 DialogueNPC hegemol = DialogueNPC.CreateInstance();
@@ -140,6 +142,8 @@ namespace FiveKnights
                 hegemol.SetTitle("TITLE_RR_HEGEMOL");
                 hegemol.GetComponent<MeshRenderer>().enabled = false;
                 hegemol.SetDreamKey("TITLE_RR_HEGEMOL_SUB");
+                hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 hegemol.SetUp();
 
                 DialogueNPC zemer = DialogueNPC.CreateInstance();
@@ -148,6 +152,8 @@ namespace FiveKnights
                 zemer.GetComponent<MeshRenderer>().enabled = false;
                 zemer.SetTitle("TITLE_RR_ZEMER");
                 zemer.SetDreamKey("TITLE_RR_ZEMER_SUB");
+                zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 zemer.SetUp();
 
                 dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();

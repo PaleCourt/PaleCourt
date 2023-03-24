@@ -704,6 +704,7 @@ namespace FiveKnights.BossManagement
                 else if (i.name == "Plant") FiveKnights.preloadedGO["Plant"] = i;
                 else if (i.name == "Fool") FiveKnights.preloadedGO["Fool"] = i;
                 else if (i.name == "Wall") FiveKnights.preloadedGO["Wall"] = i;
+                else if (i.name == "Seal") FiveKnights.preloadedGO["Seal"] = i;
                 yield return null;
                 if (i.GetComponent<SpriteRenderer>() == null)
                 {

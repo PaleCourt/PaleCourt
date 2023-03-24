@@ -6,6 +6,13 @@ namespace FiveKnights.Hegemol
 {
 	public class Debris : MonoBehaviour
 	{
+		public enum DebrisType
+		{
+			NORMAL,
+			CC,
+			DUNG
+		}
+
 		private float rotSpeed;
 		private MusicPlayer _ap;
 		private ParticleSystem _pt;
@@ -15,6 +22,7 @@ namespace FiveKnights.Hegemol
 		public float gravityScale;
 		public Vector2 vel;
 		public float GroundY;
+		public DebrisType type;
 
 		private void Awake()
 		{
@@ -40,6 +48,25 @@ namespace FiveKnights.Hegemol
 			transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
 			rotSpeed = (Random.Range(0, 2) == 0 ? -1 : 1) * Random.Range(200f, 400f);
 			rb.velocity = vel;
+			switch(type)
+			{
+				case DebrisType.NORMAL:
+					transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
+					_ap.Clip = FiveKnights.Clips["HegDebris"];
+					break;
+				case DebrisType.CC:
+					transform.Find("Debris" + Random.Range(3, 6)).gameObject.SetActive(true);
+					_ap.Clip = FiveKnights.Clips["HegDebris"];
+					ParticleSystem.MainModule ptMain = _pt.main;
+					ptMain.startColor = Color.white;
+					break;
+				case DebrisType.DUNG:
+					transform.Find("DebrisDung").gameObject.SetActive(true);
+					_ap.Clip = FiveKnights.Clips["HegDungDebris"];
+					GameObject particles = Instantiate(FiveKnights.preloadedGO["DungBreakChunks"], transform);
+					_pt = particles.GetComponent<ParticleSystem>();
+					break;
+			}
 		}
 
 		private void FixedUpdate()
@@ -53,10 +80,10 @@ namespace FiveKnights.Hegemol
 			else if(!hitGround)
 			{
 				hitGround = true;
+				rb.gravityScale = 0f;
 				rb.velocity = Vector2.zero;
 				transform.rotation = Quaternion.Euler(0f, 0f, 0f);
 				Destroy(GetComponent<CircleCollider2D>());
-				_ap.Clip = FiveKnights.Clips["HegDebris"];
 				_ap.DoPlayRandomClip();
 				_pt.Play();
 				foreach(SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
@@ -70,6 +97,10 @@ namespace FiveKnights.Hegemol
 		private IEnumerator WaitToDestroy()
 		{
 			yield return new WaitForSeconds(3f);
+			if(type == DebrisType.DUNG)
+			{
+				Destroy(_pt.gameObject);
+			}
 			Destroy(gameObject);
 		}
 	}

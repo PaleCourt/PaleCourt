@@ -192,7 +192,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "3.21.2023";
+        public override string GetVersion() => "3.23.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -239,6 +239,8 @@ namespace FiveKnights
                 ("GG_Hornet_1", "Boss Holder/Hornet Boss 1"),
                 // For Isma's thorn walls
                 ("Fungus3_13", "Thorn Collider"),
+                // For Isma's gulka shield effect
+                ("Abyss_05", "Dusk Knight/Shield"),
                 // For charm collect/upgrade cutscene
                 ("Room_Queen", "UI Msg Get WhiteCharm"),
                 
@@ -260,6 +262,7 @@ namespace FiveKnights
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
             preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
             preloadedGO["Thorn Collider"] = preloadedObjects["Fungus3_13"]["Thorn Collider"];
+            preloadedGO["Shield"] = preloadedObjects["Abyss_05"]["Dusk Knight/Shield"];
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];

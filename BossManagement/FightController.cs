@@ -172,9 +172,9 @@ namespace FiveKnights
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             string[] arr = new[]
             {
-                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump",
-                "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2",
-                "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
+                "HegJump", "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1",
+                "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
             };
 
             IEnumerator LoadSlow()
