@@ -41,7 +41,8 @@ namespace FiveKnights.Isma
 		{
 			if(!other.gameObject.CompareTag("Nail Attack")) return;
 
-			_ap.DoPlayRandomClip();
+			//_ap.DoPlayRandomClip();
+			this.PlayAudio(Tink.TinkClip, 1f, 0.15f);
 			ParticleSystem.EmissionModule emission = _pt.GetComponent<ParticleSystem>().emission;
 			emission.enabled = true;
 

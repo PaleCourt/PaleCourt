@@ -67,6 +67,7 @@ namespace FiveKnights.Isma
         private const int MaxDreamAmount = 3;
         private bool usingThornPillars;
         private bool ogrimEvaded;
+        private Coroutine wallsCoro;
 
         private void Awake()
         {
@@ -318,7 +319,7 @@ namespace FiveKnights.Isma
             _rb.velocity = Vector2.zero;
             ToggleIsma(false);
             _attacking = false;
-			StartCoroutine(SpawnWalls());
+			wallsCoro = StartCoroutine(SpawnWalls());
 
             if(onlyIsma)
             {
@@ -587,8 +588,8 @@ namespace FiveKnights.Isma
                 GameObject frontWL = wallL.transform.Find("FrontW").gameObject;
                 frontWR.layer = 8;
                 frontWL.layer = 8;
-                wallR.transform.position = new Vector2(RIGHT_X - 2.5f, GROUND_Y);
-                wallL.transform.position = new Vector2(LEFT_X + 2.5f, GROUND_Y);
+                wallR.transform.position = new Vector3(RIGHT_X - 2.5f, GROUND_Y, 0.1f);
+                wallL.transform.position = new Vector3(LEFT_X + 2.5f, GROUND_Y, 0.1f);
                 Animator anim = frontWR.GetComponent<Animator>();
                 PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 3);
@@ -713,7 +714,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(i * Mathf.Deg2Rad), 30f * Mathf.Sin(i * Mathf.Deg2Rad));
-                        DestroySeedAfter(localSeed, 3f);
+                        Destroy(localSeed, 3f);
                     }
                     firstBomb = false;
                 }
@@ -732,7 +733,7 @@ namespace FiveKnights.Isma
                             localSeed.SetActive(true);
                             localSeed.GetComponent<Rigidbody2D>().velocity =
                                 new Vector2((25f + i * 5f) * Mathf.Cos(rot), (25f + i * 5f) * Mathf.Sin(rot));
-                            DestroySeedAfter(localSeed, 3f);
+                            Destroy(localSeed, 3f);
                         }
                     }
                     spawningWalls = false;
@@ -748,7 +749,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(rot * Mathf.Deg2Rad), 30f * Mathf.Sin(rot * Mathf.Deg2Rad));
-                        DestroySeedAfter(localSeed, 3f);
+                        Destroy(localSeed, 3f);
                     }
                 }
                 yield return new WaitWhile(() => anim.IsPlaying());
@@ -773,12 +774,6 @@ namespace FiveKnights.Isma
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
-
-            IEnumerator DestroySeedAfter(GameObject seed, float delay)
-			{
-                yield return new WaitForSeconds(delay);
-                Destroy(seed);
-			}
 
             StartCoroutine(BombThrow());
         }
@@ -1057,11 +1052,13 @@ namespace FiveKnights.Isma
         {
             float dir = -1f * FaceHero(true);
             PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
-            _anim.Play("LoneDeath");
+            _anim.PlayAt("LoneDeath", 1);
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
-            _anim.speed *= 0.9f;
             yield return null;
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.05f);
+            _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
             yield return new WaitWhile(() => transform.position.y > GROUND_Y + 2.5f);
@@ -1610,7 +1607,9 @@ namespace FiveKnights.Isma
                 else
                 {
                     startedIsmaRage = true;
+                    StopCoroutine(wallsCoro);
                     StartCoroutine(IsmaRage());
+                    StartCoroutine(SpawnWalls());
                 }
             }
         }
@@ -1851,6 +1850,7 @@ namespace FiveKnights.Isma
             _healthPool = 180;
             preventDamage = false;
             yield return new WaitWhile(() => _healthPool > 0);
+
             eliminateMinions = true;
             killAllMinions = true;
             if (c != null) StopCoroutine(c);

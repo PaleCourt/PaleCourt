@@ -6,7 +6,6 @@ namespace FiveKnights
 {
     public class ShadeSlash : MonoBehaviour
     {
-        public GameObject audioPlayer;
 		public AttackDirection attackDirection;
 
 		private HeroController _hc => HeroController.instance;
@@ -16,8 +15,6 @@ namespace FiveKnights
 			// Most of this is from NailSlash.OnTriggerEnter2D, purpose is to add recoil and pogoing
 			if(collider != null)
 			{
-				audioPlayer.Spawn().GetComponent<AudioSource>().PlayOneShot(FiveKnights.Clips["Shade Slash"]);
-
 				switch(attackDirection)
 				{
 					case AttackDirection.normal:

@@ -147,7 +147,8 @@ namespace FiveKnights
             ModHooks.GetPlayerVariableHook += GetVariableHook;
             ModHooks.AfterSavegameLoadHook += SaveGame;
             ModHooks.BeforeSavegameSaveHook += SaveEntries;
-            ModHooks.NewGameHook += AddComponent;
+            //ModHooks.NewGameHook += AddComponent;
+			On.GameManager.StartNewGame += GameManager_StartNewGame;
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
@@ -170,7 +171,7 @@ namespace FiveKnights
             #endregion
         }
 
-        private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
+		private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
             orig(newLang);
             foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
@@ -192,7 +193,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "3.23.2023";
+        public override string GetVersion() => "3.24.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -681,7 +682,17 @@ namespace FiveKnights
             }
             return langStrings.ContainsKey(key, sheet) ? langStrings.Get(key, sheet) : orig;
         }
-        
+
+        private void GameManager_StartNewGame(On.GameManager.orig_StartNewGame orig, GameManager self, bool permaDeath, bool bossRush)
+        {
+            orig(self, permaDeath, bossRush);
+            if(bossRush)
+			{
+                SaveSettings.gotCharms = new bool[] { true, true, true, true };
+			}
+            AddComponent();
+        }
+
         private void SaveGame(SaveGameData data)
         {
             AddComponent();

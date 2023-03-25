@@ -90,18 +90,12 @@ namespace FiveKnights.Hegemol
 				{
 					sr.enabled = false;
 				}
-				StartCoroutine(WaitToDestroy());
+				if(type == DebrisType.DUNG)
+				{
+					Destroy(_pt.gameObject, 3f);
+				}
+				Destroy(gameObject, 3f);
 			}
-		}
-
-		private IEnumerator WaitToDestroy()
-		{
-			yield return new WaitForSeconds(3f);
-			if(type == DebrisType.DUNG)
-			{
-				Destroy(_pt.gameObject);
-			}
-			Destroy(gameObject);
 		}
 	}
 }

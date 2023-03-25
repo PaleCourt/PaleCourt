@@ -204,6 +204,14 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => !IsmaController.eliminateMinions);
             Log("Killing our special gulka :(");
             gulka.GetComponent<HealthManager>().Die(new float?(0f), AttackTypes.Nail, true);
+            List<tk2dSprite> sprites = new List<tk2dSprite>(FindObjectsOfType<tk2dSprite>());
+            foreach(tk2dSprite sprite in sprites)
+            {
+                if(sprite.gameObject.name == "Cover" || sprite.gameObject.name == "Under")
+                {
+                    Destroy(sprite.gameObject);
+                }
+            }
         }
 
         private void SpawnPillar(Vector2 pos)
@@ -383,6 +391,26 @@ namespace FiveKnights.Isma
                     IsmaController.offsetTime -= TIME_INC;
                     TurretCount--;
                     GameManager.instance.StartCoroutine(CorpseDropThroughFloor());
+
+                    // I can't think of any other way to remove the gulka foliage because they aren't children of the gulka
+                    List<tk2dSprite> sprites = new List<tk2dSprite>(FindObjectsOfType<tk2dSprite>());
+                    GameObject cover = sprites[0].gameObject;
+                    GameObject under = sprites[0].gameObject;
+                    foreach(tk2dSprite sprite in sprites)
+                    {
+                        if(sprite.gameObject.name == "Cover" && Vector3.Distance(sprite.transform.position, pos) < 0.2f &&
+                        Vector3.Distance(sprite.transform.position, pos) < Vector3.Distance(cover.transform.position, pos))
+                        {
+                            cover = sprite.gameObject;
+                        }
+                        if(sprite.gameObject.name == "Under" && Vector3.Distance(sprite.transform.position, pos) < 0.2f &&
+                        Vector3.Distance(sprite.transform.position, pos) < Vector3.Distance(under.transform.position, pos))
+                        {
+                            under = sprite.gameObject;
+                        }
+                    }
+                    Destroy(cover);
+                    Destroy(under);
                     Destroy(gameObject);
                 };
                 
@@ -473,7 +501,7 @@ namespace FiveKnights.Isma
             private PlayMakerFSM _fsmSpit;
             private void Awake()
             {
-                gameObject.layer = 11;
+                gameObject.layer = (int)GlobalEnums.PhysLayers.PROJECTILES;
                 _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
                 _fsmEnemyDmg.enabled = false;
                 _fsmSpit = gameObject.LocateMyFSM("spike ball control");

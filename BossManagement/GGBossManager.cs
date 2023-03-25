@@ -592,8 +592,7 @@ namespace FiveKnights.BossManagement
             List<GameObject> gos;
             
             if (CustomWP.boss == CustomWP.Boss.All)
-            {  
-                FiveKnights.Instance.SaveSettings.gotCharms[3] = false;
+            {
                 var r1 = ab.LoadAssetAsync<GameObject>("Isma");
                 var r2 = ab.LoadAssetAsync<GameObject>("Gulka");
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");

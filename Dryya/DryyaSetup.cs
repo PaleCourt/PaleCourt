@@ -315,7 +315,9 @@ namespace FiveKnights.Dryya
             {
                 _elegyBeams = new List<ElegyBeam>();
             }, 1);
-            _control.InsertCoroutine("Beams Slash End", 1, ActivateBeams);
+
+            // Use GameManager to start the coroutine so that it won't linger if she dies
+            _control.InsertMethod("Beams Slash End", () => GameManager.instance.StartCoroutine(ActivateBeams()), 1);
 
             // Do a single elegy beam when doing the cheeky slash
             _control.InsertMethod("Cheeky Collider 1", () =>
@@ -328,7 +330,7 @@ namespace FiveKnights.Dryya
 
                 ElegyBeam elegy = beam.AddComponent<ElegyBeam>();
                 elegy.offset = Vector2.zero;
-                StartCoroutine(ActivateSingleBeam(elegy));
+                GameManager.instance.StartCoroutine(ActivateSingleBeam(elegy));
             }, 1);
         }
 
@@ -407,7 +409,7 @@ namespace FiveKnights.Dryya
 		{
             IEnumerator Play()
             {
-                AudioClip audioClip= _control.Fsm.GetFsmObject(clip).Value as AudioClip;
+                AudioClip audioClip = _control.Fsm.GetFsmObject(clip).Value as AudioClip;
                 yield return new WaitForSeconds(delay);
                 GameObject audioPlayerInstance = _ap.Spawn(transform.position, Quaternion.identity);
                 AudioSource audio = audioPlayerInstance.GetComponent<AudioSource>();
