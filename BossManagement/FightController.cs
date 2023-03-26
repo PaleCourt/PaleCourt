@@ -59,7 +59,7 @@ namespace FiveKnights
                 clashSnd.clip = aud;
                 clashSnd.pitch = Random.Range(0.85f, 1.15f);
 
-                Tink.TinkClip = aud;
+                ParryTink.TinkClip = aud;
 
                 FiveKnights.preloadedGO["ClashTink"] = clashSndObj;
 
@@ -259,7 +259,7 @@ namespace FiveKnights
                     {
                         i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                         i.gameObject.layer = 22;
-                        i.gameObject.AddComponent<Tink>();
+                        i.gameObject.AddComponent<ParryTink>();
                     }
                 }
             }
@@ -271,7 +271,7 @@ namespace FiveKnights
                     {
                         i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                         i.gameObject.layer = 22;
-                        i.gameObject.AddComponent<Tink>();
+                        i.gameObject.AddComponent<ParryTink>();
                     }
                 }
             }
@@ -287,20 +287,20 @@ namespace FiveKnights
                 bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 i.gameObject.AddComponent<Pogoable>().tar = _zemer;
                 bc.gameObject.layer = 22;
-                if (!i.name.Contains("Zemer")) i.gameObject.AddComponent<Tink>();
+                if (!i.name.Contains("Zemer")) i.gameObject.AddComponent<ParryTink>();
             }
             foreach (PolygonCollider2D i in _zemer.GetComponentsInChildren<PolygonCollider2D>(true))
             { 
                 i.isTrigger = true;
                 i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.AddComponent<Tink>();
+                i.gameObject.AddComponent<ParryTink>();
                 i.gameObject.AddComponent<Pogoable>().tar = _zemer;
                 i.gameObject.layer = 22;
                 
             }
             
             var bcMultiDashHB = _zemer.transform.Find("MultiDashParryHB").gameObject;
-            bcMultiDashHB.AddComponent<Tink>();
+            bcMultiDashHB.AddComponent<ParryTink>();
             bcMultiDashHB.AddComponent<Pogoable>().tar = _zemer;
             bcMultiDashHB.layer = 22;
             bcMultiDashHB.SetActive(false);

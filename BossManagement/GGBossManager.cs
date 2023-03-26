@@ -286,9 +286,9 @@ namespace FiveKnights.BossManagement
                 FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
-                yield return OgrimIsmaFight();
+				yield return OgrimIsmaFight();
 
-                foreach (Animator anim in flowersAnim)
+				foreach (Animator anim in flowersAnim)
                 {
                     anim.enabled = false;
                 }
@@ -298,8 +298,8 @@ namespace FiveKnights.BossManagement
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
-                DryyaSetup dc = FightController.Instance.CreateDryya();
-                sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
+				DryyaSetup dc = FightController.Instance.CreateDryya();
+				sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
                 yield return new WaitForSeconds(0.1f);
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_2"];
                 yield return new WaitForSeconds(0.1f);
@@ -307,16 +307,16 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.1f);
                 Destroy(dryyaSilhouette);
                 yield return new WaitForSeconds(0.5f);
-                
-                yield return new WaitWhile(() => dc != null);
 
-                yield return new WaitForSeconds(3f);
+				yield return new WaitWhile(() => dc != null);
+
+				yield return new WaitForSeconds(3f);
 
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
-                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
-                for (int i = 0; i <= 5; i++)
+				HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+				for (int i = 0; i <= 5; i++)
                 {
                     sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_"+i];
                     yield return new WaitForSeconds(0.1f);
@@ -328,9 +328,9 @@ namespace FiveKnights.BossManagement
                 sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_7"];
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
-                yield return new WaitWhile(() => hegemolCtrl != null);
+				yield return new WaitWhile(() => hegemolCtrl != null);
 
-                yield return new WaitForSeconds(1.5f);
+				yield return new WaitForSeconds(1.5f);
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = FightController.Instance.CreateZemer();
@@ -497,23 +497,11 @@ namespace FiveKnights.BossManagement
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
 
             // Set fields for room transition
-            transitionFSM.RemoveAction("New Scene", 6);
-            transitionFSM.InsertMethod("New Scene", () =>
-            {
-                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-                {
-                    SceneName = "hidden_reward_room",
-                    EntryGateName = "door_reward_room",
-                    Visualization = GameManager.SceneLoadVisualizations.Default,
-                    WaitForSceneTransitionCameraFade = false,
-                    PreventCameraFadeOut = true,
-                    EntryDelay = 0,
-                    HeroLeaveDirection = GlobalEnums.GatePosition.door
-                });
-            }, 6);
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "hidden_reward_room";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door1";
 
-            HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
+            HeroController.instance.EnterWithoutInput(true);
             transitionFSM.SetState("Fade Out");
         }
 

@@ -551,6 +551,7 @@ namespace FiveKnights.Isma
                 if(onlyIsma)
                 {
                     yield return new WaitWhile(() => _attacking);
+                    Log("Queueing Seed Bomb");
                     spawningWalls = true;
                     yield return new WaitWhile(() => spawningWalls);
                     yield return new WaitForSeconds(1f);
@@ -1380,7 +1381,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.1f);
 
                 float center = MIDDLE + UnityEngine.Random.Range(-1f, 1f);
-                for(int i = -2; i < 5; i++)
+                for(int i = -2; i < 3; i++)
 				{
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["ThornPlant"]);
                     pillar.AddComponent<ThornPlantCtrl>();
@@ -1390,7 +1391,7 @@ namespace FiveKnights.Isma
                     yield return new WaitForSeconds(0.1f);
                 }
                 yield return new WaitForSeconds(1f);
-                for(int i = -2; i < 5; i++)
+                for(int i = -2; i < 3; i++)
                 {
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["ThornPlant"]);
                     pillar.AddComponent<ThornPlantCtrl>().secondWave = true;

@@ -28,7 +28,7 @@ namespace FiveKnights.Isma
 				MaxPitch = 0.85f,
 				MinPitch = 1.15f,
 				Spawn = gameObject,
-				Clip = Tink.TinkClip
+				Clip = ParryTink.TinkClip
 			};
 
 			_sr = transform.GetComponent<SpriteRenderer>();
@@ -42,7 +42,7 @@ namespace FiveKnights.Isma
 			if(!other.gameObject.CompareTag("Nail Attack")) return;
 
 			//_ap.DoPlayRandomClip();
-			this.PlayAudio(Tink.TinkClip, 1f, 0.15f);
+			this.PlayAudio(ParryTink.TinkClip, 1f, 0.15f);
 			ParticleSystem.EmissionModule emission = _pt.GetComponent<ParticleSystem>().emission;
 			emission.enabled = true;
 

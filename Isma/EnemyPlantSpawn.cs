@@ -369,8 +369,12 @@ namespace FiveKnights.Isma
         {
             private GameObject initGulka;
             public GameObject finalGulka;
+            private GameObject cover;
+            private GameObject under;
             private HealthManager hm;
             private Vector2 pos;
+            private readonly float LEFT = OWArenaFinder.IsInOverWorld ? 105.55f : 60.27f;
+            private readonly float RIGHT = OWArenaFinder.IsInOverWorld ? 137.02f : 91.73f;
             private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 75f;
 
             private void Awake()
@@ -391,24 +395,6 @@ namespace FiveKnights.Isma
                     IsmaController.offsetTime -= TIME_INC;
                     TurretCount--;
                     GameManager.instance.StartCoroutine(CorpseDropThroughFloor());
-
-                    // I can't think of any other way to remove the gulka foliage because they aren't children of the gulka
-                    List<tk2dSprite> sprites = new List<tk2dSprite>(FindObjectsOfType<tk2dSprite>());
-                    GameObject cover = sprites[0].gameObject;
-                    GameObject under = sprites[0].gameObject;
-                    foreach(tk2dSprite sprite in sprites)
-                    {
-                        if(sprite.gameObject.name == "Cover" && Vector3.Distance(sprite.transform.position, pos) < 0.2f &&
-                        Vector3.Distance(sprite.transform.position, pos) < Vector3.Distance(cover.transform.position, pos))
-                        {
-                            cover = sprite.gameObject;
-                        }
-                        if(sprite.gameObject.name == "Under" && Vector3.Distance(sprite.transform.position, pos) < 0.2f &&
-                        Vector3.Distance(sprite.transform.position, pos) < Vector3.Distance(under.transform.position, pos))
-                        {
-                            under = sprite.gameObject;
-                        }
-                    }
                     Destroy(cover);
                     Destroy(under);
                     Destroy(gameObject);
@@ -417,12 +403,13 @@ namespace FiveKnights.Isma
                 initGulka.SetActive(true);
                 Animator anim = initGulka.GetComponent<Animator>();
                 float rot = pos.x > MIDDLE ? 90f : -90f;
-                initGulka.transform.SetPosition2D(pos.x > MIDDLE ? 136.6651f : 105.4166f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
-                initGulka.transform.localScale *= 1.4f;
+				initGulka.transform.SetPosition2D(pos.x > MIDDLE ? RIGHT + 0.19f : LEFT - 0.19f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
+				initGulka.transform.localScale *= 1.4f;
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
+                Destroy(finalGulka.GetComponent<SetZ>());
                 PlayMakerFSM fsm = finalGulka.LocateMyFSM("Plant Turret");
-                
+
                 // stop spike ball from doing damage to enemy
                 var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
                 if (!ball.GetComponent<ModifiedSpit>())
@@ -445,7 +432,13 @@ namespace FiveKnights.Isma
                 finalGulka.transform.SetRotation2D(rot);
                 finalGulka.SetActive(true);
                 rot *= Mathf.Deg2Rad;
-                finalGulka.transform.SetPosition2D(pos.x, pos.y + 0.5f * Mathf.Cos(rot));
+
+                finalGulka.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.29f: LEFT + 0.29f, pos.y, -0.09f);
+                cover = fsm.GetFsmGameObjectVariable("Cover").Value;
+                under = fsm.GetFsmGameObjectVariable("Under").Value;
+                cover.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.16f : LEFT + 0.16f, pos.y, -0.1f);
+                under.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.19f : LEFT + 0.19f, pos.y, -0.08f);
+
                 anim.Play("SpawnGulka");
                 yield return new WaitForSeconds(0.05f);
                 yield return new WaitWhile(() => anim.IsPlaying());

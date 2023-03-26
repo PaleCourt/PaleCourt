@@ -357,6 +357,8 @@ namespace FiveKnights.BossManagement
                     DreamEntry();
                     AddSuperDashCancel();
                     FixPitDeath();
+                    FixDryyaSpikes();
+                    AddCreditsTablets();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
                 case IsmaScene:
@@ -435,14 +437,14 @@ namespace FiveKnights.BossManagement
             tp.alwaysEnterLeft = left;
             tp.alwaysEnterRight = right;
             GameObject rm = new GameObject("Hazard Respawn Marker");
-            rm.transform.parent = tp.transform;
-            rm.transform.position = new Vector2(rm.transform.position.x - 3f, rm.transform.position.y);
-            var tmp = rm.AddComponent<HazardRespawnMarker>();
-            tp.respawnMarker = rm.GetComponent<HazardRespawnMarker>();
+			rm.transform.parent = gate.transform;
+            rm.tag = "RespawnPoint";
+            rm.transform.SetPosition2D(pos);
+            tp.respawnMarker = rm.AddComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
-        }
-        
-        private void FixBlur()
+		}
+
+		private void FixBlur()
         {
             GameObject pref = null;
             foreach (var i in FindObjectsOfType<SceneManager>())
@@ -461,7 +463,60 @@ namespace FiveKnights.BossManagement
             o.SetActive(true);
         }
 
-        private void FixCameraDryya()
+        private void FixDryyaSpikes()
+		{
+            GameObject[] spikes = new GameObject[]
+            {
+                GameObject.Find("ruind_bridge_roof_02spikes"),
+                GameObject.Find("ruind_bridge_roof_01").Find("ruind_bridge_roof_spike")
+            };
+            foreach(GameObject spike in spikes)
+			{
+                spike.layer = (int)PhysLayers.INTERACTIVE_OBJECT;
+                spike.AddComponent<Pogoable>();
+                spike.AddComponent<Tink>();
+
+                DamageHero dh = spike.AddComponent<DamageHero>();
+                dh.damageDealt = 1;
+                dh.shadowDashHazard = true;
+                dh.hazardType = 2;
+            }
+		}
+
+        private void AddCreditsTablets()
+		{
+            GameObject parent = GameObject.Find("Credits Tablets");
+            GameObject[] tablets = new GameObject[4]
+            {
+                parent.Find("Coding Tablet"),
+                parent.Find("Art Tablet"),
+                parent.Find("Sound Tablet"),
+                parent.Find("Playtesting Tablet")
+            };
+            foreach(GameObject tablet in tablets)
+			{
+                GameObject shrine = Instantiate(FiveKnights.preloadedGO["Backer Shrine"], tablet.transform.position, Quaternion.identity);
+                Destroy(shrine.GetComponent<SpriteRenderer>());
+                Destroy(shrine.GetComponent<Breakable>());
+                Destroy(shrine.GetComponent<PersistentBoolItem>());
+                Destroy(shrine.Find("Particle_rocks_small (3)"));
+                Destroy(shrine.Find("Fungus Base Horned"));
+
+                GameObject glowObject = shrine.Find("Active").Find("Glow Response Object");
+                Destroy(glowObject.Find("Fade Sprite").GetComponent<SpriteRenderer>());
+                GlowResponse glow = glowObject.GetComponent<GlowResponse>();
+                glow.FadeSprites = new List<SpriteRenderer>() { tablet.Find("Overlay").GetComponent<SpriteRenderer>() };
+
+                GameObject inspectObject = shrine.Find("Active").Find("Inspect Region");
+                PlayMakerFSM inspectFSM = inspectObject.LocateMyFSM("inspect_region");
+                inspectFSM.GetFsmStringVariable("Game Text Convo").Value = tablet.name.Split(new char[] { ' ' })[0].ToUpper() + "_CONVO";
+                inspectFSM.GetFsmStringVariable("Game Text Sheet").Value = "Pale Court Credits";
+
+                shrine.SetActive(true);
+            }
+        }
+
+		private void FixCameraDryya()
         {
             GameObject parentlock = GameObject.Find("Battle Scene").transform.GetChild(0).gameObject;
             if (parentlock != null)
@@ -476,8 +531,8 @@ namespace FiveKnights.BossManagement
                 bc.size = new Vector2(11.15505f, bc.size.y);
                 bc.offset = new Vector2(-8.354845f, bc.offset.y);
                 BoxCollider2D bc2 = camlock2.GetComponent<BoxCollider2D>();
-                bc2.size = new Vector2(14.90794f, bc2.size.y);
-                bc2.offset = new Vector2(-10.39885f, bc2.offset.y);
+                bc2.size = new Vector2(14.90794f, 18f);
+                bc2.offset = new Vector2(-10.39885f, -5f);
                 camlock1.gameObject.SetActive(true);
                 camlock2.SetActive(true);
                 Log("Done setting locks up");
