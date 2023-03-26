@@ -115,8 +115,21 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Start()
         {
+            // Sorry for this but Unity was being annoying :/
+            IEnumerator ForceDisableHB()
+            {
+                while (!doingIntro)
+                {
+                    _bc.enabled = false;
+                    yield return new WaitForEndOfFrame();
+                    _bc.enabled = false;
+                }
+                _bc.enabled = true;
+            }
+            
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
             _bc.enabled = doingIntro = false;
+            StartCoroutine(ForceDisableHB());
             gameObject.transform.localScale *= 0.8f;
             gameObject.layer = 11;
             yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
@@ -124,7 +137,7 @@ namespace FiveKnights.Zemer
             Destroy(GameObject.Find("World Edge v2"));
 			if(!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
 			else yield return new WaitForSeconds(1.7f);
-			//StartCoroutine(MusicControl());
+
 			gameObject.SetActive(true);
             gameObject.transform.position = OWArenaFinder.IsInOverWorld ? 
                     new Vector2(254f, GroundY + 0.5f) : 
@@ -132,10 +145,8 @@ namespace FiveKnights.Zemer
             
             FaceHero();
             AssignFields();
-            _bc.enabled = false;
-            _sr.enabled = false;
+            _bc.enabled = _sr.enabled = false;
 
-            //Spring(true, gameObject.transform.position);
             yield return new WaitForSeconds(0.2f);
 
             _anim.Play("ZIntro");
@@ -151,7 +162,7 @@ namespace FiveKnights.Zemer
             StartCoroutine(MusicControl());
             DoTitle();
             doingIntro = true;
-
+            _bc.enabled = true;
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
             PlayAudioClip("ZAudBow");
@@ -379,14 +390,18 @@ namespace FiveKnights.Zemer
                 xScl = (animName == "ZWalkRight") ? xScl : -xScl;
                 gameObject.transform.localScale = new Vector3(xScl, pScale.y, 1f);
                 _anim.speed = 1.38f;
-                _anim.Play(animName);
+                _anim.Play(animName, -1, 0f);
                 yield return null;
                 _rb.velocity = new Vector2(signX * WalkSpeed, 0f);
                 yield return new WaitWhile
                 (
-                    () => 
-                        !_rb.velocity.x.Within(0f,0.05f) && 
-                        !(xPos+displacement).Within(transform.GetPositionX(),0.15f)
+                    () =>
+                    {
+                        bool goingRight = signX > 0;
+                        float newXPos = transform.GetPositionX();
+                        bool dontStop = goingRight ? xPos + displacement > newXPos : xPos + displacement < newXPos;
+                        return !_rb.velocity.x.Within(0f, 0.05f) && dontStop;
+                    }
                 );
                 _anim.speed = 1f;
                 _rb.velocity = Vector2.zero;
@@ -856,6 +871,7 @@ namespace FiveKnights.Zemer
                     _anim.enabled = true;
                     _anim.speed = 1f;
                     _countering = true;
+                    FaceHero();
                     StartCoroutine(Attacks());
                 }
 

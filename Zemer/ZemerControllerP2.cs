@@ -28,6 +28,7 @@ namespace FiveKnights.Zemer
         private Animator _anim;
         private Rigidbody2D _rb;
         private Random _rand;
+        private DamageHero _dh;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
         private GameObject _target;
@@ -117,7 +118,8 @@ namespace FiveKnights.Zemer
 
             _sr = GetComponent<SpriteRenderer>();
 
-            GetComponent<DamageHero>().damageDealt = 1;
+            _dh = GetComponent<DamageHero>();
+            _dh.damageDealt = 1;
 
             _dd = FiveKnights.preloadedGO["WD"];
 
@@ -192,15 +194,17 @@ namespace FiveKnights.Zemer
                 isHit = false;
                 yield return new WaitSecWhile(() => !isHit, IdleDelay);
                 
-                float sig = Mathf.Sign(transform.localScale.x);
+                /*float sig = Mathf.Sign(transform.localScale.x);
                 yield return RageCombo(sig, true);
                 yield return null;
-                continue;
+                continue;*/
 
                 Log("[End of Wait]");
 
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
+
+                _dh.damageDealt = 1;
                 
                 if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
@@ -315,6 +319,7 @@ namespace FiveKnights.Zemer
                     yield return Turn();
 
                 transform.Find("BladeAerialShadow").gameObject.SetActive(true);
+                
 
                 float xVel = FaceHero() * -1f;
 
@@ -1362,15 +1367,6 @@ namespace FiveKnights.Zemer
                 
                 PlayAudioClip("AudDash",_ap);
                 
-                // Removed this so laser attack only happens in strict intervals
-                /*if (_hm.hp <= Phase3HP && _rand.Next(0, 5) < 2)
-                {
-                    transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
-                    yield return LandSlide();
-                    yield break;
-                }*/
-                //yield return _anim.WaitToFrame(7);
-                //_rb.velocity = Vector2.zero;
                 yield return _anim.WaitToFrame(7);
 
                 Animator an = transform.Find("HorizSlashFX").GetComponent<Animator>();
@@ -1454,7 +1450,8 @@ namespace FiveKnights.Zemer
             }
 
             _lastAtt = this.Dash;
-            yield return FastApproximately(MIDDLE, transform.position.x, 8.5f) ? Dash() : RegularDash();
+            // TODO revert
+            yield return FastApproximately(MIDDLE, transform.position.x, 8.5f) ? Dash() : Dash();
         }
 
         private IEnumerator Dodge()
@@ -1830,23 +1827,25 @@ namespace FiveKnights.Zemer
                 {
                     numTimes--;
                     _anim.Play("Z6LaserSpin", -1, 0f);
+                    PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                     _anim.speed = 1.75f;
                     yield return null;
                     _anim.enabled = false;
                     yield return new WaitForSeconds(0.1f);
-                    PlayAudioClip("ZAudAtt" + _rand.Next(1,7), _voice);
                     _anim.enabled = true;
                     _rb.velocity = Vector2.zero;
                     transform.position = new Vector3(transform.position.x, GroundY - 1.2f);
                     float dir = FaceHero(false, true, MIDDLE);
                     yield return null;
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                    PlayAudioClip("AudBasicSlash1",_ap);
+                    PlayAudioClip("AudBasicSlash1", _ap);
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                     _rb.velocity = new Vector2(dir * 80f, 0f);
                     _anim.speed = 1.75f;
                     grass.SetActive(true);
                     grass.GetComponent<ParticleSystem>().Play();
+                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                    PlayAudioClip("AudDash",_ap);
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                     _anim.enabled = false;
                     _anim.speed = 1f;
@@ -1862,12 +1861,9 @@ namespace FiveKnights.Zemer
                     StartCoroutine(SpawnSpirals(_target.transform.position, 1.1f));
 
                     yield return new WaitForSeconds(0.1f);
+                    
+                    yield return _anim.PlayToEnd();
 
-                    //_anim.enabled = true;
-                    yield return _anim.PlayToEnd();    
-                    
-                   //_anim.Play("Z5LandSlide", -1, 0f);
-                    
                     _anim.PlayAt("ZThrow2", 4);
                     Vector3 pScale = gameObject.transform.localScale;
                     gameObject.transform.localScale = new Vector3(-pScale.x, pScale.y, 1f);
@@ -1908,6 +1904,8 @@ namespace FiveKnights.Zemer
                 _anim.speed = 1.75f;
                 grass.SetActive(true);
                 grass.GetComponent<ParticleSystem>().Play();
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                PlayAudioClip("AudDash",_ap);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 8);
                 _anim.enabled = false;
                 _anim.speed = 1f;
@@ -1985,7 +1983,7 @@ namespace FiveKnights.Zemer
                 StartCoroutine(SpawnSpirals(targ - new Vector2(0f, 2f), 0.9f));
                 
                 GameObject controller = Instantiate(FiveKnights.preloadedGO["SlashRingController"]);
-                controller.transform.localScale *= 0.50f;
+                controller.transform.localScale *= 0.58f;
                 controller.SetActive(true);
                 StartCoroutine(PlayExtendedSpiral(controller, 1.3f));
                 
@@ -2000,7 +1998,7 @@ namespace FiveKnights.Zemer
                 yield return new WaitForSeconds(0.2f);
                 dir = FaceHero();
                 yield return Falling();
-                yield return SomersaultAntic(dir, controller);
+                yield return DashWithSpiral(dir, controller);
             }
 
             IEnumerator Falling()
@@ -2031,12 +2029,17 @@ namespace FiveKnights.Zemer
                     float rot = i * 90 + UnityEngine.Random.Range(20, 70);
                     glow.transform.SetRotation2D(rot);
                     glow.transform.SetRotation2D(-rot);
+
+                    _ap.Spawn = glow;
+                    PlayAudioClip(i % 2 == 0 ? "AudBasicSlash1" : "AudBasicSlash2", _ap, 0.5f, 0.8f);
+                    _ap.Spawn = gameObject;
+
                     yield return new WaitForSeconds(timer);
                     timer /= 1.5f;
                 }
             }
 
-            IEnumerator SomersaultAntic(float dir, GameObject controller)
+            IEnumerator DashWithSpiral(float dir, GameObject controller)
             {
                 _anim.speed = 1;
                 for (int i = 0; i < 2; i++)
@@ -2045,19 +2048,14 @@ namespace FiveKnights.Zemer
                     float destination =
                         -signX < 0 ? LeftX + 0.8f * (MIDDLE - LeftX) : RightX - 0.8f * (RightX - MIDDLE);
 
-                    if (i == 0)
-                    {
-                        Vector3 pScale = gameObject.transform.localScale;
-                        gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
-                        _anim.PlayAt("ZAerial2", 0);
-                        _anim.speed = 1f;
-                        yield return null;
-                        yield return _anim.WaitToFrame(4);
-                        _anim.enabled = false;
-                        yield return FlashRepeat(new Vector3(-signX < 0 ? LeftX + 1f : RightX - 1f, GroundY + 1f), 0.15f);
-                    }
-
-                    
+                    Vector3 pScale = gameObject.transform.localScale;
+                    gameObject.transform.localScale = new Vector3(Mathf.Abs(pScale.x) * signX, pScale.y, 1f);
+                    _anim.PlayAt("ZAerial2", 0);
+                    _anim.speed = 1f;
+                    yield return null;
+                    yield return _anim.WaitToFrame(4);
+                    _anim.enabled = false;
+                    yield return FlashRepeat(new Vector3(-signX < 0 ? LeftX + 1f : RightX - 1f, GroundY + 1f), 0.15f);
 
                     Vector2 p2 = new Vector2();
                     Vector2 p3 = new Vector2();
@@ -2075,10 +2073,11 @@ namespace FiveKnights.Zemer
                             p3 = new Vector2(RightX - (RightX - LeftX) * 0.15f, GroundY + 8.2f);
                         }
                         
-                        StartCoroutine(Bruh());
-                        IEnumerator Bruh()
+                        StartCoroutine(DelayedFlash());
+                        IEnumerator DelayedFlash()
                         {
-                            yield return FlashRepeat(p2, 0.1f);
+                            yield return FlashRepeat(p2 - new Vector2(0f, 6f), 0.1f);
+                            tarPos = _target.transform.position;
                             yield return FlashRepeat(p3, 0.1f);
                             tarPos = _target.transform.position;
                             yield return FlashRepeat(tarPos, 0.1f);
@@ -2087,11 +2086,13 @@ namespace FiveKnights.Zemer
                     
                     _anim.enabled = true;
                     _anim.PlayAt("Z5LandSlide", 1);
-                    float spd = i == 0 ? 70f : 50f;
+                    PlayAudioClip("AudDash",_ap);
+                    float spd = i == 0 ? 70f : 70f;
                     _rb.velocity = new Vector2(-signX * spd, 0f);
                     grass.SetActive(true);
                     grass.GetComponent<ParticleSystem>().Play();
                     yield return null;
+                    _anim.enabled = false;
                     // going right
                     yield return -signX > 0 ? 
                         new WaitWhile(() => transform.position.x < destination) : 
@@ -2114,15 +2115,10 @@ namespace FiveKnights.Zemer
                     
                     if (i == 1)
                     {
-                        yield return Test(controller, p2, p3, tarPos);
+                        yield return DontStop(controller, p2, p3, tarPos);
                         yield break;
                     }
-                    if (i == 0)
-                    {
-                        yield return Test2(controller);
-                        continue;
-                    }
-
+                    
                     _anim.PlayAt("ZSpin", 14);
                     _anim.enabled = true;
                     _rb.isKinematic = false;
@@ -2139,60 +2135,12 @@ namespace FiveKnights.Zemer
                     _anim.PlayAt("Z5LandSlide",3);
                     yield return null;
                     yield return new WaitWhile(() => _anim.IsPlaying());
-                    yield return new WaitForSeconds(0.25f);
                 }
                 
                 yield return SpinDashInAir(controller);
             }
 
-            IEnumerator Test2(GameObject controller)
-            {
-                float dir = FaceHero(false, false, MIDDLE);
-                _anim.PlayAt("ZSpin", 3);
-                _anim.enabled = true;
-                _rb.isKinematic = false;
-                _rb.gravityScale = 2f;
-                _rb.velocity = new Vector2(-dir * 30f, 20f);
-                StartCoroutine(FlashRepeat(new Vector3(-dir < 0 ? LeftX + 1f : RightX - 1f, GroundY + 1f), 0.15f));
-                yield return null;
-                yield return new WaitWhile(() => _rb.velocity.y > 0);
-                
-                _anim.PlayAt("Z4AirSweep", 1);
-                yield return null;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-
-                yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f && _anim.GetCurrentFrame() < 4 && CheckIfStuck());
-                _anim.enabled = false;
-                yield return new WaitWhile(() => transform.position.y > GroundY + 4.5f && CheckIfStuck());
-                _anim.enabled = true;
-                yield return new WaitWhile(() => transform.position.y > GroundY - 0.3 && _anim.GetCurrentFrame() < 6 && CheckIfStuck());
-                _anim.enabled = false;
-                yield return new WaitWhile(() => transform.position.y > GroundY - 0.3f && CheckIfStuck());
-                _anim.enabled = true;
-                transform.position = new Vector3(transform.position.x, GroundY - 0.3f);
-                _rb.gravityScale = 0f;
-                _rb.isKinematic = true;
-                _rb.velocity = Vector2.zero;
-               // _anim.speed = 2f;
-
-                bool CheckIfStuck()
-                {
-                    if (_rb.velocity.x.Within(0f, 0.5f))
-                    {
-                        _rb.gravityScale = 2f;
-                        _rb.isKinematic = false;
-                    }
-                    return true;
-                }
-                
-                //PlayAudioClip("breakable_wall_hit_1", _ap);
-
-                //yield return new WaitWhile(() => _anim.IsPlaying());
-                //_anim.speed = 1f;
-                //transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
-            }
-            
-            IEnumerator Test(GameObject controller, Vector2 p2, Vector2 p3, Vector3 tarPos)
+            IEnumerator DontStop(GameObject controller, Vector2 p2, Vector2 p3, Vector3 tarPos)
             {
                 float dir = FaceHero(false, false, MIDDLE);
                 _anim.PlayAt("ZSpin", 3);
@@ -2249,14 +2197,6 @@ namespace FiveKnights.Zemer
                     p3 = new Vector2(RightX - (RightX - LeftX) * 0.15f, GroundY + 8.2f);
                 }
 
-                /*StartCoroutine(Bruh());
-
-                IEnumerator Bruh()
-                {
-                    yield return FlashRepeat(p3, 0.1f);
-                    yield return FlashRepeat(tarPos, 0.1f);
-                }*/
-
                 float timePass = 0f;
                 float duration = 0.5f;
                 while (timePass < duration)
@@ -2285,16 +2225,16 @@ namespace FiveKnights.Zemer
                 Vector2 p3 = transform.position;
                 _anim.PlayAt("Z4AirSweep", 1);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                _anim.speed = 2f;
 
                 Vector2 diff = p3 - tarPos;
                 float rot = Mathf.Atan(diff.y / diff.x);
                 if (side > 0 && p3.x > tarPos.x) rot += Mathf.PI;
-                Debug.Log($"Rot is {rot * Mathf.Rad2Deg}");
                 _rb.velocity = new Vector2(70f * Mathf.Cos(rot), 70f * Mathf.Sin(rot));
 
-                yield return new WaitWhile(() => transform.position.y > GroundY + 2.5f && _anim.GetCurrentFrame() < 4 && CheckIfStuck());
+                yield return new WaitWhile(() => transform.position.y > GroundY + 3.5f && _anim.GetCurrentFrame() < 4 && CheckIfStuck());
                 _anim.enabled = false;
-                yield return new WaitWhile(() => transform.position.y > GroundY + 4.5f && CheckIfStuck());
+                yield return new WaitWhile(() => transform.position.y > GroundY + 3.5f && CheckIfStuck());
                 _anim.enabled = true;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.3 && _anim.GetCurrentFrame() < 6 && CheckIfStuck());
                 _anim.enabled = false;
@@ -2304,7 +2244,8 @@ namespace FiveKnights.Zemer
                 _rb.gravityScale = 0f;
                 _rb.isKinematic = true;
                 _rb.velocity = Vector2.zero;
-
+                _anim.speed = 1f;
+                
                 bool CheckIfStuck()
                 {
                     if (_rb.velocity.x.Within(0f, 0.5f))
@@ -2389,6 +2330,7 @@ namespace FiveKnights.Zemer
                 float timeElapsed = 0;
                 while (timeElapsed < lerpDuration)
                 {
+                    if (trans == null) yield break;
                     trans.localScale = Vector2.Lerp(startValue, endValue, timeElapsed / lerpDuration);
                     timeElapsed += Time.deltaTime;
                     yield return null;
@@ -2453,8 +2395,12 @@ namespace FiveKnights.Zemer
                 GameObject whiteFlash = Instantiate(whiteflashOld);
                 whiteFlash.SetActive(true);
                 whiteFlash.transform.position = targ;
-                
-                PlayAudioClip("NeedleSphere",_ap, 0.7f, 1f);
+
+                GameObject spawn = new GameObject();
+                spawn.transform.position = targ;
+                _ap.Spawn = spawn;
+                PlayAudioClip("NeedleSphere", _ap, 0.7f, 1f);
+                _ap.Spawn = gameObject;
                 
                 for (int i = 0; i < 5; i++)
                 {
@@ -2784,14 +2730,11 @@ namespace FiveKnights.Zemer
             IEnumerator Test(Animator anim)
             {
                 anim.gameObject.SetActive(true);
-                Log($"Wait to frame 3:");
                 anim.PlayAt("NewSlash3", 0);
-                Log("Wait to frame 4");
                 anim.speed = 1f;
                 yield return null;
                 anim.enabled = true;
                 yield return anim.WaitToFrame(3);
-                Log("Wait to frame 5");
                 anim.enabled = false;
             }
 
@@ -3329,7 +3272,7 @@ namespace FiveKnights.Zemer
 
             foreach (DamageHero dh in transform.Find("BladeAerialShadow").GetComponentsInChildren<DamageHero>(true))
             {
-                dh.damageDealt = 2;
+                dh.damageDealt = 1;
             }
         }
 
