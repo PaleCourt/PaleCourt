@@ -9,6 +9,9 @@ using FrogCore;
 using Modding;
 using SFCore.Utils;
 using UnityEngine;
+using UnityEngine.Audio;
+using GlobalEnums;
+using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
 
 namespace FiveKnights
@@ -27,7 +30,8 @@ namespace FiveKnights
             langCtrl = new LanguageCtrl();
 
             ModHooks.LanguageGetHook += LangGet;
-			On.GameManager.EnterHero += GameManagerEnterHero;
+			On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
+            On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
 
         }
@@ -35,17 +39,24 @@ namespace FiveKnights
 		public static void UnHook()
         {
             ModHooks.LanguageGetHook -= LangGet;
+            On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero -= GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= ActiveSceneChanged;
         }
 
         private static string LangGet(string key, string sheet, string orig)
         {
-            if(key.StartsWith("TITLE_") || key.Contains("_RR"))
+            if(key.StartsWith("RR_"))
             {
                 sheet = "Reward Room";
             }
             return langCtrl.ContainsKey(key, sheet) ? langCtrl.Get(key, sheet) : orig;
+        }
+
+        private static string GameManagerGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
+        {
+            if(self.sceneName == "hidden_reward_room") return MapZone.DREAM_WORLD.ToString();
+            return orig(self);
         }
 
         private static void GameManagerEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
@@ -53,31 +64,13 @@ namespace FiveKnights
             if(self.sceneName == "hidden_reward_room")
             {
                 self.tilemap.width = 500;
-                CreateGateway("door_reward_room", new Vector2(266f, 129.38f), Vector2.zero,
-                    null, null, false, true, true,
+                self.tilemap.height = 200;
+                CreateGateway("door1", new Vector2(266f, 131f), Vector2.zero,
+                    null, null, true, false, true,
                     GameManager.SceneLoadVisualizations.Dream);
                 GameCameras.instance.hudCamera.gameObject.transform.Find("Blanker White").gameObject.LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
             }
             orig(self, false);
-		}
-        
-        private static void FixBlur()
-        {
-            GameObject pref = null;
-            foreach (var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
-            {
-                var j = i.borderPrefab;
-                pref = j;
-                UnityEngine.Object.Destroy(i.gameObject);
-            }
-            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["SMTest"]);
-            if (pref != null)
-            {
-                o.GetComponent<SceneManager>().borderPrefab = pref;
-            }
-            o.GetComponent<SceneManager>().noLantern = true;
-            o.GetComponent<SceneManager>().darknessLevel = -1;
-            o.SetActive(true);
         }
         
         private static void ActiveSceneChanged(UnityEngine.SceneManagement.Scene arg0, UnityEngine.SceneManagement.Scene arg1)
@@ -87,67 +80,85 @@ namespace FiveKnights
                 DialogueNPC entrance = DialogueNPC.CreateInstance();
                 entrance.transform.position = new Vector3(65f, 98.4f, 0f);
                 entrance.DialogueSelector = EntranceDialogue;
-                entrance.SetTitle("TITLE_ENTER_RR");
-                entrance.SetDreamKey("TITLE_ENTER_RR_SUB");
+                entrance.SetTitle("RR_ENTER_TITLE");
+                entrance.SetDreamKey("RR_ENTER_TITLE_SUB");
                 entrance.SetUp();
             }
             if (arg1.name == "hidden_reward_room")
             {
-                FixBlur();
-                
                 foreach (var g in UnityEngine.Object.FindObjectsOfType<CameraLockArea>(true))
                 {
                     UnityEngine.Object.Destroy(g.gameObject);
                 }
-
                 float yLvl = 132.5f;
-                
-                CreateCameraLock("CameraLockOuter", new Vector2(300f, 132f), new Vector2(3f, 1f),
+                CreateCameraLock("CameraLockOuter", new Vector2(301f, yLvl), new Vector2(3f, 1f),
                     new Vector2(37f, 23f), new Vector2(0f, 0f),
                     new Vector2(263f, yLvl), new Vector2(340f, yLvl), true);
 
-                CreateCameraLock("CameraLockMid", new Vector2(300f, 132f), new Vector2(1f, 1f),
-                    new Vector2(28f, 23f), new Vector2(0f, 0f),
+                CreateCameraLock("CameraLockMid", new Vector2(302f, yLvl), new Vector2(1f, 1f),
+                    new Vector2(24f, 23f), new Vector2(0f, 0f),
                     new Vector2(302f, yLvl), new Vector2(302f, yLvl), true, true);
-                
+                FixBlur();
+                DreamEntry();
+
+                PlayerData.instance.dreamReturnScene = "White_Palace_09";
+
+                GameObject dreamBase = GameObject.Instantiate(FiveKnights.preloadedGO["Dream Base"], new Vector3(337.71f, 127.58f, -0.5f), Quaternion.identity);
+                GameObject dreamBeam = GameObject.Instantiate(FiveKnights.preloadedGO["Dream Beam"], new Vector3(337.71f, 127.58f), Quaternion.identity);
+                GameObject doorWarp = GameObject.Instantiate(FiveKnights.preloadedGO["Dream Door Warp"], new Vector3(337.61f, 128.18f, 0.2f), Quaternion.identity);
+                PlayMakerFSM warpFSM = doorWarp.LocateMyFSM("Door Control");
+                warpFSM.RemoveAction("Set PD Bool", 1);
+                warpFSM.GetFsmStringVariable("Entry Gate").Value = "door_dreamReturn";
+                warpFSM.GetFsmStringVariable("New Scene").Value = "White_Palace_09";
+                warpFSM.GetAction<BeginSceneTransition>("Change Scene", 3).preventCameraFadeOut = true;
+                dreamBase.SetActive(true);
+                dreamBeam.SetActive(true);
+                doorWarp.SetActive(true);
+
                 DialogueNPC dryya = DialogueNPC.CreateInstance();
                 dryya.transform.position = new Vector3(293.38f, 129.67f, 0f);
                 dryya.DialogueSelector = DryyaDialogue;
                 dryya.GetComponent<MeshRenderer>().enabled = false;
-                dryya.SetTitle("TITLE_RR_DRYYA");
-                dryya.SetDreamKey("TITLE_RR_DRYYA_SUB");
+                dryya.SetTitle("RR_DRYYA_TITLE");
+                dryya.SetDreamKey("RR_DRYYA_TITLE_SUB");
                 dryya.SetUp();
 
                 DialogueNPC isma = DialogueNPC.CreateInstance();
                 isma.transform.position = new Vector3(300.79f, 129.0865f, 0f);
                 isma.DialogueSelector = IsmaDialogue;
                 isma.GetComponent<MeshRenderer>().enabled = false;
-                isma.SetTitle("TITLE_RR_ISMA");
-                isma.SetDreamKey("TITLE_RR_ISMA_SUB");
+                isma.SetTitle("RR_ISMA_TITLE");
+                isma.SetDreamKey("RR_ISMA_TITLE_SUB");
                 isma.SetUp();
 
                 DialogueNPC ogrim = DialogueNPC.CreateInstance();
                 ogrim.transform.position = new Vector3(297.35f, 129.0865f, 0f);
                 ogrim.DialogueSelector = OgrimDialogue;
                 ogrim.GetComponent<MeshRenderer>().enabled = false;
-                ogrim.SetTitle("TITLE_RR_OGRIM");
-                ogrim.SetDreamKey("TITLE_RR_OGRIM_SUB");
+                ogrim.SetTitle("RR_OGRIM_TITLE");
+                ogrim.SetDreamKey("RR_OGRIM_TITLE_SUB");
+                ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 ogrim.SetUp();
 
                 DialogueNPC hegemol = DialogueNPC.CreateInstance();
                 hegemol.transform.position = new Vector3(305.08f, 129.38f, 0f);
                 hegemol.DialogueSelector = HegemolDialogue;
-                hegemol.SetTitle("TITLE_RR_HEGEMOL");
                 hegemol.GetComponent<MeshRenderer>().enabled = false;
-                hegemol.SetDreamKey("TITLE_RR_HEGEMOL_SUB");
+                hegemol.SetTitle("RR_HEGEMOL_TITLE");
+                hegemol.SetDreamKey("RR_HEGEMOL_TITLE_SUB");
+                hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 hegemol.SetUp();
 
                 DialogueNPC zemer = DialogueNPC.CreateInstance();
                 zemer.transform.position = new Vector3(311.03f, 129.0576f, 0f);
                 zemer.DialogueSelector = ZemerDialogue;
                 zemer.GetComponent<MeshRenderer>().enabled = false;
-                zemer.SetTitle("TITLE_RR_ZEMER");
-                zemer.SetDreamKey("TITLE_RR_ZEMER_SUB");
+                zemer.SetTitle("RR_ZEMER_TITLE");
+                zemer.SetDreamKey("RR_ZEMER_TITLE_SUB");
+                zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
+                zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 zemer.SetUp();
 
                 dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();
@@ -175,10 +186,10 @@ namespace FiveKnights
             tp.alwaysEnterLeft = left;
             tp.alwaysEnterRight = right;
             GameObject rm = new GameObject("Hazard Respawn Marker");
-            rm.transform.parent = tp.transform;
-            rm.transform.position = new Vector2(rm.transform.position.x - 3f, rm.transform.position.y);
-            var tmp = rm.AddComponent<HazardRespawnMarker>();
-            tp.respawnMarker = rm.GetComponent<HazardRespawnMarker>();
+            rm.transform.parent = gate.transform;
+            rm.tag = "RespawnPoint";
+            rm.transform.SetPosition2D(pos);
+            tp.respawnMarker = rm.AddComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
         }
 
@@ -202,25 +213,75 @@ namespace FiveKnights
             lockCol.enabled = cla.enabled = true;
         }
 
+        private static void FixBlur()
+        {
+            GameObject pref = null;
+            foreach(var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
+            {
+                var j = i.borderPrefab;
+                pref = j;
+                UnityEngine.Object.Destroy(i.gameObject);
+            }
+            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["SMTest"]);
+            if(pref != null)
+            {
+                o.GetComponent<SceneManager>().borderPrefab = pref;
+            }
+            o.GetComponent<SceneManager>().noLantern = true;
+            o.GetComponent<SceneManager>().darknessLevel = -1;
+            o.SetActive(true);
+        }
+
+        private static void DreamEntry()
+        {
+            foreach(var i in GameObject.FindObjectsOfType<GameObject>()
+                .Where(x => x.name == "Dream Entry"))
+            {
+                HeroController.instance.isHeroInPosition = true;
+                GameObject de = GameObject.Instantiate(FiveKnights.preloadedGO["DreamEntry"]);
+                de.transform.position = i.transform.position;
+                GameObject.Destroy(i);
+                de.SetActive(true);
+                de.name = "Dream Entry";
+                HeroController.instance.FaceRight();
+            }
+        }
+
+        public static void PlayMusic(AudioClip clip)
+        {
+            MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
+            MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
+            Vasi.Mirror.SetField(channelInfo, "clip", clip);
+            MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
+            {
+                channelInfo, null, null, null, null, null
+            };
+            Vasi.Mirror.SetField(musicCue, "channelInfos", channelInfos);
+            var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
+            yoursnapshot.TransitionTo(0);
+            GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
+        }
+
         private static IEnumerator DebugLoadRR()
         {
             yield return new WaitForSeconds(1f);
+            HeroController.instance.EnterWithoutInput(true);
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
                 SceneName = "hidden_reward_room",
-                EntryGateName = "door_reward_room",
+                EntryGateName = "door1",
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
                 PreventCameraFadeOut = true,
                 EntryDelay = 0,
-                HeroLeaveDirection = GlobalEnums.GatePosition.door
+                HeroLeaveDirection = GatePosition.door
             });
         }
 
         private static DialogueOptions EntranceDialogue(DialogueCallbackOptions prev)
         {
             if (prev.Continue == false)
-                return new() { Key = "ENTER_RR", Sheet = "Reward Room", Cost = 0, Type = DialogueType.YesNo, Continue = true };
+                return new() { Key = "RR_ENTER", Sheet = "Reward Room", Cost = 0, Type = DialogueType.YesNo, Continue = true };
             else
             {
                 if (prev.Response == DialogueResponse.Yes)
@@ -383,6 +444,7 @@ namespace FiveKnights
                 }
                 else
 				{
+                    yield return dryyaAnim.PlayBlocking("TurnRight");
                     dryyaAnim.Play("TalkRight");
                 }
                 yield break;
@@ -390,6 +452,10 @@ namespace FiveKnights
 
             IEnumerator StopAnimDryya()
             {
+                if(HeroController.instance.transform.position.x > dryyaAnim.gameObject.transform.position.x)
+                {
+                    yield return dryyaAnim.PlayBlocking("TurnLeft");
+                }
                 dryyaAnim.Play("Idle");
                 yield break;
             }

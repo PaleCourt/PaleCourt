@@ -62,9 +62,9 @@ namespace FiveKnights.BossManagement
             // set damage level
             if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
             {
-                // TODO UNCOMMENT
-                //BossSceneController.Instance.BossLevel = CustomWP.lev;
-            }
+				// TODO UNCOMMENT
+				BossSceneController.Instance.BossLevel = CustomWP.lev;
+			}
             
             Instance = this;
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
@@ -117,9 +117,12 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
             {
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
                 yield return LoadIsmaBundle();
+                // Manually play music for now because the original scene is missing it
+                PlayMusic(FiveKnights.Clips["OgrimMusic"], 1f);
                 yield return OgrimIsmaFight();
                 
                 if (CustomWP.wonLastFight)
@@ -280,22 +283,23 @@ namespace FiveKnights.BossManagement
                 yield return null;
 
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
                 FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
 
-                yield return OgrimIsmaFight();
+				yield return OgrimIsmaFight();
 
-                foreach (Animator anim in flowersAnim)
+				foreach (Animator anim in flowersAnim)
                 {
                     anim.enabled = false;
                 }
 
                 yield return new WaitForSeconds(1.5f);
                 
-                /*GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
+                GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
-                DryyaSetup dc = FightController.Instance.CreateDryya();
-                sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
+				DryyaSetup dc = FightController.Instance.CreateDryya();
+				sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
                 yield return new WaitForSeconds(0.1f);
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_2"];
                 yield return new WaitForSeconds(0.1f);
@@ -303,16 +307,16 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.1f);
                 Destroy(dryyaSilhouette);
                 yield return new WaitForSeconds(0.5f);
-                
-                yield return new WaitWhile(() => dc != null);
 
-                yield return new WaitForSeconds(3f);*/
+				yield return new WaitWhile(() => dc != null);
 
-                /*GameObject hegSil = GameObject.Find("Silhouette Hegemol");
+				yield return new WaitForSeconds(3f);
+
+                GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.2f;
-                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
-                for (int i = 0; i <= 5; i++)
+				HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+				for (int i = 0; i <= 5; i++)
                 {
                     sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_"+i];
                     yield return new WaitForSeconds(0.1f);
@@ -324,9 +328,9 @@ namespace FiveKnights.BossManagement
                 sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_7"];
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
-                yield return new WaitWhile(() => hegemolCtrl != null);
+				yield return new WaitWhile(() => hegemolCtrl != null);
 
-                yield return new WaitForSeconds(1.5f);*/
+				yield return new WaitForSeconds(1.5f);
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = FightController.Instance.CreateZemer();
@@ -374,6 +378,7 @@ namespace FiveKnights.BossManagement
             // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
+
             yield return new WaitWhile(() => _hm.hp > 600);
             HIT_FLAG = false;
 
@@ -382,12 +387,12 @@ namespace FiveKnights.BossManagement
             
             
             // TODO REMOVE
-            dd.SetActive(false);
+            /*dd.SetActive(false);
             if (flowersAnim != null)
             {
                 StartCoroutine(PlayFlowers(2));
             }
-            yield break;
+            yield break;*/
             
             FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
             PlayMusic(null, 1f);
@@ -492,23 +497,11 @@ namespace FiveKnights.BossManagement
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
 
             // Set fields for room transition
-            transitionFSM.RemoveAction("New Scene", 6);
-            transitionFSM.InsertMethod("New Scene", () =>
-            {
-                GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
-                {
-                    SceneName = "hidden_reward_room",
-                    EntryGateName = "door_reward_room",
-                    Visualization = GameManager.SceneLoadVisualizations.Default,
-                    WaitForSceneTransitionCameraFade = false,
-                    PreventCameraFadeOut = true,
-                    EntryDelay = 0,
-                    HeroLeaveDirection = GlobalEnums.GatePosition.door
-                });
-            }, 6);
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "hidden_reward_room";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door1";
 
-            HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
+            HeroController.instance.EnterWithoutInput(true);
             transitionFSM.SetState("Fade Out");
         }
 
@@ -587,14 +580,14 @@ namespace FiveKnights.BossManagement
             List<GameObject> gos;
             
             if (CustomWP.boss == CustomWP.Boss.All)
-            {  
-                FiveKnights.Instance.SaveSettings.gotCharms[3] = false;
+            {
                 var r1 = ab.LoadAssetAsync<GameObject>("Isma");
                 var r2 = ab.LoadAssetAsync<GameObject>("Gulka");
                 var r3 = ab.LoadAssetAsync<GameObject>("Plant");
                 var r4 = ab.LoadAssetAsync<GameObject>("Wall");
                 var r5 = ab.LoadAssetAsync<GameObject>("Fool");
                 var r6 = ab.LoadAssetAsync<GameObject>("ThornPlant");
+                var r7 = ab.LoadAssetAsync<GameObject>("Seal");
 
                 yield return r1;
                 yield return r2;
@@ -602,6 +595,7 @@ namespace FiveKnights.BossManagement
                 yield return r4;
                 yield return r5;
                 yield return r6;
+                yield return r7;
 
                 gos = new List<GameObject>
                 {
@@ -610,7 +604,8 @@ namespace FiveKnights.BossManagement
                     r3.asset as GameObject, 
                     r4.asset as GameObject,
                     r5.asset as GameObject,
-                    r6.asset as GameObject
+                    r6.asset as GameObject,
+                    r7.asset as GameObject
                 };
             }
             else
@@ -622,7 +617,8 @@ namespace FiveKnights.BossManagement
                     ab.LoadAsset<GameObject>("Plant"),
                     ab.LoadAsset<GameObject>("Wall"),
                     ab.LoadAsset<GameObject>("Fool"),
-                    ab.LoadAsset<GameObject>("ThornPlant")
+                    ab.LoadAsset<GameObject>("ThornPlant"),
+                    ab.LoadAsset<GameObject>("Seal")
                 };
             }
             
@@ -744,6 +740,8 @@ namespace FiveKnights.BossManagement
                 FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
             }
             FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            GameObject ball = dd.LocateMyFSM("Dung Defender").GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
+            FiveKnights.preloadedGO["DungBreakChunks"] = ball.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value;
 
             Log("Finished Loading Hegemol Bundle");
         }

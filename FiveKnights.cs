@@ -147,7 +147,7 @@ namespace FiveKnights
             ModHooks.GetPlayerVariableHook += GetVariableHook;
             ModHooks.AfterSavegameLoadHook += SaveGame;
             ModHooks.BeforeSavegameSaveHook += SaveEntries;
-            ModHooks.NewGameHook += AddComponent;
+			On.GameManager.StartNewGame += GameManager_StartNewGame;
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
@@ -170,7 +170,7 @@ namespace FiveKnights
             #endregion
         }
 
-        private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
+		private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
             orig(newLang);
             foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
@@ -192,7 +192,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "2.22.2023";
+        public override string GetVersion() => "3.26.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -239,13 +239,20 @@ namespace FiveKnights
                 ("GG_Hornet_1", "Boss Holder/Hornet Boss 1"),
                 // For Isma's thorn walls
                 ("Fungus3_13", "Thorn Collider"),
+                // For Isma's gulka shield effect
+                ("Abyss_05", "Dusk Knight/Shield"),
                 // For charm collect/upgrade cutscene
                 ("Room_Queen", "UI Msg Get WhiteCharm"),
-                
+                // The next three are for the dream exit field in Reward Room
+                ("White_Palace_03_hub", "dream_nail_base"),
+                ("White_Palace_03_hub", "dream_beam_animation"),
+                ("White_Palace_03_hub", "doorWarp"),
+                // For the credits tablets in Dryya's arena
+                ("Dream_Room_Believer_Shrine", "Plaque_statue_01 (1)"),
+
                 ("Room_Mansion","Heart Piece Folder/Heart Piece"),
                 ("Room_Mansion","Xun NPC/White Flash"),
                 ("GG_Radiance", "Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)")
-
             };
         }
 
@@ -260,6 +267,7 @@ namespace FiveKnights
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
             preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
             preloadedGO["Thorn Collider"] = preloadedObjects["Fungus3_13"]["Thorn Collider"];
+            preloadedGO["Shield"] = preloadedObjects["Abyss_05"]["Dusk Knight/Shield"];
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
@@ -279,8 +287,6 @@ namespace FiveKnights
             
             preloadedGO["Ceiling Dust"] = preloadedObjects["GG_Failed_Champion"]["Ceiling Dust"];
             
-            
-            
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             
             preloadedGO["PTurret"] = preloadedObjects["Fungus1_12"]["Plant Turret"];
@@ -290,9 +296,13 @@ namespace FiveKnights
             preloadedGO["Grass1"] = preloadedObjects["Fungus1_12"]["green_grass_1 (1)"];
             preloadedGO["PTrap"] = preloadedObjects["Fungus1_19"]["Plant Trap"];
 
+            preloadedGO["Dream Base"] = preloadedObjects["White_Palace_03_hub"]["dream_nail_base"];
+            preloadedGO["Dream Beam"] = preloadedObjects["White_Palace_03_hub"]["dream_beam_animation"];
+            preloadedGO["Dream Door Warp"] = preloadedObjects["White_Palace_03_hub"]["doorWarp"];
+
+            preloadedGO["Backer Shrine"] = preloadedObjects["Dream_Room_Believer_Shrine"]["Plaque_statue_01 (1)"];
+
             preloadedGO["VapeIn2"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece/Plink"];
-            
-            
             
             preloadedGO["Traitor"] = preloadedObjects["Fungus3_23_boss"]["Battle Scene/Wave 3/Mantis Traitor Lord"];
             preloadedGO["BSCW"] = preloadedObjects["GG_White_Defender"]["Boss Scene Controller"];
@@ -678,7 +688,17 @@ namespace FiveKnights
             }
             return langStrings.ContainsKey(key, sheet) ? langStrings.Get(key, sheet) : orig;
         }
-        
+
+        private void GameManager_StartNewGame(On.GameManager.orig_StartNewGame orig, GameManager self, bool permaDeath, bool bossRush)
+        {
+            orig(self, permaDeath, bossRush);
+            if(bossRush)
+			{
+                SaveSettings.gotCharms = new bool[] { true, true, true, true };
+			}
+            AddComponent();
+        }
+
         private void SaveGame(SaveGameData data)
         {
             AddComponent();
@@ -723,6 +743,7 @@ namespace FiveKnights
                 clashSnd.clip = aud;
                 clashSnd.pitch = Random.Range(0.85f, 1.15f);
 
+                ParryTink.TinkClip = aud;
                 Tink.TinkClip = aud;
 
                 preloadedGO["ClashTink"] = clashSndObj;

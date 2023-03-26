@@ -63,7 +63,7 @@ namespace FiveKnights
 
             _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), _hc.transform);
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
-            blast.SetActive(true);
+            blast.SetActive(false);
             _blastControl = blast.LocateMyFSM("Control");
 
             //_pd.CalculateNotchesUsed();

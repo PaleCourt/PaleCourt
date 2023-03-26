@@ -46,7 +46,8 @@ namespace FiveKnights.Isma
         private readonly float LEFT_X = OWArenaFinder.IsInOverWorld ? 105f : 60.3f;
         private readonly float RIGHT_X = OWArenaFinder.IsInOverWorld ? 135f : 91.7f;
         private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 76f;
-        private readonly float GROUND_Y = 5.9f;
+        private readonly float GROUND_Y = OWArenaFinder.IsInOverWorld || 
+            CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 5.9f : 6.67f;
         
         private const int MAX_HP = 1700;
         private const int WALL_HP = 1100;
@@ -66,6 +67,7 @@ namespace FiveKnights.Isma
         private const int MaxDreamAmount = 3;
         private bool usingThornPillars;
         private bool ogrimEvaded;
+        private Coroutine wallsCoro;
 
         private void Awake()
         {
@@ -175,7 +177,7 @@ namespace FiveKnights.Isma
 
                 GameObject sf = new GameObject();
                 sf.name = "SeedFloor";
-                sf.transform.position = new Vector3(73.3f, 5.1f, 0f);
+                sf.transform.position = new Vector3(73.3f, GROUND_Y - 0.8f, 0f);
                 BoxCollider2D sfcol = sf.AddComponent<BoxCollider2D>();
                 sfcol.offset = new Vector2(3f, 0f);
                 sfcol.size = new Vector2(19f, 1f);
@@ -185,25 +187,19 @@ namespace FiveKnights.Isma
 				{
                     GameObject sr = new GameObject();
                     sr.name = "SeedSideR";
-                    sr.transform.position = new Vector3(92.4f, 12.7f, 0f);
+                    sr.transform.position = new Vector3(92.4f, GROUND_Y + 6.8f, 0f);
                     BoxCollider2D srcol = sr.AddComponent<BoxCollider2D>();
                     srcol.size = new Vector2(1f, 7f);
                     sr.transform.parent = sc.transform;
 
                     GameObject sl = new GameObject();
                     sl.name = "SeedSideL";
-                    sl.transform.position = new Vector3(59.4f, 12.7f, 0f);
+                    sl.transform.position = new Vector3(59.4f, GROUND_Y + 6.8f, 0f);
                     BoxCollider2D slcol = sl.AddComponent<BoxCollider2D>();
                     slcol.size = new Vector2(1f, 7f);
                     sl.transform.parent = sc.transform;
                 }
                 #endregion
-
-                #region Remove vines
-                Destroy(GameObject.Find("acid_plant_0000_root9"));
-                Destroy(GameObject.Find("acid_plant_0000_root9 (1)"));
-                Destroy(GameObject.Find("acid_plant_0006_acid_leaf1"));
-				#endregion
 			}
 
 			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
@@ -323,7 +319,7 @@ namespace FiveKnights.Isma
             _rb.velocity = Vector2.zero;
             ToggleIsma(false);
             _attacking = false;
-			StartCoroutine(SpawnWalls());
+			wallsCoro = StartCoroutine(SpawnWalls());
 
             if(onlyIsma)
             {
@@ -555,6 +551,7 @@ namespace FiveKnights.Isma
                 if(onlyIsma)
                 {
                     yield return new WaitWhile(() => _attacking);
+                    Log("Queueing Seed Bomb");
                     spawningWalls = true;
                     yield return new WaitWhile(() => spawningWalls);
                     yield return new WaitForSeconds(1f);
@@ -592,8 +589,8 @@ namespace FiveKnights.Isma
                 GameObject frontWL = wallL.transform.Find("FrontW").gameObject;
                 frontWR.layer = 8;
                 frontWL.layer = 8;
-                wallR.transform.position = new Vector2(RIGHT_X - 2.5f, GROUND_Y);
-                wallL.transform.position = new Vector2(LEFT_X + 2.5f, GROUND_Y);
+                wallR.transform.position = new Vector3(RIGHT_X - 2.5f, GROUND_Y, 0.1f);
+                wallL.transform.position = new Vector3(LEFT_X + 2.5f, GROUND_Y, 0.1f);
                 Animator anim = frontWR.GetComponent<Animator>();
                 PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 3);
@@ -718,7 +715,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(i * Mathf.Deg2Rad), 30f * Mathf.Sin(i * Mathf.Deg2Rad));
-                        DestroySeedAfter(localSeed, 3f);
+                        Destroy(localSeed, 3f);
                     }
                     firstBomb = false;
                 }
@@ -737,7 +734,7 @@ namespace FiveKnights.Isma
                             localSeed.SetActive(true);
                             localSeed.GetComponent<Rigidbody2D>().velocity =
                                 new Vector2((25f + i * 5f) * Mathf.Cos(rot), (25f + i * 5f) * Mathf.Sin(rot));
-                            DestroySeedAfter(localSeed, 3f);
+                            Destroy(localSeed, 3f);
                         }
                     }
                     spawningWalls = false;
@@ -753,7 +750,7 @@ namespace FiveKnights.Isma
                         localSeed.SetActive(true);
                         localSeed.GetComponent<Rigidbody2D>().velocity =
                             new Vector2(30f * Mathf.Cos(rot * Mathf.Deg2Rad), 30f * Mathf.Sin(rot * Mathf.Deg2Rad));
-                        DestroySeedAfter(localSeed, 3f);
+                        Destroy(localSeed, 3f);
                     }
                 }
                 yield return new WaitWhile(() => anim.IsPlaying());
@@ -778,12 +775,6 @@ namespace FiveKnights.Isma
                 ToggleIsma(false);
                 StartCoroutine(IdleTimer(IDLE_TIME));
             }
-
-            IEnumerator DestroySeedAfter(GameObject seed, float delay)
-			{
-                yield return new WaitForSeconds(delay);
-                Destroy(seed);
-			}
 
             StartCoroutine(BombThrow());
         }
@@ -1062,11 +1053,13 @@ namespace FiveKnights.Isma
         {
             float dir = -1f * FaceHero(true);
             PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
-            _anim.Play("LoneDeath");
+            _anim.PlayAt("LoneDeath", 1);
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
-            _anim.speed *= 0.9f;
             yield return null;
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.05f);
+            _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
             _anim.enabled = false;
             yield return new WaitWhile(() => transform.position.y > GROUND_Y + 2.5f);
@@ -1263,6 +1256,7 @@ namespace FiveKnights.Isma
                 if(!x.activeSelf || !(x.transform.GetPositionY() > 13f) || !(x.GetComponent<Rigidbody2D>().velocity.y > 0f)) return false;
                 if(tk.CurrentClip.name.Contains("Throw") && x.name.Contains("Ogrim Thrown Ball")) return true;
                 if(tk.CurrentClip.name.Contains("Erupt") && x.name.Contains("Dung Ball") && 
+                    x.GetComponent<DungTracker>() == null &&
                     _ddFsm.FsmVariables.FindFsmInt("Rages").Value > 0 &&
                     FastApproximately(x.transform.GetPositionX(), _target.transform.GetPositionX(), 7.5f)) return true;
                 return false;
@@ -1387,7 +1381,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.1f);
 
                 float center = MIDDLE + UnityEngine.Random.Range(-1f, 1f);
-                for(int i = -2; i < 5; i++)
+                for(int i = -2; i < 3; i++)
 				{
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["ThornPlant"]);
                     pillar.AddComponent<ThornPlantCtrl>();
@@ -1397,7 +1391,7 @@ namespace FiveKnights.Isma
                     yield return new WaitForSeconds(0.1f);
                 }
                 yield return new WaitForSeconds(1f);
-                for(int i = -2; i < 5; i++)
+                for(int i = -2; i < 3; i++)
                 {
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["ThornPlant"]);
                     pillar.AddComponent<ThornPlantCtrl>().secondWave = true;
@@ -1614,7 +1608,9 @@ namespace FiveKnights.Isma
                 else
                 {
                     startedIsmaRage = true;
+                    StopCoroutine(wallsCoro);
                     StartCoroutine(IsmaRage());
+                    StartCoroutine(SpawnWalls());
                 }
             }
         }
@@ -1855,6 +1851,7 @@ namespace FiveKnights.Isma
             _healthPool = 180;
             preventDamage = false;
             yield return new WaitWhile(() => _healthPool > 0);
+
             eliminateMinions = true;
             killAllMinions = true;
             if (c != null) StopCoroutine(c);
@@ -2102,12 +2099,20 @@ namespace FiveKnights.Isma
         private void MarkDungBalls(On.HutongGames.PlayMaker.Actions.ReceivedDamage.orig_OnEnter orig, ReceivedDamage self)
         {
             orig(self);
-            if(self.Fsm.Name.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
-            {
-                Log("Player hit a ball, changing name to prevent Isma hitting it");
-                self.Fsm.GameObject.name = "Player Hit Ball";
-            }
-        }
+			if(self.Fsm.Name.Contains("Nail Hit") && self.Fsm.GameObject.name.Contains("Dung Ball"))
+			{
+				Log("Player hit a ball, changing name to prevent Isma hitting it");
+                self.Fsm.GameObject.AddComponent<DungTracker>();
+			}
+		}
+
+        public class DungTracker : MonoBehaviour
+		{
+            private void OnDisable()
+			{
+                Destroy(this);
+			}
+		}
 
         IEnumerator FlashWhite()
         {

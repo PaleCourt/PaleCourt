@@ -196,5 +196,18 @@ namespace FiveKnights
                 return withoutnotes;
             }
         }
+
+        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f, float pitchVariation = 0f)
+		{
+            GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
+            audioPlayer.transform.position = mb.transform.position;
+
+            AudioSource audioSource = audioPlayer.GetComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.volume = volume;
+            audioSource.pitch = UnityEngine.Random.Range(1f - pitchVariation, 1f + pitchVariation);
+            audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+            audioSource.Play();
+        }
     }
 }

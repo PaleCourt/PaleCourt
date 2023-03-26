@@ -259,8 +259,8 @@ namespace FiveKnights
                     SceneName = "Dream_04_White_Defender",
                     EntryGateName = "door1",
                     Visualization = GameManager.SceneLoadVisualizations.Dream,
-                    WaitForSceneTransitionCameraFade = false,
-                    EntryDelay = 2f
+                    WaitForSceneTransitionCameraFade = true,
+                    EntryDelay = 0f
                 });
 
                 textYN.RemoveAction("Yes", 1);

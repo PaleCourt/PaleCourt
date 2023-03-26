@@ -141,6 +141,7 @@ namespace FiveKnights.Isma
         {
             Vector2 pos = go.transform.position;
             yield return new WaitForSeconds(2f);
+
             GameObject gulk = Instantiate(FiveKnights.preloadedGO["Gulka"]);
             gulk.name = SpecialName;
             Animator anim = gulk.GetComponent<Animator>();
@@ -148,6 +149,12 @@ namespace FiveKnights.Isma
             gulk.transform.SetPosition2D(pos);
             gulk.transform.localScale *= 1.4f;
             gulk.transform.SetRotation2D(rot);
+
+            GameObject seal = Instantiate(FiveKnights.preloadedGO["Seal"], gulk.transform.position + Vector3.down, Quaternion.identity);
+            seal.transform.localScale = new Vector3(2f, 2f, 1f);
+            seal.layer = (int)GlobalEnums.PhysLayers.INTERACTIVE_OBJECT;
+            seal.AddComponent<GulkaSeal>();
+
             var hm = turret.GetComponent<HealthManager>();
             RemoveGeo(hm);
             turret.name = SpecialName;
@@ -197,6 +204,14 @@ namespace FiveKnights.Isma
             yield return new WaitWhile(() => !IsmaController.eliminateMinions);
             Log("Killing our special gulka :(");
             gulka.GetComponent<HealthManager>().Die(new float?(0f), AttackTypes.Nail, true);
+            List<tk2dSprite> sprites = new List<tk2dSprite>(FindObjectsOfType<tk2dSprite>());
+            foreach(tk2dSprite sprite in sprites)
+            {
+                if(sprite.gameObject.name == "Cover" || sprite.gameObject.name == "Under")
+                {
+                    Destroy(sprite.gameObject);
+                }
+            }
         }
 
         private void SpawnPillar(Vector2 pos)
@@ -276,6 +291,7 @@ namespace FiveKnights.Isma
             private HealthManager hm;
             private const float InitY = 6.01f;
             private const float FinalY = 8.61f; //.65
+            private readonly float OffsetY = CustomWP.boss == CustomWP.Boss.Isma && !OWArenaFinder.IsInOverWorld ? 0.57f : 0f;
             private float xPos;
             private void Awake()
             {
@@ -298,11 +314,11 @@ namespace FiveKnights.Isma
                 initFool.SetActive(true);
                 hm.IsInvincible = true;
                 Animator anim = initFool.GetComponent<Animator>();
-                initFool.transform.SetPosition2D(xPos, InitY); //6.2
+                initFool.transform.SetPosition2D(xPos, InitY + OffsetY);
                 initFool.transform.localScale *= 1.4f;
                 yield return anim.PlayBlocking("SpawnFool");
                 Destroy(initFool);
-                finalFool.transform.SetPosition2D(xPos, FinalY); //8.8
+                finalFool.transform.SetPosition2D(xPos, FinalY + OffsetY);
                 tk2dSpriteAnimator tk = finalFool.GetComponent<tk2dSpriteAnimator>();
                 PlayMakerFSM fsm = finalFool.LocateMyFSM("Plant Trap Control");
                 fsm.enabled = false;
@@ -353,8 +369,12 @@ namespace FiveKnights.Isma
         {
             private GameObject initGulka;
             public GameObject finalGulka;
+            private GameObject cover;
+            private GameObject under;
             private HealthManager hm;
             private Vector2 pos;
+            private readonly float LEFT = OWArenaFinder.IsInOverWorld ? 105.55f : 60.27f;
+            private readonly float RIGHT = OWArenaFinder.IsInOverWorld ? 137.02f : 91.73f;
             private readonly float MIDDLE = OWArenaFinder.IsInOverWorld ? 120f : 75f;
 
             private void Awake()
@@ -375,18 +395,21 @@ namespace FiveKnights.Isma
                     IsmaController.offsetTime -= TIME_INC;
                     TurretCount--;
                     GameManager.instance.StartCoroutine(CorpseDropThroughFloor());
+                    Destroy(cover);
+                    Destroy(under);
                     Destroy(gameObject);
                 };
                 
                 initGulka.SetActive(true);
                 Animator anim = initGulka.GetComponent<Animator>();
                 float rot = pos.x > MIDDLE ? 90f : -90f;
-                initGulka.transform.SetPosition2D(pos.x > MIDDLE ? 136.6651f : 105.4166f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
-                initGulka.transform.localScale *= 1.4f;
+				initGulka.transform.SetPosition2D(pos.x > MIDDLE ? RIGHT + 0.19f : LEFT - 0.19f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
+				initGulka.transform.localScale *= 1.4f;
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
+                Destroy(finalGulka.GetComponent<SetZ>());
                 PlayMakerFSM fsm = finalGulka.LocateMyFSM("Plant Turret");
-                
+
                 // stop spike ball from doing damage to enemy
                 var ball = fsm.GetAction<CreateObject>("Fire", 3).gameObject.Value;
                 if (!ball.GetComponent<ModifiedSpit>())
@@ -409,7 +432,13 @@ namespace FiveKnights.Isma
                 finalGulka.transform.SetRotation2D(rot);
                 finalGulka.SetActive(true);
                 rot *= Mathf.Deg2Rad;
-                finalGulka.transform.SetPosition2D(pos.x, pos.y + 0.5f * Mathf.Cos(rot));
+
+                finalGulka.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.29f: LEFT + 0.29f, pos.y, -0.09f);
+                cover = fsm.GetFsmGameObjectVariable("Cover").Value;
+                under = fsm.GetFsmGameObjectVariable("Under").Value;
+                cover.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.16f : LEFT + 0.16f, pos.y, -0.1f);
+                under.transform.position = new Vector3(pos.x > MIDDLE ? RIGHT - 0.19f : LEFT + 0.19f, pos.y, -0.08f);
+
                 anim.Play("SpawnGulka");
                 yield return new WaitForSeconds(0.05f);
                 yield return new WaitWhile(() => anim.IsPlaying());
@@ -465,7 +494,7 @@ namespace FiveKnights.Isma
             private PlayMakerFSM _fsmSpit;
             private void Awake()
             {
-                gameObject.layer = 11;
+                gameObject.layer = (int)GlobalEnums.PhysLayers.PROJECTILES;
                 _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
                 _fsmEnemyDmg.enabled = false;
                 _fsmSpit = gameObject.LocateMyFSM("spike ball control");
