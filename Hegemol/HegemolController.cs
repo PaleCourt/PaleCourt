@@ -21,7 +21,7 @@ namespace FiveKnights.Hegemol
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 456.0f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 91.7f : 45.7f);
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f :
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.3f : 27.4f);
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.3f : 27.5f);
         private float CenterX => (LeftX + RightX) / 2;
         private float Width => RightX - LeftX;
 

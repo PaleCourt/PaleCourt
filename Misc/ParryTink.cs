@@ -14,17 +14,8 @@ namespace FiveKnights
             GameManager.instance.StartCoroutine(GameManager.instance.FreezeMoment(0.01f, 0.15f, 0.1f, 0.0f));
             HeroController.instance.NailParry();
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
-            
-            var go = new GameObject("Blocker Effect", typeof(AudioSource), typeof(AutoDestroy));
 
-            go.transform.position = other.transform.position;
-
-            var source = go.GetComponent<AudioSource>();
-
-            source.clip = TinkClip;
-            source.pitch = Random.Range(0.85f, 1.15f);
-            source.volume = GameManager.instance.GetImplicitCinematicVolume();
-            source.Play();
+            this.PlayAudio(TinkClip, 1f, 0.15f);
         }
     }
 }
