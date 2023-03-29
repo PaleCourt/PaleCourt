@@ -61,11 +61,18 @@ namespace FiveKnights
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
 			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
             On.BossSceneController.Awake += BossSceneController_Awake;
+            On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
         } 
 
+        // Put this back in because we need it apparently??
+        private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
+        {
+            return currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.GODS_GLORY.ToString() : orig(self);
+        }
+        
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
 		{
 			lastBossLevel = level;
