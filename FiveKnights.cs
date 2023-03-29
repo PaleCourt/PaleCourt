@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FiveKnights.BossManagement;
+using FiveKnights.Isma;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using SFCore;
@@ -818,10 +819,11 @@ namespace FiveKnights
                 {
                     UObject.Destroy(i);
                 }
+                
                 GameObject hello = ((EnemyDeathEffects) newEff2).GetAttr<EnemyDeathEffects, GameObject>("corpsePrefab");
                 if (trapType == "PTrap" && hello.transform.Find("Orange Puff") != null)
                 {
-                    UObject.Destroy(hello.transform.Find("Orange Puff").gameObject);
+                   hello.transform.Find("Orange Puff").gameObject.AddComponent<ManipOrangePuff>();
                 }
                 else
                 {
@@ -832,6 +834,7 @@ namespace FiveKnights
                     }
                 }
                 newEff2.whiteWave = hello;
+                
                 GameObject fake = new GameObject();
                 UObject.DontDestroyOnLoad(fake);
                 newEff2.uninfectedDeathPt = fake;

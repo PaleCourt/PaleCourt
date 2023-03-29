@@ -56,21 +56,15 @@ namespace FiveKnights
         private void Start()
         {
             USceneManager.activeSceneChanged += SceneChanged;
-            On.SceneManager.Start += SceneManagerOnStart;
+            //On.SceneManager.Start += SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
 			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
-            On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
-			On.BossSceneController.Awake += BossSceneController_Awake;
+            On.BossSceneController.Awake += BossSceneController_Awake;
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
-        }
-
-        private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
-        {
-            return currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.GODS_GLORY.ToString() : orig(self);
-        }
+        } 
 
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
 		{
@@ -118,7 +112,7 @@ namespace FiveKnights
 			orig(self);
 		}
 
-		private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
+		/*private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
 		{
 			Log("Changing SceneManager settings");
 			if(currScene == ZemerScene)
@@ -137,7 +131,7 @@ namespace FiveKnights
                 //self.darknessLevel = 1;
             }
             orig(self);
-        }
+        }*/
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
@@ -567,9 +561,11 @@ namespace FiveKnights
             if (pref != null) sm.borderPrefab = pref;
             sm.noLantern = true;
             sm.darknessLevel = -1;
+            sm.sceneType = SceneType.GAMEPLAY;
+            GameCameras.instance.mainCamera.backgroundColor = new Color(0.53f, 0.53f, 0.53f);
             sm.saturation = 0.78f;
-            sm.defaultIntensity = 0.9f;
-            sm.defaultColor = new Color(1f, 1f, 1f, 1f);
+            sm.defaultIntensity = 0.968f;
+            sm.defaultColor = new Color(0.934f, 0.961f, 0.961f, 1f);
             sm.mapZone = MapZone.GODS_GLORY;
             sm.noParticles = true;
             switch (arg1.name)
@@ -591,7 +587,7 @@ namespace FiveKnights
         private void OnDestroy() 
         {
             USceneManager.activeSceneChanged -= SceneChanged;
-            On.SceneManager.Start -= SceneManagerOnStart;
+            //On.SceneManager.Start -= SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
         }
