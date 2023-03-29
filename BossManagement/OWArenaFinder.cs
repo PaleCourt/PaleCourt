@@ -395,7 +395,7 @@ namespace FiveKnights.BossManagement
                     FixHegemolArena();
                     AddSuperDashCancel();
                     FixPitDeath();
-                    AddBattleGate(432f, new Vector2(420.925f, 156.8f));
+                    AddBattleGate(427f, new Vector2(420.925f, 156.8f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -686,9 +686,10 @@ namespace FiveKnights.BossManagement
                 var bcGate = battleGate.GetComponent<BoxCollider2D>();
                 var audGate = battleGate.GetComponent<AudioSource>();
                 audGate.pitch = Random.Range(0.9f, 1.2f);
+                audGate.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
                 bcGate.enabled = false;
                 
-                yield return new WaitWhile(()=>HeroController.instance.transform.position.x < x);
+                yield return new WaitWhile(() => HeroController.instance.transform.position.x < x);
                 audGate.PlayOneShot(close);
                 animGate.Play("BG Close 1");
                 bcGate.enabled = true;

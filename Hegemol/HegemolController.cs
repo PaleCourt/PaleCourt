@@ -32,10 +32,6 @@ namespace FiveKnights.Hegemol
         private PlayMakerFSM _dd;
         private GameObject _pv;
 
-        private MusicPlayer _ap;
-        private MusicPlayer _voice;
-        private MusicPlayer _damage;
-
         private DamageHero _dh;
         private BoxCollider2D _col;
         private HealthManager _hm;
@@ -58,10 +54,9 @@ namespace FiveKnights.Hegemol
             Log("Hegemol Awake");
 
             gameObject.name = "Hegemol";
-            transform.position = new Vector2(RightX - 5f, GroundY + 3f);
+            transform.position = new Vector3(RightX - 5f, GroundY + 3f, 0.01f);
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
-            _dh = AddDamageToGO(gameObject, 2, false);
 
             _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
             _pv.SetActive(true);
@@ -120,6 +115,7 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
 
+            _dh = AddDamageToGO(gameObject, 2, false);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             if (!OWArenaFinder.IsInOverWorld) MusicControl();
             PlayVoiceClip("HCalm", true, 1f);
@@ -155,11 +151,11 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
 
-            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            PlayAudioClip("HegAttackSwing", 2f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
 
-            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            PlayAudioClip("HegAttackHit", 1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying());
 
@@ -317,7 +313,7 @@ namespace FiveKnights.Hegemol
 
                 int debrisAmount = phase == 3 ? 1 + i % 2 : 1;
                 PlayVoiceClip("HGrunt", true, 1f);
-                PlayAudioClip(_ap, "HegAttackHit", 1f);
+                PlayAudioClip("HegAttackHit", 1f);
                 SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(debrisAmount, false, 0f));
 
@@ -356,7 +352,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("Jump");
             _rb.gravityScale = 3f;
             _rb.velocity = new Vector2(diff, 60f);
-            PlayAudioClip(_ap, "HegJump", 2f);
+            PlayAudioClip("HegJump", 2f);
 
             yield return new WaitForSeconds(0.2f);
             yield return new WaitUntil(() => _grounded);
@@ -364,7 +360,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("Land");
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _rb.velocity = Vector2.zero;
-            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayAudioClip("HegLand", 1f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
@@ -395,7 +391,7 @@ namespace FiveKnights.Hegemol
                 _anim.Play("JumpAttackUp");
                 _rb.gravityScale = 3f;
                 _rb.velocity = new Vector2(diff, 60f);
-                PlayAudioClip(_ap, "HegJump", 2f);
+                PlayAudioClip("HegJump", 2f);
 
                 // Wait for him to start going down
                 yield return new WaitForSeconds(0.2f);
@@ -404,7 +400,7 @@ namespace FiveKnights.Hegemol
 
                 // Start playing his jump attack animation
                 _anim.Play("JumpAttackHit");
-                PlayAudioClip(_ap, "HegAttackSwing", 2f);
+                PlayAudioClip("HegAttackSwing", 2f);
                 transform.position -= 0.5f * Vector3.down;
                 yield return null;
                 _anim.enabled = false;
@@ -428,10 +424,10 @@ namespace FiveKnights.Hegemol
 
                 SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(phase, true, transform.position.x));
-                PlayAudioClip(_ap, "HegAttackHit", 1f);
+                PlayAudioClip("HegAttackHit", 1f);
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                 _rb.velocity = Vector2.zero;
-                PlayAudioClip(_ap, "HegLand", 1f);
+                PlayAudioClip("HegLand", 1f);
 
                 yield return new WaitWhile(() => _anim.IsPlaying("JumpAttackHit"));
             }
@@ -439,14 +435,14 @@ namespace FiveKnights.Hegemol
 			{
                 // Non fakeout, just swing and spawn shockwaves
                 _anim.Play("Attack");
-                PlayAudioClip(_ap, "HegAttackSwing", 2f);
+                PlayAudioClip("HegAttackSwing", 2f);
                 yield return null;
 
                 yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
 
                 SpawnShockwaves(transform.localScale.x > 0f, 7f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(phase, true, transform.position.x));
-                PlayAudioClip(_ap, "HegAttackHit", 1f);
+                PlayAudioClip("HegAttackHit", 1f);
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return _anim.PlayBlocking("AttackRecover");
@@ -467,13 +463,13 @@ namespace FiveKnights.Hegemol
             yield return new WaitForSeconds(0.05f);
 
             _anim.enabled = true;
-            PlayAudioClip(_ap, "HegAttackSwing", 1f);
+            PlayAudioClip("HegAttackSwing", 1f);
             PlayVoiceClip("HGrunt", true, 1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying("DigAntic"));
 
             // Mace hit ground, start walking forward
-            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            PlayAudioClip("HegAttackHit", 1f);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _anim.Play("Dig");
             _rb.velocity = 2f * Vector2.right * transform.localScale.x;
@@ -484,7 +480,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("DigEnd");
             _rb.velocity = Vector2.zero;
             yield return null;
-			PlayAudioClip(_ap, "HegAttackSwing", 2f);
+			PlayAudioClip("HegAttackSwing", 2f);
             SpawnShockwaves(transform.localScale.x > 0f, 5f, 1.5f, 15f, 1);
 
             // Debris logic
@@ -538,7 +534,7 @@ namespace FiveKnights.Hegemol
                 _anim.speed = 1f;
                 if(i == phase - 1) PlayVoiceClip("HHeavy", true, 1f);
                 else PlayVoiceClip("HGrunt", true, 1f);
-                PlayAudioClip(_ap, "HegShockwave", 1f);
+                PlayAudioClip("HegShockwave", 1f);
                 _anim.Play("Jump");
                 _rb.gravityScale = 1.5f;
                 _rb.velocity = new Vector2(-7.5f * Mathf.Sign(transform.localScale.x), 25f);
@@ -558,7 +554,7 @@ namespace FiveKnights.Hegemol
                 StartCoroutine(SpawnDebris(i == phase - 1 ? 2 : 1, true, transform.position.x < CenterX ? RightX : LeftX));
 
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-                PlayAudioClip(_ap, "HegLand", 1f);
+                PlayAudioClip("HegLand", 1f);
             }
             _anim.Play("Land");
             yield return null;
@@ -574,7 +570,7 @@ namespace FiveKnights.Hegemol
 
             _anim.Play("AttackAntic");
             PlayVoiceClip("HCharge", false, 1f);
-            PlayAudioClip(_ap, "HegAttackCharge", 1f);
+            PlayAudioClip("HegAttackCharge", 1f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
@@ -585,14 +581,14 @@ namespace FiveKnights.Hegemol
 
             _anim.Play("Attack");
             PlayVoiceClip("HGrunt", true, 1f);
-            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            PlayAudioClip("HegAttackSwing", 2f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("Attack"));
 
             SpawnPillar(-Mathf.Sign(transform.localScale.x), new Vector2(2f, 1f), 15f);
             StartCoroutine(SpawnDebris(3, true, transform.position.x));
-            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            PlayAudioClip("HegAttackHit", 1f);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
             yield return _anim.PlayBlocking("AttackRecover");
@@ -613,12 +609,12 @@ namespace FiveKnights.Hegemol
             yield return new WaitForSeconds(0.05f);
 
             _anim.enabled = true;
-            PlayAudioClip(_ap, "HegAttackSwing", 1f);
+            PlayAudioClip("HegAttackSwing", 1f);
             PlayVoiceClip("HGrunt", true, 1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying("DigAntic"));
 
-            PlayAudioClip(_ap, "HegAttackHit", 1f);
+            PlayAudioClip("HegAttackHit", 1f);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _anim.Play("Dig");
             _rb.velocity = 2f * Vector2.right * transform.localScale.x;
@@ -628,7 +624,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("DigEnd");
             _rb.velocity = Vector2.zero;
             yield return null;
-            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            PlayAudioClip("HegAttackSwing", 2f);
 
             // Send debris up
             Vector2 pos = transform.position + Mathf.Sign(transform.localScale.x) * Vector3.right * 5.5f + 2.6f * Vector3.down;
@@ -669,13 +665,13 @@ namespace FiveKnights.Hegemol
             _anim.Play("JumpAttackUp");
             _rb.gravityScale = 3f;
             _rb.velocity = new Vector2(0f, 60f);
-            PlayAudioClip(_ap, "HegJump", 2f);
+            PlayAudioClip("HegJump", 2f);
 
             yield return new WaitForSeconds(0.2f);
             yield return new WaitWhile(() => _rb.velocity.y > 0f);
 
             _anim.Play("JumpAttackHit");
-            PlayAudioClip(_ap, "HegAttackSwing", 2f);
+            PlayAudioClip("HegAttackSwing", 2f);
             PlayVoiceClip("HHeavy", true, 1f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -708,7 +704,7 @@ namespace FiveKnights.Hegemol
             SpawnShockwaves(true, 0f, 1.5f, 40f, 1);
             SpawnShockwaves(false, 0f, 1.5f, 40f, 1);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayAudioClip("HegLand", 1f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
@@ -727,7 +723,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("Jump");
             _rb.gravityScale = 3f;
             _rb.velocity = new Vector2(diff, 60f);
-            PlayAudioClip(_ap, "HegJump", 2f);
+            PlayAudioClip("HegJump", 2f);
 
             yield return new WaitForSeconds(0.2f);
             yield return new WaitUntil(() => _grounded);
@@ -735,7 +731,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("Land");
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             _rb.velocity = Vector2.zero;
-            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayAudioClip("HegLand", 1f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("Land"));
@@ -763,7 +759,7 @@ namespace FiveKnights.Hegemol
 
         private void SpawnPillar(float dir, Vector2 size, float xSpd)
         {
-            PlayAudioClip(_ap, "HegShockwave", 1f);
+            PlayAudioClip("HegShockwave", 1f);
 
             GameObject slam = Instantiate(traitorSlam);
             Animator anim = slam.transform.Find("slash_core").GetComponent<Animator>();
@@ -842,7 +838,7 @@ namespace FiveKnights.Hegemol
             _anim.Play("Stagger");
             _sr.material.SetFloat("_FlashAmount", 0f);
             Destroy(_dh);
-            PlayAudioClip(_damage, "HegDamageFinal", 1f);
+            PlayAudioClip("HegDamageFinal", 1f);
             PlayVoiceClip("HHeavy", true, 1f);
 
             float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
@@ -866,7 +862,7 @@ namespace FiveKnights.Hegemol
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayAudioClip("HegLand", 1f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
             _anim.enabled = false;
@@ -929,7 +925,7 @@ namespace FiveKnights.Hegemol
             if(self.gameObject.name == "Hegemol")
 			{
                 StartCoroutine(FlashWhite());
-                PlayAudioClip(_damage, "HegDamage", 1f);
+                PlayAudioClip("HegDamage", 1f);
                 return;
             }
             orig(self, attackDirection);
@@ -968,7 +964,7 @@ namespace FiveKnights.Hegemol
             _sr.material.SetFloat("_FlashAmount", 0f);
             Destroy(_dh);
             gameObject.AddComponent<NonBouncer>();
-            PlayAudioClip(_damage, "HegDamageFinal", 1f);
+            PlayAudioClip("HegDamageFinal", 1f);
             PlayVoiceClip("HHeavy", true, 1f);
 
             float dir = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
@@ -992,7 +988,7 @@ namespace FiveKnights.Hegemol
             _anim.enabled = true;
             _rb.velocity = Vector2.zero;
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-            PlayAudioClip(_ap, "HegLand", 1f);
+            PlayAudioClip("HegLand", 1f);
             PlayVoiceClip("HTired", true, 1f);
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
@@ -1026,35 +1022,6 @@ namespace FiveKnights.Hegemol
             {
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
             }
-
-            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _ap = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject
-            };
-            _voice = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject
-            };
-            _damage = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject
-            };
 
             traitorSlam = Instantiate(FiveKnights.preloadedGO["TraitorSlam"]);
             traitorSlam.transform.Find("slash_core").Find("hurtbox").GetComponent<DamageHero>().damageDealt = 2;
@@ -1111,14 +1078,12 @@ namespace FiveKnights.Hegemol
 				}
 			}
             if(num != 0) clip += num;
-            PlayAudioClip(_voice, clip, volume);
+            PlayAudioClip(clip, volume);
 		}
 
-        private void PlayAudioClip(MusicPlayer ap, string clip, float volume)
+        private void PlayAudioClip(string clip, float volume)
         {
-            ap.Clip = FiveKnights.Clips[clip];
-            ap.Volume = volume;
-            ap.DoPlayRandomClip();
+            this.PlayAudio(FiveKnights.Clips[clip], volume);
         }
 
         private bool CheckTerrain(Vector3 dir, float distance)

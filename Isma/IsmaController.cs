@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using FiveKnights.BossManagement;
+using FiveKnights;
 using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
@@ -30,8 +31,6 @@ namespace FiveKnights.Isma
         private EnemyDreamnailReaction _dnailReac;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
-        private MusicPlayer _ap;
-        private MusicPlayer _voice;
         private GameObject _dnailEff;
         private SpriteRenderer _sr;
         private GameObject _target;
@@ -39,7 +38,7 @@ namespace FiveKnights.Isma
         private PlayMakerFSM _ddFsm;
         private Animator _anim;
         private Texture acidTexture;
-        private List<AudioClip> _randAud => FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")).ToList();
+        private List<AudioClip> _randVoice => FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")).ToList();
         private System.Random _rand;
         private int _healthPool;
         private bool waitForHitStart;
@@ -105,32 +104,7 @@ namespace FiveKnights.Isma
             yield return null;
             _healthPool = onlyIsma ? MAX_HP : MAX_HP_DUO;
             offsetTime = 0f;
-            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
 
-            if (actor == null)
-            {
-                Log("ERROR: Actor not found.");
-                yield break;
-            }
-            _ap = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject//HeroController.instance.gameObject
-            };
-            _voice = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject//HeroController.instance.gameObject
-            };
             if (CustomWP.boss == CustomWP.Boss.All)
             {
                 StartCoroutine(SilLeave());
@@ -592,7 +566,7 @@ namespace FiveKnights.Isma
                 wallR.transform.position = new Vector3(RIGHT_X - 2.5f, GROUND_Y, 0.1f);
                 wallL.transform.position = new Vector3(LEFT_X + 2.5f, GROUND_Y, 0.1f);
                 Animator anim = frontWR.GetComponent<Animator>();
-                PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() < 3);
                 wallR.transform.Find("Petal").gameObject.SetActive(true);
                 wallL.transform.Find("Petal").gameObject.SetActive(true);
@@ -631,7 +605,7 @@ namespace FiveKnights.Isma
                     spikeFront.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudWallHit"];
                     spikeFront.AddComponent<NonBouncer>();
                     spike.SetActive(true);
-                    PlayClip(_ap, FiveKnights.Clips["IsmaAudWallGrow"], 1f);
+                    this.PlayAudio(FiveKnights.Clips["IsmaAudWallGrow"], 1f);
                 }
 
                 eliminateMinions = false;
@@ -669,7 +643,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb");
-                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0, 0f);
@@ -704,7 +678,7 @@ namespace FiveKnights.Isma
                 rb.angularVelocity = 0f;
                 rb.gravityScale = 0f;
                 rb.velocity = Vector2.zero;
-                PlayClip(_ap, FiveKnights.Clips["IsmaAudSeedBomb"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudSeedBomb"], 1f);
                 yield return new WaitWhile(() => anim.GetCurrentFrame() <= 2); //whip and boxcollider seed
                 if(firstBomb)
                 {
@@ -806,7 +780,7 @@ namespace FiveKnights.Isma
                 
                 arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
-                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _rb.velocity = new Vector2(0f, 0f);
@@ -998,7 +972,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("GFistAntic");
-                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1016,7 +990,7 @@ namespace FiveKnights.Isma
                 {
                     i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 }
-                PlayClip(_ap, FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
                 
                 yield return _anim.PlayToEndWithActions("GFistCopy",
            (0, () => { whip.Find("W1").SetActive(true); }),
@@ -1052,7 +1026,7 @@ namespace FiveKnights.Isma
         private IEnumerator BowWhipAttack()
         {
             float dir = -1f * FaceHero(true);
-            PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+            this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
             _anim.PlayAt("LoneDeath", 1);
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
@@ -1083,7 +1057,7 @@ namespace FiveKnights.Isma
             {
                 i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
             }
-            PlayClip(_ap, FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
+            this.PlayAudio(FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
 
             yield return _anim.PlayToEndWithActions("GFistCopy",
        (0, () => { whip.Find("W1").SetActive(true); }),
@@ -1177,7 +1151,7 @@ namespace FiveKnights.Isma
                     Log("Disabling animation");
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                     _anim.enabled = false;
-                    PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                    this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
 
                     // Wait for the animation to reenable to hit the ball or if the ball was destroyed right when Isma went to hit it
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1205,7 +1179,7 @@ namespace FiveKnights.Isma
                         Log("Hitting ball");
                         Destroy(go);
                         squish.SetActive(true);
-                        PlayClip(_ap, FiveKnights.Clips["IsmaAudDungHit"], 0.8f);
+                        this.PlayAudio(FiveKnights.Clips["IsmaAudDungHit"], 0.8f);
                         yield return new WaitWhile(() => _anim.GetCurrentFrame() <= 2);
                         GameObject ballFx = ball.transform.Find("BallFx").gameObject;
                         squish.SetActive(false);
@@ -1311,7 +1285,7 @@ namespace FiveKnights.Isma
 
                 Vector2 pos = dd.transform.position;
 
-                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
                 float side = _rbDD.velocity.x > 0f ? 1f : -1f;
                 float dir = FaceHero();
                 gameObject.transform.position = new Vector2(pos.x + side * 2f, pos.y + 0.38f);
@@ -1367,7 +1341,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("ThornPillarsAntic");
-                PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1440,7 +1414,7 @@ namespace FiveKnights.Isma
             _anim.Play("AgonyLoopIntro");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            PlayClip(_voice, _randAud[_rand.Next(0, _randAud.Count)], 1f);
+            this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
             _anim.speed = 1.7f;
 
             yield return PerformAgony(agonyThorns, tAnim, onlyIsma ? 3 : 1);
@@ -1465,7 +1439,7 @@ namespace FiveKnights.Isma
             {
                 _anim.PlayAt("AgonyLoop", 0);
 
-                PlayClip(_ap, FiveKnights.Clips["IsmaAudAgonyIntro"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudAgonyIntro"], 1f);
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 thorn.SetActive(true);
@@ -1532,7 +1506,7 @@ namespace FiveKnights.Isma
                 }
 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 5);
-                PlayClip(_ap, FiveKnights.Clips["IsmaAudAgonyShoot"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudAgonyShoot"], 1f);
 
                 yield return new WaitWhile(() => tAnim.GetCurrentFrame() < 6);
                 _anim.enabled = true;
@@ -2161,13 +2135,6 @@ namespace FiveKnights.Isma
             _attacking = false;
         }
 
-        private void PlayClip(MusicPlayer mp, AudioClip clip, float volume)
-		{
-            mp.Clip = clip;
-            mp.Volume = volume;
-            mp.DoPlayRandomClip();
-		}
-
         private void PositionIsma()
         {
             float xPos = 80f;
@@ -2192,7 +2159,7 @@ namespace FiveKnights.Isma
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
-                PlayClip(_ap, FiveKnights.IsmaClips["IsmaAudDeath"], 1f);
+                this.PlayAudio(FiveKnights.IsmaClips["IsmaAudDeath"], 1f);
             }
         }
         

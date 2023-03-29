@@ -85,21 +85,29 @@ namespace FiveKnights
 				i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
 				i.SetActive(true);
 			}
-            
-            var cLock = GameObject.Find("CameraLockArea (2)");
-            if (cLock != null)
+
+            GameObject cameraLock = GameObject.Find("CameraLockArea (2)");
+            if(cameraLock != null)
             {
-                var bc = cLock.GetComponent<BoxCollider2D>();
+                BoxCollider2D bc = cameraLock.GetComponent<BoxCollider2D>();
                 bc.size = new Vector2(50f, bc.size.y);
                 bc.offset = new Vector2(-10, bc.offset.y);
                 Log("Fixed WP_09 camera at edges");
             }
 
+            // This disables looking up and down, currently not sure of how else to accomplish it
+            On.CameraController.UpdateTargetDestinationDelta += CameraControllerUpdateTarget;
 
             /*StartCoroutine(DebugMyThing());*/
         }
 
-        /*private IEnumerator DebugMyThing()
+		private void CameraControllerUpdateTarget(On.CameraController.orig_UpdateTargetDestinationDelta orig, CameraController self)
+		{
+            self.lookOffset = 0f;
+            orig(self);
+		}
+
+		/*private IEnumerator DebugMyThing()
         {
             GameObject heartOld = FiveKnights.preloadedGO["Heart"];
             GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
@@ -140,7 +148,7 @@ namespace FiveKnights
             }
         }*/
 
-        private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
+		private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
             if (self.sceneName == "White_Palace_09")
             {
@@ -678,6 +686,7 @@ namespace FiveKnights
             On.BossStatueFlashEffect.FlashApex -= BossStatueFlashEffect_FlashApex;
             On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter -= CallMethodProperOnEnter;
             GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
+            On.CameraController.UpdateTargetDestinationDelta -= CameraControllerUpdateTarget;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
         }

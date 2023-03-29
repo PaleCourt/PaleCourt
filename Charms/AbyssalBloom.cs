@@ -21,6 +21,9 @@ namespace FiveKnights
         private List<NailSlash> _nailSlashes;
         private ModifyBloomProps _modifyProps;
 
+        private Coroutine _sideSlashCoro;
+        private GameObject _sideSlash;
+
         private int _level;
         private int _shadeSlashNum = 1;
         private float damageBuff => 0.075f * (_pd.maxHealth - _pd.health) // 7.5% extra per missing mask
@@ -151,30 +154,36 @@ namespace FiveKnights
             }
             else
             {
-                StartCoroutine(TendrilAttack());
+                if(_sideSlashCoro != null)
+				{
+                    StopCoroutine(_sideSlashCoro);
+                    Destroy(_sideSlash);
+                    _shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
+                }
+                _sideSlashCoro = StartCoroutine(TendrilAttack());
             }
         }
 
         private IEnumerator TendrilAttack()
         {
             MeshRenderer mr = _hc.GetComponent<MeshRenderer>();
-            this.PlayAudio(FiveKnights.Clips["Shade Slash Antic"]);
+            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
 
             mr.enabled = false;
             _knightBall.SetActive(true);
 
             yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum + " Antic"));
 
-            GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), _knightBall.transform);
-            shadeSlash.layer = 17;
-            shadeSlash.tag = "Nail Attack";
-            shadeSlash.transform.localPosition = Vector3.zero;
-            shadeSlash.transform.localScale = new Vector3(1f, 1f, 1f);
-            shadeSlash.SetActive(false);
+            _sideSlash = Instantiate(new GameObject("Shade Slash"), _knightBall.transform);
+            _sideSlash.layer = 17;
+            _sideSlash.tag = "Nail Attack";
+            _sideSlash.transform.localPosition = Vector3.zero;
+            _sideSlash.transform.localScale = new Vector3(1f, 1f, 1f);
+            _sideSlash.SetActive(false);
 
-            AddDamageEnemiesFsm(shadeSlash, AttackDirection.normal);
+            AddDamageEnemiesFsm(_sideSlash, AttackDirection.normal);
 
-            PolygonCollider2D slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
+            PolygonCollider2D slashPoly = _sideSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
             {
                 new Vector2(0.0f, -2.0f),
@@ -188,14 +197,14 @@ namespace FiveKnights
             slashPoly.offset = Vector2.zero;
             slashPoly.isTrigger = true;
 
-            ShadeSlash ss = shadeSlash.AddComponent<ShadeSlash>();
+            ShadeSlash ss = _sideSlash.AddComponent<ShadeSlash>();
             ss.attackDirection = AttackDirection.normal;
 
-            shadeSlash.SetActive(true);
+            _sideSlash.SetActive(true);
 
             yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
 
-            Destroy(shadeSlash);
+            Destroy(_sideSlash);
 
             mr.enabled = true;
 
@@ -211,7 +220,7 @@ namespace FiveKnights
             string animName = up ? "Up" : "Down";
 
             _hc.StopAnimationControl();
-            this.PlayAudio(FiveKnights.Clips["Shade Slash Antic"]);
+            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
 
             _hcAnim.Play(animName + "Slash Void");
             tk2dSpriteAnimationClip hcSlashAnim = _hcAnim.GetClipByName(animName + "Slash Void");
@@ -284,7 +293,7 @@ namespace FiveKnights
         {
 			_hc.StopAnimationControl();
 
-            this.PlayAudio(FiveKnights.Clips["Shade Slash Antic"]);
+            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
 
             _hcAnim.Play(_hcAnim.GetClipByName("WallSlash Void"));
 
