@@ -53,7 +53,6 @@ namespace FiveKnights.Zemer
         private const float AerialDelay = 0.25f;
         private const float TwoFancyDelay = 0.25f;
         private bool _countering;
-        private MusicPlayer _ap;
         public static bool WaitForTChild = false;
         private const int MaxDreamAmount = 3;
 
@@ -406,9 +405,9 @@ namespace FiveKnights.Zemer
                 _rb.isKinematic = false;
                 yield return new WaitForSeconds(0.1f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
-                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                PlayAudioClip("AudBigSlash2",0.15f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 13);
-                PlayAudioClip("AudBigSlash2",0.85f,1.15f);
+                PlayAudioClip("AudBigSlash2",0.15f);
                 yield return new WaitWhile(() => transform.position.y > GroundY);
                 _rb.velocity = Vector2.zero;
                 _rb.gravityScale = 0f;
@@ -643,7 +642,7 @@ namespace FiveKnights.Zemer
             _hm.IsInvincible = false;
             On.HealthManager.Hit -= OnBlockedHit;
             yield return _anim.PlayToEndWithActions("ZCAtt",
-                (3, () => PlayAudioClip("Slash", 0.85f, 1.15f))
+                (3, () => PlayAudioClip("Slash", 0.15f))
             );
             _anim.Play("ZIdle");
             yield return new WaitForSeconds(0.25f);
@@ -668,9 +667,9 @@ namespace FiveKnights.Zemer
                 yield return new WaitForSeconds(Att1BaseDelay);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash", 0.15f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash", 0.15f);
                 _rb.velocity = new Vector2(23f * xVel, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 11);
                 _rb.velocity = Vector2.zero;
@@ -696,7 +695,7 @@ namespace FiveKnights.Zemer
 
                 yield return _anim.WaitToFrame(2);
 
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash", 0.15f);
 
                 yield return _anim.WaitToFrame(6);
 
@@ -710,7 +709,7 @@ namespace FiveKnights.Zemer
                        (xVel < 0 && transform.position.x > LeftX + 10f))
                 {
                     yield return _anim.PlayToEndWithActions("ZAtt1Loop",
-                        (0, ()=> PlayAudioClip("Slash", 0.85f, 1.15f))
+                        (0, ()=> PlayAudioClip("Slash", 0.15f))
                     );
                 }
 
@@ -757,7 +756,7 @@ namespace FiveKnights.Zemer
 
             FaceHero();
             _anim.Play("DashCounter");
-            PlayAudioClip("Slash", 0.85f, 1.15f);
+            PlayAudioClip("Slash", 0.15f);
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
             _anim.Play("ZIdle");
@@ -817,7 +816,7 @@ namespace FiveKnights.Zemer
 
                 FaceHero();
                 _anim.Play("DashCounter");
-                PlayAudioClip("Slash", 0.85f, 1.15f);
+                PlayAudioClip("Slash", 0.15f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
@@ -866,7 +865,7 @@ namespace FiveKnights.Zemer
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
 
-                PlayAudioClip("AudBigSlash",0.85f, 1.15f);
+                PlayAudioClip("AudBigSlash",0.15f);
 
                 _rb.velocity = new Vector2(40f * xVel, 0f);
 
@@ -1085,41 +1084,21 @@ namespace FiveKnights.Zemer
             GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
             GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _ap = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject
-            };
         }
+        
 
-        private void PlayAudioClip(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 0.0f)
+        public void PlayAudioClip(string clipName, float pitchVar = 0f, float volume = 1f, Transform posOverride = null)
         {
-            AudioClip GetAudioClip()
+            var clip = clipName switch
             {
-                switch (clipName)
-                {
-                    case "Counter":
-                        return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1)
-                                                 .audioClip
-                                                 .Value;
-                    case "Slash":
-                        return (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value;
-                    case "TraitorPillar":
-                        return FiveKnights.Clips["TraitorSlam"];
-                    default:
-                        return FiveKnights.Clips[clipName];
-                }
-            }
-
-            _ap.MaxPitch = pitchMax;
-            _ap.MinPitch = pitchMin;
-            _ap.Clip = GetAudioClip();
-            _ap.DoPlayRandomClip();
+                "Counter" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Counter Stance", 1).audioClip.Value,
+                "Slash" => (AudioClip) _pvFsm.GetAction<AudioPlayerOneShotSingle>("Slash1", 1).audioClip.Value,
+                "TraitorPillar" => FiveKnights.Clips["TraitorSlam"],
+                _ => FiveKnights.Clips[clipName]
+            };
+            this.PlayAudio(clip, volume, pitchVar, posOverride);
         }
-
+        
         private static bool FastApproximately(float a, float b, float threshold)
         {
             return ((a - b) < 0 ? ((a - b) * -1) : (a - b)) <= threshold;

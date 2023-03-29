@@ -197,10 +197,11 @@ namespace FiveKnights
             }
         }
 
-        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f, float pitchVariation = 0f)
+        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f,
+            float pitchVariation = 0f, Transform posOverride = null)
 		{
             GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
-            audioPlayer.transform.position = mb.transform.position;
+            audioPlayer.transform.position = posOverride == null ? mb.transform.position : posOverride.position;
 
             AutoDestroy autoDestroy = audioPlayer.GetComponent<AutoDestroy>();
             autoDestroy.Time = clip.length + 1f;
