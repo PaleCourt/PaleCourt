@@ -27,6 +27,8 @@ namespace FiveKnights
         private PlayMakerFSM _pvControl;
         private GameObject _audioPlayerActor;
 
+        private bool _activated = false;
+
         public void Awake()
         {
             On.HeroController.Start += On_HeroController_Start;
@@ -117,6 +119,9 @@ namespace FiveKnights
             Log("Equipped Charm 43: " + FiveKnights.Instance.SaveSettings.equippedCharms[2]);
             Log("Equipped Charm 44: " + FiveKnights.Instance.SaveSettings.equippedCharms[3]);
             Log("Upgraded Charm 10: " + FiveKnights.Instance.SaveSettings.upgradedCharm_10);
+
+            Log("Amulets Start Finished");
+            _activated = true;
         }
 
         private GameObject _royalAura;
@@ -377,7 +382,13 @@ namespace FiveKnights
 
         private void CharmUpdate(PlayerData playerData, HeroController hc)
         {
-            Log("Charm Update");
+            Log("Amulets Charm Update");
+            if(!_activated)
+			{
+                Log("Amulets Start not run yet, exiting Charm Update");
+                return;
+			}
+
 
             if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10)
             {

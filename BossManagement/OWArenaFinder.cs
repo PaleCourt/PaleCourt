@@ -111,7 +111,7 @@ namespace FiveKnights.BossManagement
                 {
                     Log("Sheo scene");
                     if (PlayerData.instance.nailsmithSheo && PlayerData.instance.sheoConvoNailsmith &&
-                        PlayerData.instance.nailsmithConvoArt)
+                        PlayerData.instance.nailsmithConvoArt && FiveKnights.Instance.SaveSettings.UnlockedChampionsCall)
                     {
                         GameManager.instance.gameObject.AddComponent<Artists>();
                     }

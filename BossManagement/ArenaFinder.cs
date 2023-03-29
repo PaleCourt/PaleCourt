@@ -124,6 +124,11 @@ namespace FiveKnights
                 self.environmentType = 1;
                 self.darknessLevel = -1;
 			}
+            if(currScene == Isma2Scene || currScene == DryyaScene || currScene == ZemerScene || 
+                currScene == HegemolScene || currScene == IsmaScene)
+			{
+                self.saturation = 0.9f;
+            }
             else if (currScene == PrevFightScene)
             {
                 Log("Changed SceneManager settings for WP_09");
@@ -173,7 +178,7 @@ namespace FiveKnights
             orig(self, info);
         }
 
-        private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+		private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             Vector2 pos = HeroController.instance.transform.position;
             if (pos.x > 49f && pos.x < 62.2f && pos.y > 35f && collision.tag == "Nail Attack")

@@ -202,6 +202,9 @@ namespace FiveKnights
             GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
             audioPlayer.transform.position = mb.transform.position;
 
+            AutoDestroy autoDestroy = audioPlayer.GetComponent<AutoDestroy>();
+            autoDestroy.Time = clip.length + 1f;
+
             AudioSource audioSource = audioPlayer.GetComponent<AudioSource>();
             audioSource.clip = clip;
             audioSource.volume = volume;
