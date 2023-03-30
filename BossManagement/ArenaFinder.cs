@@ -6,6 +6,7 @@ using UnityEngine.SceneManagement;
 using HutongGames.PlayMaker.Actions;
 using System.Linq;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using SFCore.Utils;
@@ -519,55 +520,120 @@ namespace FiveKnights
             CustomWP.boss = CustomWP.Boss.None;
 
             Log("Found the defedenr");
-            GameObject.Find("GG_Statue_Defender").transform.position = new Vector3(56.65f, 44.45f, 0.2f);
+            var ddstat = GameObject.Find("GG_Statue_Defender");
+            ddstat.transform.position = new Vector3(57.19f, 36.34f, 0.2f);
+            
+            CameraLockArea clr = ddstat.transform.Find("CameraLockArea").GetComponent<CameraLockArea>();
+            clr.cameraYMin += 5f;
+            clr.cameraYMax += 5f;
+            Log($"Here is Clr stuff: xmin {clr.cameraXMin}\nxmax {clr.cameraXMax}\nymin {clr.cameraYMin}\nymax{clr.cameraYMax}");
+            
+            CreateCameraLock("CameraLockStat", new Vector2(57.6f, 49.7f), new Vector2(1f, 1f),
+                new Vector2(7.5f, 16f), new Vector2(0f, 0f), 
+                new Vector2(-1f, 43f), new Vector2(-1f, 43f));
+            
 
-            FiveKnights.preloadedGO["Entrance"] = ABManager.AssetBundles[ABManager.Bundle.WSArena].LoadAsset<GameObject>("gg_workshop_pale_court_entrance");
+            FiveKnights.preloadedGO["Entrance"] = ABManager.AssetBundles[ABManager.Bundle.WSArena]
+                .LoadAsset<GameObject>("gg_workshop_pale_court_entrance");
             
             GameObject go = Instantiate(FiveKnights.preloadedGO["Entrance"]);
             go.SetActive(true);
-            go.transform.position = new Vector3(55.6f, 30.7f,2.1054f);
+            go.transform.position = new Vector3(56.46f, 21.3f,2.6f);
+            go.transform.localScale = new Vector3(1.5f, 1.5f, 1f);
             /*foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
             {
                 i.material = new Material(Shader.Find("Sprites/Default"));
             }*/
+            StartCoroutine(Test());
 
-            foreach (Transform platPos in go.transform.Find("Platforms"))
-            {
-                GameObject plat = Instantiate(FiveKnights.preloadedGO["RadPlat"]);
-                plat.transform.position = platPos.position;
-                plat.SetActive(true);
-                PlayMakerFSM fsm = plat.LocateMyFSM("radiant_plat");
-                fsm.SetState("Init");
-                StartCoroutine(Test(fsm));
-            }
-
-            IEnumerator Test(PlayMakerFSM fsm)
+            IEnumerator Test()
             {
                 while (true)
                 {
                     yield return new WaitWhile((() => !Input.GetKey(KeyCode.R)));
-                    fsm.SendEvent("APPEAR");
+                    
+                    HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
+                    HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                    HeroController.instance.RelinquishControl();
+                    HeroController.instance.StopAnimationControl();
+                    HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+                    
+                    GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = true;
+                    yield return new WaitForSeconds(0.5f);
+
+                    var ddstatEnd = new Vector3(57.19f, 42.88f, 0.2f);
+                    var pillarEnd = new Vector3(56.46f, 28.11f, 2.1054f);
+                    var ddstatStart = ddstat.transform.position;
+                    var pillarStart = go.transform.position;
+                    float duration = 1f;
+                    float elapsedTime = 0f;
+                    while (elapsedTime < duration)
+                    {
+                        go.transform.position = Vector3.Lerp(pillarStart, pillarEnd, elapsedTime / duration);
+                        ddstat.transform.position = Vector3.Lerp(ddstatStart, ddstatEnd, elapsedTime / duration);
+                        elapsedTime += Time.deltaTime;
+                        yield return new WaitForEndOfFrame();
+                    }
+                
+                    go.transform.position = pillarEnd;
+                    ddstat.transform.position = ddstatEnd;
+                    GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+                    yield return new WaitForSeconds(0.2f);
+
+                    foreach (Transform platPos in go.transform.Find("Platforms"))
+                    {
+                        GameObject plat = Instantiate(FiveKnights.preloadedGO["RadPlat"]);
+                        plat.transform.position = platPos.position;
+                        plat.SetActive(true);
+                        PlayMakerFSM fsm = plat.LocateMyFSM("radiant_plat"); 
+                        fsm.SetState("Init");
+                        fsm.SendEvent("APPEAR");
+                        yield return new WaitForSeconds(0.1f);
+                    }
+                    
+                    GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
+                    crack.SetActive(true);
+                    crack.transform.position = new Vector3(57.45f, 38f, 4.21f);
+                    crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
+                    GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
+                    secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+                    TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
+                    tp.targetScene = PrevFightScene;
+                    tp.entryPoint = "door_Land_of_Storms_return";
+                    secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                        .FsmVariables.FindFsmString("New Scene").Value = PrevFightScene;
+                    secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                        .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
+                    secret.LocateMyFSM("Deactivate").enabled = false;
+                    secret.SetActive(true);
+                    
+                    HeroController.instance.RegainControl();
+                    HeroController.instance.StartAnimationControl();
                     Log("Forcing to appear??");
                     yield break;
                 }
             }
-            
-            GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
-            crack.SetActive(true);
-            crack.transform.position = new Vector3(56.25f, 37.68f, 4.21f);
-            crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
-            GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
-            secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
-            tp.targetScene = PrevFightScene;
-            tp.entryPoint = "door_Land_of_Storms_return";
-            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
-                .FsmVariables.FindFsmString("New Scene").Value = PrevFightScene;
-            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
-                .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
-            secret.LocateMyFSM("Deactivate").enabled = false;
-            secret.SetActive(true);
             Log("Finished with crack setting");
+        }
+        
+        private void CreateCameraLock(string n, Vector2 pos, Vector2 scl, Vector2 cSize, Vector2 cOff,
+            Vector2 min, Vector2 max, bool preventLookDown=false)
+        {
+            GameObject parentlock = new GameObject(n);
+            BoxCollider2D lockCol = parentlock.AddComponent<BoxCollider2D>();
+            CameraLockArea cla = parentlock.AddComponent<CameraLockArea>();
+            parentlock.transform.position = pos;
+            parentlock.transform.localScale = scl;
+            lockCol.isTrigger = true;
+            lockCol.size = cSize;
+            lockCol.offset = cOff;
+            cla.cameraXMin = min.x;
+            cla.cameraXMax = max.x;
+            cla.cameraYMin = cla.cameraYMax = min.y;
+            cla.preventLookDown = preventLookDown;
+            cla.maxPriority = true;
+            parentlock.SetActive(true);
+            lockCol.enabled = cla.enabled = true;
         }
 
         private void OnDestroy() 
