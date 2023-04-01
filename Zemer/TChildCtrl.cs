@@ -19,6 +19,7 @@ namespace FiveKnights.Zemer
         private const float StopAtX = 256f;
         
         public bool helpZemer;
+        private bool leaveAndRet;
 
         private void Awake()
         {
@@ -38,6 +39,7 @@ namespace FiveKnights.Zemer
         {
             gameObject.layer = 11;
             _hitEffects.enabled = true;
+            leaveAndRet = false;
             _hm.enabled = false;
             _bc.enabled = false;
             transform.position = new Vector3(171.9f, GroundY, 0f);
@@ -55,6 +57,7 @@ namespace FiveKnights.Zemer
         {
             if (_run || _isAtt) return;
             if (HeroController.instance.transform.position.x < transform.position.x) return;
+            if (leaveAndRet) return;
             _run = true;
             StartCoroutine(TPAway());
         }
@@ -88,6 +91,7 @@ namespace FiveKnights.Zemer
             yield return _anim.PlayBlocking("Turn");
             _hm.IsInvincible = true;
             _bc.enabled = _hm.enabled = false;
+            leaveAndRet = true;
             // Waiting for player routine
             StartCoroutine(LeaveAndReturn());
         }

@@ -122,6 +122,7 @@ namespace FiveKnights
 
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
+        public bool HasSeenWorkshopRaised = false;
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
     }

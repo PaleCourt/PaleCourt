@@ -85,21 +85,29 @@ namespace FiveKnights
 				i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
 				i.SetActive(true);
 			}
-            
-            var cLock = GameObject.Find("CameraLockArea (2)");
-            if (cLock != null)
+
+            GameObject cameraLock = GameObject.Find("CameraLockArea (2)");
+            if(cameraLock != null)
             {
-                var bc = cLock.GetComponent<BoxCollider2D>();
+                BoxCollider2D bc = cameraLock.GetComponent<BoxCollider2D>();
                 bc.size = new Vector2(50f, bc.size.y);
                 bc.offset = new Vector2(-10, bc.offset.y);
                 Log("Fixed WP_09 camera at edges");
             }
 
+            // This disables looking up and down, currently not sure of how else to accomplish it
+            On.CameraController.UpdateTargetDestinationDelta += CameraControllerUpdateTarget;
 
             /*StartCoroutine(DebugMyThing());*/
         }
 
-        /*private IEnumerator DebugMyThing()
+		private void CameraControllerUpdateTarget(On.CameraController.orig_UpdateTargetDestinationDelta orig, CameraController self)
+		{
+            self.lookOffset = 0f;
+            orig(self);
+		}
+
+		/*private IEnumerator DebugMyThing()
         {
             GameObject heartOld = FiveKnights.preloadedGO["Heart"];
             GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
@@ -140,7 +148,7 @@ namespace FiveKnights
             }
         }*/
 
-        private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
+		private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
             if (self.sceneName == "White_Palace_09")
             {
@@ -159,6 +167,7 @@ namespace FiveKnights
                 crack.SetActive(true);
                 crack.transform.position = new Vector3(13.8f, 95.93f, 4.21f);
                 crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
+                Destroy(crack.transform.Find("GG_secret_door").GetComponent<AudioSource>());
                 GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
                 TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
                 tp.targetScene = "GG_Workshop";
@@ -259,15 +268,14 @@ namespace FiveKnights
                     SceneName = "Dream_04_White_Defender",
                     EntryGateName = "door1",
                     Visualization = GameManager.SceneLoadVisualizations.Dream,
-                    WaitForSceneTransitionCameraFade = false,
-
+                    WaitForSceneTransitionCameraFade = true,
+                    EntryDelay = 0f
                 });
 
                 textYN.RemoveAction("Yes", 1);
                 textYN.RemoveAction("No", 1);
                 textYN.enabled = true;
                 fsm.enabled = true;
-                
             }
 
             StartCoroutine(Throne());
@@ -679,6 +687,7 @@ namespace FiveKnights
             On.BossStatueFlashEffect.FlashApex -= BossStatueFlashEffect_FlashApex;
             On.HutongGames.PlayMaker.Actions.CallMethodProper.OnEnter -= CallMethodProperOnEnter;
             GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
+            On.CameraController.UpdateTargetDestinationDelta -= CameraControllerUpdateTarget;
             On.GameManager.EnterHero -= GameManager_EnterHero;
             On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
         }

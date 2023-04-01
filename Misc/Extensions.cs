@@ -6,6 +6,7 @@ using FrogCore.Ext;
 using JetBrains.Annotations;
 using Modding;
 using UnityEngine;
+using Logger = Modding.Logger;
 
 namespace FiveKnights
 {
@@ -48,6 +49,11 @@ namespace FiveKnights
         /// </returns>
         public static int GetCurrentFrame(this Animator anim)
         {
+            if (anim.GetCurrentAnimatorClipInfo(0).Length == 0)
+            {
+                Logger.Log($"Warning: Could not find animator {anim.name} clip in GetCurrentFrame.");
+                return 999999;
+            }
             AnimatorClipInfo att = anim.GetCurrentAnimatorClipInfo(0)[0];
             int currentFrame = (int)(anim.GetCurrentAnimatorStateInfo(0).normalizedTime % 1f * (att.clip.length * att.clip.frameRate));
             return currentFrame;
@@ -189,6 +195,23 @@ namespace FiveKnights
                 FiveKnights.Instance.Log(e);
                 return withoutnotes;
             }
+        }
+
+        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f,
+            float pitchVariation = 0f, Transform posOverride = null)
+		{
+            GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
+            audioPlayer.transform.position = posOverride == null ? mb.transform.position : posOverride.position;
+
+            AutoDestroy autoDestroy = audioPlayer.GetComponent<AutoDestroy>();
+            autoDestroy.Time = clip.length + 1f;
+
+            AudioSource audioSource = audioPlayer.GetComponent<AudioSource>();
+            audioSource.clip = clip;
+            audioSource.volume = volume;
+            audioSource.pitch = UnityEngine.Random.Range(1f - pitchVariation, 1f + pitchVariation);
+            audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+            audioSource.Play();
         }
     }
 }
