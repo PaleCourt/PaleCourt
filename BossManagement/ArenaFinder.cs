@@ -602,6 +602,7 @@ namespace FiveKnights
 
             private void Start()
             {
+                if (!PlayerData.instance.statueStateDungDefender.hasBeenSeen) return;
                 if (!FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
                 
                 GameObject entrance = gameObject.transform.parent.gameObject;
@@ -612,8 +613,9 @@ namespace FiveKnights
                 SpawnPlatAndCrack();
             }
 
-            private void OnTriggerEnter2D(Collider2D col)
+            private void OnTriggerStay2D(Collider2D col)
             {
+                if (!PlayerData.instance.statueStateDungDefender.hasBeenSeen) return;
                 if (FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
                 FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised = true;
                 StartCoroutine(RaisePlatform());
@@ -621,11 +623,29 @@ namespace FiveKnights
 
             IEnumerator RaisePlatform()
             {
-                HeroController.instance.CancelSuperDash();
+                bool loop = true;
                 
-                yield return new WaitForSeconds(0.75f);
-                
+                if (HeroController.instance.cState.superDashing)
+                {
+                    HeroController.instance.CancelSuperDash();
+                    StartCoroutine(StopSuperDash());
+                }
+
+                IEnumerator StopSuperDash()
+                {
+                    while (loop)
+                    {
+                        HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
+                        HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                        HeroController.instance.RelinquishControl();
+                        HeroController.instance.StopAnimationControl();
+                        HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+                        yield return null;
+                    }
+                }
+
                 GameObject entrance = gameObject.transform.parent.gameObject;
+                Transform parent = FiveKnights.preloadedGO["ObjRaise"].transform;
                 
                 HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
                 HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
@@ -634,10 +654,12 @@ namespace FiveKnights
                 HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
                 
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingBig").Value = true;
+                GameObject raiseAud = Instantiate(parent.Find("Rise Audio").gameObject);
+                raiseAud.SetActive(true);
+                Destroy(raiseAud.GetComponent<PlayAudioAndRecycle>());
+                HeroController.instance.PlayAudio(raiseAud.GetComponent<AudioSource>().clip);
                 yield return new WaitForSeconds(0.5f);
-                
-                Transform parent = FiveKnights.preloadedGO["ObjRaise"].transform;
-                
+
                 GameObject rumble = Instantiate(parent.Find("Rumble Dust").gameObject);
                 rumble.SetActive(true);
                 rumble.transform.position = new Vector3(56.1f, 35.1f);
@@ -648,11 +670,6 @@ namespace FiveKnights
                 rumble2.transform.position = new Vector3(56.1f, 35.1f);
                 var rumblePartic2 = rumble2.GetComponent<ParticleSystem>();
                 rumblePartic2.Play();
-                
-                GameObject raiseAud = Instantiate(parent.Find("Rise Audio").gameObject);
-                raiseAud.SetActive(true);
-                Destroy(raiseAud.GetComponent<PlayAudioAndRecycle>());
-                HeroController.instance.PlayAudio(raiseAud.GetComponent<AudioSource>().clip);
 
                 var ddstatEnd = new Vector3(57.19f, 42.88f, 0.2f);
                 var pillarEnd = new Vector3(56.46f, 28.11f, 2.1054f);
@@ -690,11 +707,19 @@ namespace FiveKnights
                 HeroController.instance.PlayAudio(impactAud.GetComponent<AudioSource>().clip);
                 
                 SpawnPlatAndCrack();
-                
+                loop = false;
                 yield return new WaitForSeconds(0.3f);
-                
+
                 HeroController.instance.RegainControl();
                 HeroController.instance.StartAnimationControl();
+                
+                yield return new WaitForSeconds(0.2f);
+                Destroy(rumble);
+                Destroy(rumble2);
+                Destroy(impactAud);
+                Destroy(raiseAud);
+                Destroy(dust);
+                Destroy(dust2);
             }
 
             private void SpawnPlatAndCrack()
