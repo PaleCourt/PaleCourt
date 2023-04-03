@@ -510,59 +510,12 @@ namespace FiveKnights
         {
             CustomWP.boss = CustomWP.Boss.None;
 
-            Log("Found the defedenr");
             var ddstat = GameObject.Find("GG_Statue_Defender");
             ddstat.transform.position = new Vector3(57.19f, 36.34f, 0.2f);
             
             CreateCameraLock("CameraLockStat", new Vector2(57.6f, 49.7f), new Vector2(1f, 1f),
                 new Vector2(7.5f, 16f), new Vector2(0f, 0f), 
                 new Vector2(-1f, 43f), new Vector2(-1f, 43f));
-            
-            GameObject go = Instantiate(FiveKnights.preloadedGO["Entrance"]);
-            go.SetActive(true);
-            go.transform.position = new Vector3(55.6f, 30.7f,2.1054f);
-            /*foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.material = new Material(Shader.Find("Sprites/Default"));
-            }*/
-
-            foreach (Transform platPos in go.transform.Find("Platforms"))
-            {
-                GameObject plat = Instantiate(FiveKnights.preloadedGO["RadPlat"]);
-                plat.transform.position = platPos.position;
-                plat.SetActive(true);
-                PlayMakerFSM fsm = plat.LocateMyFSM("radiant_plat");
-                fsm.SetState("Init");
-                StartCoroutine(Test(fsm));
-            }
-
-            IEnumerator Test(PlayMakerFSM fsm)
-            {
-                while (true)
-                {
-                    yield return new WaitWhile((() => !Input.GetKey(KeyCode.R)));
-                    fsm.SendEvent("APPEAR");
-                    Log("Forcing to appear??");
-                    yield break;
-                }
-            }
-            
-            GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
-            crack.SetActive(true);
-            crack.transform.position = new Vector3(56.25f, 37.68f, 4.21f);
-            crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
-            GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
-            secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
-            tp.targetScene = PrevFightScene;
-            tp.entryPoint = "door_Land_of_Storms_return";
-            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
-                .FsmVariables.FindFsmString("New Scene").Value = PrevFightScene;
-            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
-                .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
-            secret.LocateMyFSM("Deactivate").enabled = false;
-            secret.SetActive(true);
-            Log("Finished with crack setting");
 
             FiveKnights.preloadedGO["Entrance"] = ABManager.AssetBundles[ABManager.Bundle.WSArena]
                 .LoadAsset<GameObject>("gg_workshop_pale_court_entrance");
