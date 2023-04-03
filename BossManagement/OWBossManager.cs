@@ -129,7 +129,7 @@ namespace FiveKnights
 
                 PlayMusic(FiveKnights.Clips["HegAreaMusic"]);
 
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 432f);
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427f);
 
                 PlayMusic(FiveKnights.Clips["HegemolMusic"]);
                 hegemolCtrl.gameObject.SetActive(true);

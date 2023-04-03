@@ -54,6 +54,7 @@ namespace FiveKnights.Hegemol
             Log("Hegemol Awake");
 
             gameObject.name = "Hegemol";
+            gameObject.layer = (int)PhysLayers.CORPSE;
             transform.position = new Vector3(RightX - 5f, GroundY + 3f, 0.01f);
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
@@ -1040,7 +1041,7 @@ namespace FiveKnights.Hegemol
             go.layer = isAttack ? (int)PhysLayers.ENEMY_ATTACK : (int)PhysLayers.ENEMIES;
             DamageHero dh = go.AddComponent<DamageHero>();
             dh.damageDealt = damage;
-            dh.hazardType = (int)HazardType.SPIKES;
+            dh.hazardType = (int)HazardType.NON_HAZARD + 1;
             dh.shadowDashHazard = false;
             return dh;
 		}

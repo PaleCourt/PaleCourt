@@ -1757,6 +1757,7 @@ namespace FiveKnights.Isma
 
             _healthPool = _hm.hp = _hmDD.hp = MAX_HP_DUO;
 
+            // Prevent music from cutting out
             void TransitionToAudioSnapshotOnEnter(On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.orig_OnEnter orig, TransitionToAudioSnapshot self)
             {
                 if(self.State.Name == "Wake") return;
@@ -1764,7 +1765,7 @@ namespace FiveKnights.Isma
             }
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter += TransitionToAudioSnapshotOnEnter;
 
-            //Make Ogrim get stunned
+            // Make Ogrim get stunned
             if(dd.transform.GetPositionY() < 9.1f) dd.transform.position = new Vector2(dd.transform.GetPositionX(), 9.1f);
             _ddFsm.SetState("Stun Set");
 

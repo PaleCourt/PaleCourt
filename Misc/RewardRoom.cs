@@ -70,6 +70,12 @@ namespace FiveKnights
                     GameManager.SceneLoadVisualizations.Dream);
                 GameCameras.instance.hudCamera.gameObject.transform.Find("Blanker White").gameObject.LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
 
+                dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();
+                ogrimAnim = GameObject.Find("Ogrim").GetComponent<Animator>();
+                ismaAnim = GameObject.Find("Isma").GetComponent<Animator>();
+                hegemolAnim = GameObject.Find("Hegemol").GetComponent<Animator>();
+                zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
+
                 if(!FiveKnights.Clips.ContainsKey("Pale Court") || FiveKnights.Clips["Pale Court"] == null)
                 {
                     AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
@@ -172,12 +178,6 @@ namespace FiveKnights
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 zemer.SetUp();
-
-                dryyaAnim = GameObject.Find("Dryya").Find("Head").GetComponent<Animator>();
-                ogrimAnim = GameObject.Find("Ogrim").GetComponent<Animator>();
-                ismaAnim = GameObject.Find("Isma").GetComponent<Animator>();
-                hegemolAnim = GameObject.Find("Hegemol").GetComponent<Animator>();
-                zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
             }
         }
 
