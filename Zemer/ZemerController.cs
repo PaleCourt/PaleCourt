@@ -392,7 +392,7 @@ namespace FiveKnights.Zemer
                 float xVel = FaceHero() * -1f;
                 transform.Find("BladeAerialShadow").gameObject.SetActive(false);
                 _anim.Play("ZAerial2");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 _anim.enabled = false;
@@ -601,7 +601,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
-                PlayAudioClip("ZAudAtt" + _rand.Next(2,5));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 4));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -659,7 +659,7 @@ namespace FiveKnights.Zemer
 
                 float xVel = FaceHero() * -1f;
                 _anim.Play("ZAtt1Base");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
@@ -683,7 +683,7 @@ namespace FiveKnights.Zemer
                 }
 
                 float xVel = FaceHero() * -1f;
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
                 yield return _anim.PlayToFrame("ZAtt1Intro", 1);
                 
                 _anim.enabled = false;
@@ -896,7 +896,7 @@ namespace FiveKnights.Zemer
                 float rot = Mathf.Atan(diffY / diffX);
                 rot = (xVel < 0) ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
-                PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 PlayAudioClip("AudDashIntro");
