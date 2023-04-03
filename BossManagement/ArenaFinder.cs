@@ -66,7 +66,7 @@ namespace FiveKnights
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
-        } 
+        }
 
         // Put this back in because we need it apparently??
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
@@ -253,7 +253,10 @@ namespace FiveKnights
                     foreach (var i in FindObjectsOfType<GameObject>()
                         .Where(x => x.name == "BlurPlane"))
                     {
+                        Log("Found blur!");
+                        i.SetActive(false);
                         i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
+                        i.SetActive(true);
                     }
                     
                     foreach (var i in FindObjectsOfType<GrassCut>())
@@ -445,7 +448,6 @@ namespace FiveKnights
         private IEnumerator CameraFixer()
         {
             yield return new WaitWhile(() => GameManager.instance.gameState != GameState.PLAYING);
-            yield return new WaitForSeconds(1f);
             do
             {
                 GameCameras.instance.cameraFadeFSM.SetState("FadeIn");
@@ -504,7 +506,7 @@ namespace FiveKnights
             Log("Loading hub bundle");
         }
 
-        void Arena() 
+        private void Arena() 
         {
             CustomWP.boss = CustomWP.Boss.None;
 
@@ -516,6 +518,52 @@ namespace FiveKnights
                 new Vector2(7.5f, 16f), new Vector2(0f, 0f), 
                 new Vector2(-1f, 43f), new Vector2(-1f, 43f));
             
+            GameObject go = Instantiate(FiveKnights.preloadedGO["Entrance"]);
+            go.SetActive(true);
+            go.transform.position = new Vector3(55.6f, 30.7f,2.1054f);
+            /*foreach (SpriteRenderer i in go.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                i.material = new Material(Shader.Find("Sprites/Default"));
+            }*/
+
+            foreach (Transform platPos in go.transform.Find("Platforms"))
+            {
+                GameObject plat = Instantiate(FiveKnights.preloadedGO["RadPlat"]);
+                plat.transform.position = platPos.position;
+                plat.SetActive(true);
+                PlayMakerFSM fsm = plat.LocateMyFSM("radiant_plat");
+                fsm.SetState("Init");
+                StartCoroutine(Test(fsm));
+            }
+
+            IEnumerator Test(PlayMakerFSM fsm)
+            {
+                while (true)
+                {
+                    yield return new WaitWhile((() => !Input.GetKey(KeyCode.R)));
+                    fsm.SendEvent("APPEAR");
+                    Log("Forcing to appear??");
+                    yield break;
+                }
+            }
+            
+            GameObject crack = Instantiate(FiveKnights.preloadedGO["StartDoor"]);
+            crack.SetActive(true);
+            crack.transform.position = new Vector3(56.25f, 37.68f, 4.21f);
+            crack.transform.localScale = new Vector3(1.33f, 1.02f, 0.87f);
+            GameObject secret = crack.transform.Find("GG_secret_door").gameObject;
+            secret.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            TransitionPoint tp = secret.transform.Find("door_Land_of_Storms").GetComponent<TransitionPoint>();
+            tp.targetScene = PrevFightScene;
+            tp.entryPoint = "door_Land_of_Storms_return";
+            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                .FsmVariables.FindFsmString("New Scene").Value = PrevFightScene;
+            secret.transform.Find("door_Land_of_Storms").gameObject.LocateMyFSM("Door Control")
+                .FsmVariables.FindFsmString("Entry Gate").Value = "door_Land_of_Storms_return";
+            secret.LocateMyFSM("Deactivate").enabled = false;
+            secret.SetActive(true);
+            Log("Finished with crack setting");
+
             FiveKnights.preloadedGO["Entrance"] = ABManager.AssetBundles[ABManager.Bundle.WSArena]
                 .LoadAsset<GameObject>("gg_workshop_pale_court_entrance");
             
@@ -540,6 +588,13 @@ namespace FiveKnights
             GameObject o = Instantiate(FiveKnights.preloadedGO["SMTest"]);
             SceneManager sm = o.GetComponent<SceneManager>();
             if (pref != null) sm.borderPrefab = pref;
+
+            // Does not work, affects all other scenes. Leaving in case we find a way to make this work in the future
+            //GameCameras.instance.mainCamera.backgroundColor = new Color(0.65f, 0.65f, 0.65f);
+            //bool lightBlurEnabled = GameCameras.instance.GetComponent<LightBlurredBackground>().enabled;
+            //GameCameras.instance.GetComponent<LightBlurredBackground>().enabled = false;
+            //GameCameras.instance.GetComponent<LightBlurredBackground>().enabled = lightBlurEnabled;
+
             sm.noLantern = true;
             sm.darknessLevel = -1;
             sm.sceneType = SceneType.GAMEPLAY;
@@ -587,6 +642,7 @@ namespace FiveKnights
         private void OnDestroy() 
         {
             USceneManager.activeSceneChanged -= SceneChanged;
+            //On.SceneManager.Start -= SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
         }
