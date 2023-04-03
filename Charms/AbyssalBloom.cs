@@ -23,6 +23,8 @@ namespace FiveKnights
 
         private Coroutine _sideSlashCoro;
         private GameObject _sideSlash;
+        private Coroutine _downSlashCoro;
+        private GameObject _shadeSlashContainer;
 
         private int _level;
         private int _shadeSlashNum = 1;
@@ -54,16 +56,18 @@ namespace FiveKnights
             PlayMakerFSM _radControl = Instantiate(FiveKnights.preloadedGO["Radiance"].LocateMyFSM("Control"), _hc.transform);
             FiveKnights.Clips["Shade Slash"] = (AudioClip)_radControl.GetAction<AudioPlayerOneShotSingle>("Antic", 1).audioClip.Value;
 
-            ModHooks.SoulGainHook += SoulGainHook;
 			On.HealthManager.Hit += HealthManagerHit;
+			On.HeroController.CancelAttack += HeroControllerCancelAttack;
+			On.HeroController.CancelDownAttack += HeroControllerCancelDownAttack;
             On.HeroController.Attack += DoVoidAttack;
         }
 
 		private void OnDisable()
 		{
             SetLevel(0);
-            ModHooks.SoulGainHook -= SoulGainHook;
             On.HealthManager.Hit -= HealthManagerHit;
+            On.HeroController.CancelAttack -= HeroControllerCancelAttack;
+            On.HeroController.CancelDownAttack -= HeroControllerCancelDownAttack;
             On.HeroController.Attack -= DoVoidAttack;
         }
 
@@ -118,8 +122,6 @@ namespace FiveKnights
             }
         }
 
-        private int SoulGainHook(int soul) => 0;
-
         private void HealthManagerHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
             if(hitInstance.AttackType == AttackTypes.Nail)
@@ -128,6 +130,24 @@ namespace FiveKnights
             }
             //Log("Multiplier is currently " + damageBuff + " to deal total damage of " + hitInstance.DamageDealt * hitInstance.Multiplier);
             orig(self, hitInstance);
+        }
+
+        private void HeroControllerCancelDownAttack(On.HeroController.orig_CancelDownAttack orig, HeroController self)
+        {
+            orig(self);
+            Log("Cancel down attack");
+            if(_downSlashCoro != null)
+            {
+                StopCoroutine(_downSlashCoro);
+                Destroy(_shadeSlashContainer);
+                _hc.StartAnimationControl();
+            }
+        }
+
+        private void HeroControllerCancelAttack(On.HeroController.orig_CancelAttack orig, HeroController self)
+        {
+            orig(self);
+            if(_sideSlashCoro != null) CancelTendrilAttack();
         }
 
         private void DoVoidAttack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
@@ -140,13 +160,15 @@ namespace FiveKnights
 
             InputHandler ih = InputHandler.Instance;
 
+            hc.cState.attacking = true;
+
             if(hc.cState.wallSliding)
             {
                 StartCoroutine(WallTendrilAttack());
             }
             else if(ih.ActionButtonToPlayerAction(HeroActionButton.DOWN) && !hc.CheckTouchingGround())
             {
-                StartCoroutine(VerticalTendrilAttack(false));
+                _downSlashCoro = StartCoroutine(VerticalTendrilAttack(false));
             }
             else if(ih.ActionButtonToPlayerAction(HeroActionButton.UP))
             {
@@ -154,14 +176,18 @@ namespace FiveKnights
             }
             else
             {
-                if(_sideSlashCoro != null)
-				{
-                    StopCoroutine(_sideSlashCoro);
-                    Destroy(_sideSlash);
-                    _shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
-                }
+                if(_sideSlashCoro != null) CancelTendrilAttack();
                 _sideSlashCoro = StartCoroutine(TendrilAttack());
             }
+        }
+
+        private void CancelTendrilAttack()
+		{
+            StopCoroutine(_sideSlashCoro);
+            Destroy(_sideSlash);
+            _shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
+            _knightBall.SetActive(false);
+            _hc.GetComponent<MeshRenderer>().enabled = true;
         }
 
         private IEnumerator TendrilAttack()
@@ -172,13 +198,12 @@ namespace FiveKnights
             mr.enabled = false;
             _knightBall.SetActive(true);
 
-            yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum + " Antic"));
-
-            _sideSlash = Instantiate(new GameObject("Shade Slash"), _knightBall.transform);
-            _sideSlash.layer = 17;
+            _sideSlash = new GameObject("Shade Slash");
+            _sideSlash.transform.parent = _knightBall.transform;
+            _sideSlash.layer = (int)PhysLayers.HERO_ATTACK;
             _sideSlash.tag = "Nail Attack";
             _sideSlash.transform.localPosition = Vector3.zero;
-            _sideSlash.transform.localScale = new Vector3(1f, 1f, 1f);
+            _sideSlash.transform.localScale = Vector3.one;
             _sideSlash.SetActive(false);
 
             AddDamageEnemiesFsm(_sideSlash, AttackDirection.normal);
@@ -197,12 +222,17 @@ namespace FiveKnights
             slashPoly.offset = Vector2.zero;
             slashPoly.isTrigger = true;
 
+            GameObject parrySlash = Instantiate(_sideSlash, _sideSlash.transform);
+            parrySlash.layer = (int)PhysLayers.ITEM;
+
             ShadeSlash ss = _sideSlash.AddComponent<ShadeSlash>();
             ss.attackDirection = AttackDirection.normal;
 
             _sideSlash.SetActive(true);
+            parrySlash.SetActive(true);
 
-            yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
+            yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum + " Antic"));
+			yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
 
             Destroy(_sideSlash);
 
@@ -212,6 +242,7 @@ namespace FiveKnights
 
             // Used to keep track of reg slash/alt slash
             _shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
+            _hc.cState.attacking = false;
         }
 
         private IEnumerator VerticalTendrilAttack(bool up)
@@ -227,20 +258,18 @@ namespace FiveKnights
             _hcAnim.Play(hcSlashAnim);
 
             // Create slash objects
-            GameObject shadeSlashContainer = Instantiate(new GameObject("Shade Slash Container"), _hc.transform);
-            shadeSlashContainer.layer = 17;
-            shadeSlashContainer.SetActive(false);
+            _shadeSlashContainer = new GameObject("Shade Slash Container");
+            _shadeSlashContainer.transform.parent = _hc.transform;
+            _shadeSlashContainer.layer = (int)PhysLayers.HERO_ATTACK;
+            _shadeSlashContainer.SetActive(false);
 
-            GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), shadeSlashContainer.transform);
-            shadeSlash.layer = 17;
+            GameObject shadeSlash = new GameObject("Shade Slash");
+            shadeSlash.transform.parent = _shadeSlashContainer.transform;
+            shadeSlash.layer = (int)PhysLayers.HERO_ATTACK;
             shadeSlash.tag = "Nail Attack";
             shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
-            shadeSlash.transform.localScale = new Vector3(2, 2, 2);
-
-            shadeSlash.AddComponent<MeshRenderer>();
-            shadeSlash.AddComponent<MeshFilter>();
-            tk2dSprite slashSprite = shadeSlash.AddComponent<tk2dSprite>();
-            tk2dSpriteAnimator slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
+            shadeSlash.transform.localScale = new Vector3(2f, 2f, 2f);
+            shadeSlash.SetActive(false);
 
             AddDamageEnemiesFsm(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
 
@@ -273,20 +302,33 @@ namespace FiveKnights
             slashPoly.offset = new Vector2(0.0f, up ? -1f : 0.75f);
             slashPoly.isTrigger = true;
 
+            GameObject parrySlash = Instantiate(shadeSlash, shadeSlash.transform);
+            parrySlash.layer = (int)PhysLayers.ITEM;
+            parrySlash.transform.localPosition = Vector3.zero;
+            parrySlash.transform.localScale = Vector3.one;
+            parrySlash.SetActive(false);
+
+            shadeSlash.AddComponent<MeshRenderer>();
+            shadeSlash.AddComponent<MeshFilter>();
+            tk2dSprite slashSprite = shadeSlash.AddComponent<tk2dSprite>();
+            tk2dSpriteAnimator slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
             slashSprite.Collection = _hc.GetComponent<tk2dSprite>().Collection;
             slashAnim.Library = _hcAnim.Library;
 
             ShadeSlash ss = shadeSlash.AddComponent<ShadeSlash>();
             ss.attackDirection = up ? AttackDirection.upward : AttackDirection.downward;
 
-            shadeSlashContainer.SetActive(true);
+            _shadeSlashContainer.SetActive(true);
+            shadeSlash.SetActive(true);
+            parrySlash.SetActive(true);
 
             yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect"));
 
-            Destroy(shadeSlashContainer);
+            Destroy(_shadeSlashContainer);
 
             yield return new WaitWhile(() => _hcAnim.Playing && _hcAnim.IsPlaying(animName + "Slash Void"));
             _hc.StartAnimationControl();
+            _hc.cState.attacking = false;
         }
 
         private IEnumerator WallTendrilAttack()
@@ -297,21 +339,17 @@ namespace FiveKnights
 
             _hcAnim.Play(_hcAnim.GetClipByName("WallSlash Void"));
 
-            GameObject shadeSlash = Instantiate(new GameObject("Shade Slash"), _hc.transform);
-            shadeSlash.layer = 17;
+            GameObject shadeSlash = new GameObject("Shade Slash");
+            shadeSlash.transform.parent = _hc.transform;
+            shadeSlash.layer = (int)PhysLayers.HERO_ATTACK;
             shadeSlash.tag = "Nail Attack";
-            shadeSlash.transform.localPosition = new Vector3(0f, 1.0f, 0f);
-            shadeSlash.transform.localScale = new Vector3(1.0f, 1.0f, 1.0f);
+            shadeSlash.transform.localPosition = new Vector3(0f, 1f, 0f);
+            shadeSlash.transform.localScale = Vector3.one;
             shadeSlash.SetActive(false);
-
-            PolygonCollider2D slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
-            shadeSlash.AddComponent<MeshRenderer>();
-            shadeSlash.AddComponent<MeshFilter>();
-            tk2dSprite slashSprite = shadeSlash.AddComponent<tk2dSprite>();
-            tk2dSpriteAnimator slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
 
             AddDamageEnemiesFsm(shadeSlash, AttackDirection.normal);
 
+            PolygonCollider2D slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
             {
                 new Vector2(-1.5f, 2.0f),
@@ -320,10 +358,19 @@ namespace FiveKnights
                 new Vector2(1.0f, -2.0f),
                 new Vector2(-1.5f, -1.0f),
             };
-
-            slashPoly.offset = new Vector2(1.0f, 0.0f);
+            slashPoly.offset = new Vector2(1f, 0f);
             slashPoly.isTrigger = true;
 
+			GameObject parrySlash = Instantiate(shadeSlash, shadeSlash.transform);
+			parrySlash.layer = (int)PhysLayers.ITEM;
+			parrySlash.transform.localPosition = Vector3.zero;
+			parrySlash.transform.localScale = Vector3.one;
+            parrySlash.SetActive(false);
+
+			shadeSlash.AddComponent<MeshRenderer>();
+            shadeSlash.AddComponent<MeshFilter>();
+            tk2dSprite slashSprite = shadeSlash.AddComponent<tk2dSprite>();
+            tk2dSpriteAnimator slashAnim = shadeSlash.AddComponent<tk2dSpriteAnimator>();
             slashSprite.Collection = _hc.GetComponent<tk2dSprite>().Collection;
             slashAnim.Library = _hcAnim.Library;
 
@@ -331,12 +378,14 @@ namespace FiveKnights
             ss.attackDirection = AttackDirection.normal;
 
             shadeSlash.SetActive(true);
+            parrySlash.SetActive(true);
 
             yield return new WaitForSeconds(slashAnim.PlayAnimGetTime("Slash Effect"));
 
             Destroy(shadeSlash);
 
 			_hc.StartAnimationControl();
+            _hc.cState.attacking = false;
         }
 
         private void AddDamageEnemiesFsm(GameObject o, AttackDirection dir)
