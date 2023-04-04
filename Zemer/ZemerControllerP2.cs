@@ -1203,8 +1203,9 @@ namespace FiveKnights.Zemer
             _anim.enabled = false;
             yield return new WaitForSeconds(delay);
             _anim.enabled = true;
+            yield return _anim.WaitToFrame(1);
+            PlayAudioClip("Slash",0.15f);
             yield return _anim.WaitToFrame(2);
-            PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
             SpawnPillar(-dir, SmallPillarSize, SmallPillarSpd);
             yield return _anim.WaitToFrame(5);
             Spring(false, transform.position + new Vector3(dir * LeaveOffset.x, LeaveOffset.y,0f),1.5f);

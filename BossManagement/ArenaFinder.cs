@@ -66,6 +66,9 @@ namespace FiveKnights
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
+
+            FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+            FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
         }
 
         // Put this back in because we need it apparently??
@@ -649,7 +652,7 @@ namespace FiveKnights
                         HeroController.instance.RelinquishControl();
                         HeroController.instance.StopAnimationControl();
                         HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
-                        yield return null;
+                        yield return null; 
                     }
                 }
 

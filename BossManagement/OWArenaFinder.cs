@@ -54,41 +54,12 @@ namespace FiveKnights.BossManagement
             USceneManager.activeSceneChanged += USceneManagerOnactiveSceneChanged;
             On.GameManager.EnterHero += GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo += GameManagerOnRefreshTilemapInfo;
-            On.CameraLockArea.OnTriggerEnter2D += CameraLockAreaOnOnTriggerEnter2D;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
         }
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.DREAM_WORLD.ToString() : orig(self);
-        }
-
-        private void CameraLockAreaOnOnTriggerEnter2D(On.CameraLockArea.orig_OnTriggerEnter2D orig, CameraLockArea self, Collider2D othercollider)
-        {
-            /*if (_currScene == ZemerScene && self.name == "CLA2")
-            {
-                HeroController.instance.superDash.SendEvent("SLOPE CANCEL");
-            }*/
-
-            if (_currScene == DryyaScene)
-            {
-                self.cameraYMin = 103f;
-                self.cameraYMax = 103f;
-                if (self.gameObject.name.Contains("(1)(Clone)"))
-                {
-                    self.cameraXMin = 390f;
-                    self.cameraXMax = 418f;
-                }
-                else
-                {
-                    // Right side
-                    self.cameraXMin = 435.5f;
-                    self.cameraXMax = 443f;
-                }
-                
-                return;
-            }
-            orig(self, othercollider);
         }
 
         private void GameManagerOnRefreshTilemapInfo(On.GameManager.orig_RefreshTilemapInfo orig, GameManager self, string targetscene)
@@ -352,7 +323,6 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Dryya;
                     PlayerData.instance.dreamReturnScene = arg0.name;
                     FixBlur();
-                    FixCameraDryya();
                     AddBattleGate(422.5f,new Vector3(421.925f, 99.5f));
                     DreamEntry();
                     AddSuperDashCancel();
@@ -516,29 +486,6 @@ namespace FiveKnights.BossManagement
             }
         }
 
-		private void FixCameraDryya()
-        {
-            GameObject parentlock = GameObject.Find("Battle Scene").transform.GetChild(0).gameObject;
-            if (parentlock != null)
-            {
-                parentlock.SetActive(true);
-                Transform camlock1 = parentlock.transform.Find("CameraLockArea (1)");
-                camlock1.transform.localPosition = new Vector3(18.14f, 1.87f);
-                GameObject camlock2 = Instantiate(camlock1.gameObject, parentlock.transform);
-                camlock2.transform.localPosition = new Vector3(-15f, 1.87f);
-                camlock2.transform.localScale = new Vector3(3f, 1f, 1f);
-                BoxCollider2D bc = camlock2.GetComponent<BoxCollider2D>();
-                bc.size = new Vector2(11.15505f, bc.size.y);
-                bc.offset = new Vector2(-8.354845f, bc.offset.y);
-                BoxCollider2D bc2 = camlock2.GetComponent<BoxCollider2D>();
-                bc2.size = new Vector2(14.90794f, 18f);
-                bc2.offset = new Vector2(-10.39885f, -5f);
-                camlock1.gameObject.SetActive(true);
-                camlock2.SetActive(true);
-                Log("Done setting locks up");
-            }
-        }
-
         private void CreateCameraLock(string n, Vector2 pos, Vector2 scl, Vector2 cSize, Vector2 cOff,
                                       Vector2 min, Vector2 max, bool preventLookDown=false)
         {
@@ -554,6 +501,7 @@ namespace FiveKnights.BossManagement
             cla.cameraXMax = max.x;
             cla.cameraYMin = cla.cameraYMax = min.y;
             cla.preventLookDown = preventLookDown;
+            cla.maxPriority = true;
             parentlock.SetActive(true);
             lockCol.enabled = cla.enabled = true;
         }
@@ -645,8 +593,12 @@ namespace FiveKnights.BossManagement
                 Destroy(i);
             }
             CreateCameraLock("CLA1", new Vector2(325f, 156.1f),new Vector2(5f, 1.5f),
-                new Vector2(35.469f, 27.22f), new Vector2(0.707f, 2.554f), 
-                new Vector2(263, 160f), new Vector2(402f, 160f), true);
+                new Vector2(18.9981f, 27.22f), new Vector2(-7.528451f, 2.554f), 
+                new Vector2(263, 160f), new Vector2(323f, 160f), true);
+            
+            CreateCameraLock("CLA1B", new Vector2(325f, 156.1f),new Vector2(5f, 1.5f),
+                new Vector2(16.48628f, 27.22f), new Vector2(10.19836f, 2.554f), 
+                new Vector2(345f, 160f), new Vector2(402f, 160f), true);
 
             CreateCameraLock("CLA2", new Vector2(437.5f, 174f),new Vector2(5f, 1f),
                 new Vector2(10f, 45f), new Vector2(1f,1.4f), 
@@ -895,7 +847,6 @@ namespace FiveKnights.BossManagement
             USceneManager.activeSceneChanged -= USceneManagerOnactiveSceneChanged;
             On.GameManager.EnterHero -= GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo -= GameManagerOnRefreshTilemapInfo;
-            On.CameraLockArea.OnTriggerEnter2D -= CameraLockAreaOnOnTriggerEnter2D;
             On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;
         }
 
