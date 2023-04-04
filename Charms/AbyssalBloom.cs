@@ -258,8 +258,7 @@ namespace FiveKnights
             _hcAnim.Play(hcSlashAnim);
 
             // Create slash objects
-            _shadeSlashContainer = new GameObject("Shade Slash Container");
-            _shadeSlashContainer.transform.parent = _hc.transform;
+            _shadeSlashContainer = Instantiate(new GameObject("Shade Slash Container"), _hc.transform);
             _shadeSlashContainer.layer = (int)PhysLayers.HERO_ATTACK;
             _shadeSlashContainer.SetActive(false);
 
@@ -269,7 +268,6 @@ namespace FiveKnights
             shadeSlash.tag = "Nail Attack";
             shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
             shadeSlash.transform.localScale = new Vector3(2f, 2f, 2f);
-            shadeSlash.SetActive(false);
 
             AddDamageEnemiesFsm(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
 
@@ -306,7 +304,6 @@ namespace FiveKnights
             parrySlash.layer = (int)PhysLayers.ITEM;
             parrySlash.transform.localPosition = Vector3.zero;
             parrySlash.transform.localScale = Vector3.one;
-            parrySlash.SetActive(false);
 
             shadeSlash.AddComponent<MeshRenderer>();
             shadeSlash.AddComponent<MeshFilter>();
@@ -319,8 +316,6 @@ namespace FiveKnights
             ss.attackDirection = up ? AttackDirection.upward : AttackDirection.downward;
 
             _shadeSlashContainer.SetActive(true);
-            shadeSlash.SetActive(true);
-            parrySlash.SetActive(true);
 
             yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect"));
 
