@@ -2099,7 +2099,7 @@ namespace FiveKnights.Zemer
                     _anim.enabled = true;
                     _anim.PlayAt("Z5LandSlide", 1);
                     PlayAudioClip("AudDash");
-                    float spd = 70f;
+                    float spd = 60f;
                     _rb.velocity = new Vector2(-signX * spd, 0f);
                     grass.GetComponent<ParticleSystem>().Play();
                     yield return null;
@@ -2999,8 +2999,9 @@ namespace FiveKnights.Zemer
                     {
                         Destroy(i);
                     }
-                    grass.Stop();
-                    Destroy(grass.gameObject);
+
+                    _destroyAtEnd = new List<GameObject>();
+                    if (grass != null) grass.Stop();
                     FaceHero();
                     _bc.enabled = false;
                     _anim.speed = 1f;
@@ -3040,7 +3041,7 @@ namespace FiveKnights.Zemer
             }
             
             grass.Stop();
-            Destroy(grass.gameObject);
+            //Destroy(grass.gameObject);
 
             if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
