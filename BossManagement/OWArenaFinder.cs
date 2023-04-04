@@ -607,7 +607,7 @@ namespace FiveKnights.BossManagement
 
             foreach(Renderer renderer in FindObjectsOfType<Renderer>())
 			{
-                if(renderer.gameObject.name.Contains("Arena Bottom Border") || renderer.gameObject.name.Contains("dream particles") ||
+                if(renderer.gameObject.name.Contains("dream particles") ||
                     renderer.gameObject.name.Contains("Dream Exit Particle Field"))
 				{
                     renderer.sortingOrder = 1;
