@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
@@ -95,26 +96,34 @@ namespace FiveKnights.Zemer
                 traitorSlam[i].SetActive(false);
             }
             AssignFields();
-            
-            // Sorry for this but Unity was being annoying :/
-            IEnumerator ForceDisableHB()
-            {
-                while (!doingIntro)
-                {
-                    _bc.enabled = false;
-                    yield return new WaitForEndOfFrame();
-                    _bc.enabled = false;
-                }
-                _bc.enabled = true;
-            }
-            
+
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
-            _bc.enabled = doingIntro = false;
-            StartCoroutine(ForceDisableHB());
+             doingIntro = false;
+             // For some reason setting the _bc to false here in the OW arena results in Zemer's hitbox never activating
+             // after so I've had to do this ugly thing
+             if (!OWArenaFinder.IsInOverWorld)
+             {
+                 _stopForcingHB = false;
+                 _bc.enabled = false;
+                 StartCoroutine(ForceDisableHB());
+             }
             gameObject.transform.localScale *= 0.8f;
             gameObject.layer = 11;
         }
+        
+        // Sorry for this but Unity was being annoying :/
+        IEnumerator ForceDisableHB()
+        {
+            while (!_stopForcingHB)
+            {
+                _bc.enabled = false;
+                yield return new WaitForEndOfFrame();
+                _bc.enabled = false;
+            }
+        }
 
+        private bool _stopForcingHB;
+        
         private void DoTitle()
         {
             GameObject area = null;
@@ -162,7 +171,7 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => WaitForTChild);
             StartCoroutine(MusicControl());
             DoTitle();
-            doingIntro = true;
+            doingIntro = _stopForcingHB = true;
             _bc.enabled = true;
             _anim.enabled = true;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
@@ -178,8 +187,9 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => transform.GetPositionX() < RightX - 15f);
             _rb.velocity = Vector2.zero;
             doingIntro = false;
+            _bc.enabled = true;
             _anim.Play("ZIdle");
-            StartCoroutine(Attacks());
+            StartCoroutine(Attacks()); 
             Log("Done Intro");
         }
 
@@ -983,6 +993,7 @@ namespace FiveKnights.Zemer
                     StopCoroutine(nameof(Start));
                     _rb.velocity = new Vector2(0f, 0f);
                     doingIntro = false;
+                    _stopForcingHB = true;
                     _bc.enabled = true;
                     _anim.enabled = true;
                     _anim.speed = 1f;

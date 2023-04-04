@@ -32,6 +32,7 @@ namespace FiveKnights.Zemer
         private GameObject _target;
         private ParticleSystem grass;
         private string[] _commonAtt;
+        private List<GameObject> _destroyAtEnd;
 
         private readonly float PlayerGndY = CustomWP.boss == CustomWP.Boss.All ? 23.919f : 23.919f;
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
@@ -43,15 +44,19 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
-        private readonly float NailHeightGrab = 19f;
+        private readonly float NailHeightGrab = 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 10f : 19f;
         
         private const int Phase2HP = 1500;
         private int DoneFrenzyAtt;
-        private const int Phase3HP = 1000;
+        private const int Phase3HP = 1100;
 
-        private const float NailMaxHeightStop = 39f;
-        private const float NailMaxLeftStop = 13f;
-        private const float NailMaxRightStop = 43f;
+        private readonly float NailMaxHeightStop = 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 18.5f : 39f;
+        private readonly float NailMaxLeftStop = 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 62f : 13f;
+        private readonly float NailMaxRightStop = 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 89f : 43f;
         private const float TurnDelay = 0.05f;
         private const float LandSlideTPInDelay = 0.07f;
         private const float LaserNutsEndDelay = 0.5f; //
@@ -138,6 +143,8 @@ namespace FiveKnights.Zemer
             grass = grassGO.GetComponent<ParticleSystem>();
             grass.gameObject.SetActive(true);
             grass.Stop();
+
+            _destroyAtEnd = new List<GameObject>();
 
             AssignFields();
         }
@@ -2009,6 +2016,7 @@ namespace FiveKnights.Zemer
                 StartCoroutine(SpawnSpirals(targ - new Vector2(0f, 2f), 0.9f, true));
                 
                 GameObject controller = Instantiate(FiveKnights.preloadedGO["SlashRingController"]);
+                _destroyAtEnd.Add(controller);
                 controller.transform.localScale *= 0.5f;
                 controller.SetActive(true);
                 StartCoroutine(PlayExtendedSpiral(controller, 1.3f));
@@ -2414,6 +2422,7 @@ namespace FiveKnights.Zemer
                 GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
 
                 var slash = Instantiate(FiveKnights.preloadedGO["SlashRingControllerNew"]);
+                _destroyAtEnd.Add(slash);
                 slash.SetActive(true);
                 slash.transform.position = targ;
                 slash.transform.localScale /= (scale * 2.5f);
@@ -2986,7 +2995,12 @@ namespace FiveKnights.Zemer
                             Destroy(i.gameObject);
                         }
                     }
+                    foreach (GameObject i in _destroyAtEnd.Where(x => x != null))
+                    {
+                        Destroy(i);
+                    }
                     grass.Stop();
+                    Destroy(grass.gameObject);
                     FaceHero();
                     _bc.enabled = false;
                     _anim.speed = 1f;
@@ -2996,7 +3010,7 @@ namespace FiveKnights.Zemer
                     DoneFrenzyAtt++;
                     StartCoroutine(EndPhase1(false));
                 }
-                if (_hm.hp <= 50)
+                if (_hm.hp <= 200)
                 {
                     Log("Going to die :(");
                     StopAllCoroutines();
@@ -3020,6 +3034,11 @@ namespace FiveKnights.Zemer
                 }
             }
 
+            foreach (GameObject i in _destroyAtEnd.Where(x => x != null))
+            {
+                Destroy(i);
+            }
+            
             grass.Stop();
             Destroy(grass.gameObject);
 

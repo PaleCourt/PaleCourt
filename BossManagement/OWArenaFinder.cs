@@ -142,7 +142,7 @@ namespace FiveKnights.BossManagement
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-                    else if (self.sceneName == PrevZemScene)
+                    else if (self.sceneName == PrevZemScene && PlayerData.instance.xunRewardGiven)
                     {
                         CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
                             null, null, false, false, true, 
@@ -194,7 +194,7 @@ namespace FiveKnights.BossManagement
                     new Vector2(40.9f, 94.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, DryyaScene, PrevDryScene);
             }
-            else if (_currScene == PrevZemScene)
+            else if (_currScene == PrevZemScene && PlayerData.instance.xunRewardGiven)
             {
                 if (_prevScene == ZemerScene)
                 {
