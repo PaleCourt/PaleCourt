@@ -7,6 +7,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 using SFCore.Utils;
 using GlobalEnums;
+using Vasi;
 using Modding;
 
 namespace FiveKnights
@@ -134,20 +135,23 @@ namespace FiveKnights
 
         private void HeroControllerCancelDownAttack(On.HeroController.orig_CancelDownAttack orig, HeroController self)
         {
-            orig(self);
-            Log("Cancel down attack");
             if(_downSlashCoro != null)
             {
                 StopCoroutine(_downSlashCoro);
                 Destroy(_shadeSlashContainer);
                 _hc.StartAnimationControl();
+                _hc.cState.attacking = false;
             }
+            orig(self);
         }
 
         private void HeroControllerCancelAttack(On.HeroController.orig_CancelAttack orig, HeroController self)
         {
+            if(_sideSlashCoro != null)
+            {
+                CancelTendrilAttack();
+            }
             orig(self);
-            if(_sideSlashCoro != null) CancelTendrilAttack();
         }
 
         private void DoVoidAttack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
@@ -161,6 +165,15 @@ namespace FiveKnights
             InputHandler ih = InputHandler.Instance;
 
             hc.cState.attacking = true;
+            Mirror.SetField(_hc, "attack_time", 0f);
+            if(_pd.GetBool(nameof(PlayerData.equippedCharm_32)))
+            {
+                Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION_CH);
+            }
+            else
+            {
+                Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION);
+            }
 
             if(hc.cState.wallSliding)
             {
@@ -183,11 +196,13 @@ namespace FiveKnights
 
         private void CancelTendrilAttack()
 		{
+            Log("canceling attack");
             StopCoroutine(_sideSlashCoro);
             Destroy(_sideSlash);
-            _shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
+            //_shadeSlashNum = _shadeSlashNum == 1 ? 2 : 1;
             _knightBall.SetActive(false);
             _hc.GetComponent<MeshRenderer>().enabled = true;
+            _hc.cState.attacking = false;
         }
 
         private IEnumerator TendrilAttack()
@@ -231,10 +246,11 @@ namespace FiveKnights
             _sideSlash.SetActive(true);
             parrySlash.SetActive(true);
 
-            yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum + " Antic"));
+            _knightBallAnim.PlayFrom("Slash" + _shadeSlashNum + " Antic", 1);
+            yield return new WaitWhile(() => _knightBallAnim.IsPlaying("Slash" + _shadeSlashNum + " Antic"));
 			yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
 
-            Destroy(_sideSlash);
+			Destroy(_sideSlash);
 
             mr.enabled = true;
 
@@ -258,8 +274,7 @@ namespace FiveKnights
             _hcAnim.Play(hcSlashAnim);
 
             // Create slash objects
-            _shadeSlashContainer = new GameObject("Shade Slash Container");
-            _shadeSlashContainer.transform.parent = _hc.transform;
+            _shadeSlashContainer = Instantiate(new GameObject("Shade Slash Container"), _hc.transform);
             _shadeSlashContainer.layer = (int)PhysLayers.HERO_ATTACK;
             _shadeSlashContainer.SetActive(false);
 
@@ -269,7 +284,6 @@ namespace FiveKnights
             shadeSlash.tag = "Nail Attack";
             shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
             shadeSlash.transform.localScale = new Vector3(2f, 2f, 2f);
-            shadeSlash.SetActive(false);
 
             AddDamageEnemiesFsm(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
 
@@ -306,7 +320,6 @@ namespace FiveKnights
             parrySlash.layer = (int)PhysLayers.ITEM;
             parrySlash.transform.localPosition = Vector3.zero;
             parrySlash.transform.localScale = Vector3.one;
-            parrySlash.SetActive(false);
 
             shadeSlash.AddComponent<MeshRenderer>();
             shadeSlash.AddComponent<MeshFilter>();
@@ -319,8 +332,6 @@ namespace FiveKnights
             ss.attackDirection = up ? AttackDirection.upward : AttackDirection.downward;
 
             _shadeSlashContainer.SetActive(true);
-            shadeSlash.SetActive(true);
-            parrySlash.SetActive(true);
 
             yield return new WaitForSeconds(slashAnim.PlayAnimGetTime(animName + "Slash Effect"));
 
