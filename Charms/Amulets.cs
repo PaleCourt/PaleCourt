@@ -79,6 +79,9 @@ namespace FiveKnights
             Log("Got Audio");
             _audio.pitch = 1.5f;
 
+            // King's Honour
+            _hc.gameObject.AddComponent<RoyalAura>().enabled = false;
+
             // Mark of Purity
             _hc.gameObject.AddComponent<PurityTimer>().enabled = false;
             _hc.gameObject.AddComponent<AutoSwing>().enabled = false;
@@ -87,7 +90,7 @@ namespace FiveKnights
             _hc.gameObject.AddComponent<BoonSpells>().enabled = false;
             InsertCharmSpellEffectsInFsm();
 
-            // Abyssal Bloom
+            // Abyssal Bloom - the order of these is specific because each one tries to get a reference to the previous
             _hc.gameObject.AddComponent<ModifyBloomProps>().enabled = true;
             _hc.gameObject.AddComponent<AbyssalBloom>().enabled = false;
             _hc.gameObject.AddComponent<CheckBloomStage>().enabled = true;
@@ -123,8 +126,6 @@ namespace FiveKnights
             Log("Amulets Start Finished");
             _activated = true;
         }
-
-        private GameObject _royalAura;
 
         private void InsertCharmSpellEffectsInFsm()
         {
@@ -389,23 +390,8 @@ namespace FiveKnights
                 return;
 			}
 
-
-            if (playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10)
-            {
-                StartCoroutine(FindAndAddComponentToDung());
-                /*if (_royalAura != null) Destroy(_royalAura);
-                _royalAura = Instantiate(FiveKnights.preloadedGO["Royal Aura"]);
-                Vector3 pos = hc.transform.position;
-                Transform auraTransform = _royalAura.transform;
-                auraTransform.SetPosition2D(pos);
-                auraTransform.SetPositionZ(pos.z + 1.0f);
-                auraTransform.parent = gameObject.transform;
-                _royalAura.FindGameObjectInChildren("Smoke 0").AddComponent<RoyalAura>();*/
-            }
-            else
-            {
-                if (_royalAura != null) Destroy(_royalAura);
-            }
+            _hc.GetComponent<RoyalAura>().enabled = 
+                playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10;
 
             _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
             _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
@@ -428,23 +414,6 @@ namespace FiveKnights
             _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 
             _hc.GetComponent<AbyssalBloom>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[3];
-        }
-
-        private IEnumerator FindAndAddComponentToDung()
-        {
-            yield return new WaitWhile(() => !GameObject.Find("Dung"));
-            // Destroy(GameObject.Find("Dung"));
-            GameObject dung = GameObject.Find("Dung");
-            if (!dung.GetComponent<Dung>()) dung.AddComponent<Dung>();
-        }
-
-        private void Update()
-        {
-            //GameObject cursor = GameManager.instance.inventoryFSM.gameObject.FindGameObjectInChildren("Charms").FindGameObjectInChildren("Cursor");
-            //Log("Cursor pos: " + cursor.transform.position);
-            // Log("Equipped Charms: " + PureAmulets.Settings.equippedCharm_41 + " " +
-            //     PureAmulets.Settings.equippedCharm_42 + " " + PureAmulets.Settings.equippedCharm_43 + " " +
-            //     PureAmulets.Settings.equippedCharm_44);
         }
 
         private GameObject _blast;
