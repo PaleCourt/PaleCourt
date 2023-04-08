@@ -1089,11 +1089,6 @@ namespace FiveKnights.Zemer
 
                 fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
-
-            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
         }
         
 

@@ -20,7 +20,7 @@ namespace FiveKnights
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
             Misc, Charms, CharmUnlock,
-            Artist
+            Artist,
         }
 
         private static string BundleToString(Bundle bd)
@@ -52,7 +52,7 @@ namespace FiveKnights
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
                 Bundle.CharmUnlock => "charmunlock",
-                Bundle.Artist => "artistsbund", 
+                Bundle.Artist => "artistsbund",
                 _ => ""
             };
         }

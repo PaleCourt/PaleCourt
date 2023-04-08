@@ -124,6 +124,15 @@ namespace FiveKnights
         }
 
         [Pure]
+        public static IEnumerator PlayToEnd(this Animator self, string name)
+        {
+            self.Play(name, -1, 0f);
+            yield return null;
+            while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)
+                yield return null;
+        }
+        
+        [Pure]
         public static IEnumerator PlayToEnd(this Animator self)
         {
             yield return null;
