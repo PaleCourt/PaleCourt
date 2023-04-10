@@ -310,25 +310,32 @@ namespace FiveKnights.BossManagement
 
 				yield return new WaitWhile(() => dc != null);
 
-				yield return new WaitForSeconds(3f);
+				yield return new WaitForSeconds(3.5f);
 
+                AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+                foreach(var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
+                {
+                    ArenaFinder.Sprites[i.name] = i;
+                }
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
-                hegSil.transform.localScale *= 1.2f;
-				HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
-				for (int i = 0; i <= 5; i++)
+                hegSil.transform.localScale *= 1.55f;
+                hegSil.transform.position += 0.1f * Vector3.left;
+                for (int i = 1; i <= 5; i++)
                 {
                     sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_"+i];
                     yield return new WaitForSeconds(0.1f);
                 }
                 sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_6"];
                 hegSil.AddComponent<Rigidbody2D>().gravityScale = 0;
-                hegSil.GetComponent<Rigidbody2D>().velocity = new Vector2(0f,50f);
+                hegSil.GetComponent<Rigidbody2D>().velocity = new Vector2(0f, 50f);
                 yield return new WaitForSeconds(0.1f);
                 sr2.sprite = ArenaFinder.Sprites["hegemol_silhouette_7"];
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
-				yield return new WaitWhile(() => hegemolCtrl != null);
+
+                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+                yield return new WaitWhile(() => hegemolCtrl != null);
 
 				yield return new WaitForSeconds(1.5f);
 

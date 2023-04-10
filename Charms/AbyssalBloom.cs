@@ -246,7 +246,7 @@ namespace FiveKnights
             _sideSlash.SetActive(true);
             parrySlash.SetActive(true);
 
-            _knightBallAnim.PlayFrom("Slash" + _shadeSlashNum + " Antic", 1);
+            _knightBallAnim.PlayFrom("Slash" + _shadeSlashNum + " Antic", 2);
             yield return new WaitWhile(() => _knightBallAnim.IsPlaying("Slash" + _shadeSlashNum + " Antic"));
 			yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
 
