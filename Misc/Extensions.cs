@@ -6,6 +6,7 @@ using FrogCore.Ext;
 using JetBrains.Annotations;
 using Modding;
 using UnityEngine;
+using UnityEngine.Playables;
 using Logger = Modding.Logger;
 
 namespace FiveKnights
@@ -87,7 +88,7 @@ namespace FiveKnights
         {
             self.Play(anim);
 
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)
                 yield return null;
@@ -99,7 +100,7 @@ namespace FiveKnights
             self.Play(anim);
 
             // Wait for animation start.
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             yield return new WaitWhile(() => self.GetCurrentFrame() < frame);
         }
@@ -110,7 +111,7 @@ namespace FiveKnights
             self.PlayAt(anim, start);
 
             // Wait for animation start.
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             yield return new WaitWhile(() => self.GetCurrentFrame() < frame);
         }
@@ -118,7 +119,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator WaitToFrame(this Animator self, int frame)
         {
-            yield return null;
+            yield return new WaitForEndOfFrame();
             while (self.GetCurrentFrame() < frame)
                 yield return null;
         }
@@ -126,16 +127,19 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayToEnd(this Animator self, string name)
         {
+            if (name == "TisoDodge") Modding.Logger.Log("PlayD");
             self.Play(name, -1, 0f);
-            yield return null;
+            yield return new WaitForEndOfFrame();
             while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)
+            {
                 yield return null;
+            }
         }
         
         [Pure]
         public static IEnumerator PlayToEnd(this Animator self)
         {
-            yield return null;
+            yield return new WaitForEndOfFrame();
             while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)
                 yield return null;
         }
@@ -143,7 +147,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator WaitForFramesWithActions(this Animator self, params (int frame, Action act)[] acts)
         {
-            yield return null;
+            yield return new WaitForEndOfFrame();
             foreach ((int frame, Action act) in acts)
             {
                 yield return self.WaitToFrame(frame);
@@ -158,7 +162,7 @@ namespace FiveKnights
         {
             self.PlayAt(anim, 0);
 
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             yield return self.WaitForFramesWithActions(acts);
         }
@@ -175,7 +179,7 @@ namespace FiveKnights
         {
             self.Play(anim);
 
-            yield return null;
+            yield return new WaitForEndOfFrame();
 
             while (predicate())
                 yield return null;

@@ -11,6 +11,7 @@ namespace FiveKnights
         public BossStatue.Completion CompletionZemer2 = BossStatue.Completion.None;
         public BossStatue.Completion CompletionDryya = BossStatue.Completion.None;
         public BossStatue.Completion CompletionHegemol = BossStatue.Completion.None;
+        public BossStatue.Completion CompletionMawlek2 = BossStatue.Completion.None;
 
         public JournalHelper.JournalPlayerData IsmaEntryData = new JournalHelper.JournalPlayerData
         {
@@ -44,6 +45,8 @@ namespace FiveKnights
         public bool AltStatueIsma;
 
         public bool AltStatueZemer;
+        
+        public bool AltStatueMawlek;
 
 
         //public bool newCharm_41 = true;

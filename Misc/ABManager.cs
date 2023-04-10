@@ -21,6 +21,7 @@ namespace FiveKnights
             OWArenaDep, WSArenaDep, WSArena,
             Misc, Charms, CharmUnlock,
             Artist,
+            TisoBund
         }
 
         private static string BundleToString(Bundle bd)
@@ -53,6 +54,7 @@ namespace FiveKnights
                 Bundle.Charms => "pureamulets",
                 Bundle.CharmUnlock => "charmunlock",
                 Bundle.Artist => "artistsbund",
+                Bundle.TisoBund => "tisobundle",
                 _ => ""
             };
         }

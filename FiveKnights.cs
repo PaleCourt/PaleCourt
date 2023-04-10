@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using FiveKnights.BossManagement;
 using FiveKnights.Isma;
+using FiveKnights.Tiso;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using SFCore;
@@ -527,6 +528,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GZemer);
 
             ABManager.Load(ABManager.Bundle.Artist);
+            ABManager.Load(ABManager.Bundle.TisoBund);
         }
         
         private void LoadDep()
@@ -582,6 +584,8 @@ namespace FiveKnights
                 SaveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
                 SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
+            else if (key == "statueStateMawlek2")
+                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)obj;
             return obj;
         }
 
@@ -599,6 +603,8 @@ namespace FiveKnights
                 return SaveSettings.CompletionIsma2;
             if (key == "statueStateHegemol")
                 return SaveSettings.CompletionHegemol;
+            if (key == "statueStateMawlek2")
+                return SaveSettings.CompletionMawlek2;
             return orig;
         }
 
@@ -754,6 +760,7 @@ namespace FiveKnights
 
             //PlantChanger();
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<TisoFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>(); 
             GameManager.instance.gameObject.AddComponent<Amulets>();
             GameManager.instance.gameObject.AddComponent<AwardCharms>();
