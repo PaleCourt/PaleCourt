@@ -19,21 +19,22 @@ namespace FiveKnights
         private float timer = 0;
         private bool timerRunning = false;
         private float duration;
-        private const float PURITY_DURATION_DEFAULT = 1f;
-        private const float PURITY_DURATION_18 = 1.25f;
-        private const float PURITY_DURATION_13 = 1.70f;
+        private const float PURITY_DURATION_DEFAULT = 1.7f;
+        private const float PURITY_DURATION_18 = 1.9f;
+        private const float PURITY_DURATION_13 = 2.1f;
         private const float PURITY_DURATION_18_13 = 2.25f;
         private const float ATTACK_COOLDOWN_DEFAULT = .41f;
         private const float ATTACK_COOLDOWN_DEFAULT_32 = .25f;
-        private const float ATTACK_COOLDOWN_44 = .55f;
-        private const float ATTACK_COOLDOWN_44_32 = .34f;
+        private const float ATTACK_COOLDOWN_44 = .49f;
+        private const float ATTACK_COOLDOWN_44_32 = .31f;
         private const float ATTACK_DURATION_DEFAULT = .36f;
         private const float ATTACK_DURATION_DEFAULT_32 = .25f;
-        private const float ATTACK_DURATION_44 = .50f;
+        private const float ATTACK_DURATION_44 = .44f;
         private const float ATTACK_DURATION_44_32 = .25f;
         private const float COOLDOWN_CAP_44 = .17f;
         private const float COOLDOWN_CAP_44_32 = .13f;
         private HeroController _hc = HeroController.instance;
+        private PlayerData _pd = PlayerData.instance;
         private List<NailSlash> nailSlashes;
         private void OnEnable()
         {
@@ -51,6 +52,7 @@ namespace FiveKnights
             On.NailSlash.SetMantis += CancelMantis;
             On.HeroController.CanDoubleJump += FixDoubleJump;
             On.HeroController.CanCast += FixCast;
+            ModHooks.TakeDamageHook += ResetSpeed;
 
 
 
@@ -60,8 +62,7 @@ namespace FiveKnights
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
         }
 
-
-
+        
 
         private void OnDisable()
         {
@@ -71,13 +72,14 @@ namespace FiveKnights
             On.NailSlash.SetLongnail -= CancelLongnail;
             On.HeroController.CanDoubleJump -= FixDoubleJump;
             On.HeroController.CanCast -= FixCast;
+            ModHooks.TakeDamageHook -= ResetSpeed;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_DEFAULT;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_DEFAULT_32;
             _hc.ATTACK_DURATION = ATTACK_DURATION_DEFAULT;
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_DEFAULT_32;
         }
-        
+
         private void Update()
         {
             if (timerRunning)
@@ -90,9 +92,29 @@ namespace FiveKnights
                     _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
                     _hc.ATTACK_DURATION = ATTACK_DURATION_44;
                     _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
+                    foreach (NailSlash nailslash in nailSlashes)
+                    {
+                        nailslash.GetComponent<tk2dSprite>().color = Color.white;
+                        nailslash.GetComponent<AudioSource>().pitch = 1;
+                    }
                     timer = 0;
                 }
             }
+        }
+        private int ResetSpeed(ref int hazardType, int damage)
+        {
+            timerRunning = false;
+            _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
+            _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
+            _hc.ATTACK_DURATION = ATTACK_DURATION_44;
+            _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
+            foreach (NailSlash nailslash in nailSlashes)
+            {
+                nailslash.GetComponent<tk2dSprite>().color = Color.white;
+                nailslash.GetComponent<AudioSource>().pitch = 1;
+            }
+            timer = 0;
+            return damage;
         }
         private void IncrementSpeed(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
@@ -103,18 +125,43 @@ namespace FiveKnights
             }
             if (hitInstance.AttackType == AttackTypes.Nail)
             {
+               
                 timer = 0;
                 timerRunning = true;
 
-                _hc.ATTACK_COOLDOWN_TIME -= .038f;
+                _hc.ATTACK_COOLDOWN_TIME -= .048f;
                 _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
-                _hc.ATTACK_DURATION -= .038f;
+                _hc.ATTACK_DURATION -= .048f;
                 _hc.ATTACK_DURATION_CH -= .038f;
+                //foreach (NailSlash nailslash in nailSlashes)
+                {
+                  //  nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
+                  //if (nailslash.GetComponent<AudioSource>().pitch >= 1.2f) { nailslash.GetComponent<AudioSource>().pitch = 1.4f; }
+                }
+
+                if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f && _hc.ATTACK_COOLDOWN_TIME >= .18f  || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .18f && _hc.ATTACK_COOLDOWN_TIME_CH >= .14f)
+                {
+                    Log("Play Audio");
+                    this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_charm_get"), .5f);
+                }
 
                 if (_hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44) { _hc.ATTACK_COOLDOWN_TIME = COOLDOWN_CAP_44; }
                 if (_hc.ATTACK_COOLDOWN_TIME_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_COOLDOWN_TIME_CH = COOLDOWN_CAP_44_32; }
                 if (_hc.ATTACK_DURATION <= COOLDOWN_CAP_44) { _hc.ATTACK_DURATION = COOLDOWN_CAP_44; }
                 if (_hc.ATTACK_DURATION_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_DURATION_CH = COOLDOWN_CAP_44_32; }
+
+                if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44 || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH == COOLDOWN_CAP_44_32)
+                {
+                    if (_pd.equippedCharm_6 && _pd.health == 1) { }
+                    else
+                    {
+                        foreach (NailSlash nailslash in nailSlashes)
+                        {
+                            nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f);
+                        }
+                    }
+                }
+
             }
         }
 
@@ -182,7 +229,6 @@ namespace FiveKnights
         }
         private void CancelMantis(On.NailSlash.orig_SetMantis orig, NailSlash self, bool set) { orig(self, false); }
         private void CancelLongnail(On.NailSlash.orig_SetLongnail orig, NailSlash self, bool set) { orig(self, false); }
-
 
 
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][Purity Timer] " + message);
