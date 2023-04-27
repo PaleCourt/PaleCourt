@@ -187,12 +187,6 @@ namespace FiveKnights
                 }
             }
             StartCoroutine(LoadSlow());
-
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }
             
             Log("Creating Hegemol");
             _hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(87, 28), Quaternion.identity);

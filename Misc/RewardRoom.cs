@@ -25,6 +25,8 @@ namespace FiveKnights
         private static Animator hegemolAnim;
         private static Animator zemerAnim;
 
+        private static Coroutine zemerAnimCoro;
+
         public static void Hook()
         {
             langCtrl = new LanguageCtrl();
@@ -75,6 +77,7 @@ namespace FiveKnights
                 ismaAnim = GameObject.Find("Isma").GetComponent<Animator>();
                 hegemolAnim = GameObject.Find("Hegemol").GetComponent<Animator>();
                 zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
+                if(zemerAnim != null) zemerAnimCoro = GameManager.instance.StartCoroutine(ZemerAnimControl());
 
                 if(!FiveKnights.Clips.ContainsKey("Pale Court") || FiveKnights.Clips["Pale Court"] == null)
                 {
@@ -924,7 +927,7 @@ namespace FiveKnights
 
             IEnumerator PlayAnimHegemol()
             {
-                yield return new WaitUntil(() => hegemolAnim.GetCurrentFrame() == 0);
+                yield return new WaitUntil(() => hegemolAnim.GetCurrentFrame() < 2);
                 hegemolAnim.enabled = false;
                 yield return new WaitForSeconds(0.1f);
                 hegemolAnim.enabled = true;
@@ -1082,15 +1085,54 @@ namespace FiveKnights
 
             IEnumerator PlayAnimZemer()
             {
-                // Nothing for now, need turn right and talk animation
+                if(zemerAnimCoro != null) GameManager.instance.StopCoroutine(zemerAnimCoro);
+
+                // Logic for how to return to the base idle position
+                if(zemerAnim.IsPlaying("IdleAlt"))
+				{
+                    zemerAnim.Play("IdleFromAlt");
+                    yield return null;
+                    yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
+                }
+                else if(zemerAnim.IsPlaying("IdleFromAlt"))
+				{
+                    yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
+				}
+                else if(zemerAnim.IsPlaying("IdleToAlt"))
+				{
+                    yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleToAlt"));
+                    zemerAnim.Play("IdleFromAlt");
+                    yield return null;
+                    yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
+                }
+                zemerAnim.Play("Talk");
                 yield break;
             }
 
             IEnumerator StopAnimZemer()
             {
-                // Nothing for now, need turn right and talk animation
+                yield return new WaitWhile(() => zemerAnim.GetCurrentFrame() > 0 && zemerAnim.GetCurrentFrame() < 6);
+                zemerAnim.Play("Idle");
+                zemerAnimCoro = GameManager.instance.StartCoroutine(ZemerAnimControl());
                 yield break;
             }
         }
+
+        private static IEnumerator ZemerAnimControl()
+		{
+            while(true)
+			{
+                yield return new WaitForSeconds(3f);
+                zemerAnim.Play("IdleToAlt");
+                yield return null;
+                yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleToAlt"));
+                zemerAnim.Play("IdleAlt");
+                yield return new WaitForSeconds(0.75f);
+                zemerAnim.Play("IdleFromAlt");
+                yield return null;
+                yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
+                zemerAnim.Play("Idle");
+            }
+		}
     }
 }

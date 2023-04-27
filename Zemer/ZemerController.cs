@@ -262,7 +262,7 @@ namespace FiveKnights.Zemer
 
                 if (cpyList.Count == 0)
                 {
-                    foreach (var att in attLst)
+                    foreach (var att in attLst.Where(x => x != null))
                     {
                         rep[att] = 0;
                     }

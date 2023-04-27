@@ -19,7 +19,7 @@ namespace FiveKnights.Dryya
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
-        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : 5.9f;
+        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
