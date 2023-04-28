@@ -64,9 +64,16 @@ namespace FiveKnights
                 catch(ArgumentOutOfRangeException e) { }
                 try
                 {
-                    markedEnemies[index].GetComponent<Afflicted>().SoulEffect.SetActive(true);
-                    markedEnemies[index].GetComponent<Afflicted>().SoulEffect.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
-                    Log("Reactivated Soul Effeect");
+                    if(!markedEnemies[index].GetComponent<Afflicted>())
+					{
+                        Log("Afficted component not found");
+					}
+                    else
+					{
+                        markedEnemies[index].GetComponent<Afflicted>().SoulEffect.SetActive(true);
+                        markedEnemies[index].GetComponent<Afflicted>().SoulEffect.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
+                        Log("Reactivated Soul Effeect");
+                    }
                 }
                 catch(ArgumentOutOfRangeException e) { Log("Exception caught in soul effect"); }
                 try
@@ -93,24 +100,26 @@ namespace FiveKnights
         }
         private void BlastControlFadeIn ()
         {
-            foreach (GameObject enemy in markedEnemies)
+            for(int i = 0; i < markedEnemies.Count; i++)
             {
-                foreach (GameObject compare in markedEnemies)
+                GameObject enemy = markedEnemies[i];
+                for(int j = 0; j < markedEnemies.Count; j++)
                 {
-                    if (markedEnemies.IndexOf(compare) == markedEnemies.IndexOf(enemy)) continue;
-                    if (compare != enemy) continue;
+                    GameObject compare = markedEnemies[j];
+                    if(i == j) continue;
+                    if(compare != enemy) continue;
 
                     Log("Removed Duplicate Object");
                     Log($"{compare} was in the list twice");
                     markedEnemies.Remove(compare);
-
                 }
                 Log("Start coroutine: FadeIn");
                 Log("Enemy index: " + markedEnemies.IndexOf(enemy));
                 if (enemy == null)
                 {
-                    markedEnemies.RemoveAt(markedEnemies.IndexOf(enemy));
+                    markedEnemies.RemoveAt(i);
                     Log("Removed null entity");
+                    i--;
                     continue;
                 }
                 GameManager.instance.StartCoroutine(PureVesselBlastFadeIn(enemy));
@@ -305,12 +314,15 @@ namespace FiveKnights
             Log("Audio Clip finished");
             yield return new WaitForSeconds(0.11f);
             index = markedEnemies.IndexOf(enemy);
-            Destroy(markedEnemies[index].GetComponent<Afflicted>());
-            Destroy(_blast[index]);
-            _blast.RemoveAt(index);
-            Destroy(_focusLines[index]);
-            _focusLines.RemoveAt(index);
-            markedEnemies.RemoveAt(index);  
+            if(index != -1)
+			{
+                if(markedEnemies[index]) Destroy(markedEnemies[index].GetComponent<Afflicted>());
+                Destroy(_blast[index]);
+                _blast.RemoveAt(index);
+                Destroy(_focusLines[index]);
+                _focusLines.RemoveAt(index);
+                markedEnemies.RemoveAt(index);
+            }
 
             Log("Blast Finished");
         }
