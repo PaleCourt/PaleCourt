@@ -45,22 +45,6 @@ namespace FiveKnights
 
         public bool AltStatueZemer;
 
-
-        //public bool newCharm_41 = true;
-        //public bool newCharm_42 = true;
-        //public bool newCharm_43 = true;
-        //public bool newCharm_44 = true;
-
-        //public bool gotCharm_41 = false;
-        //public bool gotCharm_42 = false;
-        //public bool gotCharm_43 = false;
-        //public bool gotCharm_44 = false;
-
-        //public bool equippedCharm_41 = false;
-        //public bool equippedCharm_42 = false;
-        //public bool equippedCharm_43 = false;
-        //public bool equippedCharm_44 = false;
-
         public bool[] newCharms = new bool[] { true, true, true, true };
 
         public bool[] gotCharms = new bool[] { false, false, false, true };

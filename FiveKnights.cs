@@ -701,6 +701,7 @@ namespace FiveKnights
             if(bossRush)
 			{
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
+                SaveSettings.upgradedCharm_10 = true;
 			}
             AddComponent();
         }
