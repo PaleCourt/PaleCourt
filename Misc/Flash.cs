@@ -19,6 +19,7 @@ namespace FiveKnights
         private FlashState flashingState;
         private float amountCurrent;
         private static readonly int FlashAmount = Shader.PropertyToID("_FlashAmount");
+        private static readonly int FlashColor = Shader.PropertyToID("_FlashColor");
 
         private enum FlashState
         {
@@ -34,17 +35,19 @@ namespace FiveKnights
             _sr.material = FiveKnights.Materials["flash"];
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
+			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
         }
 
-        private void ResetValues()
+		private void ResetValues(Color color, float amount, float timeUp, float stayTime, float timeDown)
         {
-            amount = 0.85f;
-            timeUp = 0.01f;
-            stayTime = 0.01f;
-            timeDown = 0.35f;
+            _sr.material.SetColor(FlashColor, color);
+            this.amount = amount;
+            this.timeUp = timeUp;
+            this.stayTime = stayTime;
+            this.timeDown = timeDown;
             _sr.material.SetFloat(FlashAmount, 0f);
             flashingState = FlashState.Increase;
-            flashTimer = 0.0f;
+            flashTimer = 0f;
         }
 
         private void Update()
@@ -96,11 +99,26 @@ namespace FiveKnights
             }
         }
 
+        public void FlashFocusHeal()
+		{
+            ResetValues(Color.white, 0.85f, 0.01f, 0.01f, 0.35f);
+		}
+
+        public void FlashDungQuick()
+		{
+            ResetValues(new Color(0.45f, 0.27f, 0f), 0.75f, 0.001f, 0.05f, 0.1f);
+		}
+
+        public void FlashSporeQuick()
+		{
+            ResetValues(new Color(0.95f, 0.9f, 0.15f), 0.75f, 0.001f, 0.05f, 0.1f);
+		}
+
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.gameObject == gameObject)
+            if(self.gameObject == gameObject)
             {
-                ResetValues();
+                FlashFocusHeal();
             }
             orig(self, hitInstance);
         }
@@ -108,11 +126,21 @@ namespace FiveKnights
         private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, 
             int upwardrecursionamount, bool burst)
         {
-            if (tar == gameObject)
+            if(tar == gameObject)
             {
-                ResetValues();
+                FlashFocusHeal();
             }
             orig(self, tar, upwardrecursionamount, burst);
+        }
+
+        private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
+        {
+            if(self != null && self.gameObject == gameObject)
+            {
+                if(extraDamageType == ExtraDamageTypes.Spore) FlashSporeQuick();
+                else FlashDungQuick();
+            }
+            orig(self, extraDamageType);
         }
 
         private void OnDestroy()
@@ -120,5 +148,10 @@ namespace FiveKnights
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
         }
+
+        private void Log(object o)
+		{
+            Modding.Logger.Log("[Flash] " + o);
+		}
     }
 }

@@ -32,6 +32,7 @@ namespace FiveKnights
                 dungTrail.transform.localScale *= 2f;
                 dungTrail.SetActive(true);
                 yield return new WaitForSeconds(cooldown);
+                yield return new WaitUntil(() => gameObject.activeSelf);
             }
             Destroy(this);
         }

@@ -6,6 +6,7 @@ using FiveKnights.BossManagement;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using SFCore.Utils;
+using Vasi;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights.Isma
@@ -289,10 +290,12 @@ namespace FiveKnights.Isma
             private GameObject initFool;
             private GameObject finalFool;
             private HealthManager hm;
+            private BoxCollider2D bc;
             private const float InitY = 6.01f;
             private const float FinalY = 8.61f; //.65
             private readonly float OffsetY = CustomWP.boss == CustomWP.Boss.Isma && !OWArenaFinder.IsInOverWorld ? 0.57f : 0f;
             private float xPos;
+
             private void Awake()
             {
                 initFool = transform.Find("init" + FoolName).gameObject;
@@ -309,7 +312,7 @@ namespace FiveKnights.Isma
                 };
             }
 
-            private IEnumerator Start()
+			private IEnumerator Start()
             {
                 initFool.SetActive(true);
                 hm.IsInvincible = true;
@@ -327,14 +330,15 @@ namespace FiveKnights.Isma
                 // Doing this to stop them from doing damage when they first spawn
                 yield return new WaitWhile(() =>
                 {
-                    var f = finalFool.GetComponent<BoxCollider2D>();
-                    if (f != null) f.enabled = false;
+                    bc = finalFool.GetComponent<BoxCollider2D>();
+                    if(bc != null) bc.enabled = false;
                     return tk.IsPlaying("Retract");
                 });
                 fsm.enabled = true;
                 fsm.SetState("Init");
                 fsm.GetAction<Wait>("Ready", 2).time = 0.55f;
                 hm.IsInvincible = false;
+                bc.enabled = true;
             }
 
             private void Update()
@@ -347,7 +351,6 @@ namespace FiveKnights.Isma
             {
                 if (finalFool != null && hm != null)
                 {
-                    finalFool.transform.parent = null;
                     hm.Die(new float?(0f), AttackTypes.Nail, true);
                 }
             }

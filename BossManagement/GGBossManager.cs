@@ -677,7 +677,7 @@ namespace FiveKnights.BossManagement
             if (CustomWP.boss == CustomWP.Boss.All)
             {
                 var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
-                var r2 =  dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
+                var r2 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
                 var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
                 var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Beams");
                 var r5 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dagger");
