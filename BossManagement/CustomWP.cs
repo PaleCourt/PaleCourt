@@ -382,18 +382,6 @@ namespace FiveKnights
             if(wonLastFight) GameManager.instance.OnFinishedEnteringScene += GMOnFinishedEnteringScene;
             wonLastFight = false;
 
-            if(PlayerData.instance.GetBool(nameof(PlayerData.bossRushMode)))
-            {
-                FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
-                FiveKnights.Instance.SaveSettings.CompletionIsma.hasBeenSeen = true;
-                FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
-                FiveKnights.Instance.SaveSettings.CompletionDryya.hasBeenSeen = true;
-                FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
-                FiveKnights.Instance.SaveSettings.CompletionZemer.hasBeenSeen = true;
-                FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
-                FiveKnights.Instance.SaveSettings.CompletionHegemol.hasBeenSeen = true;
-            }
-
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],

@@ -193,7 +193,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "4.15.2023";
+        public override string GetVersion() => "5.4.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -702,7 +702,16 @@ namespace FiveKnights
 			{
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
-			}
+                SaveSettings.HasSeenWorkshopRaised = true;
+                SaveSettings.CompletionIsma.isUnlocked = true;
+                SaveSettings.CompletionIsma.hasBeenSeen = true;
+                SaveSettings.CompletionDryya.isUnlocked = true;
+                SaveSettings.CompletionDryya.hasBeenSeen = true;
+                SaveSettings.CompletionZemer.isUnlocked = true;
+                SaveSettings.CompletionZemer.hasBeenSeen = true;
+                SaveSettings.CompletionHegemol.isUnlocked = true;
+                SaveSettings.CompletionHegemol.hasBeenSeen = true;
+            }
             AddComponent();
         }
 

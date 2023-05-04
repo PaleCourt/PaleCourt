@@ -36,7 +36,7 @@ namespace FiveKnights.Hegemol
         private Rigidbody2D _rb;
         private Animator _anim;
         private SpriteRenderer _sr;
-        private ExtraDamageable _xd;
+        private ExtraDamageable _extraDamageable;
         private Flash _flash;
         private EnemyHitEffectsArmoured _hitFx;
 
@@ -66,7 +66,7 @@ namespace FiveKnights.Hegemol
             _rb = gameObject.GetComponent<Rigidbody2D>();
             _anim = gameObject.GetComponent<Animator>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
-            _xd = gameObject.AddComponent<ExtraDamageable>();
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
             _flash = gameObject.AddComponent<Flash>();
             _flash.enabled = true;
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();

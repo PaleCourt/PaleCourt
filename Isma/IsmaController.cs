@@ -830,6 +830,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.1f);
                 spike.SetActive(false);
                 _anim.enabled = true;
+                yield return new WaitUntil(() => _anim.GetCurrentFrame() >= 1);
                 arm.SetActive(true);
                 tentArm.SetActive(true);
                 tentArm.AddComponent<AFistFlash>();

@@ -116,37 +116,38 @@ namespace FiveKnights
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
+            orig(self, hitInstance);
             if(self.gameObject == gameObject)
             {
                 FlashFocusHeal();
             }
-            orig(self, hitInstance);
         }
         
         private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, 
             int upwardrecursionamount, bool burst)
         {
+            orig(self, tar, upwardrecursionamount, burst);
             if(tar == gameObject)
             {
                 FlashFocusHeal();
             }
-            orig(self, tar, upwardrecursionamount, burst);
         }
 
         private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
         {
+            orig(self, extraDamageType);
             if(self != null && self.gameObject == gameObject)
             {
                 if(extraDamageType == ExtraDamageTypes.Spore) FlashSporeQuick();
                 else FlashDungQuick();
             }
-            orig(self, extraDamageType);
         }
 
         private void OnDestroy()
         {
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
+            On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
         }
 
         private void Log(object o)

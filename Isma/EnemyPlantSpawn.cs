@@ -338,7 +338,6 @@ namespace FiveKnights.Isma
                 fsm.SetState("Init");
                 fsm.GetAction<Wait>("Ready", 2).time = 0.55f;
                 hm.IsInvincible = false;
-                bc.enabled = true;
             }
 
             private void Update()
