@@ -10,6 +10,8 @@ namespace FiveKnights
         private float cooldown = 0.75f;
 
         private GameObject _dungTrail;
+        private PlayMakerFSM _dungTrailControl;
+        private ParticleSystem _dungPt;
 
         private void Awake()
 		{
@@ -17,10 +19,17 @@ namespace FiveKnights
             {
                 if(pool.prefab.name == "Knight Dung Trail")
                 {
-                    _dungTrail = pool.prefab;
+                    _dungTrail = Instantiate(pool.prefab);
+                    _dungTrail.SetActive(false);
+                    DontDestroyOnLoad(_dungTrail);
                     break;
                 }
             }
+            _dungTrailControl = _dungTrail.LocateMyFSM("Control");
+            _dungPt = _dungTrailControl.Fsm.GetFsmGameObject("Pt Normal").Value.GetComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = _dungPt.main;
+            main.startColor = new Color(0.65f, 0.65f, 0.65f, 0.75f);
+
             StartCoroutine(StartCooldown());
         }
 

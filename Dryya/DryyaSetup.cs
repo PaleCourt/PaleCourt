@@ -146,9 +146,10 @@ namespace FiveKnights.Dryya
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
+			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
         }
 
-        private IEnumerator Start()
+		private IEnumerator Start()
         {
             var rb = gameObject.GetComponent<Rigidbody2D>();
             yield return new WaitWhile(()=> rb.velocity.y == 0f);
@@ -171,21 +172,32 @@ namespace FiveKnights.Dryya
         private GameObject _dreamImpactPrefab;
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
+            orig(self);
             if (self.name.Contains("Dryya"))
             {
                 _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
                 _dreamImpactPrefab.Spawn(transform.position);
             }
-            
-            orig(self);
         }
 
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if(self.gameObject.name.Contains("Dryya"))
-                _spriteFlash.flashFocusHeal();
-
             orig(self, hitInstance);
+            if(self.gameObject.name.Contains("Dryya"))
+			{
+                _spriteFlash.flashFocusHeal();
+            }
+        }
+
+        private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
+        {
+            orig(self, extraDamageType);
+            if(self.gameObject.name.Contains("Dryya"))
+			{
+                if(extraDamageType == ExtraDamageTypes.Spore) _spriteFlash.flashSporeQuick();
+                else if(FiveKnights.Instance.SaveSettings.upgradedCharm_10) _spriteFlash.flashWhiteQuick();
+                else _spriteFlash.flashDungQuick();
+            }
         }
 
         private void AddComponents()
@@ -388,14 +400,14 @@ namespace FiveKnights.Dryya
 		private void ModifyAudio()
 		{
             // Voice
+            _control.InsertMethod("Backstep 1", () => PlayVoice(false), 0);
             _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(false), 0);
             _control.InsertMethod("Counter Collider 1", () => PlayVoice(false), 0);
-            _control.InsertMethod("Dagger Jump", () => PlayVoice(false), 0);
-            _control.InsertMethod("Dagger Throw", () => PlayVoice(true), 0);
-            _control.InsertMethod("Dive", () => PlayVoice(true), 0);
+            _control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
+            _control.InsertMethod("Dive", () => PlayVoice(false), 0);
             _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice(true), 0);
             _control.InsertMethod("Stab", () => PlayVoice(false), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams"), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams" + Random.Range(1, 3)), 0);
 			_control.InsertMethod("Super Start 3", () => PlayVoice(false), 0);
             _control.InsertMethod("Ground Stab 4", () => PlayVoice(false), 0);
             _control.InsertMethod("Ground Air 4", () => PlayVoice(false), 0);
@@ -442,7 +454,7 @@ namespace FiveKnights.Dryya
             }
             else
             {
-                clip += Random.Range(1, 4);
+                clip += Random.Range(1, 6);
             }
             PlayAudio(clip, 1f, 1f);
 		}
@@ -470,6 +482,7 @@ namespace FiveKnights.Dryya
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
+            On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
         }
 
         private void Log(object o)

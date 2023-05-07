@@ -8,6 +8,7 @@ using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using GlobalEnums;
+using Vasi;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights.Hegemol
@@ -67,6 +68,10 @@ namespace FiveKnights.Hegemol
             _anim = gameObject.GetComponent<Animator>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+            Mirror.SetField(_extraDamageable, "impactClipTable",
+                Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
             _flash = gameObject.AddComponent<Flash>();
             _flash.enabled = true;
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
@@ -313,6 +318,7 @@ namespace FiveKnights.Hegemol
                 PlayAudioClip("HegAttackHit", 1f);
                 SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(debrisAmount, false, 0f));
+                GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() == 0);
 

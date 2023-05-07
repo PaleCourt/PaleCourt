@@ -139,6 +139,7 @@ namespace FiveKnights
             if(self != null && self.gameObject == gameObject)
             {
                 if(extraDamageType == ExtraDamageTypes.Spore) FlashSporeQuick();
+                else if(FiveKnights.Instance.SaveSettings.upgradedCharm_10) FlashFocusHeal();
                 else FlashDungQuick();
             }
         }
