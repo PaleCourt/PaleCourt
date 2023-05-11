@@ -143,10 +143,16 @@ namespace FiveKnights
         public DryyaSetup CreateDryya()
         {
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
-            
+            IEnumerator LoadSlow()
+            {
+                var r1 = snd.LoadAssetAsync<AudioClip>("DryyaMusic");
+                yield return r1;
+                FiveKnights.Clips["DryyaMusic"] = r1.asset as AudioClip;
+            }
+            StartCoroutine(LoadSlow());
+
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
+            foreach(var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
             {
                 ArenaFinder.Sprites[i.name] = i;
             }
@@ -187,12 +193,6 @@ namespace FiveKnights
                 }
             }
             StartCoroutine(LoadSlow());
-
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }
             
             Log("Creating Hegemol");
             _hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(87, 28), Quaternion.identity);

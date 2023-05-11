@@ -41,7 +41,7 @@ namespace FiveKnights
 
         private void OnDisable()
         {
-
+            On.HeroController.CanNailCharge -= CancelNailArts;
         }
         private void Update()
         {

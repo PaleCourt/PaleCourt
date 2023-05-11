@@ -19,7 +19,7 @@ namespace FiveKnights.Dryya
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
-        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : 5.9f;
+        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -27,6 +27,7 @@ namespace FiveKnights.Dryya
         private EnemyDeathEffectsUninfected _deathEffects;
         private EnemyDreamnailReaction _dreamNailReaction;
         private EnemyHitEffectsUninfected _hitEffects;
+        private ExtraDamageable _extraDamageable;
         private HealthManager _hm;
         private SpriteFlash _spriteFlash;
         private GameObject _corpse;
@@ -93,10 +94,12 @@ namespace FiveKnights.Dryya
             _stabFlash = gameObject.FindGameObjectInChildren("Stab Flash");
             _ogrim = FiveKnights.preloadedGO["WD"];
             _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
-            AddComponents();
-            GetComponents();
             _mageLord = FiveKnights.preloadedGO["Mage"].LocateMyFSM("Mage Lord");
             _control = gameObject.LocateMyFSM("Control");
+
+            AddComponents();
+            GetComponents();
+
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
             _control.Fsm.GetFsmBool("GG Form").Value = false;
@@ -145,7 +148,7 @@ namespace FiveKnights.Dryya
             On.HealthManager.TakeDamage += OnTakeDamage;
         }
 
-        private IEnumerator Start()
+		private IEnumerator Start()
         {
             var rb = gameObject.GetComponent<Rigidbody2D>();
             yield return new WaitWhile(()=> rb.velocity.y == 0f);
@@ -168,23 +171,23 @@ namespace FiveKnights.Dryya
         private GameObject _dreamImpactPrefab;
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
+            orig(self);
             if (self.name.Contains("Dryya"))
             {
                 _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
                 _dreamImpactPrefab.Spawn(transform.position);
             }
-            
-            orig(self);
         }
-        
+
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (self.gameObject.name.Contains("Dryya"))
-                _spriteFlash.flashFocusHeal();
-
             orig(self, hitInstance);
+            if(self.gameObject.name.Contains("Dryya"))
+			{
+                _spriteFlash.flashFocusHeal();
+            }
         }
-        
+
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
@@ -203,6 +206,12 @@ namespace FiveKnights.Dryya
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
 
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+            Vasi.Mirror.SetField(_extraDamageable, "impactClipTable",
+                Vasi.Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Vasi.Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Vasi.Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
+
             PlayMakerFSM nailClashTink = FiveKnights.preloadedGO["Slash"].LocateMyFSM("nail_clash_tink");
 
             foreach(GameObject slash in _slashes)
@@ -218,11 +227,15 @@ namespace FiveKnights.Dryya
         private void GetComponents()
         { 
             _sprite = GetComponent<tk2dSprite>();
-            _ap = transform.Find("Audio Player").gameObject; 
+            _ap = transform.Find("Audio Player").gameObject;
+
             EnemyDeathEffects deathEffects = GetComponent<EnemyDeathEffects>();
             deathEffects.corpseSpawnPoint = transform.position + Vector3.up * 2;
-            
-            deathEffects.SetAttr("corpsePrefab", _corpse);
+
+            GameObject corpse = Instantiate(_corpse);
+            corpse.SetActive(false);
+            corpse.AddComponent<DryyaCorpse>().deathClip = _control.Fsm.GetFsmObject("VoiceDeath").Value as AudioClip;
+            deathEffects.SetAttr("corpsePrefab", corpse);
             deathEffects.SetAttr("corpseFlingSpeed", 25.0f);
 
             Shader shader = _ogrim.GetComponent<tk2dSprite>().Collection.spriteDefinitions[0].material.shader;
@@ -339,7 +352,7 @@ namespace FiveKnights.Dryya
             foreach(ElegyBeam elegy in _elegyBeams)
             {
                 elegy.activate = true;
-                PlayAudio("Beams Clip", 0.85f, 1.15f, 0.1f);
+                PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
                 yield return new WaitForSeconds(0.05f);
             }
         }
@@ -348,7 +361,7 @@ namespace FiveKnights.Dryya
 		{
             yield return new WaitForSeconds(0.5f);
             elegy.activate = true;
-            PlayAudio("Beams Clip", 0.85f, 1.15f, 0.1f);
+            PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
         }
 
         private void ModifySuper()
@@ -374,7 +387,22 @@ namespace FiveKnights.Dryya
 
 		private void ModifyAudio()
 		{
-			_control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
+            // Voice
+            _control.InsertMethod("Backstep 1", () => PlayVoice(false), 0);
+            _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(false), 0);
+            _control.InsertMethod("Counter Collider 1", () => PlayVoice(false), 0);
+            _control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
+            _control.InsertMethod("Dive", () => PlayVoice(false), 0);
+            _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice(true), 0);
+            _control.InsertMethod("Stab", () => PlayVoice(false), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams" + Random.Range(1, 3)), 0);
+			_control.InsertMethod("Super Start 3", () => PlayVoice(false), 0);
+            _control.InsertMethod("Ground Stab 4", () => PlayVoice(false), 0);
+            _control.InsertMethod("Ground Air 4", () => PlayVoice(false), 0);
+            _control.InsertMethod("Air 1", () => PlayVoice(false), 0);
+
+            // SFX
+            _control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
 			_control.InsertMethod("Countered", () => PlayAudio("Counter"), 0);
 			_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
 			_control.InsertMethod("Stab", () => PlayAudio("Dash"), 0);
@@ -405,7 +433,21 @@ namespace FiveKnights.Dryya
 			_control.InsertMethod("Cheeky Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
 		}
 
-		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float delay = 0f)
+        private void PlayVoice(bool alt)
+		{
+            string clip = "Voice";
+            if(alt)
+            {
+                clip += "Alt" + Random.Range(1, 4);
+            }
+            else
+            {
+                clip += Random.Range(1, 6);
+            }
+            PlayAudio(clip, 1f, 1f);
+		}
+
+		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)
 		{
             IEnumerator Play()
             {
@@ -415,7 +457,7 @@ namespace FiveKnights.Dryya
                 AudioSource audio = audioPlayerInstance.GetComponent<AudioSource>();
                 audio.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
                 audio.pitch = Random.Range(minPitch, maxPitch);
-                audio.volume = 1f;
+                audio.volume = volume;
                 audio.PlayOneShot(audioClip);
                 yield return new WaitForSeconds(audioClip.length + 3f);
                 Destroy(audioPlayerInstance);

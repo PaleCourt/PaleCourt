@@ -19,8 +19,6 @@ namespace FiveKnights
         private PlayerData _pd;
         private GameObject _charmGet;
         private AssetBundle _charmUnlock;
-        private GameObject _audioPlayerActor;
-        private AudioSource _audio;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
         private bool pauseShroom = false;
         public static bool[] firstClear = new bool[4];
@@ -28,7 +26,6 @@ namespace FiveKnights
         public void Awake()
         {
             //ModHooks.DoAttackHook += CharmCutscene;
-            On.HeroController.Awake += On_HeroController_Awake;
             ModHooks.LanguageGetHook += CutsceneDialogue;
             ModHooks.BeforeSceneLoadHook += SceneCheck;
           
@@ -39,8 +36,8 @@ namespace FiveKnights
         {
             var settings = FiveKnights.Instance.SaveSettings;
             var scene = GameManager.instance.sceneName;
-            if (scene == "zemer overworld arena" && !settings.gotCharms[0] && firstClear[0] ||
-                scene == "dryya overworld" && !settings.gotCharms[1] && firstClear[1] ||
+            if (scene == "dryya overworld" && !settings.gotCharms[0] && firstClear[0] ||
+                scene == "zemer overworld arena" && !settings.gotCharms[1] && firstClear[1] ||
                 scene == "hegemol overworld arena" && !settings.gotCharms[2] && firstClear[2] || 
                 scene == "isma overworld" && !settings.upgradedCharm_10 && firstClear[3]) //|| scene == "Dream_04_White_Defender");// && _settings.ZemerEntryData.haskilled)
             {
@@ -83,14 +80,6 @@ namespace FiveKnights
 
         }
 
-        private void On_HeroController_Awake(On.HeroController.orig_Awake orig, HeroController self)
-        {
-            var fireballCast = self.gameObject.LocateMyFSM("Spell Control").GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value.LocateMyFSM("Fireball Cast");
-            _audioPlayerActor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-         
-            orig(self);
-        }
-
         private void CharmCutscene(string boss)
         {
             pauseShroom = true;
@@ -104,14 +93,14 @@ namespace FiveKnights
             int charmNumber = 0; 
             switch (boss)
             {
-                case "zemer":
+                case "dryya":
                     charm = "PurityAppear";
                     charmName = "PURITY_NAME";
                     upDelay = 2.4f;
                     audioName = "purity_charm_get";
                     charmNumber = 0;
                     break;
-                case "dryya":
+                case "zemer":
                     charm = "LamentAppear";
                     charmName = "LAMENT_NAME";
                     upDelay = 2.4f;
@@ -186,25 +175,25 @@ namespace FiveKnights
         }
         private IEnumerator AnimCoroutine(GameObject CharmAnim, int charmNumber, string boss, string audioName)
         {
-            if (boss == "dryya" || boss == "hegemol")
+            if (boss == "zemer" || boss == "hegemol")
             {
-                AudioPlayerOneShotSingle(_charmUnlock.LoadAsset<AudioClip>("spell_information_merged"));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_merged"));
                 yield return new WaitForSeconds(1.5f);
             }
-            else if (boss == "zemer")
+            else if (boss == "dryya")
             {
-                AudioPlayerOneShotSingle(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
                 yield return new WaitForSeconds(1.5f);
-                AudioPlayerOneShotSingle(_charmUnlock.LoadAsset<AudioClip>(audioName));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
             }
             else if(boss == "isma")
             {
-                AudioPlayerOneShotSingle(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
                 yield return new WaitForSeconds(1.5f);
                 CharmAnim.SetActive(true);
                 CharmAnim.GetComponent<SpriteRenderer>().enabled = true;
                 yield return new WaitForSeconds(.5f);
-                AudioPlayerOneShotSingle(_charmUnlock.LoadAsset<AudioClip>(audioName));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
             }
             CharmAnim.SetActive(true);
             CharmAnim.GetComponent<SpriteRenderer>().enabled = true;
@@ -248,14 +237,7 @@ namespace FiveKnights
             }
         }
 
-        private void AudioPlayerOneShotSingle(AudioClip clip, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 1.0f, float volume = 1.0f)
-        {
-            GameObject actorInstance = _audioPlayerActor.Spawn(HeroController.instance.transform.position, Quaternion.Euler(Vector3.up));
-            AudioSource audio = actorInstance.GetComponent<AudioSource>();
-            audio.pitch = Random.Range(pitchMin, pitchMax);
-            audio.volume = volume;
-            audio.PlayOneShot(clip);
-        }
+
         private static void Log(object message) => Modding.Logger.Log("[FiveKnights][AwardCharms] " + message);
     }
 }

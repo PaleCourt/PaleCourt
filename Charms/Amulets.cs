@@ -89,6 +89,9 @@ namespace FiveKnights
             // Boon of Hallownest
             _hc.gameObject.AddComponent<BoonSpells>().enabled = false;
             InsertCharmSpellEffectsInFsm();
+            
+            // Vessels Lament
+            _hc.gameObject.AddComponent<LamentControl>().enabled = false;
 
             // Abyssal Bloom - the order of these is specific because each one tries to get a reference to the previous
             _hc.gameObject.AddComponent<ModifyBloomProps>().enabled = true;
@@ -166,18 +169,19 @@ namespace FiveKnights
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
             _spellControl.InsertMethod("Scream Burst 2 Blasts", 0, () => HeroController.instance.GetComponent<BoonSpells>().CastBlasts(true));
 
-            _spellControl.CopyState("Focus", "Focus Blast");
-            _spellControl.CopyState("Focus Heal", "Focus Heal Blast");
-            _spellControl.CopyState("Start MP Drain", "Start MP Drain Blast");
-            _spellControl.CopyState("Focus Heal 2", "Focus Heal 2 Blast");
-            _spellControl.InsertCoroutine("Focus Blast", 0, PureVesselBlastFadeIn);
-            _spellControl.InsertCoroutine("Focus Heal Blast", 0, PureVesselBlast);
-            _spellControl.InsertCoroutine("Start MP Drain Blast", 0, PureVesselBlastFadeIn);
-            _spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
+            //Old Lament
+            //_spellControl.CopyState("Focus", "Focus Blast");
+            //_spellControl.CopyState("Focus Heal", "Focus Heal Blast");
+            //_spellControl.CopyState("Start MP Drain", "Start MP Drain Blast");
+            //_spellControl.CopyState("Focus Heal 2", "Focus Heal 2 Blast");
+            //_spellControl.InsertCoroutine("Focus Blast", 0, PureVesselBlastFadeIn);
+            //_spellControl.InsertCoroutine("Focus Heal Blast", 0, PureVesselBlast);
+            //_spellControl.InsertCoroutine("Start MP Drain Blast", 0, PureVesselBlastFadeIn);
+            //_spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
 
-            _spellControl.InsertMethod("Cancel All", 0, CancelBlast);
-            _spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
-            _spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
+            //_spellControl.InsertMethod("Cancel All", 0, CancelBlast);
+            //_spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
+            //_spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
         }
 
         private void AddVoidAttacks(HeroController self)
@@ -396,20 +400,7 @@ namespace FiveKnights
             _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
             _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
 
-            if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
-            {
-                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus Blast");
-                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal Blast");
-                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain Blast");
-                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2 Blast");
-            }
-            else
-            {
-                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus");
-                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal");
-                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain");
-                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
-            }
+           _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
 
             _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 

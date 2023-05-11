@@ -194,7 +194,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "4.4.2023";
+        public override string GetVersion() => "5.10.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -256,9 +256,10 @@ namespace FiveKnights
                 ("Room_Mansion","Xun NPC/White Flash"),
                 ("GG_Radiance", "Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"),
                 ("GG_Atrium", "gg_roof_door_pieces"),
-                
                 // For tiso explosions
-                ("Fungus2_03", "Mushroom Turret (2)")
+                ("Fungus2_03", "Mushroom Turret (2)"),
+                ("Ruins1_23", "Ruins Vial Empty/Active/soul_cache (1)/small_soul_cache"),
+                ("Ruins1_23", "Mage")
             };
         }
 
@@ -326,6 +327,8 @@ namespace FiveKnights
             preloadedGO["isma_stat"] = null;
 
             preloadedGO["CharmGet"] = preloadedObjects["Room_Queen"]["UI Msg Get WhiteCharm"];
+            preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
+            preloadedGO["SoulEffect"] = preloadedObjects["Ruins1_23"]["Ruins Vial Empty/Active/soul_cache (1)/small_soul_cache"];
 
             #region Add Entries
             journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
@@ -706,7 +709,17 @@ namespace FiveKnights
             if(bossRush)
 			{
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
-			}
+                SaveSettings.upgradedCharm_10 = true;
+                SaveSettings.HasSeenWorkshopRaised = true;
+                SaveSettings.CompletionIsma.isUnlocked = true;
+                SaveSettings.CompletionIsma.hasBeenSeen = true;
+                SaveSettings.CompletionDryya.isUnlocked = true;
+                SaveSettings.CompletionDryya.hasBeenSeen = true;
+                SaveSettings.CompletionZemer.isUnlocked = true;
+                SaveSettings.CompletionZemer.hasBeenSeen = true;
+                SaveSettings.CompletionHegemol.isUnlocked = true;
+                SaveSettings.CompletionHegemol.hasBeenSeen = true;
+            }
             AddComponent();
         }
 

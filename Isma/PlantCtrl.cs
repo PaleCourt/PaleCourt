@@ -51,6 +51,7 @@ namespace FiveKnights.Isma
             _hm = gameObject.AddComponent<HealthManager>();
             SetupHM();
             gameObject.AddComponent<Flash>();
+            gameObject.AddComponent<ExtraDamageable>();
             _hm.hp = PLANTHP;
             Mirror.SetField(_hm, "enemyType", 3);
 

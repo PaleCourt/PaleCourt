@@ -19,7 +19,6 @@ namespace FiveKnights
                 smallShotHit.Multiplier = 1f;
                 HealthManager hm = collider.gameObject.GetComponent<HealthManager>();
                 hm.Hit(smallShotHit);
-                Destroy(gameObject);
             }
         }
 

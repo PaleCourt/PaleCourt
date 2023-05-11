@@ -29,6 +29,7 @@ namespace FiveKnights.Isma
         private Rigidbody2D _rb;
         private Rigidbody2D _rbDD;
         private EnemyDreamnailReaction _dnailReac;
+        private ExtraDamageable _extraDamageable;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
         private GameObject _dnailEff;
@@ -74,25 +75,37 @@ namespace FiveKnights.Isma
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _anim = gameObject.GetComponent<Animator>();
             _bc = gameObject.GetComponent<BoxCollider2D>();
-            _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
-            gameObject.AddComponent<AudioSource>();
             _rb = gameObject.AddComponent<Rigidbody2D>();
             _rb.gravityScale = 0f;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
+
             dd = FiveKnights.preloadedGO["WD"];
             _hmDD = dd.GetComponent<HealthManager>();
             _rbDD = dd.GetComponent<Rigidbody2D>();
             _ddFsm = dd.LocateMyFSM("Dung Defender");
-            _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
-            gameObject.AddComponent<Flash>();
+
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+            Mirror.SetField(_extraDamageable, "impactClipTable", 
+                Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(dd.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab", 
+                Mirror.GetField<ExtraDamageable, AudioSource>(dd.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
+
+            _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dnailReac.enabled = true;
             Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
-            _rand = new System.Random();
-            _healthPool = 9999; // Just a dummy health value while waiting for onlyIsma to be set
+            _dnailEff = dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
+
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
             _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             _deathEff.SetJournalEntry(FiveKnights.journalentries["Isma"]);
+
+            gameObject.AddComponent<Flash>();
+            gameObject.AddComponent<AudioSource>();
+
+            _rand = new Random();
+            _healthPool = 9999; // Just a dummy health value while waiting for onlyIsma to be set
+
             EnemyPlantSpawn.isPhase2 = false;
             EnemyPlantSpawn.FoolCount = EnemyPlantSpawn.PillarCount = EnemyPlantSpawn.TurretCount = 0;
             killAllMinions = eliminateMinions = false;
@@ -193,7 +206,7 @@ namespace FiveKnights.Isma
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
-            On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
+			On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
 			On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter += MarkDungBalls;
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
@@ -817,6 +830,7 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.1f);
                 spike.SetActive(false);
                 _anim.enabled = true;
+                yield return new WaitUntil(() => _anim.GetCurrentFrame() >= 1);
                 arm.SetActive(true);
                 tentArm.SetActive(true);
                 tentArm.AddComponent<AFistFlash>();
@@ -976,10 +990,11 @@ namespace FiveKnights.Isma
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.7f);
                 _anim.enabled = true;
-                transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+                transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset - 0.2f, 0f);
                 var oldWhip = transform.Find("Whip").gameObject;
                 whip = Instantiate(oldWhip);
                 whip.transform.position = oldWhip.transform.position;
@@ -1011,7 +1026,7 @@ namespace FiveKnights.Isma
                     (15, () => { whip.Find("W17").SetActive(false); })
                 );
                 
-                transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+                transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset - 0.3f, 0f);
                 yield return _anim.PlayToFrame("GFistEnd", 2);
                 _bc.enabled = false;
                 yield return _anim.PlayToEnd();
@@ -1040,12 +1055,12 @@ namespace FiveKnights.Isma
             transform.position = new Vector3(transform.position.x, GROUND_Y + 2.5f, transform.position.z);
             _anim.enabled = true;
             _rb.gravityScale = 0f;
-            _rb.velocity = new Vector2(0f, 0f);
+            _rb.velocity = Vector2.zero;
             yield return new WaitForSeconds(0.1f);
             dir = FaceHero();
             transform.position = new Vector3(transform.position.x, GROUND_Y, transform.position.z);
             Log("Start play");
-            transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+            transform.position += new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset - 0.2f, 0f);
             
             var oldWhip = transform.Find("Whip").gameObject;
             var whip = Instantiate(oldWhip);
@@ -1078,7 +1093,7 @@ namespace FiveKnights.Isma
                 (15, () => { whip.Find("W17").SetActive(false); })
             );
            
-            transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset, 0f);
+            transform.position -= new Vector3(WhipXOffset * Math.Sign(transform.localScale.x), WhipYOffset - 0.3f, 0f);
             yield return _anim.PlayToFrame("GFistEnd", 2);
             _bc.enabled = false;
             yield return _anim.PlayToEnd();
@@ -2006,8 +2021,7 @@ namespace FiveKnights.Isma
             orig(self);
         }
         
-        private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, 
-            int upwardrecursionamount, bool burst)
+        private void SpellFlukeOnDoDamage(On.SpellFluke.orig_DoDamage orig, SpellFluke self, GameObject tar, int upwardrecursionamount, bool burst)
         {
             int damage = Mirror.GetField<SpellFluke, int>(self, "damage");
             DoTakeDamage(tar, damage, 0);
@@ -2043,7 +2057,7 @@ namespace FiveKnights.Isma
 
         private void HealthManagerDie(On.HealthManager.orig_Die orig, HealthManager self, float? attackDirection, AttackTypes attackType, bool ignoreEvasion)
         {
-            if(self.gameObject.name.Contains("Isma") || self.gameObject.name.Contains("White Defender")) return;
+            if(self.gameObject.name.Contains("Isma")) return;
             orig(self, attackDirection, attackType, ignoreEvasion);
         }
         
@@ -2089,7 +2103,7 @@ namespace FiveKnights.Isma
 			}
 		}
 
-        IEnumerator FlashWhite()
+        private IEnumerator FlashWhite()
         {
             _sr.material.SetFloat("_FlashAmount", 1f);
             yield return null;
@@ -2199,6 +2213,7 @@ namespace FiveKnights.Isma
         {
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
+            On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter -= MarkDungBalls;
 

@@ -20,19 +20,27 @@ namespace FiveKnights
         private void OnEnable()
         {
             // Getting references
-            GameObject something = HeroController.instance.transform.Find("Charm Effects").Find("Dung").gameObject;
-            _dungControl = something.LocateMyFSM("Control");
+            GameObject dung = HeroController.instance.transform.Find("Charm Effects").Find("Dung").gameObject;
+            _dungControl = dung.LocateMyFSM("Control");
 
             foreach(var pool in ObjectPool.instance.startupPools)
             {
                 if(pool.prefab.name == "Knight Dung Trail")
                 {
-                    _dungTrail = pool.prefab;
+                    _dungTrail = Instantiate(pool.prefab);
+                    _dungTrail.SetActive(false);
+                    DontDestroyOnLoad(_dungTrail);
                     break;
                 }
             }
+
+            // Change color of effect
+            dung.Find("Particle 1").AddComponent<ModifyAuraColor>();
+
             _dungTrailControl = _dungTrail.LocateMyFSM("Control");
             _dungPt = _dungTrailControl.Fsm.GetFsmGameObject("Pt Normal").Value.GetComponent<ParticleSystem>();
+            ParticleSystem.MainModule main = _dungPt.main;
+            main.startColor = new Color(0.65f, 0.65f, 0.65f, 0.75f);
 
             // Remove original spawn method
             _dungControl.GetAction<Wait>("Emit Pause", 2).time.Value = 0.1f;
@@ -40,6 +48,7 @@ namespace FiveKnights
 
 			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
 			On.ExtraDamageable.GetDamageOfType += ExtraDamageableGetDamageOfType;
+			On.SpriteFlash.flashDungQuick += SpriteFlashFlashDungQuick;
 		}
 
 		private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
@@ -58,6 +67,11 @@ namespace FiveKnights
                 return dungDamage;
             }
             return orig(extraDamageTypes);
+        }
+
+        private void SpriteFlashFlashDungQuick(On.SpriteFlash.orig_flashDungQuick orig, SpriteFlash self)
+        {
+            self.flashArmoured();
         }
 
         private void Update()
@@ -80,6 +94,7 @@ namespace FiveKnights
 
             On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
             On.ExtraDamageable.GetDamageOfType -= ExtraDamageableGetDamageOfType;
+            On.SpriteFlash.flashDungQuick -= SpriteFlashFlashDungQuick;
         }
 
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][Royal Aura] " + message);

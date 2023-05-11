@@ -8,6 +8,7 @@ using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using GlobalEnums;
+using Vasi;
 using Random = UnityEngine.Random;
 
 namespace FiveKnights.Hegemol
@@ -29,8 +30,6 @@ namespace FiveKnights.Hegemol
 	    private int phase = 1;
 
         private GameObject _ogrim;
-        private PlayMakerFSM _dd;
-        private GameObject _pv;
 
         private DamageHero _dh;
         private BoxCollider2D _col;
@@ -38,11 +37,13 @@ namespace FiveKnights.Hegemol
         private Rigidbody2D _rb;
         private Animator _anim;
         private SpriteRenderer _sr;
+        private ExtraDamageable _extraDamageable;
+        private Flash _flash;
         private EnemyHitEffectsArmoured _hitFx;
 
         private Mace _mace;
         private GameObject _hitter;
-        private GameObject traitorSlam;
+        private GameObject _traitorSlam;
 
         private bool _attacking;
         private bool _usingGroundPunch = false;
@@ -59,24 +60,24 @@ namespace FiveKnights.Hegemol
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
 
-            _pv = Instantiate(FiveKnights.preloadedGO["PV"], Vector2.down * 10, Quaternion.identity);
-            _pv.SetActive(true);
-            PlayMakerFSM control = _pv.LocateMyFSM("Control");
-            control.RemoveTransition("Pause", "Set Phase HP");
-
             _ogrim = FiveKnights.preloadedGO["WD"];
-            _dd = _ogrim.LocateMyFSM("Dung Defender");
 
             _col = gameObject.GetComponent<BoxCollider2D>();
             _hm = gameObject.AddComponent<HealthManager>();
             _rb = gameObject.GetComponent<Rigidbody2D>();
             _anim = gameObject.GetComponent<Animator>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+            Mirror.SetField(_extraDamageable, "impactClipTable",
+                Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
+            _flash = gameObject.AddComponent<Flash>();
+            _flash.enabled = true;
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
             _hitFx.enabled = true;
             _hm.hp = 850;
 
-            On.EnemyHitEffectsArmoured.RecieveHitEffect += OnReceiveHitEffect;
             On.HealthManager.TakeDamage += OnTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
         }
@@ -317,6 +318,7 @@ namespace FiveKnights.Hegemol
                 PlayAudioClip("HegAttackHit", 1f);
                 SpawnShockwaves(transform.localScale.x > 0f, 4f, 2.5f, 35f, 1);
                 StartCoroutine(SpawnDebris(debrisAmount, false, 0f));
+                GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
 
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() == 0);
 
@@ -762,7 +764,7 @@ namespace FiveKnights.Hegemol
         {
             PlayAudioClip("HegShockwave", 1f);
 
-            GameObject slam = Instantiate(traitorSlam);
+            GameObject slam = Instantiate(_traitorSlam);
             Animator anim = slam.transform.Find("slash_core").GetComponent<Animator>();
             slam.SetActive(true);
             anim.enabled = true;
@@ -909,29 +911,6 @@ namespace FiveKnights.Hegemol
             }
         }
 
-        private IEnumerator FlashWhite()
-		{
-            _sr.material.SetFloat("_FlashAmount", 1f);
-            yield return null;
-            for(float i = 1f; i >= 0f; i -= 0.05f)
-            {
-                _sr.material.SetFloat("_FlashAmount", i);
-                yield return null;
-            }
-            yield return null;
-        }
-
-        private void OnReceiveHitEffect(On.EnemyHitEffectsArmoured.orig_RecieveHitEffect orig, EnemyHitEffectsArmoured self, float attackDirection)
-        {
-            if(self.gameObject.name == "Hegemol")
-			{
-                StartCoroutine(FlashWhite());
-                PlayAudioClip("HegDamage", 1f);
-                return;
-            }
-            orig(self, attackDirection);
-        }
-
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             orig(self, hitInstance);
@@ -943,6 +922,7 @@ namespace FiveKnights.Hegemol
                     StartCoroutine(StaggerEnd());
 				}
                 _hitFx.RecieveHitEffect(hitInstance.Direction);
+                PlayAudioClip("HegDamage", 1f);
             }
         }
 
@@ -1024,16 +1004,16 @@ namespace FiveKnights.Hegemol
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
             }
 
-            traitorSlam = Instantiate(FiveKnights.preloadedGO["TraitorSlam"]);
-            traitorSlam.transform.Find("slash_core").Find("hurtbox").GetComponent<DamageHero>().damageDealt = 2;
-            var old = traitorSlam.transform.Find("slash_core").Find("hurtbox");
+            _traitorSlam = Instantiate(FiveKnights.preloadedGO["TraitorSlam"]);
+            _traitorSlam.transform.Find("slash_core").Find("hurtbox").GetComponent<DamageHero>().damageDealt = 2;
+            var old = _traitorSlam.transform.Find("slash_core").Find("hurtbox");
             var cp = Instantiate(old);
             cp.name = "Test2";
-            cp.parent = traitorSlam.transform.Find("slash_core").transform;
+            cp.parent = _traitorSlam.transform.Find("slash_core").transform;
             cp.transform.position = old.transform.position;
             cp.transform.localScale = old.transform.localScale;
             old.gameObject.SetActive(false);
-            traitorSlam.SetActive(false);
+            _traitorSlam.SetActive(false);
         }
 
         private DamageHero AddDamageToGO(GameObject go, int damage, bool isAttack)
@@ -1100,7 +1080,6 @@ namespace FiveKnights.Hegemol
 
         private void OnDestroy()
         {
-            On.EnemyHitEffectsArmoured.RecieveHitEffect -= OnReceiveHitEffect;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
         }
