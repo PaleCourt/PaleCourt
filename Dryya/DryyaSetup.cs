@@ -449,20 +449,8 @@ namespace FiveKnights.Dryya
 
 		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)
 		{
-            IEnumerator Play()
-            {
-                AudioClip audioClip = _control.Fsm.GetFsmObject(clip).Value as AudioClip;
-                yield return new WaitForSeconds(delay);
-                GameObject audioPlayerInstance = _ap.Spawn(transform.position, Quaternion.identity);
-                AudioSource audio = audioPlayerInstance.GetComponent<AudioSource>();
-                audio.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
-                audio.pitch = Random.Range(minPitch, maxPitch);
-                audio.volume = volume;
-                audio.PlayOneShot(audioClip);
-                yield return new WaitForSeconds(audioClip.length + 3f);
-                Destroy(audioPlayerInstance);
-            }
-            GameManager.instance.StartCoroutine(Play());
+            AudioClip audioClip = _control.Fsm.GetFsmObject(clip).Value as AudioClip;
+            this.PlayAudio(audioClip, volume, maxPitch - minPitch);
         }
 
         private void OnDestroy()

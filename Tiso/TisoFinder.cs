@@ -1,4 +1,6 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
+using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -10,6 +12,7 @@ namespace FiveKnights.Tiso
     {
         private const string TisoScene = "GG_Brooding_Mawlek_V";
         private const string StatueScene = "GG_Workshop";
+        public static Dictionary<string, AudioClip> TisoAud;
         
         private void Awake()
         {
@@ -19,10 +22,9 @@ namespace FiveKnights.Tiso
 
         private IEnumerator BossStatueOnSwapStatues(On.BossStatue.orig_SwapStatues orig, BossStatue self, bool doanim)
         {
-            Log($"Doing swap for {self.name}");
             if (self.name == "GG_Statue_Mawlek" && doanim)
             {
-                Log($"Doing swap for {self.name} got in");
+                Log($"Doing swap for {self.name}");
                 FiveKnights.Instance.SaveSettings.AltStatueMawlek = !FiveKnights.Instance.SaveSettings.AltStatueMawlek;
             }
             yield return orig(self, doanim);
@@ -56,12 +58,13 @@ namespace FiveKnights.Tiso
         private void ClearOldContent()
         {
             var battle = GameObject.Find("Battle Scene");
-            Destroy(battle.LocateMyFSM("Activate Boss"));
+            battle.LocateMyFSM("Activate Boss").enabled = false;
         }
         
         private void LoadTiso()
         {
             Log("Loading Tiso Bundle");
+            TisoAud = new Dictionary<string, AudioClip>();
             if (FiveKnights.preloadedGO.TryGetValue("Tiso", out var go) && go != null)
             {
                 Log("Already Loaded Tiso");
@@ -69,9 +72,16 @@ namespace FiveKnights.Tiso
             }
 
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.TisoBund];
-            
-
             FiveKnights.preloadedGO["Tiso"] = ab.LoadAsset<GameObject>("Tiso");
+            
+            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
+            TisoAud["AudTisoDeath"] = snd.LoadAsset<AudioClip>("AudTisoDeath");
+            TisoAud["AudTisoRoar"] = snd.LoadAsset<AudioClip>("AudTisoRoar");
+            TisoAud["AudTisoYell"] = snd.LoadAsset<AudioClip>("AudTisoYell");
+            for (int i = 1; i < 7; i++)
+            {
+                TisoAud[$"AudTiso{i}"] = snd.LoadAsset<AudioClip>($"AudTiso{i}");
+            }
 
             Log("Finished Loading Tiso Bundle");
         }
@@ -108,7 +118,8 @@ namespace FiveKnights.Tiso
                 displayStatue.transform.parent,
                 true
             );
-            alt.SetActive(bs.UsingDreamVersion);
+
+            //alt.SetActive(bs.UsingDreamVersion);
             var spr = alt.GetComponentInChildren<SpriteRenderer>(true);
             spr.sprite = tisoSprite;
             spr.gameObject.transform.position = new Vector3(45.54f, 8.16f,1.94f);
@@ -131,15 +142,23 @@ namespace FiveKnights.Tiso
             GameObject switchLever = altLever.FindGameObjectInChildren("GG_statue_switch_lever");
             switchLever.SetActive(true);
 
-            BossStatueLever toggle = statue.GetComponentInChildren<BossStatueLever>();
+            BossStatueLever toggle = statue.GetComponentInChildren<BossStatueLever>(); 
             toggle.SetOwner(bs);
             toggle.SetState(true);
 
             FiveKnights.Instance.SaveSettings.CompletionMawlek2.isUnlocked = true;
             bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionMawlek2;
-            Log($"Alt stat is at {FiveKnights.Instance.SaveSettings.AltStatueMawlek}");
-            bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, FiveKnights.Instance.SaveSettings.AltStatueMawlek, false);
 
+            StartCoroutine(Test());
+
+            IEnumerator Test()
+            {
+                yield return new WaitForSeconds(1f);
+                Log($"Alt stat is at {FiveKnights.Instance.SaveSettings.AltStatueMawlek}");
+                bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
+                bs.SetDreamVersion(!FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
+                bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
+            }
 
 
             /*if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
@@ -147,6 +166,7 @@ namespace FiveKnights.Tiso
                 
             }*/
         }
+        
 
         private void OnDestroy()
         {

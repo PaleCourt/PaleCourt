@@ -76,8 +76,12 @@ namespace FiveKnights
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
                 yield return new WaitWhile(() => HeroController.instance == null);
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 422.5f);
                 DryyaSetup dc = CreateDryya();
+                dc.gameObject.SetActive(false);
+                PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 422.5f); 
+                PlayMusic(null);
+                dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);
                 PlayMusic(null);
                 
@@ -126,11 +130,11 @@ namespace FiveKnights
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
 
                 yield return new WaitWhile(() => HeroController.instance == null);
-
+                
+                PlayMusic(FiveKnights.Clips["HegAreaMusicIntro"]);
+                yield return new WaitForSeconds(FiveKnights.Clips["HegAreaMusicIntro"].length);
                 PlayMusic(FiveKnights.Clips["HegAreaMusic"]);
-
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427f);
-
                 PlayMusic(FiveKnights.Clips["HegemolMusic"]);
                 hegemolCtrl.gameObject.SetActive(true);
 
@@ -393,6 +397,7 @@ namespace FiveKnights
 
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
+            FiveKnights.Clips["DryyaAreaMusic"] = snd.LoadAsset<AudioClip>("DryyaAreaMusic");
             
             Vector2 pos = new Vector2(457.6f, 112.5f);
             GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
@@ -416,6 +421,7 @@ namespace FiveKnights
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             FiveKnights.Clips["HegAreaMusic"] = snd.LoadAsset<AudioClip>("HegAreaMusic");
+            FiveKnights.Clips["HegAreaMusicIntro"] = snd.LoadAsset<AudioClip>("HegAreaMusicIntro");
             string[] arr = new[]
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump", 

@@ -73,6 +73,7 @@ namespace FiveKnights.Tiso
             GameObject bombPar = arm.Find("Bomb").gameObject;
             TisoBomb.AllBombs = new List<GameObject>();
             _anim.Play("TisoRoar");
+            _tc.PlayAudio(TisoFinder.TisoAud["AudTisoYell"]);
             
             yield return new WaitForSeconds(0.6f);
             float leftPos = transform.position.x - 3;
@@ -191,7 +192,8 @@ namespace FiveKnights.Tiso
                 SpawnShockwaves(1.2f, 35f, 1, transform.position);
                 yield return _anim.PlayToEnd();
             }
-
+            
+            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             yield return Jump();
             yield return Glide();
             yield return Slam();
@@ -204,6 +206,7 @@ namespace FiveKnights.Tiso
             Transform arm = transform.Find("SwapWeapon").Find("s3").Find("s8");
             arm.position = new Vector3(arm.position.x, arm.position.y, 0.5f);
             GameObject spikePar = arm.Find("Spikes").gameObject; 
+            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             yield return _anim.PlayToEnd("TisoShootAntic");
             _anim.speed = 1f;
             for (int i = 0; i < NumShots; i++)
@@ -253,6 +256,7 @@ namespace FiveKnights.Tiso
         public IEnumerator ThrowShield()
         {
             float dir = FaceHero();
+            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             yield return _anim.PlayToEnd("TisoThrow");
 
             GameObject[] shields = {Object.Instantiate(_shield), Object.Instantiate(_shield)};
@@ -374,8 +378,9 @@ namespace FiveKnights.Tiso
             FaceHero();
             yield return _anim.PlayToEnd("TisoLand");
             _anim.Play("TisoRoar");
+            _tc.PlayAudio(TisoFinder.TisoAud["AudTisoRoar"]);
 
-            yield return new WaitForSeconds(1f);
+            yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
             
             mawlek.SetActive(true);
             mawlek.LocateMyFSM("Mawlek Control").FsmVariables.FindFsmBool("Skip Title").Value = true;
@@ -436,6 +441,7 @@ namespace FiveKnights.Tiso
                         yield return ExplodeBomb(bombAnim, 0.6f, 2f, null);
                         _anim.enabled = true;
                         _anim.Play("TisoDeath");
+                        _tc.PlayAudio(TisoFinder.TisoAud["AudTisoDeath"]);
                         transform.position -= new Vector3(0f, 0.5f, 0f);
                         transform.localScale.Scale(new Vector3(-1f, 1f, 1f));
                         yield break;
@@ -471,16 +477,6 @@ namespace FiveKnights.Tiso
                 explosion.SetActive(true);
                 Object.Destroy(bombAnim.gameObject);
             }
-
-
-
-            /*IEnumerator PlayDeathSound()
-            {
-                PlayAudioClip("ZAudP1Death");
-                yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
-                PlayAudioClip("ZAudP2Death2");
-            }*/
-
         }
         
         private void PlayDeathFor(GameObject go)

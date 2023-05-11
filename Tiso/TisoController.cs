@@ -128,6 +128,7 @@ namespace FiveKnights.Tiso
             _rb.gravityScale = 1.5f;
             _rb.isKinematic = false;
             _anim.Play("TisoSpin");
+            this.PlayAudio(TisoFinder.TisoAud["AudTiso1"]);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
             _bc.enabled = true;
@@ -137,9 +138,16 @@ namespace FiveKnights.Tiso
             transform.position = new Vector3(transform.position.x, GroundY);
             // Play intro and wait a bit in the part where he shows off his shield
             yield return _anim.PlayToEnd("TisoLand");
+            
+            // Play Music
+            var battle = GameObject.Find("Battle Scene").LocateMyFSM("Activate Boss");
+            battle.enabled = true;
+            battle.SetState("Music");
+
             _anim.Play("TisoRoar");
+            this.PlayAudio(TisoFinder.TisoAud["AudTisoRoar"]);
             DoTitle();
-            yield return new WaitForSeconds(0.75f);
+            yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
             _anim.Play("TisoIntro");
             yield return new WaitForSeconds(0.75f);
         }
@@ -199,7 +207,7 @@ namespace FiveKnights.Tiso
                         _attacks.Shoot, _attacks.ThrowShield, _attacks.JumpGlideSlam, _attacks.SpawnBombs
                     };
                 }
-
+                
                 Func<IEnumerator> currAtt = ChooseAttack(attLst);
 
                 Log("Doing " + currAtt.Method.Name);
