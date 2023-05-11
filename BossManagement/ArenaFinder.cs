@@ -6,8 +6,6 @@ using UnityEngine.SceneManagement;
 using HutongGames.PlayMaker.Actions;
 using System.Linq;
 using FiveKnights.BossManagement;
-using FiveKnights.Misc;
-using FiveKnights.Tiso;
 using GlobalEnums;
 using HutongGames.PlayMaker;
 using SFCore.Utils;

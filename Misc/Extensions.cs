@@ -97,7 +97,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayToFrame(this Animator self, string anim, int frame)
         {
-            self.Play(anim);
+            self.Play(anim, -1, 0f);
 
             // Wait for animation start.
             yield return new WaitForEndOfFrame();
@@ -127,7 +127,6 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayToEnd(this Animator self, string name)
         {
-            if (name == "TisoDodge") Modding.Logger.Log("PlayD");
             self.Play(name, -1, 0f);
             yield return new WaitForEndOfFrame();
             while (self.GetCurrentAnimatorStateInfo(0).normalizedTime <= 1)

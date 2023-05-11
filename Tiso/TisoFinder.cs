@@ -43,9 +43,11 @@ namespace FiveKnights.Tiso
                 GameObject tiso = Instantiate(FiveKnights.preloadedGO["Tiso"]);
                 tiso.SetActive(true);
                 tiso.transform.position = HeroController.instance.transform.position;
+                AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+                FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
                 tiso.AddComponent<TisoController>();
             }
-            else if (curr.name is StatueScene)
+            if (curr.name is StatueScene)
             {
                 SetStatue();
             }
@@ -54,9 +56,7 @@ namespace FiveKnights.Tiso
         private void ClearOldContent()
         {
             var battle = GameObject.Find("Battle Scene");
-            Log($"Did find battle? {battle != null}");
             Destroy(battle.LocateMyFSM("Activate Boss"));
-            Log("Destroyed FSM!!");
         }
         
         private void LoadTiso()
@@ -137,6 +137,7 @@ namespace FiveKnights.Tiso
 
             FiveKnights.Instance.SaveSettings.CompletionMawlek2.isUnlocked = true;
             bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionMawlek2;
+            Log($"Alt stat is at {FiveKnights.Instance.SaveSettings.AltStatueMawlek}");
             bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, FiveKnights.Instance.SaveSettings.AltStatueMawlek, false);
 
 
