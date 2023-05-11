@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using FiveKnights.BossManagement;
 using FiveKnights.Isma;
+using FiveKnights.Tiso;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using SFCore;
@@ -254,16 +255,20 @@ namespace FiveKnights
                 ("Room_Mansion","Heart Piece Folder/Heart Piece"),
                 ("Room_Mansion","Xun NPC/White Flash"),
                 ("GG_Radiance", "Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"),
-                ("GG_Atrium", "gg_roof_door_pieces")
+                ("GG_Atrium", "gg_roof_door_pieces"),
+                
+                // For tiso explosions
+                ("Fungus2_03", "Mushroom Turret (2)")
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
-            preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"]; //
+            preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"];
             preloadedGO["WhiteFlashZem"] = preloadedObjects["Room_Mansion"]["Xun NPC/White Flash"];
             preloadedGO["RadPlat"] = preloadedObjects["GG_Radiance"]["Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"];
             preloadedGO["ObjRaise"] = preloadedObjects["GG_Atrium"]["gg_roof_door_pieces"];
+            preloadedGO["BombTurret"] = preloadedObjects["Fungus2_03"]["Mushroom Turret (2)"];
             
             Log("Storing GOs");
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
@@ -285,8 +290,7 @@ namespace FiveKnights
             preloadedGO["Kin"] = preloadedObjects["GG_Lost_Kin"]["Lost Kin"];
             preloadedGO["Mage"] = preloadedObjects["GG_Soul_Tyrant"]["Dream Mage Lord"];
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
-            
-            
+
             preloadedGO["Ceiling Dust"] = preloadedObjects["GG_Failed_Champion"]["Ceiling Dust"];
             
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
@@ -526,7 +530,8 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GIsma);
             ABManager.Load(ABManager.Bundle.GZemer);
 
-            ABManager.Load(ABManager.Bundle.Artist); 
+            ABManager.Load(ABManager.Bundle.Artist);
+            ABManager.Load(ABManager.Bundle.TisoBund);
         }
         
         private void LoadDep()
@@ -582,6 +587,8 @@ namespace FiveKnights
                 SaveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
             else if (key == "statueStateHegemol")
                 SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
+            else if (key == "statueStateMawlek2")
+                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)obj;
             return obj;
         }
 
@@ -599,6 +606,8 @@ namespace FiveKnights
                 return SaveSettings.CompletionIsma2;
             if (key == "statueStateHegemol")
                 return SaveSettings.CompletionHegemol;
+            if (key == "statueStateMawlek2")
+                return SaveSettings.CompletionMawlek2;
             return orig;
         }
 
@@ -729,6 +738,12 @@ namespace FiveKnights
             //}
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
+                if (i.name == "Gas Explosion Recycle M")
+                {
+                    Log("Adding explosion");
+                    preloadedGO["Explosion"] = i.gameObject;
+                }
+                
                 if (!(i.name == "Slash" && i.transform.parent != null && i.transform.parent.gameObject.name == "Hollow Shade"))
                     continue;
                 
@@ -754,6 +769,7 @@ namespace FiveKnights
 
             //PlantChanger();
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<TisoFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>(); 
             GameManager.instance.gameObject.AddComponent<Amulets>();
             GameManager.instance.gameObject.AddComponent<AwardCharms>();

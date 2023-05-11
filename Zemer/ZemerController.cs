@@ -25,6 +25,7 @@ namespace FiveKnights.Zemer
         private Animator _anim;
         private Rigidbody2D _rb;
         private System.Random _rand;
+        private ExtraDamageable _extraDamageable;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f : 
@@ -75,6 +76,9 @@ namespace FiveKnights.Zemer
             _dd = FiveKnights.preloadedGO["WD"];
             _dnailEff = _dd.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             
+            // So she gets hit by dcrest I think
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+
             _dnailReac.enabled = true;
             Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
 
@@ -808,7 +812,13 @@ namespace FiveKnights.Zemer
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 PlayAudioClip("AudDash");
+                _anim.speed = 2f;
                 _rb.velocity = new Vector2(-dir * 60f, 0f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                _anim.enabled = false;
+                _anim.speed = 1f;
+                yield return new WaitForSeconds(0.2f);
+                _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -818,6 +828,10 @@ namespace FiveKnights.Zemer
 
             IEnumerator StrikeAlternate()
             {
+                _anim.PlayAt("ZDashToCounter", 2);
+                yield return new WaitForSeconds(0.1f);
+                yield return _anim.PlayToEnd();
+                
                 if (!IsFacingPlayer())
                 {
                     yield return Turn();
@@ -1089,11 +1103,11 @@ namespace FiveKnights.Zemer
 
                 fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
-
-            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
+            
+            Mirror.SetField(_extraDamageable, "impactClipTable",
+                Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_dd.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Mirror.GetField<ExtraDamageable, AudioSource>(_dd.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
         }
         
 
