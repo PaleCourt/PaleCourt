@@ -2057,7 +2057,7 @@ namespace FiveKnights.Isma
 
         private void HealthManagerDie(On.HealthManager.orig_Die orig, HealthManager self, float? attackDirection, AttackTypes attackType, bool ignoreEvasion)
         {
-            if(self.gameObject.name.Contains("Isma") || self.gameObject.name.Contains("White Defender")) return;
+            if(self.gameObject.name.Contains("Isma")) return;
             orig(self, attackDirection, attackType, ignoreEvasion);
         }
         

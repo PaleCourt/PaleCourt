@@ -48,6 +48,7 @@ namespace FiveKnights
 
 			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
 			On.ExtraDamageable.GetDamageOfType += ExtraDamageableGetDamageOfType;
+			On.SpriteFlash.flashDungQuick += SpriteFlashFlashDungQuick;
 		}
 
 		private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
@@ -55,11 +56,6 @@ namespace FiveKnights
 			if(extraDamageType == ExtraDamageTypes.Dung || extraDamageType == ExtraDamageTypes.Dung2)
 			{
                 if(!self.gameObject.GetComponent<RoyalAuraSpread>()) self.gameObject.AddComponent<RoyalAuraSpread>();
-			}
-            SpriteFlash sf = self.gameObject.GetComponent<SpriteFlash>();
-            if(sf != null)
-			{
-                sf.flashWhiteQuick();
 			}
             orig(self, extraDamageType);
 		}
@@ -71,6 +67,11 @@ namespace FiveKnights
                 return dungDamage;
             }
             return orig(extraDamageTypes);
+        }
+
+        private void SpriteFlashFlashDungQuick(On.SpriteFlash.orig_flashDungQuick orig, SpriteFlash self)
+        {
+            self.flashArmoured();
         }
 
         private void Update()
@@ -93,6 +94,7 @@ namespace FiveKnights
 
             On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
             On.ExtraDamageable.GetDamageOfType -= ExtraDamageableGetDamageOfType;
+            On.SpriteFlash.flashDungQuick -= SpriteFlashFlashDungQuick;
         }
 
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][Royal Aura] " + message);

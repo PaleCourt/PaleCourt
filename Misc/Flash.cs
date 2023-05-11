@@ -104,6 +104,11 @@ namespace FiveKnights
             ResetValues(Color.white, 0.85f, 0.01f, 0.01f, 0.35f);
 		}
 
+        public void FlashArmoured()
+        {
+            ResetValues(Color.white, 0.85f, 0.01f, 0.01f, 0.25f);
+        }
+
         public void FlashDungQuick()
 		{
             ResetValues(new Color(0.45f, 0.27f, 0f), 0.75f, 0.001f, 0.05f, 0.1f);
@@ -139,7 +144,7 @@ namespace FiveKnights
             if(self != null && self.gameObject == gameObject)
             {
                 if(extraDamageType == ExtraDamageTypes.Spore) FlashSporeQuick();
-                else if(FiveKnights.Instance.SaveSettings.upgradedCharm_10) FlashFocusHeal();
+                else if(FiveKnights.Instance.SaveSettings.upgradedCharm_10) FlashArmoured();
                 else FlashDungQuick();
             }
         }

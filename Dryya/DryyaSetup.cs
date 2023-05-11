@@ -146,7 +146,6 @@ namespace FiveKnights.Dryya
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
-			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
         }
 
 		private IEnumerator Start()
@@ -189,17 +188,6 @@ namespace FiveKnights.Dryya
             }
         }
 
-        private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
-        {
-            orig(self, extraDamageType);
-            if(self.gameObject.name.Contains("Dryya"))
-			{
-                if(extraDamageType == ExtraDamageTypes.Spore) _spriteFlash.flashSporeQuick();
-                else if(FiveKnights.Instance.SaveSettings.upgradedCharm_10) _spriteFlash.flashWhiteQuick();
-                else _spriteFlash.flashDungQuick();
-            }
-        }
-
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
@@ -212,17 +200,17 @@ namespace FiveKnights.Dryya
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
 
-            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
-            Vasi.Mirror.SetField(_extraDamageable, "impactClipTable",
-                Vasi.Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
-            Vasi.Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
-                Vasi.Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
-
             _hm = gameObject.AddComponent<HealthManager>();
             _hm.enabled = false;
             _hm.hp = _hp;
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
+
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
+            Vasi.Mirror.SetField(_extraDamageable, "impactClipTable",
+                Vasi.Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Vasi.Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Vasi.Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
 
             PlayMakerFSM nailClashTink = FiveKnights.preloadedGO["Slash"].LocateMyFSM("nail_clash_tink");
 
@@ -482,7 +470,6 @@ namespace FiveKnights.Dryya
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
-            On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
         }
 
         private void Log(object o)

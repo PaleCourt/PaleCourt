@@ -469,6 +469,7 @@ namespace FiveKnights.BossManagement
                 Destroy(shrine.GetComponent<SpriteRenderer>());
                 Destroy(shrine.GetComponent<Breakable>());
                 Destroy(shrine.GetComponent<PersistentBoolItem>());
+                Destroy(shrine.GetComponent<BoxCollider2D>());
                 Destroy(shrine.Find("Particle_rocks_small (3)"));
                 Destroy(shrine.Find("Fungus Base Horned"));
 
