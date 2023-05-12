@@ -36,7 +36,6 @@ namespace FiveKnights.Tiso
             {
                 ABManager.ResetBundle(ABManager.Bundle.TisoBund);
                 Destroy(FiveKnights.preloadedGO["Tiso"]);
-                Destroy(this);
             }
             else if (curr.name is TisoScene)
             {
@@ -88,6 +87,8 @@ namespace FiveKnights.Tiso
 
         private void SetStatue()
         {
+            Log("Setting Statue For Tiso.");
+            
             GameObject statue = GameObject.Find("GG_Statue_Mawlek");
             Sprite tisoSprite = ABManager.AssetBundles[ABManager.Bundle.WSArena].LoadAsset<Sprite>("Tiso_Statue");
             
@@ -105,7 +106,6 @@ namespace FiveKnights.Tiso
             
             BossScene scene = ScriptableObject.CreateInstance<BossScene>();
             scene.sceneName = sceneN;
-            
             bs.dreamBossScene = scene;
             bs.dreamStatueStatePD = stateN;
 
@@ -119,14 +119,15 @@ namespace FiveKnights.Tiso
                 true
             );
 
-            //alt.SetActive(bs.UsingDreamVersion);
+            alt.SetActive(true);
             var spr = alt.GetComponentInChildren<SpriteRenderer>(true);
             spr.sprite = tisoSprite;
             spr.gameObject.transform.position = new Vector3(45.54f, 8.16f,1.94f);
             spr.gameObject.transform.localScale = new Vector3(1.6f, 1.6f, 1.6f);
             alt.name = "StatueAlt";
-            bs.statueDisplayAlt = alt; //
+            bs.statueDisplayAlt = alt; 
             /* } 56's code */
+            
             BossStatue.BossUIDetails details = new BossStatue.BossUIDetails();
             details.nameKey = key;
             details.nameSheet = "Speech";
@@ -165,12 +166,16 @@ namespace FiveKnights.Tiso
             {
                 
             }*/
+            Log("Finish tiso statue.");
         }
         
 
         private void OnDestroy()
         {
+            Log("Destroyed TisoFinder");
             USceneManager.activeSceneChanged -= OnSceneChange;
+            On.BossStatue.SwapStatues -= BossStatueOnSwapStatues;
+
         }
         
         private static void Log(object o)

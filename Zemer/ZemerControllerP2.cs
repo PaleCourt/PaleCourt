@@ -2444,11 +2444,28 @@ namespace FiveKnights.Zemer
                 middle.SetActive(true);
                 yield return new WaitWhile(() => oldAnim.GetCurrentFrame() < 10);
                 yield return LerpScale2(slash.transform);
-                StartCoroutine(LerpOpacity(slash.transform));
+                //StartCoroutine(LerpOpacity(slash.transform));
 
+                IEnumerator ForceDisableHitbox()
+                {
+                    while (slash != null)
+                    {
+                        foreach (Transform s in slash.transform)
+                        {
+                            foreach (PolygonCollider2D pc in s.GetComponentsInChildren<PolygonCollider2D>(true))
+                            {
+                                Log("DEASTEORIO(QAJOHD");
+                                Destroy(pc);
+                            }
+                        }
+
+                        yield return null;
+                    }
+                }
+                
                 IEnumerator MakeSureOuterSlashesDontEnd()
                 {
-                    while (true)
+                    while (slash != null)
                     {
                         for (int i = 0; i < 3; i++) // < 3
                         {

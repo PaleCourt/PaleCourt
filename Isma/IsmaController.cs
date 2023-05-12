@@ -655,8 +655,9 @@ namespace FiveKnights.Isma
                 dir = FaceHero();
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
-                _anim.Play("ThrowBomb");
+                _anim.Play("ThrowBomb", -1, 0f);
                 this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                yield return new WaitForEndOfFrame();
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0, 0f);
@@ -753,10 +754,10 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _rb.velocity = new Vector2(0f, 0f);*/
-                yield return _anim.PlayToFrame("ThrowBomb", 8);
+                yield return _anim.WaitToFrame(8);
                 yield return new WaitForSeconds(0.08f);
                 transform.position += new Vector3(0f, 0.2f);
-                yield return _anim.PlayToFrame("ThrowBomb", 10);
+                yield return _anim.WaitToFrame(10);
                 _bc.enabled = false;
                 yield return _anim.PlayToEnd();
                 ToggleIsma(false);

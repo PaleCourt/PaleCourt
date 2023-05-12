@@ -45,6 +45,7 @@ namespace FiveKnights.Tiso
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
+            
             _hm = gameObject.AddComponent<HealthManager>();
             _anim = gameObject.GetComponent<Animator>();
             _bc = gameObject.GetComponent<BoxCollider2D>();
@@ -311,6 +312,8 @@ namespace FiveKnights.Tiso
 
         private void AssignFields()
         {
+            Log("Assign Tiso Fields.");
+            
             HealthManager hornHP = _dd.GetComponent<HealthManager>();
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                          .Where(x => x.Name.Contains("Prefab")))
@@ -344,6 +347,8 @@ namespace FiveKnights.Tiso
                 shieldHB.gameObject.AddComponent<Tink>();
                 shieldHB.gameObject.AddComponent<DamageHero>().damageDealt = 1;
             }
+            
+            Log("Done assigning Tiso Fields.");
         }
 
         Func<IEnumerator> ChooseAttack(List<Func<IEnumerator>> attLst)
@@ -370,6 +375,13 @@ namespace FiveKnights.Tiso
             if (currAtt != null) _rep[currAtt]++;
 
             return currAtt;
+        }
+
+        private void OnDestroy()
+        {
+            On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
+            On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
         }
 
         private void Log(object o)
