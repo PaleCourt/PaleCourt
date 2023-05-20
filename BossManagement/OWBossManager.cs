@@ -30,11 +30,10 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
-        public Dictionary<string, AnimationClip> clips;
 
         private void AddTramAndNPCs()
         {
-            var mobs = GameObject.Find("BG_Mobs");
+            var mobs = GameObject.Find("BG_Mobs"); 
             foreach (Transform grp in mobs.transform)
             {
                 foreach (Transform m in grp)
@@ -55,7 +54,7 @@ namespace FiveKnights
                             mob.AddComponent<Maggot>();
                             break;
                         case "MineCart":
-                            mob.AddComponent<MineBugCart>();
+                            mob.AddComponent<MineBugCart>(); 
                             break;
                     }
                 }

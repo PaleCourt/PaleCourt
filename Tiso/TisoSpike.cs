@@ -65,7 +65,7 @@ namespace FiveKnights.Tiso
                 transform.SetRotation2D(rot * Mathf.Rad2Deg);
                 _rb.velocity = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
             }
-            else if (other.name.Contains("Down"))
+            else if (other.name.Contains("Down")) 
             {
                 float rot = Random.Range(250, 290) * Mathf.Deg2Rad;
                 transform.SetRotation2D(rot * Mathf.Rad2Deg);
