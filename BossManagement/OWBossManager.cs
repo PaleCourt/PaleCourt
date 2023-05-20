@@ -32,6 +32,48 @@ namespace FiveKnights
         public static OWBossManager Instance;
         public Dictionary<string, AnimationClip> clips;
 
+        private void AddTramAndNPCs()
+        {
+            var mobs = GameObject.Find("BG_Mobs");
+            foreach (Transform grp in mobs.transform)
+            {
+                foreach (Transform m in grp)
+                {
+                    GameObject mob = m.gameObject;
+                    switch (grp.name)
+                    {
+                        case "Carriage":
+                            mob.AddComponent<Carriage>();
+                            break;
+                        case "Husk":
+                            mob.AddComponent<HuskCitizen>();
+                            break;
+                        case "HuskCart":
+                            mob.AddComponent<HuskCart>();
+                            break;
+                        case "Maggot":
+                            mob.AddComponent<Maggot>();
+                            break;
+                        case "MineCart":
+                            mob.AddComponent<MineBugCart>();
+                            break;
+                    }
+                }
+            }
+                
+            var tram = Instantiate(FiveKnights.preloadedGO["Tram"]);
+            tram.AddComponent<Tram>();
+            GameObject riders = GameObject.Find("Riders");
+            riders.transform.position = tram.transform.position;
+            riders.transform.parent = tram.transform;
+            riders.transform.localPosition = new Vector3(0f, -2.45f, 0f);
+            tram.SetActive(true);
+            
+            var tram2 = Instantiate(FiveKnights.preloadedGO["Tram"]);
+            tram2.AddComponent<TramSmall>();
+            tram2.SetActive(true);
+        }
+        
         private IEnumerator Start()
         {
             Instance = this;
@@ -98,33 +140,7 @@ namespace FiveKnights
                     f.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("UI/BlendModes/LinearDodge"));
                 }
 
-                // Awful garbage code, end me
-                var mobs = GameObject.Find("BG_Mobs");
-                foreach (Transform grp in mobs.transform)
-                {
-                    foreach (Transform m in grp)
-                    {
-                        GameObject mob = m.gameObject;
-                        switch (grp.name)
-                        {
-                            case "Carriage":
-                                mob.AddComponent<Carriage>();
-                                break;
-                            case "Husk":
-                                mob.AddComponent<HuskCitizen>();
-                                break;
-                            case "HuskCart":
-                                mob.AddComponent<HuskCart>();
-                                break;
-                            case "Maggot":
-                                mob.AddComponent<Maggot>();
-                                break;
-                            case "MineCart":
-                                mob.AddComponent<MineBugCart>();
-                                break;
-                        }
-                    }
-                }
+                AddTramAndNPCs();
                 
                 HegemolController hegemolCtrl = CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
@@ -132,6 +148,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => HeroController.instance == null);
                 
                 PlayMusic(FiveKnights.Clips["HegAreaMusicIntro"]);
+                PlayHegemolBGSound(hegemolCtrl);
                 yield return new WaitForSeconds(FiveKnights.Clips["HegAreaMusicIntro"].length);
                 PlayMusic(FiveKnights.Clips["HegAreaMusic"]);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427f);
@@ -264,6 +281,7 @@ namespace FiveKnights
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Mirror.SetField(channelInfo, "clip", clip);
+
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
@@ -272,6 +290,24 @@ namespace FiveKnights
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
+        }
+        
+        private static void PlayHegemolBGSound(HegemolController heg)
+        {
+            GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
+            audioPlayer.transform.position = new Vector3(437f, 171.1914f, 0f);
+
+            AutoDestroy autoDestroy = audioPlayer.GetComponent<AutoDestroy>();
+            autoDestroy.ShouldDestroy = () => heg.gameObject.activeSelf;
+
+            AudioSource audioSource = audioPlayer.GetComponent<AudioSource>();
+            audioSource.clip = FiveKnights.Clips["HegAreaMusicBG"];
+            audioSource.volume = 1f;
+            audioSource.pitch = 1f; 
+            audioSource.loop = true;
+            audioSource.maxDistance = 150;
+            audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+            audioSource.Play();
         }
 
         private void CreateIsma()
@@ -422,6 +458,8 @@ namespace FiveKnights
             FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
             FiveKnights.Clips["HegAreaMusic"] = snd.LoadAsset<AudioClip>("HegAreaMusic");
             FiveKnights.Clips["HegAreaMusicIntro"] = snd.LoadAsset<AudioClip>("HegAreaMusicIntro");
+            FiveKnights.Clips["HegAreaMusicBG"] = snd.LoadAsset<AudioClip>("HegAreaMusicBG");
+
             string[] arr = new[]
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump", 
@@ -434,6 +472,7 @@ namespace FiveKnights
             }
 
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
+            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
             foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
             {
                 ArenaFinder.Sprites[i.name] = i;

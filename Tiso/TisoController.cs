@@ -24,6 +24,7 @@ namespace FiveKnights.Tiso
         private Animator _anim;
         private Rigidbody2D _rb;
         private EnemyDeathEffectsUninfected _deathEff;
+        private ExtraDamageable _extraDamageable;
         private bool _hasDied;
         private EnemyHitEffectsUninfected _hitEffects;
         private GameObject _target;
@@ -62,6 +63,9 @@ namespace FiveKnights.Tiso
             _rand = new Random();
             _dnailReac.enabled = true;
             Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
+            
+            // So she gets hit by dcrest I think
+            _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
 
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
@@ -149,8 +153,8 @@ namespace FiveKnights.Tiso
             this.PlayAudio(TisoFinder.TisoAud["AudTisoRoar"]);
             DoTitle();
             yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
-            _anim.Play("TisoIntro");
-            yield return new WaitForSeconds(0.75f);
+            //_anim.Play("TisoIntro");
+            //yield return new WaitForSeconds(0.75f);
         }
 
         private IEnumerator Attacks()
@@ -347,6 +351,17 @@ namespace FiveKnights.Tiso
                 shieldHB.gameObject.AddComponent<Tink>();
                 shieldHB.gameObject.AddComponent<DamageHero>().damageDealt = 1;
             }
+
+            var shieldSpike = transform.Find("ShieldSpikePolygon");
+            shieldSpike.gameObject.layer = (int)PhysLayers.ENEMY_ATTACK;
+            shieldSpike.gameObject.AddComponent<Pogoable>();
+            shieldSpike.gameObject.AddComponent<Tink>();
+            shieldSpike.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+            
+            Mirror.SetField(_extraDamageable, "impactClipTable",
+                Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_dd.GetComponent<ExtraDamageable>(), "impactClipTable"));
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
+                Mirror.GetField<ExtraDamageable, AudioSource>(_dd.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
             
             Log("Done assigning Tiso Fields.");
         }

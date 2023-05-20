@@ -53,10 +53,57 @@ namespace FiveKnights.Tiso
         {
             if (other.gameObject.layer != (int) PhysLayers.HERO_ATTACK || other.gameObject.name.Contains("Spike")) return;
 
-            if (isDeflected || isDead) return; // || !other.IsTouchingLayers((int) PhysLayers.HERO_ATTACK)) return;
+            if (isDeflected || isDead) return;
             
             isDeflected = true;
-            _rb.velocity = new Vector2(_rb.velocity.x * -1f, _rb.velocity.y * -1f);
+            
+            Modding.Logger.Log($"Name of collider is {other.name}, and tag is {other.tag}");
+
+            if (other.name.Contains("Up"))
+            {
+                float rot = Random.Range(70, 110) * Mathf.Deg2Rad;
+                transform.SetRotation2D(rot * Mathf.Rad2Deg);
+                _rb.velocity = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+            }
+            else if (other.name.Contains("Down"))
+            {
+                float rot = Random.Range(250, 290) * Mathf.Deg2Rad;
+                transform.SetRotation2D(rot * Mathf.Rad2Deg);
+                _rb.velocity = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+            }
+            else if (other.CompareTag("Hero Spell"))
+            {
+                AllSpikes.Remove(gameObject);
+                Destroy(this);
+            }
+            else if (other.CompareTag("Nail Attack"))
+            {
+                // Positive if spike is on left of player
+                float dir = Mathf.Sign(HeroController.instance.transform.position.x - transform.position.x);
+                float rot = Random.Range(340, 380);
+                transform.SetRotation2D(rot * Mathf.Rad2Deg);
+                _rb.velocity = new Vector2(dir * 40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+            }
+            
+            /*switch (cardRot)
+            {
+                case 0:
+                    refRot = Random.Range(340, 380);
+                    transform.localScale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), scale.z);
+                    break;
+                case 1:
+                    refRot = Random.Range(70, 110);
+                    transform.localScale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), scale.z);
+                    break;
+                case 2:
+                    refRot = Random.Range(340, 380);
+                    transform.localScale = new Vector3(-Mathf.Abs(scale.x), Mathf.Abs(scale.y), scale.z);
+                    break;
+                case 3:
+                    refRot = Random.Range(250, 290);
+                    transform.localScale = new Vector3(Mathf.Abs(scale.x), Mathf.Abs(scale.y), scale.z);
+                    break;
+            }*/
         }
     }
 }

@@ -278,8 +278,8 @@ namespace FiveKnights.Tiso
             Shield shCtrl = shields[0].GetComponent<Shield>();
             yield return new WaitWhile(() => !shCtrl.isDoneFlag ||
                 (dir > 0
-                ? shields[0].transform.position.x < transform.position.x - 0.75f
-                : shields[0].transform.position.x >= transform.position.x + 0.75f));
+                ? shields[0].transform.position.x < transform.position.x - 0.9f
+                : shields[0].transform.position.x >= transform.position.x + 0.9f));
             _anim.enabled = true;
             _anim.speed = 3.5f;
             yield return _anim.PlayToFrame("TisoThrowCatch", 2);
@@ -350,6 +350,8 @@ namespace FiveKnights.Tiso
         
         public IEnumerator Death()
         {
+            PlayerData.instance.isInvincible = true;
+            
             GameObject mawlek = GameObject.Find("Mawlek Body");
             if (mawlek == null)
             {
@@ -395,7 +397,6 @@ namespace FiveKnights.Tiso
             yield return SpecialDodge(dir);
             yield return SpecialDodge(dir);
             yield return ShootBomb(mawlek);
-            
 
             IEnumerator SpecialDodge(float pos)
             {

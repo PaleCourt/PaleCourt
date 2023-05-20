@@ -259,12 +259,16 @@ namespace FiveKnights
                 // For tiso explosions
                 ("Fungus2_03", "Mushroom Turret (2)"),
                 ("Ruins1_23", "Ruins Vial Empty/Active/soul_cache (1)/small_soul_cache"),
-                ("Ruins1_23", "Mage")
+                ("Ruins1_23", "Mage"),
+                // Tram
+                ("Crossroads_46", "Tram Main")
             };
         }
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            preloadedGO["Tram"] = preloadedObjects["Crossroads_46"]["Tram Main"];
+            
             preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"];
             preloadedGO["WhiteFlashZem"] = preloadedObjects["Room_Mansion"]["Xun NPC/White Flash"];
             preloadedGO["RadPlat"] = preloadedObjects["GG_Radiance"]["Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"];
