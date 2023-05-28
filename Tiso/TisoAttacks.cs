@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
+using static FiveKnights.Tiso.TisoAudio;
 using Logger = Modding.Logger;
-using StartCoroutine = On.HutongGames.PlayMaker.Actions.StartCoroutine;
 
 namespace FiveKnights.Tiso
 {
@@ -21,9 +21,10 @@ namespace FiveKnights.Tiso
 
         private const float RunSpeed = 12f;
         private const float DodgeSpeed = 20f;
-        private const int NumShots = 8;
         private const float BombHeight = 19f;
-
+        private const float SpikeVel = 60f;
+        private const int NumShots = 8;
+        
         public TisoAttacks(Transform transform, Rigidbody2D rb, BoxCollider2D bc, Animator anim, EnemyDeathEffectsUninfected deathEff)
         {
             this.transform = transform;
@@ -46,7 +47,6 @@ namespace FiveKnights.Tiso
                         Vector2 hPos = _target.transform.position;
                         Vector2 tPos = transform.position;
                         var relativePt = transform.InverseTransformPoint(hPos);
-                        Modding.Logger.Log($"Here is relative: {relativePt} and within {hPos.x.Within(tPos.x, 2.5f)}");
                         return hPos.x.Within(tPos.x, 2.5f) && relativePt.y > 0.5f;
                     };
                 }
@@ -73,26 +73,32 @@ namespace FiveKnights.Tiso
             GameObject bombPar = arm.Find("Bomb").gameObject;
             TisoBomb.AllBombs = new List<GameObject>();
             _anim.Play("TisoRoar");
-            _tc.PlayAudio(TisoFinder.TisoAud["AudTisoYell"]);
-            
+            PlayAudio(_tc, Clip.Yell);
+
             yield return new WaitForSeconds(0.6f);
             float leftPos = transform.position.x - 3;
             float rightPos = transform.position.x + 3;
 
             var a = _tc.StartCoroutine(BlockUpSpecial());
             
-            while (leftPos > TisoController.LeftX || rightPos < TisoController.RightX)
+            while (leftPos > TisoController.LeftX + 0.5f || rightPos < TisoController.RightX - 0.5f)
             {
-                GameObject bombL = Object.Instantiate(bombPar);
-                bombL.transform.position = new Vector3(leftPos, BombHeight);
-                bombL.SetActive(true);
-                bombL.AddComponent<TisoBomb>(); 
-                
-                GameObject bombR = Object.Instantiate(bombPar);
-                bombR.transform.position = new Vector3(rightPos, BombHeight);
-                bombR.SetActive(true);
-                bombR.AddComponent<TisoBomb>();
+                if (leftPos > TisoController.LeftX + 0.5f)
+                {
+                    GameObject bombL = Object.Instantiate(bombPar);
+                    bombL.transform.position = new Vector3(leftPos, BombHeight);
+                    bombL.SetActive(true);
+                    bombL.AddComponent<TisoBomb>(); 
+                }
 
+                if (rightPos < TisoController.RightX - 0.5f)
+                {
+                    GameObject bombR = Object.Instantiate(bombPar);
+                    bombR.transform.position = new Vector3(rightPos, BombHeight);
+                    bombR.SetActive(true);
+                    bombR.AddComponent<TisoBomb>();
+                }
+                
                 leftPos -= 2.5f;
                 rightPos += 2.5f;
                 yield return new WaitForSeconds(Random.Range(0.2f, 0.25f));
@@ -119,7 +125,7 @@ namespace FiveKnights.Tiso
             shieldParry.hitFlag = false;
             yield return _anim.PlayToFrame("TisoBlockUp", 0);
             _anim.enabled = false;
-            yield return new WaitWhile(() => !shieldParry.hitFlag && CheckPlayerAbove());
+            yield return new WaitSecWhile(() => !shieldParry.hitFlag && CheckPlayerAbove(), 1.5f);
             _anim.enabled = true;
             
             if (shieldParry.hitFlag)
@@ -137,6 +143,7 @@ namespace FiveKnights.Tiso
             IEnumerator Jump()
             {
                 FaceHero();
+                PlayAudio(_tc, Clip.Jump);
                 yield return _anim.PlayToEnd("TisoJump");
                 float dir = FaceHero();
                 _anim.Play("TisoSpin");
@@ -185,6 +192,7 @@ namespace FiveKnights.Tiso
                 _anim.enabled = false;
                 _rb.velocity = new Vector2(0f, -50f);
                 yield return new WaitWhile(() => transform.position.y > TisoController.GroundY);
+                PlayAudio(_tc, Clip.LandHard);
                 _rb.velocity = Vector2.zero;
                 transform.position = new Vector2(transform.position.x, TisoController.GroundY);
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
@@ -197,6 +205,7 @@ namespace FiveKnights.Tiso
             yield return Jump();
             yield return Glide();
             yield return Slam();
+            yield return Dodge();
         }
 
         public IEnumerator Shoot()
@@ -207,18 +216,54 @@ namespace FiveKnights.Tiso
             arm.position = new Vector3(arm.position.x, arm.position.y, 0.5f);
             GameObject spikePar = arm.Find("Spikes").gameObject; 
             _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            
+            // Have to do this once here so the canon doesn't appear at the wrong angle at the start
+            Vector2 tarPos = _target.transform.position;
+            float angleOrig = GetAngleToPlayer(spikePar.transform.position, tarPos, dir);
+            // 40
+            angleOrig = dir > 0 ? Mathf.Max(Mathf.Min(40f, angleOrig), -17f) : Mathf.Max(Mathf.Min(15f, angleOrig), -42f);
+            float angle2 = dir > 0 ? Mathf.Max(Mathf.Min(17f, angleOrig), -16f) : Mathf.Max(Mathf.Min(8f, angleOrig), -25f);
+            transform.Find("SwapWeapon").Find("s3").Find("s8").SetRotation2D(angle2);
+            transform.Find("SwapWeapon").Find("s3").SetRotation2D(angleOrig - angle2);
+            
             yield return _anim.PlayToEnd("TisoShootAntic");
             _anim.speed = 1f;
+            int numInterrupts = 0;
+            
             for (int i = 0; i < NumShots; i++)
             {
-                // Player lower than tiso so I have to lower their height
-                Vector2 tarPos = _target.transform.position - new Vector3(0f, 0.3f, 0f);
-                float angleOrig = GetAngleToPlayer(transform.Find("SwapWeapon").Find("s3").Find("s8").position, tarPos, dir);
-                angleOrig = dir > 0 ? Mathf.Max(Mathf.Min(40f, angleOrig), -17f) : Mathf.Max(Mathf.Min(15f, angleOrig), -42f);
-                float angle2 = dir > 0 ? Mathf.Max(Mathf.Min(17f, angleOrig), -16f) : Mathf.Max(Mathf.Min(8f, angleOrig), -25f);
+                // Interrupt Tiso shooting if player is on the wrong side or too close
+                if (FaceHero(true) * dir > 0 || _target.transform.position.x.Within(transform.position.x, 3f)) 
+                {
+                    _anim.speed = 1.5f;
+                    yield return _anim.PlayToEnd("TisoShootEnd");
+                    _anim.speed = 1f;
+                    yield return Dodge();
+                    // Just stop shooting if interrupted too many times
+                    if (numInterrupts >= 2) yield break;
+                    _anim.speed = 1.5f;
+                    // Case where player has moved to opposite side
+                    dir = FaceHero() * -1f;
+                    yield return _anim.PlayToEnd("TisoShootAntic");
+                    _anim.speed = 1f;
+                    numInterrupts++;
+                }
+                
+                // Player lower than tiso on left side because spikes shoot too high otherwise
+                tarPos = _target.transform.position - new Vector3(0f, (dir > 0 ? 0f : 1f));
+                angleOrig = GetAngleToPlayer(spikePar.transform.position, tarPos, dir);
+
+                angleOrig = dir > 0
+                    ? Mathf.Max(Mathf.Min(40f, angleOrig), -17f)
+                    : Mathf.Max(Mathf.Min(15f, angleOrig), -42f);
+                angle2 = dir > 0
+                    ? Mathf.Max(Mathf.Min(17f, angleOrig), -16f)
+                    : Mathf.Max(Mathf.Min(8f, angleOrig), -25f);
+                
                 transform.Find("SwapWeapon").Find("s3").Find("s8").SetRotation2D(angle2);
                 transform.Find("SwapWeapon").Find("s3").SetRotation2D(angleOrig - angle2);
                 _anim.Play("TisoShoot", -1, 0f);
+                PlayAudio(_tc, Clip.Shoot);
                 GameObject spike = Object.Instantiate(spikePar);
                 spike.transform.SetRotation2D(angle2);
                 spike.transform.position = spikePar.transform.position + new Vector3(0f, 0f, 0.5f);
@@ -227,21 +272,10 @@ namespace FiveKnights.Tiso
                 spike.AddComponent<TisoSpike>();
                 var rb = spike.GetComponent<Rigidbody2D>(); 
                 angle2 += dir > 0 ? 0f : 180f;
-                rb.velocity = new Vector2(Mathf.Cos(angle2 * Mathf.Deg2Rad), Mathf.Sin(angle2 * Mathf.Deg2Rad)) * 55f;
+                rb.velocity = new Vector2(Mathf.Cos(angle2 * Mathf.Deg2Rad), Mathf.Sin(angle2 * Mathf.Deg2Rad)) * SpikeVel;
+                _anim.speed = 1.2f;
                 yield return _anim.PlayToEnd();
-                if (FaceHero(true) * dir > 0)
-                {
-                    // Case where player has moved to opposite side
-                    dir = FaceHero(true) * -1f;
-                    _anim.speed = 1.5f;
-                    yield return _anim.PlayToEnd("TisoShootEnd");
-                    _anim.speed = 1f;
-                    yield return Dodge();
-                    yield return Dodge();
-                    _anim.speed = 1.5f;
-                    yield return _anim.PlayToEnd("TisoShootAntic");
-                    _anim.speed = 1f;
-                }
+                _anim.speed = 1;
             }
             _anim.speed = 1f;
             yield return _anim.PlayToEnd("TisoShootEnd");
@@ -257,6 +291,7 @@ namespace FiveKnights.Tiso
         {
             float dir = FaceHero();
             _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            PlayAudio(_tc, Clip.ThrowShield);
             yield return _anim.PlayToEnd("TisoThrow");
 
             GameObject[] shields = {Object.Instantiate(_shield), Object.Instantiate(_shield)};
@@ -278,8 +313,8 @@ namespace FiveKnights.Tiso
             Shield shCtrl = shields[0].GetComponent<Shield>();
             yield return new WaitWhile(() => !shCtrl.isDoneFlag ||
                 (dir > 0
-                ? shields[0].transform.position.x < transform.position.x - 0.9f
-                : shields[0].transform.position.x >= transform.position.x + 0.9f));
+                ? shields[0].transform.position.x < transform.position.x - 3
+                : shields[0].transform.position.x >= transform.position.x + 3f));
             _anim.enabled = true;
             _anim.speed = 3.5f;
             yield return _anim.PlayToFrame("TisoThrowCatch", 2);
@@ -296,6 +331,11 @@ namespace FiveKnights.Tiso
             _anim.speed = 2f;
             yield return _anim.PlayToEnd("TisoRunStart");
             _anim.Play("TisoRun");
+            
+            bool isDoneWalking = false;
+            
+            PlayAudio(_tc, Clip.Walk, 1f, 0f, () => !isDoneWalking);
+            
             _rb.velocity = new Vector2(RunSpeed * -dir, 0f);
             yield return new WaitWhile(() =>
                 !CheckPlayerAbove() && (dir < 0
@@ -308,6 +348,8 @@ namespace FiveKnights.Tiso
                 yield return BlockUp();
                 yield break;
             }
+
+            isDoneWalking = true;
             yield return _anim.PlayToEnd("TisoRunEnd");
             _anim.speed = 1f;
             _rb.velocity = Vector2.zero;
@@ -316,6 +358,15 @@ namespace FiveKnights.Tiso
         public IEnumerator Dodge()
         {
             float dir = FaceHero();
+            // If near the edges and backing into the edge, then jump off edge instead
+            // Don't do this if already did JumpGlideSlam once
+            if (_tc.Rep[Dodge] == 0 && ((transform.position.x < TisoController.LeftX + 4f && dir < 0) ||
+                (transform.position.x > TisoController.RightX - 4f && dir > 0)))
+            {
+                _tc.Rep[Dodge]++;
+                yield return JumpGlideSlam();
+                yield break;
+            }
             _rb.velocity = new Vector2(DodgeSpeed * dir, 0f);
             yield return _anim.PlayToEnd("TisoDodge");
             _rb.velocity = Vector2.zero;
@@ -380,7 +431,7 @@ namespace FiveKnights.Tiso
             FaceHero();
             yield return _anim.PlayToEnd("TisoLand");
             _anim.Play("TisoRoar");
-            _tc.PlayAudio(TisoFinder.TisoAud["AudTisoRoar"]);
+            PlayAudio(_tc, Clip.Roar);
 
             yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
             
@@ -442,7 +493,7 @@ namespace FiveKnights.Tiso
                         yield return ExplodeBomb(bombAnim, 0.6f, 2f, null);
                         _anim.enabled = true;
                         _anim.Play("TisoDeath");
-                        _tc.PlayAudio(TisoFinder.TisoAud["AudTisoDeath"]);
+                        PlayAudio(_tc, Clip.Death);
                         transform.position -= new Vector3(0f, 0.5f, 0f);
                         transform.localScale.Scale(new Vector3(-1f, 1f, 1f));
                         yield break;

@@ -74,9 +74,18 @@ namespace FiveKnights.Tiso
             FiveKnights.preloadedGO["Tiso"] = ab.LoadAsset<GameObject>("Tiso");
             
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            TisoAud["AudTisoDeath"] = snd.LoadAsset<AudioClip>("AudTisoDeath");
-            TisoAud["AudTisoRoar"] = snd.LoadAsset<AudioClip>("AudTisoRoar");
-            TisoAud["AudTisoYell"] = snd.LoadAsset<AudioClip>("AudTisoYell");
+
+            string[] audNames =
+            {
+                "AudSpikeHitWall", "AudTisoJump", "AudTisoLand", "AudTisoShoot", "AudTisoSpin", "AudTisoThrowShield",
+                "AudTisoWalk", "AudTisoDeath", "AudTisoRoar", "AudTisoYell", "AudLand"
+            };
+
+            foreach (var audName in audNames)
+            {
+                TisoAud[audName] = snd.LoadAsset<AudioClip>(audName);
+            }
+            
             for (int i = 1; i < 7; i++)
             {
                 TisoAud[$"AudTiso{i}"] = snd.LoadAsset<AudioClip>($"AudTiso{i}");

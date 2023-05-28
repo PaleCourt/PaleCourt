@@ -86,7 +86,7 @@ namespace FiveKnights
         [Pure]
         public static IEnumerator PlayBlocking(this Animator self, string anim)
         {
-            self.Play(anim);
+            self.Play(anim, -1, 0f);
 
             yield return new WaitForEndOfFrame();
 
@@ -209,14 +209,15 @@ namespace FiveKnights
             }
         }
 
-        public static void PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f,
-            float pitchVariation = 0f, Transform posOverride = null)
+        public static AudioSource PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f,
+            float pitchVariation = 0f, Transform posOverride = null, Func<bool> destroyWhen = null)
 		{
             GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
             audioPlayer.transform.position = posOverride == null ? mb.transform.position : posOverride.position;
-
+            
             AutoDestroy autoDestroy = audioPlayer.GetComponent<AutoDestroy>();
             autoDestroy.Time = clip.length + 1f;
+            autoDestroy.ShouldDestroy = destroyWhen;
 
             AudioSource audioSource = audioPlayer.GetComponent<AudioSource>();
             audioSource.clip = clip;
@@ -224,6 +225,8 @@ namespace FiveKnights
             audioSource.pitch = UnityEngine.Random.Range(1f - pitchVariation, 1f + pitchVariation);
             audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
             audioSource.Play();
+
+            return audioSource;
         }
     }
 }

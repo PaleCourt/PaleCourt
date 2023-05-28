@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using FiveKnights.BossManagement;
+using FiveKnights.Misc;
 using FrogCore.Ext;
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
@@ -210,28 +211,6 @@ namespace FiveKnights.Zemer
                 [ZemerSlam] = 1,
             };
 
-            Func<IEnumerator> ChooseAttack(List<Func<IEnumerator>> attLst)
-            {
-                List<Func<IEnumerator>> cpyList = new List<Func<IEnumerator>>(attLst);
-                Func<IEnumerator> currAtt = cpyList[_rand.Next(0, cpyList.Count)];
-                
-                while (currAtt != null && cpyList.Count > 0 && rep[currAtt] >= max[currAtt])
-                {
-                    currAtt = cpyList[_rand.Next(0, cpyList.Count)];
-                    cpyList.Remove(currAtt);
-                }
-
-                if (cpyList.Count == 0)
-                {
-                    foreach (var att in attLst.Where(x => x != null)) rep[att] = 0;
-                    currAtt = attLst[_rand.Next(0, attLst.Count)];
-                }
-                
-                if (currAtt != null) rep[currAtt]++;
-                
-                return currAtt;
-            }
-           
             while (true)
             {
                 Log("[Waiting to start calculation]");
@@ -275,7 +254,7 @@ namespace FiveKnights.Zemer
                         yield return Dodge();
                         Log("End Dodge");
                         var lst = new List<Func<IEnumerator>> {Dash, FancyAttack, NailLaunch, null};
-                        var att = ChooseAttack(lst);
+                        var att = MiscMethods.ChooseAttack(lst, rep, max);
                         if (att != null)
                         {
                             Log("Doing " + att.Method.Name);
@@ -304,7 +283,7 @@ namespace FiveKnights.Zemer
                         AerialAttack, DoubleFancy, SweepDash, ZemerSlam
                     };
                     
-                    currAtt = ChooseAttack(attLst);
+                    currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
                     
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
@@ -316,7 +295,7 @@ namespace FiveKnights.Zemer
                             new List<Func<IEnumerator>> {Attack1Complete} : 
                             new List<Func<IEnumerator>> {Attack1Complete, FancyAttack, FancyAttack};
 
-                        currAtt = ChooseAttack(lst2);
+                        currAtt = MiscMethods.ChooseAttack(lst2, rep, max);
                         Log("Doing " + currAtt.Method.Name);
                         yield return currAtt();
                         Log("Done " + currAtt.Method.Name);
@@ -412,6 +391,20 @@ namespace FiveKnights.Zemer
             IEnumerator Throw()
             {
                 Vector2 hero = _target.transform.position;
+                
+                // If player is too close dodge back or if too close to wall as well dash forward
+                if (hero.x.Within(transform.position.x, 6f))
+                {
+                    // Too close to wall
+                    if (transform.position.x.Within(LeftX, 4f) || transform.position.x.Within(RightX, 4f))
+                    {
+                        yield return Dash();
+                    }
+                    else
+                    {
+                        yield return Dodge();
+                    }
+                }
                 
                 dir = FaceHero();
                 float rot;
@@ -1411,6 +1404,7 @@ namespace FiveKnights.Zemer
                     yield return (StrikeAlternate());
                     yield break;
                 }
+                
                 PlayAudioClip("AudDashIntro");
                 
                 yield return _anim.WaitToFrame(6);
@@ -1470,14 +1464,15 @@ namespace FiveKnights.Zemer
                 
                 yield return _anim.WaitToFrame(5);
     
-                PlayAudioClip("AudDashIntro");
+                
                 if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
                 {
                     yield return StrikeAlternate();
                     transform.position = new Vector3(transform.position.x, GroundY);
                     yield break;
                 }
-
+                
+                PlayAudioClip("AudDashIntro");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 PlayAudioClip("AudDash");
                 _anim.speed = 2f;

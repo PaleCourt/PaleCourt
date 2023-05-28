@@ -927,6 +927,7 @@ namespace FiveKnights
 
             IEnumerator PlayAnimHegemol()
             {
+                yield return new WaitForEndOfFrame();
                 yield return new WaitUntil(() => hegemolAnim.GetCurrentFrame() < 2);
                 hegemolAnim.enabled = false;
                 yield return new WaitForSeconds(0.1f);

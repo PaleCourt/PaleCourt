@@ -3,7 +3,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using FiveKnights.Misc;
 using GlobalEnums;
+using HutongGames.PlayMaker.Actions;
+using static FiveKnights.Tiso.TisoAudio;
 using SFCore.Utils;
 using UnityEngine;
 using Vasi;
@@ -32,13 +35,14 @@ namespace FiveKnights.Tiso
         public const float LeftX = 52f;
         public const float RightX = 69.7f;
         public const float MiddleX = 61f;
-        private const int MaxHP = 1200;
+        private const int MaxHp = 1200;
         private const int MaxDreamAmount = 3;
         private Random _rand;
         private TisoAttacks _attacks;
+        // Flag that is set to true when Tiso is hit, reset before using
+        private bool _hit;
 
-        private Dictionary<Func<IEnumerator>, int> _rep;
-
+        public Dictionary<Func<IEnumerator>, int> Rep;
         private Dictionary<Func<IEnumerator>, int> _max;
 
         private void Awake()
@@ -76,12 +80,13 @@ namespace FiveKnights.Tiso
 
             _attacks = new TisoAttacks(transform, _rb, _bc, _anim, _deathEff);
 
-            _rep = new Dictionary<Func<IEnumerator>, int>
+            Rep = new Dictionary<Func<IEnumerator>, int>
             {
                 [_attacks.Shoot] = 0,
                 [_attacks.ThrowShield] = 0,
                 [_attacks.JumpGlideSlam] = 0,
                 [_attacks.SpawnBombs] = 0,
+                [_attacks.Dodge] = 0
             };
 
             _max = new Dictionary<Func<IEnumerator>, int>
@@ -94,7 +99,7 @@ namespace FiveKnights.Tiso
 
             AssignFields();
 
-            _hm.hp = MaxHP;
+            _hm.hp = MaxHp;
             gameObject.layer = (int) PhysLayers.ENEMIES;
         }
 
@@ -134,6 +139,7 @@ namespace FiveKnights.Tiso
             _rb.isKinematic = false;
             _anim.Play("TisoSpin");
             this.PlayAudio(TisoFinder.TisoAud["AudTiso1"]);
+            PlayAudio(this, Clip.Spin);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
             _bc.enabled = true;
@@ -141,6 +147,7 @@ namespace FiveKnights.Tiso
             _rb.isKinematic = true;
             _rb.velocity = Vector2.zero;
             transform.position = new Vector3(transform.position.x, GroundY);
+            PlayAudio(this, Clip.Land);
             // Play intro and wait a bit in the part where he shows off his shield
             yield return _anim.PlayToEnd("TisoLand");
             
@@ -150,11 +157,11 @@ namespace FiveKnights.Tiso
             battle.SetState("Music");
 
             _anim.Play("TisoRoar");
-            this.PlayAudio(TisoFinder.TisoAud["AudTisoRoar"]);
+            AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
-            yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
-            //_anim.Play("TisoIntro");
-            //yield return new WaitForSeconds(0.75f);
+            _hit = false;
+            yield return new WaitSecWhile(() => !_hit, TisoFinder.TisoAud["AudTisoRoar"].length);
+            Destroy(aud.gameObject);
         }
 
         private IEnumerator Attacks()
@@ -213,7 +220,7 @@ namespace FiveKnights.Tiso
                     };
                 }
                 
-                Func<IEnumerator> currAtt = ChooseAttack(attLst);
+                Func<IEnumerator> currAtt = MiscMethods.ChooseAttack(attLst, Rep, _max);
 
                 Log("Doing " + currAtt.Method.Name);
                 yield return currAtt();
@@ -256,6 +263,7 @@ namespace FiveKnights.Tiso
         {
             if (tar.name.Contains("Tiso"))
             {
+                _hit = true;
                 _hitEffects.RecieveHitEffect(dir);
 
                 if (_hm.hp <= 100 && !_hasDied)
@@ -318,11 +326,11 @@ namespace FiveKnights.Tiso
         {
             Log("Assign Tiso Fields.");
             
-            HealthManager hornHP = _dd.GetComponent<HealthManager>();
+            HealthManager hornHp = _dd.GetComponent<HealthManager>();
             foreach (FieldInfo fi in typeof(HealthManager).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
                          .Where(x => x.Name.Contains("Prefab")))
             {
-                fi.SetValue(_hm, fi.GetValue(hornHP));
+                fi.SetValue(_hm, fi.GetValue(hornHp));
             }
 
             EnemyHitEffectsUninfected ogrimHitEffects = _dd.GetComponent<EnemyHitEffectsUninfected>();
@@ -338,18 +346,18 @@ namespace FiveKnights.Tiso
                 fi.SetValue(_hitEffects, fi.GetValue(ogrimHitEffects));
             }
 
-            var spikeHB = transform.Find("SwapWeapon").Find("s3").Find("s8").Find("Spikes").GetComponent<BoxCollider2D>();
-            spikeHB.gameObject.layer = (int)PhysLayers.HERO_ATTACK;
-            spikeHB.gameObject.AddComponent<Pogoable>();
-            spikeHB.gameObject.AddComponent<Tink>();
-            spikeHB.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+            var spikeHb = transform.Find("SwapWeapon").Find("s3").Find("s8").Find("Spikes").GetComponent<BoxCollider2D>();
+            spikeHb.gameObject.layer = (int)PhysLayers.HERO_ATTACK;
+            spikeHb.gameObject.AddComponent<Pogoable>();
+            spikeHb.gameObject.AddComponent<Tink>();
+            spikeHb.gameObject.AddComponent<DamageHero>().damageDealt = 1;
 
-            foreach (var shieldHB in transform.Find("Shields").GetComponentsInChildren<BoxCollider2D>(true))
+            foreach (var shieldHb in transform.Find("Shields").GetComponentsInChildren<BoxCollider2D>(true))
             {
-                shieldHB.gameObject.layer = (int)PhysLayers.ENEMY_ATTACK;
-                shieldHB.gameObject.AddComponent<Pogoable>();
-                shieldHB.gameObject.AddComponent<Tink>();
-                shieldHB.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                shieldHb.gameObject.layer = (int)PhysLayers.ENEMY_ATTACK;
+                shieldHb.gameObject.AddComponent<Pogoable>();
+                shieldHb.gameObject.AddComponent<Tink>();
+                shieldHb.gameObject.AddComponent<DamageHero>().damageDealt = 1;
             }
 
             var shieldSpike = transform.Find("ShieldSpikePolygon");
@@ -364,32 +372,6 @@ namespace FiveKnights.Tiso
                 Mirror.GetField<ExtraDamageable, AudioSource>(_dd.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
             
             Log("Done assigning Tiso Fields.");
-        }
-
-        Func<IEnumerator> ChooseAttack(List<Func<IEnumerator>> attLst)
-        {
-            List<Func<IEnumerator>> cpyList = new List<Func<IEnumerator>>(attLst);
-            Func<IEnumerator> currAtt = cpyList[_rand.Next(0, cpyList.Count)];
-
-            while (currAtt != null && cpyList.Count > 0 && _rep[currAtt] >= _max[currAtt])
-            {
-                currAtt = cpyList[_rand.Next(0, cpyList.Count)];
-                cpyList.Remove(currAtt);
-            }
-
-            if (cpyList.Count == 0)
-            {
-                foreach (var att in attLst.Where(x => x != null))
-                {
-                    _rep[att] = 0;
-                }
-
-                currAtt = attLst[_rand.Next(0, attLst.Count)];
-            }
-
-            if (currAtt != null) _rep[currAtt]++;
-
-            return currAtt;
         }
 
         private void OnDestroy()

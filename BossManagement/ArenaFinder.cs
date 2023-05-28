@@ -53,6 +53,8 @@ namespace FiveKnights
 
         private BossStatue lastBossStatue;
 
+        private bool _allowInteract;
+
         private void Start()
         {
             USceneManager.activeSceneChanged += SceneChanged;
@@ -62,9 +64,17 @@ namespace FiveKnights
 			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
             On.BossSceneController.Awake += BossSceneController_Awake;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
+            On.HeroController.CanInteract += HeroCanInteract;
             spriteAnimations = new Dictionary<string, tk2dSpriteAnimation>();
             spriteCollections = new Dictionary<string, tk2dSpriteCollection>();
             collectionData = new Dictionary<string, tk2dSpriteCollectionData>();
+            _allowInteract = true;
+        }
+
+        private bool HeroCanInteract(On.HeroController.orig_CanInteract orig, HeroController self)
+        {
+            Log("Sasad");
+            return _allowInteract && orig(self);
         }
 
         // Put this back in because we need it apparently??
@@ -118,32 +128,6 @@ namespace FiveKnights
 			}
 			orig(self);
 		}
-
-		/*private void SceneManagerOnStart(On.SceneManager.orig_Start orig, SceneManager self)
-		{
-			Log("Changing SceneManager settings");
-			if(currScene == ZemerScene)
-            {
-                self.environmentType = 7;
-            }
-            if(currScene == IsmaScene)
-			{
-                self.environmentType = 1;
-                self.darknessLevel = -1;
-			}
-            if(currScene == Isma2Scene || currScene == DryyaScene || currScene == ZemerScene || 
-                currScene == HegemolScene || currScene == IsmaScene)
-			{
-                self.saturation = 0.9f;
-            }
-            else if (currScene == PrevFightScene)
-            {
-                Log("Changed SceneManager settings for WP_09");
-                //self.noLantern = true;
-                //self.darknessLevel = 1;
-            }
-            orig(self);
-        }*/
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
@@ -224,6 +208,29 @@ namespace FiveKnights
             
         }
 
+        // This makes it so player cant immediately reinteract with doorway when teleporting between workshop and
+        // pale court workshop
+        private IEnumerator DelayInspection()
+        {
+            _allowInteract = false;
+            
+            bool change = false;
+            tk2dSpriteAnimator tkAnim = HeroController.instance.GetComponent<tk2dSpriteAnimator>();
+            string animName = "Exit Door To Idle";
+            
+            while (true)
+            {
+                Log($"Current clip is {HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name}");
+                if (change && tkAnim.CurrentClip.name == "Idle") break;
+                if (!change && tkAnim.CurrentClip.name == animName) change = true;
+                yield return null;
+            }
+            
+            yield return new WaitForSeconds(1f);
+            
+            _allowInteract = true;
+        }
+
         private void SceneChanged(Scene arg0, Scene arg1)
         {
             if(arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09")
@@ -231,6 +238,13 @@ namespace FiveKnights
                 CustomWP.isInGodhome = false;
                 return;
             }
+
+            if ((arg0.name == "GG_Workshop" && arg1.name == PrevFightScene) ||
+                (arg0.name == PrevFightScene && arg1.name == "GG_Workshop"))
+            {
+                StartCoroutine(DelayInspection());
+            }
+
 
             if (arg1.name is DryyaScene or IsmaScene or HegemolScene or ZemerScene)
             {
@@ -311,7 +325,7 @@ namespace FiveKnights
                     yield return null;
                     EventRegister.SendEvent("GG TRANSITION IN");
                     BossSceneController.Instance.GetType().GetProperty("HasTransitionedIn").SetValue(BossSceneController.Instance, true, null);
-                    if (arg1.name == ZemerScene || arg1.name == HegemolScene)
+                    if (arg1.name is ZemerScene or HegemolScene)
                     {
                         bsc.GetComponent<BossSceneController>().heroSpawn.position = new Vector3(25.0f, 27.4f);
                         HeroController.instance.transform.position = new Vector3(25.0f, 27.4f); 
@@ -597,6 +611,7 @@ namespace FiveKnights
             //On.SceneManager.Start -= SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
+            On.HeroController.CanInteract -= HeroCanInteract;
         }
 
         private void Log(object o)
