@@ -127,7 +127,7 @@ namespace FiveKnights
                 PlayMusic(null);
                 
                 yield return new WaitForSeconds(1.0f);
-                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 1);
+                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 0);
                 Log("Done with Dryya boss");
                 Destroy(this);
             }
@@ -191,7 +191,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => zc2 != null);
 
                 yield return new WaitForSeconds(1f);
-                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene, 0);
+                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene, 1);
                 Destroy(this);
             }
         }
@@ -202,10 +202,10 @@ namespace FiveKnights
 			switch(index)
 			{
                 case 0:
-                    FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
                     break;
                 case 1:
-                    FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
                     break;
                 case 2:
                     FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;

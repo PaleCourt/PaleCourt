@@ -2,6 +2,7 @@
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Modding;
+using Modding.Utils;
 using SFCore.Utils;
 using System;
 using System.Collections;
@@ -27,8 +28,8 @@ namespace FiveKnights
         private const float ATTACK_COOLDOWN_DEFAULT_32 = .25f;
         private const float ATTACK_COOLDOWN_44 = .49f;
         private const float ATTACK_COOLDOWN_44_32 = .31f;
-        private const float ATTACK_DURATION_DEFAULT = .36f;
-        private const float ATTACK_DURATION_DEFAULT_32 = .25f;
+        private const float ATTACK_DURATION_DEFAULT = .35f;
+        private const float ATTACK_DURATION_DEFAULT_32 = .28f;
         private const float ATTACK_DURATION_44 = .44f;
         private const float ATTACK_DURATION_44_32 = .25f;
         private const float COOLDOWN_CAP_44 = .17f;
@@ -52,7 +53,8 @@ namespace FiveKnights
             On.NailSlash.SetMantis += CancelMantis;
             On.HeroController.CanDoubleJump += FixDoubleJump;
             On.HeroController.CanCast += FixCast;
-            ModHooks.TakeDamageHook += ResetSpeed;
+            ModHooks.AfterTakeDamageHook += ResetSpeed;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += Dummy;
 
 
 
@@ -62,7 +64,7 @@ namespace FiveKnights
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
         }
 
-        
+
 
         private void OnDisable()
         {
@@ -72,7 +74,8 @@ namespace FiveKnights
             On.NailSlash.SetLongnail -= CancelLongnail;
             On.HeroController.CanDoubleJump -= FixDoubleJump;
             On.HeroController.CanCast -= FixCast;
-            ModHooks.TakeDamageHook -= ResetSpeed;
+            ModHooks.AfterTakeDamageHook -= ResetSpeed;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= Dummy;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_DEFAULT;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_DEFAULT_32;
@@ -92,6 +95,7 @@ namespace FiveKnights
                     _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
                     _hc.ATTACK_DURATION = ATTACK_DURATION_44;
                     _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
+                    this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
                     foreach (NailSlash nailslash in nailSlashes)
                     {
                         nailslash.GetComponent<tk2dSprite>().color = Color.white;
@@ -101,21 +105,23 @@ namespace FiveKnights
                 }
             }
         }
-        private int ResetSpeed(ref int hazardType, int damage)
+        private int ResetSpeed(int hazardType, int damageAmount)
         {
             timerRunning = false;
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
             _hc.ATTACK_DURATION = ATTACK_DURATION_44;
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
+            this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
             foreach (NailSlash nailslash in nailSlashes)
             {
                 nailslash.GetComponent<tk2dSprite>().color = Color.white;
                 nailslash.GetComponent<AudioSource>().pitch = 1;
             }
             timer = 0;
-            return damage;
+            return damageAmount;
         }
+        
         private void IncrementSpeed(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             orig(self, hitInstance);
@@ -142,7 +148,7 @@ namespace FiveKnights
                 if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f && _hc.ATTACK_COOLDOWN_TIME >= .18f  || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .18f && _hc.ATTACK_COOLDOWN_TIME_CH >= .14f)
                 {
                     Log("Play Audio");
-                    this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_charm_get"), .5f);
+                    this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_max"), .5f);
                 }
 
                 if (_hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44) { _hc.ATTACK_COOLDOWN_TIME = COOLDOWN_CAP_44; }
@@ -211,6 +217,56 @@ namespace FiveKnights
                 }
 
             }
+
+        }
+        private void Dummy(Scene From, Scene To)
+        {
+            if (To.name == "Deepnest_East_16")
+            {
+                Log("fuck");
+                var dummy = To.FindGameObject("Training Dummy");
+                dummy.LocateMyFSM("Hit").GetState("Light Dir").InsertMethod(() => IncrementSpeedDummy(), 0);
+            }
+        }
+        private void IncrementSpeedDummy()
+        {
+            Log("Fuck");
+            timer = 0;
+            timerRunning = true;
+
+            _hc.ATTACK_COOLDOWN_TIME -= .048f;
+            _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
+            _hc.ATTACK_DURATION -= .048f;
+            _hc.ATTACK_DURATION_CH -= .038f;
+            //foreach (NailSlash nailslash in nailSlashes)
+            {
+                //  nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
+                //if (nailslash.GetComponent<AudioSource>().pitch >= 1.2f) { nailslash.GetComponent<AudioSource>().pitch = 1.4f; }
+            }
+
+            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f && _hc.ATTACK_COOLDOWN_TIME >= .18f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .18f && _hc.ATTACK_COOLDOWN_TIME_CH >= .14f)
+            {
+                Log("Play Audio");
+                this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_max"), .5f);
+            }
+
+            if (_hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44) { _hc.ATTACK_COOLDOWN_TIME = COOLDOWN_CAP_44; }
+            if (_hc.ATTACK_COOLDOWN_TIME_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_COOLDOWN_TIME_CH = COOLDOWN_CAP_44_32; }
+            if (_hc.ATTACK_DURATION <= COOLDOWN_CAP_44) { _hc.ATTACK_DURATION = COOLDOWN_CAP_44; }
+            if (_hc.ATTACK_DURATION_CH <= COOLDOWN_CAP_44_32) { _hc.ATTACK_DURATION_CH = COOLDOWN_CAP_44_32; }
+
+            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= COOLDOWN_CAP_44 || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH == COOLDOWN_CAP_44_32)
+            {
+                if (_pd.equippedCharm_6 && _pd.health == 1) { }
+                else
+                {
+                    foreach (NailSlash nailslash in nailSlashes)
+                    {
+                        nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f);
+                    }
+                }
+            }
+
 
         }
         private bool FixCast(On.HeroController.orig_CanCast orig, HeroController self)

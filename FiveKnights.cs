@@ -245,6 +245,7 @@ namespace FiveKnights
                 ("Abyss_05", "Dusk Knight/Shield"),
                 // For charm collect/upgrade cutscene
                 ("Room_Queen", "UI Msg Get WhiteCharm"),
+                ("Room_Queen", "Queen Item"),
                 // The next three are for the dream exit field in Reward Room
                 ("White_Palace_03_hub", "dream_nail_base"),
                 ("White_Palace_03_hub", "dream_beam_animation"),
@@ -256,12 +257,18 @@ namespace FiveKnights
                 ("Room_Mansion","Xun NPC/White Flash"),
                 ("GG_Radiance", "Boss Control/Plat Sets/Hazard Plat/Radiant Plat Small (1)"),
                 ("GG_Atrium", "gg_roof_door_pieces"),
+
+                // For Lament VFX
+                ("Tutorial_01", "_Props/Tut_tablet_top/Glows"),
+                ("Ruins1_23", "Mage"),
+
                 // For tiso explosions
                 ("Fungus2_03", "Mushroom Turret (2)"),
-                ("Ruins1_23", "Ruins Vial Empty/Active/soul_cache (1)/small_soul_cache"),
-                ("Ruins1_23", "Mage"),
+                
                 // Tram
                 ("Crossroads_46", "Tram Main")
+
+               
             };
         }
 
@@ -331,8 +338,10 @@ namespace FiveKnights
             preloadedGO["isma_stat"] = null;
 
             preloadedGO["CharmGet"] = preloadedObjects["Room_Queen"]["UI Msg Get WhiteCharm"];
+            preloadedGO["Shiny"] = preloadedObjects["Room_Queen"]["Queen Item"];
+
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
-            preloadedGO["SoulEffect"] = preloadedObjects["Ruins1_23"]["Ruins Vial Empty/Active/soul_cache (1)/small_soul_cache"];
+            preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
 
             #region Add Entries
             journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings

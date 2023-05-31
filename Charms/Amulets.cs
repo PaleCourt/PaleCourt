@@ -19,7 +19,6 @@ namespace FiveKnights
         private HeroController _hc => HeroController.instance;
         private PlayerData _pd => PlayerData.instance;
 
-        private AudioSource _audio;
 
         private PlayMakerFSM _spellControl;
 
@@ -74,10 +73,7 @@ namespace FiveKnights
             _spellControl = _hc.spellControl;
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            _audioPlayerActor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-            _audio = _audioPlayerActor.GetComponent<AudioSource>();
-            Log("Got Audio");
-            _audio.pitch = 1.5f;
+
 
             // King's Honour
             _hc.gameObject.AddComponent<RoyalAura>().enabled = false;
@@ -169,19 +165,19 @@ namespace FiveKnights
             _spellControl.RemoveAction<SendEventByName>("Scream Burst 2 Blasts");
             _spellControl.InsertMethod("Scream Burst 2 Blasts", 0, () => HeroController.instance.GetComponent<BoonSpells>().CastBlasts(true));
 
-            //Old Lament
-            //_spellControl.CopyState("Focus", "Focus Blast");
-            //_spellControl.CopyState("Focus Heal", "Focus Heal Blast");
-            //_spellControl.CopyState("Start MP Drain", "Start MP Drain Blast");
-            //_spellControl.CopyState("Focus Heal 2", "Focus Heal 2 Blast");
-            //_spellControl.InsertCoroutine("Focus Blast", 0, PureVesselBlastFadeIn);
-            //_spellControl.InsertCoroutine("Focus Heal Blast", 0, PureVesselBlast);
-            //_spellControl.InsertCoroutine("Start MP Drain Blast", 0, PureVesselBlastFadeIn);
-            //_spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
 
-            //_spellControl.InsertMethod("Cancel All", 0, CancelBlast);
-            //_spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
-            //_spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
+            _spellControl.CopyState("Focus", "Focus Blast");
+            _spellControl.CopyState("Focus Heal", "Focus Heal Blast");
+            _spellControl.CopyState("Start MP Drain", "Start MP Drain Blast");
+            _spellControl.CopyState("Focus Heal 2", "Focus Heal 2 Blast");
+            _spellControl.InsertCoroutine("Focus Blast", 0, PureVesselBlastFadeIn);
+            _spellControl.InsertCoroutine("Focus Heal Blast", 0, PureVesselBlast);
+            _spellControl.InsertCoroutine("Start MP Drain Blast", 0, PureVesselBlastFadeIn);
+            _spellControl.InsertCoroutine("Focus Heal 2 Blast", 0, PureVesselBlast);
+
+            _spellControl.InsertMethod("Cancel All", 0, CancelBlast);
+            _spellControl.InsertMethod("Focus Cancel", 0, CancelBlast);
+            _spellControl.InsertMethod("Focus Cancel 2", 0, CancelBlast);
         }
 
         private void AddVoidAttacks(HeroController self)
@@ -400,33 +396,47 @@ namespace FiveKnights
             _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
             _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
 
-           _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
+            _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
+            if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
+            {
+                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus Blast");
+                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal Blast");
+                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain Blast");
+                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2 Blast");
+            }
+            else
+            {
+                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus");
+                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal");
+                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain");
+                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
+            }
 
             _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 
             _hc.GetComponent<AbyssalBloom>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[3];
         }
 
-        private GameObject _blast;
+        private GameObject _blastKnight;
 
         private IEnumerator PureVesselBlastFadeIn()
         {
-            AudioPlayerOneShotSingle("Focus Charge", 1.2f, 1.5f);
-            _blast = Instantiate(FiveKnights.preloadedGO["Blast"], HeroController.instance.transform);
-            _blast.transform.localPosition += Vector3.up * 0.25f;
-            _blast.SetActive(true);
-            Destroy(_blast.FindGameObjectInChildren("hero_damager"));
+            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value);
+            _blastKnight = Instantiate(FiveKnights.preloadedGO["Blast"], HeroController.instance.transform);
+            _blastKnight.transform.localPosition += Vector3.up * 0.25f;
+            _blastKnight.SetActive(true);
+            Destroy(_blastKnight.FindGameObjectInChildren("hero_damager"));
 
             if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
             {
-                _blast.transform.localScale *= 2.5f;
+                _blastKnight.transform.localScale *= 2.5f;
             }
             else
             {
-                _blast.transform.localScale *= 1.5f;
+                _blastKnight.transform.localScale *= 1.5f;
             }
 
-            Animator anim = _blast.GetComponent<Animator>();
+            Animator anim = _blastKnight.GetComponent<Animator>();
             anim.speed = 1;
             if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
             {
@@ -444,40 +454,47 @@ namespace FiveKnights
         private IEnumerator PureVesselBlast()
         {
             Log("Pure Vessel Blast");
-            _blast.layer = 17;
-            Animator anim = _blast.GetComponent<Animator>();
+            _blastKnight.layer = 17;
+            Animator anim = _blastKnight.GetComponent<Animator>();
             anim.speed = 1;
             int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
             anim.PlayInFixedTime(hash, -1, 0.8f);
 
             Log("Adding CircleCollider2D");
-            CircleCollider2D blastCollider = _blast.AddComponent<CircleCollider2D>();
+            CircleCollider2D blastCollider = _blastKnight.AddComponent<CircleCollider2D>();
             blastCollider.radius = 2.5f;
             if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
             {
-                blastCollider.radius *= 2.5f / 1.5f;
+                blastCollider.radius *= 2.5f;
+            }
+            else
+            {
+                blastCollider.radius *= 1.5f;
             }
 
-            blastCollider.offset = Vector3.up;
+            blastCollider.offset = Vector3.down;
             blastCollider.isTrigger = true;
             Log("Adding DebugColliders");
             //_blast.AddComponent<DebugColliders>();
             Log("Adding DamageEnemies");
-            DamageEnemies damageEnemies = _blast.AddComponent<DamageEnemies>();
-            damageEnemies.damageDealt = 50;
+            _blastKnight.AddComponent<DamageEnemies>();
+            DamageEnemies damageEnemies = _blastKnight.GetComponent<DamageEnemies>();
+            damageEnemies.damageDealt = 40;
             damageEnemies.attackType = AttackTypes.Spell;
             damageEnemies.ignoreInvuln = false;
             damageEnemies.enabled = true;
             Log("Playing AudioClip");
-            AudioPlayerOneShotSingle("Burst", 1.5f, 1.5f);
-            yield return new WaitForSeconds(0.1f);
-            Destroy(_blast);
+            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f, 1.5f);
+            Log("Audio Clip finished");
+            yield return new WaitForSeconds(.11f);
+            blastCollider.enabled = false;
+            yield return new WaitForSeconds(0.69f);
+            Destroy(_blastKnight);
         }
 
         private void CancelBlast()
         {
-            if (_blast != null) Destroy(_blast);
-            _audio.Stop();
+            if (_blastKnight != null) Destroy(_blastKnight);
         }
 
         //Old method of setting Purity nail size, caused default nail swings to be too large
@@ -540,38 +557,6 @@ namespace FiveKnights
                 }
             }
         }*/
-
-        private void AudioPlayerOneShotSingle(AudioClip clip, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 1.0f, float volume = 1.0f)
-        {
-            GameObject actorInstance = _audioPlayerActor.Spawn(HeroController.instance.transform.position, Quaternion.Euler(Vector3.up));
-            AudioSource audio = actorInstance.GetComponent<AudioSource>();
-            audio.pitch = Random.Range(pitchMin, pitchMax);
-            audio.volume = volume;
-            audio.PlayOneShot(clip);
-        }
-
-        private void AudioPlayerOneShotSingle(string clipName, float pitchMin = 1.0f, float pitchMax = 1.0f, float time = 1.0f, float volume = 1.0f)
-        {
-            AudioClip GetAudioClip()
-            {
-                switch (clipName)
-                {
-                    case "Burst":
-                        return (AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value;
-                    case "Focus Charge":
-                        return (AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value;
-                    case "Plume Up":
-                        return (AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Plume Up", 1).audioClip.Value;
-                    case "Small Burst":
-                        return (AudioClip)_blastControl.GetAction<AudioPlayerOneShotSingle>("Sound", 1).audioClip.Value;
-                    default:
-                        return null;
-                }
-            }
-
-            AudioPlayerOneShotSingle(GetAudioClip(), pitchMin, pitchMax, time, volume);
-        }
-
         private void OnDestroy()
         {
             On.HeroController.Start -= On_HeroController_Start;
