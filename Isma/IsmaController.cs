@@ -656,7 +656,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb", -1, 0f);
-                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                if(!playingVoice) StartCoroutine(PlayVoice());
                 yield return new WaitForEndOfFrame();
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _anim.enabled = false;
@@ -794,7 +794,7 @@ namespace FiveKnights.Isma
                 
                 arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
-                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                if(!playingVoice) StartCoroutine(PlayVoice());
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _rb.velocity = new Vector2(0f, 0f);
@@ -987,7 +987,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("GFistAntic");
-                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                if(!playingVoice) StartCoroutine(PlayVoice());
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1042,7 +1042,7 @@ namespace FiveKnights.Isma
         private IEnumerator BowWhipAttack()
         {
             float dir = -1f * FaceHero(true);
-            this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+            if(!playingVoice) StartCoroutine(PlayVoice());
             _anim.PlayAt("LoneDeath", 1);
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
@@ -1167,7 +1167,7 @@ namespace FiveKnights.Isma
                     Log("Disabling animation");
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                     _anim.enabled = false;
-                    this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                    if(!playingVoice) StartCoroutine(PlayVoice());
 
                     // Wait for the animation to reenable to hit the ball or if the ball was destroyed right when Isma went to hit it
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1301,7 +1301,7 @@ namespace FiveKnights.Isma
 
                 Vector2 pos = dd.transform.position;
 
-                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                if(!playingVoice) StartCoroutine(PlayVoice());
                 float side = _rbDD.velocity.x > 0f ? 1f : -1f;
                 float dir = FaceHero();
                 gameObject.transform.position = new Vector2(pos.x + side * 2f, pos.y + 0.38f);
@@ -1357,7 +1357,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("ThornPillarsAntic");
-                this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+                if(!playingVoice) StartCoroutine(PlayVoice());
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1430,7 +1430,7 @@ namespace FiveKnights.Isma
             _anim.Play("AgonyLoopIntro");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            this.PlayAudio(_randVoice[_rand.Next(0, _randVoice.Count)], 1f);
+            if(!playingVoice) StartCoroutine(PlayVoice());
             _anim.speed = 1.7f;
 
             yield return PerformAgony(agonyThorns, tAnim, onlyIsma ? 3 : 1);
@@ -2202,6 +2202,17 @@ namespace FiveKnights.Isma
         private bool FastApproximately(float a, float b, float threshold)
         {
             return ((a - b) < 0 ? ((a - b) * -1) : (a - b)) <= threshold;
+        }
+
+        // Special coroutine is used to avoid voice overlaps
+        private bool playingVoice = false;
+        private IEnumerator PlayVoice()
+		{
+            playingVoice = true;
+            AudioClip voice = _randVoice[_rand.Next(0, _randVoice.Count)];
+            this.PlayAudio(voice, 1f);
+            yield return new WaitForSeconds(voice.length);
+            playingVoice = false;
         }
 
         private IEnumerator WaitToAttack()

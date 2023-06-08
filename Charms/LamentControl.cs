@@ -24,6 +24,7 @@ namespace FiveKnights
         private List<GameObject> _blast = new List<GameObject>();
         private List<GameObject> _line = new List<GameObject>();
         private List<GameObject> _focusLines = new List<GameObject>();
+        private List<IEnumerator> _createLine = new List<IEnumerator>();
         private void OnEnable()
         {
             On.HealthManager.TakeDamage += ApplyStatus;
@@ -34,18 +35,22 @@ namespace FiveKnights
             _spellControl = HeroController.instance.spellControl;
             if (_spellControl != null)
             {
-                _spellControl.InsertMethod("Cancel All", 14, BlastControlCancel);
-                _spellControl.InsertMethod("Focus Cancel", 14, BlastControlCancel);
-                _spellControl.InsertMethod("Focus Cancel 2", 17, BlastControlCancel);
+                _spellControl.InsertMethod("Cancel All", 33, BlastControlCancel);
+                _spellControl.InsertMethod("Focus Cancel", 15, BlastControlCancel);
+                _spellControl.InsertMethod("Focus Cancel 2", 18, BlastControlCancel);
 
-                _spellControl.InsertMethod("Focus", 14, BlastControlFadeIn);
-                _spellControl.InsertMethod("Start MP Drain", 1, BlastControlFadeIn);
-               
-                _spellControl.InsertMethod("Focus Heal", 15, BlastControlMain);
-                _spellControl.InsertMethod("Focus Heal 2", 17, BlastControlMain);
+                _spellControl.InsertMethod("Focus Blast", 15, BlastControlFadeIn);
+                _spellControl.InsertMethod("Start MP Drain Blast", 2, BlastControlFadeIn);
+
+                _spellControl.InsertMethod("Focus Heal Blast", 16, BlastControlMain);
+                _spellControl.InsertMethod("Focus Heal 2 Blast", 18, BlastControlMain);
             }
         }
         private void BlastControlCancel()
+        {
+            PureVesselBlastCancel();
+        }
+        private void PureVesselBlastCancel()
         {
             foreach (GameObject enemy in markedEnemies)
             {
@@ -53,43 +58,53 @@ namespace FiveKnights
                 var index = markedEnemies.IndexOf(enemy);
                try
                 {
+                    if(_focusLines != null) { 
                     Log("Attempting to stop focus lines");
                     _focusLines[index].GetComponent<tk2dSpriteAnimator>().Stop();
-                    Log("An animation was playing and was stopped");
+                    Log("Animation was stopped");
                     Destroy(_focusLines[index]);
                     Log("The object was deleted");
                     _focusLines.RemoveAt(index);
                     Log($"The index number {index} was cleared");
+                        }
                 }
                 catch(ArgumentOutOfRangeException e) { }
                 try
                 {
-                    if(!markedEnemies[index].GetComponent<Afflicted>())
-					{
-                        Log("Afficted component not found");
-					}
-                    else
-					{
-                        markedEnemies[index].GetComponent<Afflicted>().SoulEffect.SetActive(true);
-                        markedEnemies[index].GetComponent<Afflicted>().SoulEffect.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, 1);
-                        Log("Reactivated Soul Effeect");
+                    if (markedEnemies[index] != null)
+                    {
+                        if (!markedEnemies[index].GetComponent<Afflicted>())
+                        {
+                            Log("Afficted component not found");
+                        }
+                        else
+                        {
+                            markedEnemies[index].GetComponent<Afflicted>().SoulEffect.SetActive(true);
+                            markedEnemies[index].GetComponent<Afflicted>().SoulEffect.GetComponent<ParticleSystem>().Play();
+                            Log("Reactivated Soul Effeect");
+                        }
                     }
                 }
-                catch(ArgumentOutOfRangeException e) { Log("Exception caught in soul effect"); }
+                catch (ArgumentOutOfRangeException e) { Log("Exception caught in soul effect"); }
+
                 try
                 {
-                    Destroy(_line[index]);
-                    _line.RemoveAt(index);
-                    Log("Removed line");
+                    StopCoroutine(_createLine[index]);
+                    if (_line[index] != null)
+                    {
+                        Destroy(_line[index]);
+                    }
+                    _createLine.RemoveAt(index);
+                    Log("Removed line");                       
                 }
-                catch (ArgumentOutOfRangeException e)
-                {
-                    Log("Exception caught in line"); }
+                catch (ArgumentOutOfRangeException e) {Log("Exception caught in line"); }
                 try
                 {
-                    Destroy(_blast[index]);
-                    _blast.RemoveAt(index);
-                    Log("Removed blast");
+
+                        Destroy(_blast[index]);
+                        _blast.RemoveAt(index);
+                        Log("Removed blast");
+                    
                 }
                 catch (ArgumentOutOfRangeException e) { Log("Exception caught in blast"); }
                 //_hc.gameObject.GetComponent<LamentControl>()._audio.Stop();
@@ -122,7 +137,7 @@ namespace FiveKnights
                     i--;
                     continue;
                 }
-                GameManager.instance.StartCoroutine(PureVesselBlastFadeIn(enemy));
+                StartCoroutine(PureVesselBlastFadeIn(enemy));
             }
         }
         private void BlastControlMain()
@@ -149,7 +164,7 @@ namespace FiveKnights
                     Log("Removed null entity");
                     continue;
                 }
-                GameManager.instance.StartCoroutine(PureVesselBlast(enemy));
+                StartCoroutine(PureVesselBlast(enemy));
             }
 
         }
@@ -161,15 +176,15 @@ namespace FiveKnights
             if (_spellControl != null)
             {
 
-                _spellControl.RemoveAction("Cancel All", 14);
-                _spellControl.RemoveAction("Focus Cancel", 14);
-                _spellControl.RemoveAction("Focus Cancel 2", 17);
+                _spellControl.RemoveAction("Cancel All", 33);
+                _spellControl.RemoveAction("Focus Cancel", 15);
+                _spellControl.RemoveAction("Focus Cancel 2", 18);
 
-                _spellControl.RemoveAction("Focus", 14);
-                _spellControl.RemoveAction("Start MP Drain", 1);
+                _spellControl.RemoveAction("Focus Blast", 15);
+                _spellControl.RemoveAction("Start MP Drain Blast", 2);
 
-                _spellControl.RemoveAction("Focus Heal", 15);
-                _spellControl.RemoveAction("Focus Heal 2", 17);
+                _spellControl.RemoveAction("Focus Heal Blast", 16);
+                _spellControl.RemoveAction("Focus Heal 2 Blast", 18);
             }
 
         }
@@ -211,15 +226,17 @@ namespace FiveKnights
             var index = markedEnemies.IndexOf(enemy);
             Log("Blast Index: " + index);
 
-            GameManager.instance.StartCoroutine(markedEnemies[index].GetComponent<Afflicted>().FadeOut());
+            if (markedEnemies[index].GetComponent<Afflicted>() != null) { StartCoroutine(markedEnemies[index].GetComponent<Afflicted>().FadeOut()); }
 
-            CreateLine(index, enemy);
-            _focusLines.Add(Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), enemy.transform.position, new Quaternion(0,0,0,0)));
+            _createLine.Insert(index, CreateLine(index, enemy, enemy.transform.position));
+            StartCoroutine(_createLine[index]);
+            _focusLines.Insert(index, Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), enemy.transform.position, new Quaternion(0, 0, 0, 0)));
             _focusLines[index].GetComponent<tk2dSpriteAnimator>().Play("Focus Effect");
-                
+       
+
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value, 1.2f, 1.5f);
             var blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
-            _blast.Add(blast);
+            _blast.Insert(index, blast);
             _blast[index].transform.position += markedEnemies[index].transform.position;
             _blast[index].SetActive(true);
             Destroy(_blast[index].FindGameObjectInChildren("hero_damager"));
@@ -247,9 +264,19 @@ namespace FiveKnights
             yield return null;
             Log("Fade in finished");
         }
-        private void CreateLine(int index, GameObject enemy)
+
+        private IEnumerator CreateLine(int index, GameObject enemy, Vector3 enemypos)
         {
-            var enemypos = enemy.transform.position;
+            var wait = 1f;
+            if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
+            {
+                wait *= 1.5f;
+            }
+            if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
+            {
+                wait -= wait * 0.35f;
+            }
+            yield return new WaitForSeconds(wait - .2f);
             var heropos = gameObject.transform.position - new Vector3(0, 1, 0);
 
             var linepos = Vector3.Lerp(heropos, enemypos, .5f);     
@@ -267,18 +294,18 @@ namespace FiveKnights
             _line[index].transform.SetRotationZ(lineangle);
             _line[index].transform.localScale = new Vector3(linesize, 1, 1);
             _line[index].GetComponent<ParticleSystem>().loop = true;
-            _line[index].GetComponent<ParticleSystem>().startSize = .25f;
+            _line[index].GetComponent<ParticleSystem>().startSize = .35f;
             _line[index].GetComponent<ParticleSystem>().Emit(0);
             _line[index].SetActive(true);
             _line[index].GetComponent<ParticleSystem>().Play();
+            yield return new WaitForSeconds(.075f);
+            _line[index].GetComponent<ParticleSystem>().loop = false;
         }
-
         private IEnumerator PureVesselBlast(GameObject enemy)
         {
             Log("Called PureVesselBlast");
             Log("Recieved GO: " + enemy);
             var index = markedEnemies.IndexOf(enemy);
-            _line[index].GetComponent<ParticleSystem>().loop = false;
             _focusLines[index].GetComponent<tk2dSpriteAnimator>().Play("Focus Effect End");
             _blast[index].layer = 17;
             Animator anim = _blast[index].GetComponent<Animator>();
@@ -312,9 +339,13 @@ namespace FiveKnights
             Log("Playing AudioClip");
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f, 1.5f);
             Log("Audio Clip finished");
-            yield return new WaitForSeconds(0.11f);
+            yield return new WaitForSeconds(.11f);
+            blastCollider.enabled = false;
+            yield return new WaitForSeconds(0.69f);
+            Log($"Check index of enemy {markedEnemies.IndexOf(enemy)}");
             index = markedEnemies.IndexOf(enemy);
-            if(index != -1)
+            Log("Index before clearing objects:" + index);
+            if (index != -1)
 			{
                 if(markedEnemies[index]) Destroy(markedEnemies[index].GetComponent<Afflicted>());
                 Destroy(_blast[index]);
@@ -337,16 +368,36 @@ namespace FiveKnights
         {
             SoulEffect = Instantiate(FiveKnights.preloadedGO["SoulEffect"], gameObject.transform);
             SoulEffect.transform.localPosition = new Vector3(0, 0, -0.0001f);
+            Vector2 center = gameObject.transform.position;
+            if (gameObject.GetComponent<SpriteRenderer>() != null) { center = gameObject.GetComponent<SpriteRenderer>().bounds.center; }
+            if (gameObject.GetComponent<tk2dSprite>() != null) { center = gameObject.gameObject.GetComponent<tk2dSprite>().GetBounds().center + gameObject.transform.position; }
+            SoulEffect.transform.position = center;
             SoulEffect.transform.localScale = new Vector3(.75f, .75f, .75f);
+
+            SoulEffect.GetComponent<ParticleSystem>().startSize = .7f;
+            SoulEffect.GetComponent<ParticleSystem>().startLifetime = .3f;
+            SoulEffect.GetComponent<ParticleSystem>().startColor = new Color(1, 1, 1, .5f);
+
             SoulEffect.SetActive(true);
+        }
+        private void Update()
+        {
+            Vector3 center = gameObject.transform.position;
+            if (gameObject.GetComponent<SpriteRenderer>() != null) { center = gameObject.GetComponent<SpriteRenderer>().bounds.center; }
+            if (gameObject.GetComponent<tk2dSprite>() != null) { center = gameObject.GetComponent<tk2dSprite>().GetBounds().center + gameObject.transform.position; }
+            SoulEffect.transform.position = new Vector3(center.x, center.y, gameObject.transform.position.z + -0.0001f);
+            if (gameObject.GetComponent<SpriteRenderer>() != null) { SoulEffect.SetActive(gameObject.GetComponent<SpriteRenderer>().isVisible);}
+            if (gameObject.GetComponent<MeshRenderer>() != null) { SoulEffect.SetActive(gameObject.GetComponent<MeshRenderer>().isVisible); }
         }
         public IEnumerator FadeOut()
         {
-            while (SoulEffect.GetComponent<SpriteRenderer>().color.a > 0)
-            {
-                yield return new WaitForSeconds(.01f);
-                SoulEffect.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, SoulEffect.GetComponent<SpriteRenderer>().color.a - .1f);
-            }
+            //while (SoulEffect.GetComponent<SpriteRenderer>().color.a > 0)
+            //{
+            //   yield return new WaitForSeconds(.01f);
+            //   SoulEffect.GetComponent<SpriteRenderer>().color = new Color(1, 1, 1, SoulEffect.GetComponent<SpriteRenderer>().color.a - .1f);
+            // }
+            SoulEffect.GetComponent<ParticleSystem>().Stop();
+            yield return new WaitUntil(() => SoulEffect.GetComponent<ParticleSystem>().isStopped);
             SoulEffect.SetActive(false);
         }
         private void OnDisable()

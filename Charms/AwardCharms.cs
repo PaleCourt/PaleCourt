@@ -28,9 +28,43 @@ namespace FiveKnights
             //ModHooks.DoAttackHook += CharmCutscene;
             ModHooks.LanguageGetHook += CutsceneDialogue;
             ModHooks.BeforeSceneLoadHook += SceneCheck;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged += BloomPlacement;
           
         }
 
+        private void BloomPlacement(Scene From, Scene To)
+        {
+
+            if (To.name == "White_Palace_08")
+            {
+                if (!FiveKnights.Instance.SaveSettings.gotCharms[3])
+                {
+                    var saveSettings = FiveKnights.Instance.SaveSettings;
+
+                    GameObject bloomShiny = Instantiate(FiveKnights.preloadedGO["Shiny"]);
+                    Destroy(bloomShiny.transform.GetChild(0).gameObject.GetComponent<PersistentBoolItem>());
+
+                    bloomShiny.SetActive(false);
+                    bloomShiny.transform.GetChild(0).gameObject.SetActive(true);
+                    bloomShiny.transform.position = new Vector3(110.8f, 20.6f, 0.05f);
+
+                    var shinyFsm = bloomShiny.transform.GetChild(0).gameObject.LocateMyFSM("Shiny Control");
+                    var shinyFsmVars = shinyFsm.FsmVariables;
+
+                    shinyFsm.ChangeFsmTransition("Init", "FINISHED", "Idle");
+                    shinyFsm.GetState("Type").InsertMethod(() => CharmCutscene("bloom"), 0);
+                    shinyFsm.ChangeFsmTransition("Type", "QUEEN", "Msg");
+                    shinyFsm.GetState("Hero Up").RemoveAction<CallMethodProper>();
+
+
+                    shinyFsmVars.FindFsmBool("Activated").Value = false;
+                    shinyFsmVars.FindFsmBool("Queen Charm").Value = true;
+
+                    bloomShiny.SetActive(true);
+
+                }
+            }
+        }
 
         private string SceneCheck(string sceneName)
         {
@@ -42,7 +76,7 @@ namespace FiveKnights
                 scene == "isma overworld" && !settings.upgradedCharm_10 && firstClear[3]) //|| scene == "Dream_04_White_Defender");// && _settings.ZemerEntryData.haskilled)
             {
                 var boss = scene.Split(' ');
-                GameManager.instance.StartCoroutine(AwardCharm(boss[0]));
+                StartCoroutine(AwardCharm(boss[0]));
             }
             return (sceneName);
         }
@@ -77,7 +111,7 @@ namespace FiveKnights
             }
             
             return orig; 
-
+            
         }
 
         private void CharmCutscene(string boss)
@@ -104,8 +138,7 @@ namespace FiveKnights
                     charm = "LamentAppear";
                     charmName = "LAMENT_NAME";
                     upDelay = 2.4f;
-                    // Uses a merged clip of this audio + spell_information_screen instead
-                    //audioName = "spell_pickup_notail";
+                    audioName = "spell_information_merged";
                     charmNumber = 1;
                     break;
                 case "isma":
@@ -119,8 +152,15 @@ namespace FiveKnights
                     charm = "BoonAppear";
                     charmName = "BOON_NAME";
                     upDelay = 2.4f;
-                    //audioName = "spell_pickup_notail";
+                    audioName = "spell_information_merged";
                     charmNumber = 2;
+                    break;
+                case "bloom" :
+                    charm = "BloomGrow";
+                    charmName = "BLOOM_NAME";
+                    audioName = "abyss_bloom";
+                    upDelay = 2.4f;
+                    charmNumber = 3;
                     break;
             }
 
@@ -151,7 +191,7 @@ namespace FiveKnights
             CharmAnim.layer = (int)PhysLayers.UI;
 
 
-            GameManager.instance.StartCoroutine(AnimCoroutine(CharmAnim, charmNumber, boss, audioName));
+            StartCoroutine(AnimCoroutine(CharmAnim, charmNumber, boss, audioName));
 
 
 
@@ -177,7 +217,7 @@ namespace FiveKnights
         {
             if (boss == "zemer" || boss == "hegemol")
             {
-                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_merged"));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
                 yield return new WaitForSeconds(1.5f);
             }
             else if (boss == "dryya")
@@ -186,7 +226,7 @@ namespace FiveKnights
                 yield return new WaitForSeconds(1.5f);
                 this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
             }
-            else if(boss == "isma")
+            else if (boss == "isma")
             {
                 this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
                 yield return new WaitForSeconds(1.5f);
@@ -195,6 +235,13 @@ namespace FiveKnights
                 yield return new WaitForSeconds(.5f);
                 this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
             }
+            else if (boss == "bloom")
+            {
+                yield return new WaitForSeconds(1.5f);
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
+            }
+
+
             CharmAnim.SetActive(true);
             CharmAnim.GetComponent<SpriteRenderer>().enabled = true;
 

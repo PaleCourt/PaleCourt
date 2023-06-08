@@ -50,7 +50,7 @@ namespace FiveKnights
 
         public bool[] newCharms = new bool[] { true, true, true, true };
 
-        public bool[] gotCharms = new bool[] { false, false, false, true };
+        public bool[] gotCharms = new bool[] { false, false, false, false };
 
         public bool[] equippedCharms = new bool[] { false, false, false, false };
 
