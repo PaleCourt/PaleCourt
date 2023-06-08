@@ -220,7 +220,6 @@ namespace FiveKnights
             
             while (true)
             {
-                Log($"Current clip is {HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name}");
                 if (change && tkAnim.CurrentClip.name == "Idle") break;
                 if (!change && tkAnim.CurrentClip.name == animName) change = true;
                 yield return null;

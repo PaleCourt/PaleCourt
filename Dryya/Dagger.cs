@@ -11,7 +11,7 @@ namespace FiveKnights.Dryya
     public class Dagger : MonoBehaviour
     {
         public float Speed = 69f; // unused now, keeping so I don't need to rebuild the bundle
-        private const float ActualSpeed = 30f;
+        private const float ActualSpeed = 50f;
 
         private void Start()
         {

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -6,9 +7,11 @@ using FiveKnights.BossManagement;
 using FiveKnights.Misc;
 using SFCore.Utils;
 using FrogCore.Ext;
+using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 using Random = UnityEngine.Random;
+using SendRandomEventV3 = On.HutongGames.PlayMaker.Actions.SendRandomEventV3;
 
 namespace FiveKnights.Dryya
 {
@@ -32,6 +35,9 @@ namespace FiveKnights.Dryya
         private SpriteFlash _spriteFlash;
         private GameObject _corpse;
         private tk2dSprite _sprite;
+        private tk2dSpriteAnimator _anim;
+        private Rigidbody2D _rb;
+        private BoxCollider2D _bc;
         private GameObject _ap;
 
         private GameObject _diveShockwave;
@@ -132,7 +138,7 @@ namespace FiveKnights.Dryya
             
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 35f, 1));
 
-            _control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
+            //_control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
 
             // Manually spawn beams
             ModifyBeams();
@@ -140,15 +146,37 @@ namespace FiveKnights.Dryya
             ModifySuper();
 			// Play audio clips at the right times
 			ModifyAudio();
+            // Modify dagger throw
+            ModifyDaggers();
 
 			GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             AssignFields();
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
+            On.HutongGames.PlayMaker.Actions.SendRandomEventV3.OnEnter += SendRandomEventV3OnOnEnter;
+
         }
 
-		private IEnumerator Start()
+        private void SendRandomEventV3OnOnEnter(SendRandomEventV3.orig_OnEnter orig, HutongGames.PlayMaker.Actions.SendRandomEventV3 self)
+        {
+            // Makes it so the dagger throw only happens if close to player
+            if (self.State.Name is "Choice P1" or "Choice P2")
+            {
+                if (HeroController.instance.transform.position.x.Within(transform.position.x, 8f))
+                {
+                    if (Random.Range(0, 3) == 0)
+                    {
+                        self.Fsm.Event("DAGGER");
+                        self.Finish();
+                        return;
+                    }
+                }
+            }
+            orig(self);
+        }
+
+        private IEnumerator Start()
         {
             var rb = gameObject.GetComponent<Rigidbody2D>();
             yield return new WaitWhile(()=> rb.velocity.y == 0f);
@@ -227,6 +255,9 @@ namespace FiveKnights.Dryya
         private void GetComponents()
         { 
             _sprite = GetComponent<tk2dSprite>();
+            _anim = GetComponent<tk2dSpriteAnimator>();
+            _rb = GetComponent<Rigidbody2D>();
+            _bc = GetComponent<BoxCollider2D>();
             _ap = transform.Find("Audio Player").gameObject;
 
             EnemyDeathEffects deathEffects = GetComponent<EnemyDeathEffects>();
@@ -291,17 +322,84 @@ namespace FiveKnights.Dryya
             float xDist = transform.position.x - HeroController.instance.transform.position.x;
             float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
             float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
-            int daggers = 5;
-            float startAngle = (180f - ((daggers - 1) * 10f)) - angle;
+            float startAngle = 180f - angle;// - 2 * 8f;
             GameObject dagger = FiveKnights.preloadedGO["Dagger"];
-            for (int i = 0; i < daggers; i++)
+            
+            for (int i = -6; i < 7; i++)
             {
-                GameObject.Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle)).SetActive(true);
-                startAngle += 20f;
-                yield return new WaitForSeconds(0.06f);
+                if (i == 1 || i == 2 || i == 3 || i == -1 || i == -2 || i == -3) continue;
+                PlayAudio("Dagger Throw");
+                GameObject dg = Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle + 5 * i));
+                dg.SetActive(true);
+
+                yield return new WaitForSeconds(0.01f);
             }
-            yield return new WaitForSeconds(0.5f);
         }
+
+        private void ModifyDaggers()
+        {
+            var state = _control.AddState("ModifiedDaggerThrow");
+            _control.ChangeTransition("Choice P1", "DAGGER", "ModifiedDaggerThrow");
+            _control.ChangeTransition("Choice P2", "DAGGER", "ModifiedDaggerThrow");
+
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).weights[3] = 0;
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).eventMax[3] = 0;
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).missedMax[3] = 999;
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).weights[4] = 0;
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).eventMax[4] = 0;
+            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).missedMax[4] = 999;
+
+            Vasi.FsmUtil.AddCoroutine(state, DaggerThrow);
+            
+            IEnumerator DaggerThrow()
+            {
+                _bc.isTrigger = true;
+                float signX = Mathf.Sign(transform.localScale.x);
+                _rb.velocity = new Vector2(0f, 0f);
+                _rb.gravityScale = 0f;
+                _rb.isKinematic = true;
+                transform.position -= new Vector3(0f, 1.7f, 0f);
+                _anim.Play("Throw");
+                yield return new WaitWhile(() => _anim.CurrentFrame < 3);
+                _anim.Pause();
+                yield return new WaitForSeconds(0.15f);
+                _anim.Resume();
+                yield return new WaitWhile(() => _anim.CurrentFrame < 5);
+                _anim.ClipFps = 24;
+                PlayVoice(true);
+                _rb.velocity = new Vector2(signX * 55f, 25f);
+                yield return new WaitWhile(() => _anim.CurrentFrame < 8);
+                _rb.velocity = new Vector2(signX * 30f, _rb.velocity.y);
+                yield return new WaitWhile(() => _anim.CurrentFrame < 9);
+                _rb.gravityScale = 3f;
+                _rb.isKinematic = false;
+                yield return new WaitWhile(() => _anim.CurrentFrame < 10);
+                _anim.ClipFps = 12;
+                StartCoroutine(SpawnDaggers());
+                yield return new WaitWhile(() => transform.position.y > GroundY - 1.7f);
+                transform.position = new Vector3(transform.position.x, GroundY);
+                _bc.isTrigger = false;
+                _rb.velocity = new Vector2(0f, 0f);
+                _rb.gravityScale = 0f;
+                _control.SetState("Idle");
+            }
+        }
+
+        private void Update()
+        {
+            Vector2 pos = transform.position;
+            if (pos.x > RightX && _rb.velocity.x > 0)
+            {
+                transform.position = new Vector3(RightX, pos.y);
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+            }
+            else if (pos.x < LeftX && _rb.velocity.x < 0)
+            {
+                transform.position = new Vector3(LeftX, pos.y);
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+            }
+        }
+
 
         private void ModifyBeams()
         {
@@ -458,6 +556,7 @@ namespace FiveKnights.Dryya
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
+            On.HutongGames.PlayMaker.Actions.SendRandomEventV3.OnEnter -= SendRandomEventV3OnOnEnter;
         }
 
         private void Log(object o)
