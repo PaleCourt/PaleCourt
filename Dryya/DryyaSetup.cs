@@ -167,7 +167,7 @@ namespace FiveKnights.Dryya
                 {
                     if (Random.Range(0, 3) == 0)
                     {
-                        self.Fsm.Event("DAGGER");
+                        self.Fsm.Event("DAGGER"); 
                         self.Finish();
                         return;
                     }

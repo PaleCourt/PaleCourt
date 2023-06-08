@@ -906,7 +906,7 @@ namespace FiveKnights.Isma
             yield return new WaitForSeconds(onlyIsma ? 0.3f : 0.1f);
             _anim.enabled = true;
             
-            yield return _anim.PlayToFrame("AcidSwipe", 6);
+            yield return _anim.WaitToFrame(6);
             
             Vector2 tarPos = HeroController.instance.transform.position;
             Vector3 pos = transform.position - new Vector3(0f, 0.5f, 0f);
