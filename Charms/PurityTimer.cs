@@ -238,13 +238,13 @@ namespace FiveKnights
             _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
             _hc.ATTACK_DURATION -= .048f;
             _hc.ATTACK_DURATION_CH -= .038f;
-            //foreach (NailSlash nailslash in nailSlashes)
-            {
-                //  nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
-                //if (nailslash.GetComponent<AudioSource>().pitch >= 1.2f) { nailslash.GetComponent<AudioSource>().pitch = 1.4f; }
-            }
+			//foreach(NailSlash nailslash in nailSlashes)
+			//{
+			//	nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
+			//	if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
+			//}
 
-            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f && _hc.ATTACK_COOLDOWN_TIME >= .18f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .18f && _hc.ATTACK_COOLDOWN_TIME_CH >= .14f)
+			if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f && _hc.ATTACK_COOLDOWN_TIME >= .18f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .18f && _hc.ATTACK_COOLDOWN_TIME_CH >= .14f)
             {
                 Log("Play Audio");
                 this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_max"), .5f);
