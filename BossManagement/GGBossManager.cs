@@ -501,8 +501,8 @@ namespace FiveKnights.BossManagement
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
 
             // Set fields for room transition
-            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "hidden_reward_room";
-            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door1";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "Pale_Court_Credits";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "";
 
             HeroController.instance.MaxHealth();
             HeroController.instance.EnterWithoutInput(true);
@@ -561,13 +561,11 @@ namespace FiveKnights.BossManagement
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Vasi.Mirror.SetField(channelInfo, "clip", clip);
-            //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
             Vasi.Mirror.SetField(musicCue, "channelInfos", channelInfos);
-            //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);

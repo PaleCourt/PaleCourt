@@ -158,6 +158,7 @@ namespace FiveKnights
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             On.UIManager.Start += ApplyMenuTextOutline;
             RewardRoom.Hook();
+            Credits.Hook();
 
             #endregion
             #region Load Assetbundles
@@ -194,7 +195,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.8.2023";
+        public override string GetVersion() => "6.8.2023-2";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -569,6 +570,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaI);
             ABManager.Load(ABManager.Bundle.GArenaIsma);
             ABManager.Load(ABManager.Bundle.GReward);
+            ABManager.Load(ABManager.Bundle.Credits);
 
             Log("Finished bundling");
         }

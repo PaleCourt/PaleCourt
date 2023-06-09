@@ -136,7 +136,7 @@ namespace FiveKnights.Dryya
 
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
             
-            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.5f, 35f, 1));
+            _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.3f, 25f, 1));
 
             //_control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
 
@@ -399,7 +399,6 @@ namespace FiveKnights.Dryya
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
         }
-
 
         private void ModifyBeams()
         {
