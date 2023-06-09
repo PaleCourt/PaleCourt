@@ -31,6 +31,8 @@ namespace FiveKnights
 
         private int _level;
         private int _shadeSlashNum = 1;
+        private bool playingAudio;
+        private float audioCooldown = 0.2f;
         private float damageBuff => 0.075f * (_pd.maxHealth - _pd.health) // 7.5% extra per missing mask
             * (_level == 2 ? 1.5f : 1f) // Multiplies current buff by 1.5 when at 1 hp
             * (_pd.equippedCharm_6 && _pd.health == 1 ? 1.75f : 1f); // Manually add the fury multiplier because otherwise it gets ignored
@@ -63,7 +65,18 @@ namespace FiveKnights
 			On.HeroController.CancelAttack += HeroControllerCancelAttack;
 			On.HeroController.CancelDownAttack += HeroControllerCancelDownAttack;
             On.HeroController.Attack += DoVoidAttack;
+			On.tk2dSpriteAnimator.Play_string += Tk2dSpriteAnimatorPlay;
         }
+
+		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
+		{
+            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
+			{
+                self.Play("Idle");
+                return;
+			}
+            orig(self, name);
+		}
 
 		private void OnDisable()
 		{
@@ -72,6 +85,7 @@ namespace FiveKnights
             On.HeroController.CancelAttack -= HeroControllerCancelAttack;
             On.HeroController.CancelDownAttack -= HeroControllerCancelDownAttack;
             On.HeroController.Attack -= DoVoidAttack;
+            On.tk2dSpriteAnimator.Play_string -= Tk2dSpriteAnimatorPlay;
         }
 
 		public void SetLevel(int level)
@@ -162,6 +176,14 @@ namespace FiveKnights
             }
 
             InputHandler ih = InputHandler.Instance;
+            if(_pd.GetBool(nameof(PlayerData.equippedCharm_32)))
+            {
+                Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION_CH);
+            }
+            else
+            {
+                Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION);
+            }
 
             if(hc.cState.wallSliding)
             {
@@ -222,7 +244,7 @@ namespace FiveKnights
             _hc.cState.attacking = true;
 
             MeshRenderer mr = _hc.GetComponent<MeshRenderer>();
-            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
+            if(!playingAudio) StartCoroutine(PlayAudio());
 
             mr.enabled = false;
             _knightBall.SetActive(true);
@@ -261,9 +283,9 @@ namespace FiveKnights
             _sideSlash.SetActive(true);
             parrySlash.SetActive(true);
 
-            _knightBallAnim.PlayFrom("Slash" + _shadeSlashNum + " Antic", 2);
-            yield return new WaitWhile(() => _knightBallAnim.IsPlaying("Slash" + _shadeSlashNum + " Antic"));
-			yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum));
+			_knightBallAnim.PlayFromFrame("Slash" + _shadeSlashNum + " Antic", 2);
+			yield return new WaitWhile(() => _knightBallAnim.IsPlaying("Slash" + _shadeSlashNum + " Antic"));
+			yield return new WaitForSeconds(_knightBallAnim.PlayAnimGetTime("Slash" + _shadeSlashNum) - (1f / 24f));
 
 			Destroy(_sideSlash);
 
@@ -284,7 +306,7 @@ namespace FiveKnights
             string animName = up ? "Up" : "Down";
 
             _hc.StopAnimationControl();
-            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
+            if(!playingAudio) StartCoroutine(PlayAudio());
 
             _hcAnim.Play(animName + "Slash Void");
             tk2dSpriteAnimationClip hcSlashAnim = _hcAnim.GetClipByName(animName + "Slash Void");
@@ -366,7 +388,7 @@ namespace FiveKnights
 
             _hc.StopAnimationControl();
 
-            this.PlayAudio(FiveKnights.Clips["Shade Slash"]);
+            if(!playingAudio) StartCoroutine(PlayAudio());
 
             _hcAnim.Play(_hcAnim.GetClipByName("WallSlash Void"));
 
@@ -418,6 +440,14 @@ namespace FiveKnights
 
 			_hc.StartAnimationControl();
             _hc.cState.attacking = false;
+        }
+
+        private IEnumerator PlayAudio()
+		{
+            playingAudio = true;
+            this.PlayAudio(FiveKnights.Clips["Shade Slash"], 0.7f);
+            yield return new WaitForSeconds(audioCooldown);
+            playingAudio = false;
         }
 
         private void AddDamageEnemiesFsm(GameObject o, AttackDirection dir)
