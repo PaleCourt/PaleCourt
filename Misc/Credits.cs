@@ -38,8 +38,12 @@ namespace FiveKnights
 
 	public class CreditsController : MonoBehaviour
 	{
-		private Transform creditsParent;
-		private AudioSource creditsAudio;
+		private readonly float ScrollSpeed = 100f * (Screen.height / 1080f);
+
+		private Transform _creditsParent;
+		private Transform _scrollParent;
+		private Transform _thanksParent;
+		private AudioSource _creditsAudio;
 
 		private void Start()
 		{
@@ -47,8 +51,10 @@ namespace FiveKnights
 			UIManager.instance.SetState(UIState.CUTSCENE);
 			InputHandler.Instance.PreventPause();
 
-			creditsParent = GameObject.Find("Credits Parent").transform;
-			creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
+			_creditsParent = GameObject.Find("Credits Parent").transform;
+			_scrollParent = GameObject.Find("Scroll Parent").transform;
+			_thanksParent = GameObject.Find("Thanks Parent").transform;
+			_creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
 			FixFonts();
 			StopAudio();
 			StartCoroutine(RollCredits());
@@ -56,10 +62,9 @@ namespace FiveKnights
 
 		private void FixFonts()
 		{
-			foreach(Text text in creditsParent.GetComponentsInChildren<Text>(true))
+			foreach(Text text in _creditsParent.parent.GetComponentsInChildren<Text>(true))
 			{
-				if(text.gameObject.name.Contains("Title")) text.font = CanvasUtil.TrajanNormal;
-				else text.font = CanvasUtil.GetFont("Perpetua");
+				text.font = CanvasUtil.GetFont("Perpetua");
 			}
 		}
 
@@ -81,12 +86,28 @@ namespace FiveKnights
 			Log("Starting credits sequence");
 
 			yield return new WaitForSeconds(1f);
-			creditsAudio.clip = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("CreditsMusic");
-			creditsAudio.Play();
+			_creditsAudio.clip = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("CreditsMusic");
+			_creditsAudio.Play();
 
-			for(int i = 0; i < creditsParent.childCount; i++)
+			Log("Fade main credits");
+			for(int i = 0; i < _creditsParent.childCount; i++)
 			{
-				yield return FadeInOut(creditsParent.GetChild(i).gameObject, 1f, 5f, 1f);
+				yield return FadeInOut(_creditsParent.GetChild(i).gameObject, 1f, 5f, 1f);
+				yield return new WaitForSeconds(0.5f);
+			}
+
+			Log("Scroll credits");
+			while(_scrollParent.transform.position.y < 5000f * (Screen.height / 1080f))
+			{
+				_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
+				yield return null;
+			}
+
+			Log("Fade thank yous");
+			for(int i = 0; i < _thanksParent.childCount; i++)
+			{
+				yield return FadeInOut(_thanksParent.GetChild(i).gameObject, 1f, 7f, 1f);
+				yield return new WaitForSeconds(0.5f);
 			}
 
 			Log("Ending credits sequence, going to reward room");
@@ -158,7 +179,7 @@ namespace FiveKnights
 			float changeCounter = 0f;
 			while(changeCounter < 1f)
 			{
-				creditsAudio.volume -= Time.deltaTime / time;
+				_creditsAudio.volume -= Time.deltaTime / time;
 				yield return null;
 			}
 		}

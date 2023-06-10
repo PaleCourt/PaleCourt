@@ -73,7 +73,7 @@ namespace FiveKnights
 
         private bool HeroCanInteract(On.HeroController.orig_CanInteract orig, HeroController self)
         {
-            Log("Sasad");
+            Log("HeroCanInteract");
             return _allowInteract && orig(self);
         }
 

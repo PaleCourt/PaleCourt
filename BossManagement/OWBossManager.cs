@@ -97,7 +97,7 @@ namespace FiveKnights
                 CreateIsma();
                 GameObject ogrim = GameObject.Find("Ogrim");
                 yield return new WaitWhile(() => HeroController.instance == null);
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110f);
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110.5f);
                 IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
@@ -120,7 +120,7 @@ namespace FiveKnights
                 DryyaSetup dc = CreateDryya();
                 dc.gameObject.SetActive(false);
                 PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 422.5f); 
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427.5f); 
                 PlayMusic(null);
                 dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);
