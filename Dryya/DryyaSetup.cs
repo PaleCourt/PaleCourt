@@ -182,6 +182,18 @@ namespace FiveKnights.Dryya
             yield return new WaitWhile(()=> rb.velocity.y == 0f);
             yield return new WaitWhile(()=> rb.velocity.y != 0f);
             MusicControl();
+
+            GameObject area = null;
+            foreach(GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
+            {
+                area = i.transform.Find("Area Title").gameObject;
+            }
+            area = Instantiate(area);
+            area.SetActive(true);
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f,
+                "", "", "",
+                "Dryya", "Fierce");
         }
 
         private void MusicControl()

@@ -293,6 +293,7 @@ namespace FiveKnights.Isma
             waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
             _anim.Play("Bow");
+            if(!playingVoice) StartCoroutine(PlayVoice());
             yield return new WaitForSeconds(0.05f);
             yield return new WaitWhile(() => _anim.IsPlaying());
             yield return new WaitForSeconds(1f);

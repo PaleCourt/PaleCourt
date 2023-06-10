@@ -56,7 +56,7 @@ namespace FiveKnights.Hegemol
 
             gameObject.name = "Hegemol";
             gameObject.layer = (int)PhysLayers.CORPSE;
-            transform.position = new Vector3(RightX - 5f, GroundY + 3f, 0.01f);
+            transform.position = new Vector3(CenterX + 5f, GroundY + 3f, 0.02f);
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
 
@@ -111,7 +111,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
+            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z - 0.01f);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
@@ -126,6 +126,18 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitWhile(() => _anim.IsPlaying());
 
+            GameObject area = null;
+            foreach(GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
+            {
+                area = i.transform.Find("Area Title").gameObject;
+            }
+            area = Instantiate(area);
+            area.SetActive(true);
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f,
+                "", "", "",
+                "Hegemol", "Mighty");
+
             _attacking = true;
             yield return IntroAttack();
 
@@ -135,12 +147,15 @@ namespace FiveKnights.Hegemol
         private IEnumerator IntroAttack()
         {
             Log("Intro Grab");
-            _anim.Play("IntroAttack");
 
             _mace.gameObject.transform.position = transform.position + 50f * Vector3.up;
             _mace.LaunchSpeed = -200f;
             _mace.SpinSpeed = 560f;
             _mace.gameObject.SetActive(true);
+
+            yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y + 30f);
+
+            _anim.Play("IntroAttack");
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
 
@@ -149,7 +164,18 @@ namespace FiveKnights.Hegemol
             yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y + 3f);
 
             _anim.enabled = true;
+            foreach(Collider2D col in _mace.gameObject.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = false;
+            }
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+
             _mace.gameObject.SetActive(false);
+            foreach(Collider2D col in _mace.gameObject.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = true;
+            }
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
 
