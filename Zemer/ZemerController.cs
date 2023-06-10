@@ -777,13 +777,6 @@ namespace FiveKnights.Zemer
                 
                 yield return _anim.WaitToFrame(5);
 
-                if (FastApproximately(_target.transform.position.x, transform.position.x, 5f))
-                {
-                    yield return StrikeAlternate();
-                    transform.position = new Vector3(transform.position.x, GroundY);
-                    yield break;
-                }
-                
                 PlayAudioClip("AudDashIntro");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 PlayAudioClip("AudDash");
@@ -799,25 +792,6 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
                 transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
-            }
-
-            IEnumerator StrikeAlternate()
-            {
-                _anim.PlayAt("ZDashToCounter", 2);
-                yield return new WaitForSeconds(0.1f);
-                yield return _anim.PlayToEnd();
-                
-                if (!IsFacingPlayer())
-                {
-                    yield return Turn();
-                }
-
-                FaceHero();
-                _anim.Play("DashCounter");
-                PlayAudioClip("Slash", 0.15f);
-                yield return null;
-                yield return new WaitWhile(() => _anim.IsPlaying());
-                _anim.Play("ZIdle");
             }
 
             yield return Dash();
