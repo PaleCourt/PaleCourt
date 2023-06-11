@@ -363,6 +363,8 @@ namespace FiveKnights.BossManagement
                 
                 Log("Won!");
 
+                GameManager.instance.AwardAchievement("PALE_COURT_PANTH_ACH");
+
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
                 yield return new WaitForSeconds(0.5f);
                 CCDreamExit();

@@ -39,7 +39,7 @@ namespace FiveKnights
         public static readonly Dictionary<string, Sprite> SPRITES = new ();
         public static FiveKnights Instance;
         public List<int> charmIDs;
-        public static Dictionary<string, JournalHelper> journalentries = new ();
+        public static Dictionary<string, JournalHelper> journalEntries = new ();
         public static readonly string[] CharmKeys = { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
         public static string OS
         {
@@ -124,20 +124,20 @@ namespace FiveKnights
             #endregion
             #region Achievements
 
-            SFCore.AchievementHelper.AddAchievement("IsmaAchiev2", SPRITES["ach_isma"], 
+            SFCore.AchievementHelper.AddAchievement("PALE_COURT_ISMA_ACH", SPRITES["ach_isma"], 
                 "ISMA_ACH_TITLE", "ISMA_ACH_DESC", false);
             
-            SFCore.AchievementHelper.AddAchievement("DryyaAchiev", SPRITES["ach_dryya"], 
+            SFCore.AchievementHelper.AddAchievement("PALE_COURT_DRYYA_ACH", SPRITES["ach_dryya"], 
                 "DRYYA_ACH_TITLE", "DRYYA_ACH_DESC", false);
             
-            SFCore.AchievementHelper.AddAchievement("HegAchiev", SPRITES["ach_heg"], 
+            SFCore.AchievementHelper.AddAchievement("PALE_COURT_HEG_ACH", SPRITES["ach_heg"], 
                 "HEG_ACH_TITLE", "HEG_ACH_DESC", false);
 
-            SFCore.AchievementHelper.AddAchievement("ZemAchiev", SPRITES["ach_zem"], 
+            SFCore.AchievementHelper.AddAchievement("PALE_COURT_ZEM_ACH", SPRITES["ach_zem"], 
                 "ZEM_ACH_TITLE", "ZEM_ACH_DESC", false);
             
-            SFCore.AchievementHelper.AddAchievement("PanthAchiev", SPRITES["ach_panth"], 
-                "PANTH_ACH_TITLE", "PANTH_ACH_DESC", false);
+            SFCore.AchievementHelper.AddAchievement("PALE_COURT_PANTH_ACH", SPRITES["ach_panth"], 
+                "PANTH_ACH_TITLE", "PANTH_ACH_DESC", true);
 
             #endregion
             
@@ -145,11 +145,12 @@ namespace FiveKnights
 
             langStrings = new LanguageCtrl();
 
+            On.HeroController.Start += AddJournalEntries;
+            ModHooks.BeforeSavegameSaveHook += SaveEntries;
             ModHooks.SetPlayerVariableHook += SetVariableHook;
             ModHooks.GetPlayerVariableHook += GetVariableHook;
-            ModHooks.AfterSavegameLoadHook += SaveGame;
-            ModHooks.BeforeSavegameSaveHook += SaveEntries;
-			On.GameManager.StartNewGame += GameManager_StartNewGame;
+            ModHooks.AfterSavegameLoadHook += (SaveGameData s) => StartGame();
+            On.GameManager.StartNewGame += GameManager_StartNewGame;
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
@@ -157,15 +158,12 @@ namespace FiveKnights
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             On.UIManager.Start += ApplyMenuTextOutline;
+			UIManager.EditMenus += UIManagerEditMenus;
             RewardRoom.Hook();
             Credits.Hook();
 
             #endregion
             #region Load Assetbundles
-
-            //GameObject assetLoaderGo = new GameObject("Pale Court Asset Loader", typeof(NonBouncer));
-            //GameObject.DontDestroyOnLoad(assetLoaderGo);
-            //var nb = assetLoaderGo.GetComponent<NonBouncer>();
             LoadDep();
             LoadBossBundles();
             LoadCharms();
@@ -176,7 +174,7 @@ namespace FiveKnights
 		private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
             orig(newLang);
-            foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
+            foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalEntries)
             {
                 string name = keyValuePair.Key;
                 string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
@@ -343,45 +341,10 @@ namespace FiveKnights
 
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
             preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
-
-            #region Add Entries
-            journalentries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalentries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalentries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalentries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            #endregion
-
             //Unload();
 
-            #region Add Charms
-
+            // Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
-
-            #endregion
 
             //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
             preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
@@ -391,20 +354,30 @@ namespace FiveKnights
             Instance = this;
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
             PlantChanger();
-            Log("Initalizing.");
+            Log("Initalizing");
         }
 
         #region Make Text Readable
 
         private void ApplyMenuTextOutline(On.UIManager.orig_Start orig, UIManager self)
         {
-            foreach (var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            orig(self);
+            //foreach(var item in self.gameObject.GetComponentsInChildren<Text>(true))
+            //{
+            //    var outline = item.gameObject.AddComponent<Outline>();
+            //    outline.effectColor = Color.black;
+            //    outline.effectDistance = new Vector2(1.5f, -1.5f);
+            //}
+        }
+
+        private void UIManagerEditMenus()
+        {
+            foreach(var item in UIManager.instance.gameObject.GetComponentsInChildren<Text>(true))
             {
                 var outline = item.gameObject.AddComponent<Outline>();
                 outline.effectColor = Color.black;
                 outline.effectDistance = new Vector2(1.5f, -1.5f);
             }
-            orig(self);
         }
 
         #endregion
@@ -575,21 +548,48 @@ namespace FiveKnights
             Log("Finished bundling");
         }
 
+        private void AddJournalEntries(On.HeroController.orig_Start orig, HeroController self)
+        {
+            orig(self);
+
+            journalEntries.Clear();
+            journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+        }
+
         private void SaveEntries(SaveGameData data)
         {
-            foreach (JournalHelper journalHelper in journalentries.Values)
-            {
-                if (journalHelper.playerData.killsremaining > 0)
-                {
-                    journalHelper.playerData.killsremaining = 1;
-                }
-                journalHelper.playerData.Hidden = true;
-            }
-            //SaveSettings.IsmaEntryData = journalentries["Isma"].playerData;
-            //SaveSettings.ZemerEntryData = journalentries["Zemer"].playerData;
-            //SaveSettings.DryyaEntryData = journalentries["Dryya"].playerData;
-            //SaveSettings.HegemolEntryData = journalentries["Hegemol"].playerData;
-        }
+			SaveSettings.IsmaEntryData = journalEntries["Isma"].playerData;
+			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
+			SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
+			SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
+		}
 
         private object SetVariableHook(Type t, string key, object obj)
         {
@@ -650,7 +650,7 @@ namespace FiveKnights
             if (target.StartsWith("equippedCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
-                if (charmIDs.Contains(charmNum))
+                if(charmIDs != null && charmIDs.Contains(charmNum))
                 {
                     return SaveSettings.equippedCharms[charmIDs.IndexOf(charmNum)];
                 }
@@ -735,35 +735,18 @@ namespace FiveKnights
                 SaveSettings.CompletionHegemol.isUnlocked = true;
                 SaveSettings.CompletionHegemol.hasBeenSeen = true;
             }
-            AddComponent();
+            StartGame();
         }
 
-        private void SaveGame(SaveGameData data)
+        private void StartGame()
         {
-            AddComponent();
-        }
+            GameManager.instance.gameObject.AddComponent<ArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<TisoFinder>();
+            GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
+            GameManager.instance.gameObject.AddComponent<Amulets>();
+            GameManager.instance.gameObject.AddComponent<AwardCharms>();
 
-        private void AddComponent()
-        {
-            //journalentries["Isma"].playerData = SaveSettings.IsmaEntryData;
-            //journalentries["Zemer"].playerData = SaveSettings.ZemerEntryData;
-            //journalentries["Dryya"].playerData = SaveSettings.DryyaEntryData;
-            //journalentries["Hegemol"].playerData = SaveSettings.HegemolEntryData;
-            //foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalentries)
-            //{
-            //    string name = keyValuePair.Key;
-            //    string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
-            //    JournalHelper journalHelper = keyValuePair.Value;
-            //    if (journalHelper.playerData.killsremaining > 0)
-            //    {
-            //        journalHelper.playerData.killsremaining = 1;
-            //    }
-            //    journalHelper.playerData.Hidden = true;
-            //    journalHelper.nameStrings.name = langStrings.Get(prefix + "_LONGNAME", "Journal");
-            //    journalHelper.nameStrings.desc = langStrings.Get(prefix + "_DESC", "Journal");
-            //    journalHelper.nameStrings.note = langStrings.Get(prefix + "_NOTE", "Journal");
-            //    journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
-            //}
+            // Obtain additional preloads
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 if (i.name == "Gas Explosion Recycle M")
@@ -794,13 +777,6 @@ namespace FiveKnights
                 preloadedGO["ClashTink"] = clashSndObj;
                 break;
             }
-
-            //PlantChanger();
-            GameManager.instance.gameObject.AddComponent<ArenaFinder>();
-            GameManager.instance.gameObject.AddComponent<TisoFinder>();
-            GameManager.instance.gameObject.AddComponent<OWArenaFinder>(); 
-            GameManager.instance.gameObject.AddComponent<Amulets>();
-            GameManager.instance.gameObject.AddComponent<AwardCharms>();
         }
 
         private void PlantChanger()

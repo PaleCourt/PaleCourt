@@ -112,20 +112,20 @@
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
             "ENTRY_ISMA_LONGNAME": "Kindly Isma",
-            "ENTRY_ISMA_DESC": "Champion from a brighter age. Had an affinity for plant life and all things living, but when the kingdom crumbled, she retreated to her Grove, where she perished.",
-            "ENTRY_ISMA_NOTE": "<br>Ah, Isma... where do I begin? Such a kindly figure she is. She cares for everyone, and even in battle, I would sense some sorrow when we would prevail. While my oath forbids it, I must pay her a visit... someday...<br> - Ogrim of the Five Knights",
+            "ENTRY_ISMA_DESC": "Champion from a brighter age. Protected the King and watched over the grove where she would eventually rest.",
+            "ENTRY_ISMA_NOTE": "<br>Ah, Isma...where do I begin? Such a kindly figure you are. You care for everyone, and even in battle, I would sense some sorrow when we would prevail. While my oath forbids it, I ought to pay you a visit...someday...<br> - Ogrim of the Five Knights",
             "ENTRY_HEG_NAME": "Hegemol",
             "ENTRY_HEG_LONGNAME": "Mighty Hegemol",
-            "ENTRY_HEG_DESC": "Champion from a brighter age. Guarded the entrance to the kingdom's capital, but mysteriously disappeared after an unknown encounter.",
-            "ENTRY_HEG_NOTE": "<br>I can still hear your jolly chortle, Hegemol. For such a towering bug, you were so quiet! But your jokes were simply unrivaled. After all this time, I never got to see your face...what was hiding in your armour, dear friend?<br> - Ogrim of the Five Knights",
+            "ENTRY_HEG_DESC": "Champion from a brighter age. Stood guard at the city until its fall. A statue now stands in his place.",
+            "ENTRY_HEG_NOTE": "<br>I can still hear your jolly chortle, Hegemol. For such a towering bug, you were so quiet! But your jokes were simply unrivalled. After all this time, I never got to see your face...what was hiding in your armour, dear friend?<br> - Ogrim of the Five Knights",
             "ENTRY_DRY_NAME": "Dryya",
             "ENTRY_DRY_LONGNAME": "Fierce Dryya",
-            "ENTRY_DRY_DESC": "Champion from a brighter age. Fiercely guarded the Queen's retreat, but was eventually overrun by a traitorous tribe.",
-            "ENTRY_DRY_NOTE": "<br>What a ferocious combatant Dryya was! It was almost like watching an elegant dance when she confronted the kingdom's foes. While she put on a hard front, I'm thankful I was able to witness her soft side.<br> - Ogrim of the Five Knights",
+            "ENTRY_DRY_DESC": "Champion from a brighter age. Protected the Queen in her gardens and fought vigilantly against the mantis traitors when the Infection spread.",
+            "ENTRY_DRY_NOTE": "<br>What a ferocious combatant you were, Dryya! It was almost like watching an elegant dance when you confronted the kingdom's foes. While you put on a hard front, I'm thankful I was able to witness your soft side.<br> - Ogrim of the Five Knights",
             "ENTRY_ZEM_NAME": "Ze'mer",
             "ENTRY_ZEM_LONGNAME": "Mysterious Ze'mer",
             "ENTRY_ZEM_DESC": "Champion from a brighter age. Served the kingdom at its height, but retreated to her mansion when it fell to ruin.",
-            "ENTRY_ZEM_NOTE": "<br>Ze'mer... what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the world beyond.<br> - Ogrim of the Five Knights"
+            "ENTRY_ZEM_NOTE": "<br>Ze'mer...what a fascinating ally you were. Your stories that so enraptured us were quite incredible. Perhaps, you would take me to see your home one day? I would like that very much. To see the worlds beyond.<br> - Ogrim of the Five Knights"
         },
         "Pale Court Credits": {
             "CODING_CONVO": "code people here",
@@ -134,7 +134,7 @@
             "PLAYTESTING_CONVO": "playtesting people here"
         },
         "Reward Room": {
-            "RR_ENTER": "Enter Reward Room?",
+            "RR_ENTER": "Enter Credits and Reward Room?",
             "RR_ENTER_TITLE_SUPER": "The one and only",
             "RR_ENTER_TITLE_MAIN": "REWARD ROOM NPC",
             "RR_ENTER_TITLE_SUB": "placeholder",

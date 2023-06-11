@@ -38,11 +38,12 @@ namespace FiveKnights
 
 	public class CreditsController : MonoBehaviour
 	{
-		private readonly float ScrollSpeed = 100f * (Screen.height / 1080f);
+		private readonly float ScrollSpeed = 130f * (Screen.height / 1080f);
 
 		private Transform _creditsParent;
 		private Transform _scrollParent;
 		private Transform _thanksParent;
+		private Transform _finalParent;
 		private AudioSource _creditsAudio;
 
 		private void Start()
@@ -54,6 +55,7 @@ namespace FiveKnights
 			_creditsParent = GameObject.Find("Credits Parent").transform;
 			_scrollParent = GameObject.Find("Scroll Parent").transform;
 			_thanksParent = GameObject.Find("Thanks Parent").transform;
+			_finalParent = GameObject.Find("Final Parent").transform;
 			_creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
 			FixFonts();
 			StopAudio();
@@ -92,26 +94,46 @@ namespace FiveKnights
 			Log("Fade main credits");
 			for(int i = 0; i < _creditsParent.childCount; i++)
 			{
-				yield return FadeInOut(_creditsParent.GetChild(i).gameObject, 1f, 5f, 1f);
+				yield return FadeInOut(_creditsParent.GetChild(i).gameObject, 1f, 5.5f, 1f);
 				yield return new WaitForSeconds(0.5f);
 			}
 
 			Log("Scroll credits");
-			while(_scrollParent.transform.position.y < 5000f * (Screen.height / 1080f))
+			float timer = 0f;
+			while(timer < 88f)
 			{
 				_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
+				timer += Time.deltaTime;
 				yield return null;
 			}
 
 			Log("Fade thank yous");
 			for(int i = 0; i < _thanksParent.childCount; i++)
 			{
-				yield return FadeInOut(_thanksParent.GetChild(i).gameObject, 1f, 7f, 1f);
+				yield return FadeInOut(_thanksParent.GetChild(i).gameObject, 1f, 6.5f, 1f);
 				yield return new WaitForSeconds(0.5f);
 			}
 
+			Log("Fade final");
+			SetAlpha(_finalParent.GetChild(0).gameObject.GetComponent<Text>(), 0f);
+			_finalParent.GetChild(0).gameObject.SetActive(true);
+			yield return Fade(_finalParent.GetChild(0).gameObject, 1f, true);
+			yield return new WaitForSeconds(3f);
+			SetAlpha(_finalParent.GetChild(1).gameObject.GetComponent<Text>(), 0f);
+			_finalParent.GetChild(1).gameObject.SetActive(true);
+			Coroutine finalFade = StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, true));
+
+			StartCoroutine(ReturnFromCredits());
+		}
+
+		private IEnumerator ReturnFromCredits()
+		{
+			yield return new WaitUntil(() => InputHandler.Instance.inputActions.jump.IsPressed);
+
 			Log("Ending credits sequence, going to reward room");
 
+			StartCoroutine(Fade(_finalParent.GetChild(0).gameObject, 1f, false));
+			StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, false));
 			StartCoroutine(FadeAudio(2f));
 			yield return new WaitForSeconds(2f);
 

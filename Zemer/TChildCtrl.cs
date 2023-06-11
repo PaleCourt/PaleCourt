@@ -16,7 +16,7 @@ namespace FiveKnights.Zemer
         private bool _isAtt;
         private bool _run;
         private const float GroundY = 107.32f;
-        private const float StopAtX = 256f;
+        private const float StopAtX = 265.9f;
         
         public bool helpZemer;
         private bool leaveAndRet;
@@ -99,7 +99,7 @@ namespace FiveKnights.Zemer
         private IEnumerator LeaveAndReturn()
         {
             _hm.IsInvincible = true;
-            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 243f);
+            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
             
             OWBossManager.PlayMusic(null);
             HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
