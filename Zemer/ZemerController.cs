@@ -158,9 +158,8 @@ namespace FiveKnights.Zemer
 			else yield return new WaitForSeconds(1.7f);
 
 			gameObject.SetActive(true);
-            gameObject.transform.position = OWArenaFinder.IsInOverWorld ?
-                    new Vector2(254f, GroundY + 0.5f) :
-                    new Vector2(RightX - 10f, GroundY + 0.5f);
+
+            gameObject.transform.position = gameObject.transform.position = new Vector2(RightX - 10f, GroundY + 0.5f);
             
             FaceHero();
             _bc.enabled = _sr.enabled = false;
@@ -171,7 +170,7 @@ namespace FiveKnights.Zemer
             _sr.enabled = true;
             yield return null;
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-            gameObject.transform.position = new Vector2(OWArenaFinder.IsInOverWorld ? 254 : RightX - 10f, GroundY);
+            gameObject.transform.position = new Vector2(RightX - 10f, GroundY);
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
             _anim.enabled = false;
             yield return new WaitForSeconds(0.3f);
@@ -1244,7 +1243,9 @@ namespace FiveKnights.Zemer
                     Log("Going to phase 2");
                     _hasDied = true;
                     _bc.enabled = false;
-                    
+
+                    GameManager.instance.AwardAchievement("PALE_COURT_ZEM_ACH");
+
                     if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
                     else GGBossManager.Instance.PlayMusic(null, 1f);
                     

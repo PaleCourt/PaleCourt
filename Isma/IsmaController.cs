@@ -98,7 +98,7 @@ namespace FiveKnights.Isma
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
             _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalentries["Isma"]);
+            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Isma"]);
 
             gameObject.AddComponent<Flash>();
             gameObject.AddComponent<AudioSource>();
@@ -1925,16 +1925,19 @@ namespace FiveKnights.Isma
             _healthPool = 300;
             preventDamage = false;
             Coroutine c = StartCoroutine(LoopedAgony());
-            Log("Test");
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+
+            // Wait for death
             while (_healthPool > 0)
             {
                 _sr.enabled = true;
                 _bc.enabled = true;
                 yield return new WaitForEndOfFrame();
             }
-            Log("Test1");
-            //_sr.sortingOrder = 0;
+
+            // Destroy objects and award achivement
+            GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
+
             eliminateMinions = true;
             killAllMinions = true;
             if (c != null) StopCoroutine(c);
@@ -1945,7 +1948,8 @@ namespace FiveKnights.Isma
                 i.gameObject.SetActive(false);
             }
             Destroy(fakeIsma);
-            Log("Test2");
+
+            // Actual death animation sequence
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;

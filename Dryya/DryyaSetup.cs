@@ -206,6 +206,8 @@ namespace FiveKnights.Dryya
         {
             if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
+
+            GameManager.instance.AwardAchievement("PALE_COURT_DRYYA_ACH");
         }
 
         private GameObject _dreamImpactPrefab;
@@ -231,7 +233,7 @@ namespace FiveKnights.Dryya
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEffects.SetJournalEntry(FiveKnights.journalentries["Dryya"]);
+            _deathEffects.SetJournalEntry(FiveKnights.journalEntries["Dryya"]);
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;

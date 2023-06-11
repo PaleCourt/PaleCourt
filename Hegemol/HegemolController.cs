@@ -88,7 +88,7 @@ namespace FiveKnights.Hegemol
             while (HeroController.instance == null) yield return null;
             yield return new WaitForSeconds(1f);
 
-            GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
+            GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalEntries["Hegemol"]);
             
             GameObject _maceGO = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
             _maceGO.SetActive(false);
@@ -111,7 +111,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z - 0.01f);
+            _mace.transform.position = new Vector3(transform.position.x, transform.position.y + 50f, _mace.transform.position.z - 0.01f);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
@@ -965,6 +965,9 @@ namespace FiveKnights.Hegemol
             if(OWArenaFinder.IsInOverWorld) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
+
+            GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
+
             _anim.enabled = true;
             _anim.speed = 1f;
             _anim.Play("Stagger");

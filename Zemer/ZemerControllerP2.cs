@@ -153,7 +153,7 @@ namespace FiveKnights.Zemer
         {
             _hm.hp = Phase2HP;
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalentries["Zemer"]);
+            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Zemer"]);
             _target = HeroController.instance.gameObject;
 
             yield return EndPhase1(true);
