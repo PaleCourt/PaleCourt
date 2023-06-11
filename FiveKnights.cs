@@ -484,15 +484,57 @@ namespace FiveKnights
             GameObject ret = GameObject.Instantiate(o, o.transform.parent);
             foreach (var psr in ret.GetComponentsInChildren<ParticleSystemRenderer>())
             {
-                psr.material.mainTexture = SPRITES["Petal"].texture;
+                Material newMaterial = UObject.Instantiate(psr.material);
+                newMaterial.mainTexture = GetSprite(TextureStrings.PetalKey).texture;
+                psr.material = newMaterial;
             }
             return ret;
         }
-        private (int enviromentType, GameObject dashEffects) AddCustomDashEffectsHook(DashEffect self) => (7, ChangePsrTexture(self.dashGrass));
-        private (int enviromentType, GameObject hardLandEffects) AddCustomHardLandEffectsHook(HardLandEffect self) => (7, ChangePsrTexture(self.grassObj));
-        private (int enviromentType, GameObject jumpEffects) AddCustomJumpEffectsHook(JumpEffects self) => (7, ChangePsrTexture(self.grassEffects));
-        private (int enviromentType, GameObject softLandEffects) AddCustomSoftLandEffectsHook(SoftLandEffect self) => (7, ChangePsrTexture(self.grassEffects));
-        private (int enviromentType, GameObject runEffects) AddCustomRunEffectsHook(GameObject self) => (7, ChangePsrTexture(self.transform.GetChild(1).gameObject));
+        GameObject valueAddCustomDashEffectsHookOnce = null;
+        private (int enviromentType, GameObject dashEffects) AddCustomDashEffectsHook(DashEffect self)
+        {
+            if (valueAddCustomDashEffectsHookOnce == null)
+            {
+                valueAddCustomDashEffectsHookOnce = ChangePsrTexture(self.dashGrass);
+            }
+            return (7, valueAddCustomDashEffectsHookOnce);
+        }
+        GameObject valueAddCustomHardLandEffectsHookOnce = null;
+        private (int enviromentType, GameObject hardLandEffects) AddCustomHardLandEffectsHook(HardLandEffect self)
+        {
+            if (valueAddCustomHardLandEffectsHookOnce == null)
+            {
+                valueAddCustomHardLandEffectsHookOnce = ChangePsrTexture(self.grassObj);
+            }
+            return (7, valueAddCustomHardLandEffectsHookOnce);
+        }
+        GameObject valueAddCustomJumpEffectsHookOnce = null;
+        private (int enviromentType, GameObject jumpEffects) AddCustomJumpEffectsHook(JumpEffects self)
+        {
+            if (valueAddCustomJumpEffectsHookOnce == null)
+            {
+                valueAddCustomJumpEffectsHookOnce = ChangePsrTexture(self.grassEffects);
+            }
+            return (7, valueAddCustomJumpEffectsHookOnce);
+        }
+        GameObject valueAddCustomSoftLandEffectsHookOnce = null;
+        private (int enviromentType, GameObject softLandEffects) AddCustomSoftLandEffectsHook(SoftLandEffect self)
+        {
+            if (valueAddCustomSoftLandEffectsHookOnce == null)
+            {
+                valueAddCustomSoftLandEffectsHookOnce = ChangePsrTexture(self.grassEffects);
+            }
+            return (7, valueAddCustomSoftLandEffectsHookOnce);
+        }
+        GameObject valueAddCustomRunEffectsHookOnce = null;
+        private (int enviromentType, GameObject runEffects) AddCustomRunEffectsHook(GameObject self)
+        {
+            if (valueAddCustomRunEffectsHookOnce == null)
+            {
+                valueAddCustomRunEffectsHookOnce = ChangePsrTexture(self.transform.GetChild(1).gameObject);
+            }
+            return (7, valueAddCustomRunEffectsHookOnce);
+        }
 
         #endregion
 
