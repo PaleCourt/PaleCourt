@@ -56,6 +56,10 @@ namespace FiveKnights.Zemer
         private bool _countering;
         public static bool WaitForTChild = false;
         private const int MaxDreamAmount = 3;
+        private const float ThrowDelay = 0.2f;
+        private const float NailSize = 1.15f;
+        private const float NailSpeed = 80f;
+        private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
 
         private void Awake()
         {
@@ -154,8 +158,8 @@ namespace FiveKnights.Zemer
 			else yield return new WaitForSeconds(1.7f);
 
 			gameObject.SetActive(true);
-            gameObject.transform.position = OWArenaFinder.IsInOverWorld ? 
-                    new Vector2(254f, GroundY + 0.5f) : 
+            gameObject.transform.position = OWArenaFinder.IsInOverWorld ?
+                    new Vector2(254f, GroundY + 0.5f) :
                     new Vector2(RightX - 10f, GroundY + 0.5f);
             
             FaceHero();
@@ -240,17 +244,19 @@ namespace FiveKnights.Zemer
                 [Attack1Base] = 0,
                 [AerialAttack] = 0,
                 [Attack1Complete] = 0,
-                [ZemerSlam] = 0
+                [ZemerSlam] = 0,
+                [NailLaunch] = 0,
             };
             
             Dictionary<Func<IEnumerator>, int> max = new Dictionary<Func<IEnumerator>, int>
             {
-                [FancyAttack] = 3,
+                [FancyAttack] = 2,
                 [Dash] = 2,
                 [Attack1Base] = 2,
                 [AerialAttack] = 2,
                 [Attack1Complete] = 2,
-                [ZemerSlam] = 1
+                [NailLaunch] = 2,
+                [ZemerSlam] = 1,
             };
 
             if (_countering) yield return (Countered());
@@ -298,10 +304,11 @@ namespace FiveKnights.Zemer
                     }
                     else
                     {
-                        counterCount = 0;
-                        Log("Upslash");
-                        yield return Upslash();
-                        Log("End Upslash");
+                        Log("Doing Counter");
+                        ZemerCounter();
+                        _countering = true;
+                        yield return new WaitWhile(() => _countering);
+                        Log("Done Counter");
                     }
                 }
 
@@ -309,7 +316,7 @@ namespace FiveKnights.Zemer
                 
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
-                    Dash, Attack1Base, Attack1Base, AerialAttack, ZemerSlam
+                    Dash, Attack1Base, Attack1Base, AerialAttack, NailLaunch, NailLaunch, ZemerSlam
                 };
                 Func<IEnumerator> currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
                 
@@ -723,20 +730,10 @@ namespace FiveKnights.Zemer
             transform.Find("HyperCut").gameObject.SetActive(false);
 
             _anim.Play("ZDash");
-            transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+            transform.position = new Vector3(transform.position.x, GroundY - 0.3f, transform.position.z);
+
             yield return _anim.WaitToFrame(4);
-                
-            _anim.enabled = false;
-                
-            //yield return new WaitForSeconds(DashDelay);
-            //PlayAudioClip("ZAudHoriz");
-                
-            _anim.enabled = true;
-                
-            yield return _anim.WaitToFrame(5);
-    
-            PlayAudioClip("AudDashIntro");
-                
+            
             if (!IsFacingPlayer())
             {
                 yield return Turn();
@@ -896,6 +893,283 @@ namespace FiveKnights.Zemer
             }
 
             yield return SpinAttack();
+        }
+        
+        private IEnumerator NailLaunch()
+        {
+            float dir = 0f;
+            float middle = (RightX + LeftX) / 2f;
+
+            IEnumerator Throw()
+            {
+                Vector2 hero = _target.transform.position;
+                
+                // If player is too close dodge back or if too close to wall as well dash forward
+                if (hero.x.Within(transform.position.x, 10f))
+                {
+                    // Too close to wall
+                    if (transform.position.x.Within(LeftX, 6f) || transform.position.x.Within(RightX, 6f))
+                    {
+                        yield return Dash();
+                    }
+                    else
+                    {
+                        yield return Dodge();
+                    }
+                }
+                
+                dir = FaceHero();
+                float rot;
+                _anim.Play("ZThrow1");
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                yield return _anim.WaitToFrame(2);
+                _anim.enabled = false;
+                yield return new WaitForSeconds(ThrowDelay / 2f);
+                hero = _target.transform.position;
+                dir = FaceHero();
+                yield return FlashRepeat(hero, ThrowDelay / 2f);
+                _anim.enabled = true;
+                yield return _anim.WaitToFrame(3); 
+
+                rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
+                
+                // Predict where it will hit, if it is too high, lower the y until it's not
+                var maskLayer = LayerMask.LayerToName(8);
+                var rc = Physics2D.Raycast(transform.Find("ZNailB").position,
+                    new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed), Mathf.Infinity,
+                    LayerMask.GetMask(maskLayer));
+                int i = 0;
+                while (i < 20 && rc.point.y > 32f)
+                {
+                    hero -= new Vector2(0f, 1f);
+                    rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
+                    rc = Physics2D.Raycast(transform.Find("ZNailB").position,
+                        new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed), Mathf.Infinity,
+                        LayerMask.GetMask(maskLayer));
+                    i++;
+                }
+                
+                
+                float rotArm = rot + (dir > 0 ? Mathf.PI : 0f);
+                
+                GameObject arm = transform.Find("NailHand").gameObject;
+                GameObject nailPar = Instantiate(transform.Find("ZNailB").gameObject);
+                Rigidbody2D parRB = nailPar.GetComponent<Rigidbody2D>();
+                
+                nailPar.transform.position = transform.Find("ZNailB").position;
+                nailPar.transform.localScale = new Vector3(Mathf.Sign(transform.localScale.x) * NailSize, NailSize, NailSize);
+                arm.transform.SetRotation2D(rotArm * Mathf.Rad2Deg);
+                nailPar.transform.SetRotation2D(rotArm * Mathf.Rad2Deg);
+
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+                yield return new WaitForSeconds(0.07f);
+                nailPar.SetActive(true);
+                // TODO might want to readjust speed
+                parRB.velocity = new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed);
+                nailPar.AddComponent<ExtraNailBndCheck>();
+                yield return new WaitForSeconds(0.01f);
+
+                var cc = nailPar.transform.Find("ZNailC").gameObject.AddComponent<CollisionCheck>();
+                cc.Freeze = true;
+                cc.OnCollide += () =>
+                {
+                    PlayAudioClip("AudLand");
+                    GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+                    nailPar.GetComponent<SpriteRenderer>().enabled = false;
+                    nailPar.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
+                    nailPar.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+                    Destroy(cc);
+                };
+                yield return new WaitWhile(() => _anim.IsPlaying());
+                yield return LaunchSide(nailPar);
+            }
+
+            IEnumerator GndLeave(float dir)
+            {
+                _anim.speed = 2f;
+                _anim.Play("ZThrow2");
+                yield return null;
+                yield return _anim.WaitToFrame(2);
+                Spring(false, transform.position + new Vector3(-dir * LeaveOffset.x, 0f,0f), 1.5f);
+                yield return _anim.WaitToFrame(4);
+                transform.position += new Vector3(-dir * LeaveOffset.x, 0f);
+                yield return _anim.PlayToEnd();
+                ToggleZemer(false); 
+            }
+
+            IEnumerator LaunchSide(GameObject nail)
+            {
+                GameObject col = nail.transform.Find("ZNailC").gameObject;
+                Rigidbody2D rbNail = nail.GetComponent<Rigidbody2D>();
+                CollisionCheck cc = col.GetComponent<CollisionCheck>();
+                Log("Doing launch side");
+                if (cc == null)
+                {
+                    cc = col.AddComponent<CollisionCheck>();
+                    cc.OnCollide += () =>
+                    {
+                        PlayAudioClip("AudLand");
+                        GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
+                        nail.GetComponent<SpriteRenderer>().enabled = false;
+                        nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
+                        rbNail.velocity = Vector2.zero;
+                        Destroy(cc);
+                    };
+                }
+                
+                cc.Hit = rbNail.velocity == Vector2.zero;
+                yield return GndLeave(dir);
+                yield return new WaitWhile(() => !cc.Hit && rbNail.velocity != Vector2.zero);
+                yield return new WaitForSeconds(0.75f);
+
+                Vector2 zem = transform.position;
+                Vector2 nl = nail.transform.Find("Point").position;
+                Vector3 zemSc = transform.localScale;
+                
+                if (nl.x < middle)
+                {
+                    transform.localScale = new Vector3(Mathf.Abs(zemSc.x), zemSc.y, zemSc.z);
+                    transform.position = new Vector2(nl.x + LeaveOffset.x, zem.y);
+                    Spring(true, transform.position);
+                    yield return new WaitForSeconds(0.15f);
+                    ToggleZemer(true);
+                    _anim.speed = 2f;
+                    _anim.Play("ZThrow3Gnd");
+                    yield return null;
+                    yield return _anim.WaitToFrame(1);
+                    transform.position -= new Vector3(LeaveOffset.x, 0f);
+                    yield return _anim.WaitToFrame(2);
+                    _anim.speed = 1f;
+                    Log($"Nail ended at {nail.transform.position}");
+                    Destroy(nail);
+                }
+                else
+                {
+                    transform.localScale = new Vector3(-Mathf.Abs(zemSc.x), zemSc.y, zemSc.z);
+                    transform.position = new Vector2(nl.x - LeaveOffset.x, zem.y);
+                    Spring(true, transform.position);
+                    yield return new WaitForSeconds(0.15f);
+                    ToggleZemer(true);
+                    _anim.speed = 2f;
+                    _anim.Play("ZThrow3Gnd");
+                    yield return null;
+                    yield return _anim.WaitToFrame(1);
+                    transform.position += new Vector3(LeaveOffset.x, 0f);
+                    yield return _anim.WaitToFrame(2);
+                    _anim.speed = 1f;
+                    Log($"Nail ended at {nail.transform.position}");
+                    Destroy(nail);
+                }
+
+                yield return _anim.PlayToEnd();
+            }
+
+            yield return Throw();
+        }
+        
+        private void ToggleZemer(bool visible, bool fade = false)
+        {
+            IEnumerator Fade()
+            {
+                Color col = _sr.color;
+
+                _sr.enabled = true;
+
+                if (visible)
+                {
+                    _sr.color = new Color(col.r, col.g, col.b, 0f);
+
+                    for (float i = 0; i <= 1f; i += 0.2f)
+                    {
+                        _sr.color = new Color(col.r, col.g, col.b, i);
+
+                        yield return new WaitForSeconds(0.01f);
+                    }
+                }
+                else
+                {
+                    _sr.color = new Color(col.r, col.g, col.b, 1f);
+
+                    for (float i = col.a; i >= 0f; i -= 0.2f)
+                    {
+                        _sr.color = new Color(col.r, col.g, col.b, i);
+
+                        yield return new WaitForSeconds(0.01f);
+                    }
+                }
+
+                Instant();
+            }
+
+            void Instant()
+            {
+                _sr.enabled = visible;
+                _anim.enabled = visible;
+                _rb.gravityScale = 0f;
+                _bc.enabled = visible;
+                Color col = _sr.color;
+                _sr.color = new Color(col.r, col.g, col.b, visible ? 1f : 0f);
+            }
+
+            _bc.enabled = false;
+            _anim.enabled = false;
+            _anim.speed = 1f;
+
+            if (fade)
+                StartCoroutine(Fade());
+            else
+                Instant();
+        }
+        
+        private float GetAngleTo(Vector2 from, Vector2 to)
+        {
+            float num = Mathf.Atan2(to.y - from.y, to.x - from.x) * Mathf.Rad2Deg;
+            while ((double) num < 0.0) num += 360f;
+            return num;
+        }
+        
+        private void Spring(bool isIn, Vector2 pos, float speedSca = 1f, bool parent=false)
+        {
+            string n = "VapeIn2";
+            GameObject go = Instantiate(FiveKnights.preloadedGO[n]);
+            PlayMakerFSM fsm = go.LocateMyFSM("FSM");
+            go.GetComponent<tk2dSpriteAnimator>().GetClipByName("Plink").fps = 24 * speedSca;
+            go.transform.localScale *= 1.7f; //1.3f
+            fsm.GetAction<Wait>("State 1", 0).time = 0f;
+            go.transform.position = pos;
+            go.SetActive(true);
+
+            if (parent)
+            {
+                go.transform.parent = transform;
+            }
+        }
+        
+        IEnumerator FlashRepeat(Vector3 targ, float timer = 0.2f)
+        {
+            GameObject fxOrig = FiveKnights.preloadedGO["HornetSphere"].transform.Find("Flash Effect").gameObject;
+            for (int i = 0; i < 5; i++)
+            {
+                foreach (int j in new [] { 1 })
+                {
+                    var fx = Instantiate(fxOrig);
+                    float rot = (i * 90 + UnityEngine.Random.Range(30, 60)) * j;
+                    fx.transform.SetRotationZ(rot);
+                    fx.transform.position = targ;
+                    fx.SetActive(true);
+                    var fsm = fx.LocateMyFSM("FSM");
+                    fsm.enabled = true;
+                    fsm.FsmVariables.FindFsmFloat("Pause").Value = 1f;
+                    fsm.FsmVariables.FindFsmFloat("Rotation").Value = rot;
+                    fsm.FsmVariables.FindFsmBool("Reset Rotation").Value = false;
+                    fsm.FsmVariables.FindFsmVector3("Init Pos").Value = targ;
+                    fsm.SetState("Init");
+                    fsm.transform.localScale *= 0.65f;
+                    PlayAudioClip(i % 2 == 0 ? "AudBasicSlash1" : "AudBasicSlash2", 0.5f, 1f, fx.transform);   
+                }
+                yield return new WaitForSeconds(timer);
+                timer /= 1.5f;
+            }
         }
 
         private void OnBlockedHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)

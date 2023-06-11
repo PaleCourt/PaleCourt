@@ -393,10 +393,10 @@ namespace FiveKnights.Zemer
                 Vector2 hero = _target.transform.position;
                 
                 // If player is too close dodge back or if too close to wall as well dash forward
-                if (hero.x.Within(transform.position.x, 6f))
+                if (hero.x.Within(transform.position.x, 8f))
                 {
                     // Too close to wall
-                    if (transform.position.x.Within(LeftX, 4f) || transform.position.x.Within(RightX, 4f))
+                    if (transform.position.x.Within(LeftX, 6f) || transform.position.x.Within(RightX, 6f))
                     {
                         yield return Dash();
                     }
