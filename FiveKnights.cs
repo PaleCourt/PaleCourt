@@ -485,7 +485,7 @@ namespace FiveKnights
             foreach (var psr in ret.GetComponentsInChildren<ParticleSystemRenderer>())
             {
                 Material newMaterial = UObject.Instantiate(psr.material);
-                newMaterial.mainTexture = GetSprite(TextureStrings.PetalKey).texture;
+                newMaterial.mainTexture = SPRITES["Petal"].texture;
                 psr.material = newMaterial;
             }
             return ret;
