@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Reflection;
 using Modding;
 using JetBrains.Annotations;
@@ -354,7 +354,11 @@ namespace FiveKnights
             Instance = this;
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
             PlantChanger();
-            Log("Initalizing");
+
+			GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
+			// GSPImport.AddInfiniteChallengeReturnScenePredicate((info) => info.SceneName is "White_Palace_09");
+
+            Log("Initializing");
         }
 
         #region Make Text Readable
