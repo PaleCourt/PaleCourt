@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +67,8 @@ namespace FiveKnights.BossManagement
 			}
             
             Instance = this;
+			ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
+
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender"); 
