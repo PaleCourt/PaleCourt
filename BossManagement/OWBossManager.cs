@@ -109,7 +109,7 @@ namespace FiveKnights
                 PlayMusic(null);
 
                 yield return new WaitForSeconds(1.0f);
-                WinRoutine("ISMA_OUTRO_1a","ISMA_OUTRO_1b", OWArenaFinder.PrevIsmScene, 3);
+                WinRoutine(OWArenaFinder.PrevIsmScene, 3);
                 
                 Log("Done with Isma boss");
                 Destroy(this);
@@ -127,7 +127,7 @@ namespace FiveKnights
                 PlayMusic(null);
                 
                 yield return new WaitForSeconds(1.0f);
-                WinRoutine("DRYYA_OUTRO_1a","DRYYA_OUTRO_1b", OWArenaFinder.PrevDryScene, 0);
+                WinRoutine(OWArenaFinder.PrevDryScene, 0);
                 Log("Done with Dryya boss");
                 Destroy(this);
             }
@@ -157,7 +157,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 yield return new WaitForSeconds(1.0f);
 
-                WinRoutine("HEG_OUTRO_1a", "HEG_OUTRO_1b", OWArenaFinder.PrevHegScene, 2);
+                WinRoutine(OWArenaFinder.PrevHegScene, 2);
                 Log("Done with Heg, transitioning out");
                 Destroy(this);
             }
@@ -191,27 +191,45 @@ namespace FiveKnights
                 yield return new WaitWhile(() => zc2 != null);
 
                 yield return new WaitForSeconds(1f);
-                WinRoutine("ZEM_OUTRO_1a","ZEM_OUTRO_1b", OWArenaFinder.PrevZemScene, 1);
+                WinRoutine(OWArenaFinder.PrevZemScene, 1);
                 Destroy(this);
             }
         }
 
-        private void WinRoutine(string msg1Key, string msg2Key, string area, int index, bool dungAnimation = true)
+        private void WinRoutine(string area, int index)
         {
             AwardCharms.firstClear[index] = true;
+            string msgKey = "placeholder key aaaaaaaa";
+            int wins;
 			switch(index)
 			{
                 case 0:
                     FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.DryyaOWWinCount++;
+                    wins = FiveKnights.Instance.SaveSettings.DryyaOWWinCount;
+                    if(wins < 5) msgKey = "DRY_OUTRO_" + wins;
+                    else msgKey = "DRY_OUTRO_5";
                     break;
                 case 1:
                     FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.ZemerOWWinCount++;
+                    wins = FiveKnights.Instance.SaveSettings.ZemerOWWinCount;
+                    if(wins < 5) msgKey = "ZEM_OUTRO_" + wins;
+                    else msgKey = "ZEM_OUTRO_5";
                     break;
                 case 2:
                     FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.HegOWWinCount++;
+                    wins = FiveKnights.Instance.SaveSettings.HegOWWinCount;
+                    if(wins < 5) msgKey = "HEG_OUTRO_" + wins;
+                    else msgKey = "HEG_OUTRO_5";
                     break;
                 case 3:
                     FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
+                    FiveKnights.Instance.SaveSettings.IsmaOWWinCount++;
+                    wins = FiveKnights.Instance.SaveSettings.IsmaOWWinCount;
+                    if(wins < 5) msgKey = "ISMA_OUTRO_" + wins;
+                    else msgKey = "ISMA_OUTRO_5";
                     break;
             }
             HeroController.instance.RelinquishControl();
@@ -253,16 +271,12 @@ namespace FiveKnights
             }
             else
                 fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");*/
-            fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
+            fsm.ChangeTransition("Outro Msg 1a", "CONVO_FINISH", "New Scene");
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;
 
-            fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msg1Key;
+            fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = msgKey;
             fsm.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
-
-
-            fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = msg2Key;
-            fsm.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
 
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).preventCameraFadeOut = true;
             fsm.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = area;
@@ -462,8 +476,8 @@ namespace FiveKnights
             string[] arr = new[]
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump", 
-                "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", "HGrunt2",
-                "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
+                "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", 
+                "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
             };
             foreach(var i in arr)
             {

@@ -524,6 +524,8 @@ namespace FiveKnights
 
             var ddstat = GameObject.Find("GG_Statue_Defender");
             ddstat.transform.position = new Vector3(57.19f, 36.34f, 0.2f);
+
+            ddstat.Find("Spotlight").Find("Glow Response statue_beam").GetComponent<BoxCollider2D>().size = new Vector2(11f, 100f);
             
             CreateCameraLock("CameraLockStat", new Vector2(57.6f, 49.7f), new Vector2(1f, 1f),
                 new Vector2(7.5f, 16f), new Vector2(0f, 0f), 
@@ -675,7 +677,7 @@ namespace FiveKnights
                 HeroController.instance.StopAnimationControl();
                 HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
                 
-                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingBig").Value = true;
+                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = true;
                 GameObject raiseAud = Instantiate(parent.Find("Rise Audio").gameObject);
                 raiseAud.SetActive(true);
                 Destroy(raiseAud.GetComponent<PlayAudioAndRecycle>());
@@ -687,9 +689,10 @@ namespace FiveKnights
                 rumble.transform.position = new Vector3(56.1f, 35.1f);
                 var rumblePartic = rumble.GetComponent<ParticleSystem>();
                 rumblePartic.Play();
+
                 GameObject rumble2 = Instantiate(parent.Find("Rumble Dust").gameObject);
                 rumble2.SetActive(true);
-                rumble2.transform.position = new Vector3(56.1f, 35.1f);
+                rumble2.transform.position = new Vector3(58.1f, 35.1f);
                 var rumblePartic2 = rumble2.GetComponent<ParticleSystem>();
                 rumblePartic2.Play();
 
@@ -701,6 +704,8 @@ namespace FiveKnights
                 float elapsedTime = 0f;
                 while (elapsedTime < duration)
                 {
+                    //float normalized = elapsedTime / duration;
+                    //float easeOut = normalized * (1f - 0.5f * normalized);
                     entrance.transform.position = Vector3.Lerp(pillarStart, pillarEnd, elapsedTime / duration);
                     DDStatue.transform.position = Vector3.Lerp(ddstatStart, ddstatEnd, elapsedTime / duration);
                     elapsedTime += Time.deltaTime;
@@ -709,18 +714,18 @@ namespace FiveKnights
             
                 entrance.transform.position = pillarEnd;
                 DDStatue.transform.position = ddstatEnd;
-                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingBig").Value = false;
+                GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 
                 rumblePartic.Stop();
                 rumblePartic2.Stop();
 
                 GameObject dust = Instantiate(parent.Find("Rise Dust").gameObject);
                 dust.SetActive(true);
-                dust.transform.position = new Vector3(56.1f, 35.8f);
+                dust.transform.position = new Vector3(56.1f, 35.1f);
                 dust.GetComponent<ParticleSystem>().Play();
                 GameObject dust2 = Instantiate(parent.Find("Rise Dust").gameObject);
                 dust2.SetActive(true);
-                dust2.transform.position = new Vector3(56.1f, 35.1f);
+                dust2.transform.position = new Vector3(59.3f, 35.1f);
                 dust2.GetComponent<ParticleSystem>().Play();
                 
                 GameObject impactAud = Instantiate(parent.Find("Impact Audio").gameObject);
@@ -734,8 +739,10 @@ namespace FiveKnights
 
                 HeroController.instance.RegainControl();
                 HeroController.instance.StartAnimationControl();
-                
-                yield return new WaitForSeconds(0.2f);
+                dust.GetComponent<ParticleSystem>().Stop();
+                dust2.GetComponent<ParticleSystem>().Stop();
+
+                yield return new WaitForSeconds(2f);
                 Destroy(rumble);
                 Destroy(rumble2);
                 Destroy(impactAud);

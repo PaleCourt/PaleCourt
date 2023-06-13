@@ -33,9 +33,10 @@ namespace FiveKnights
         {
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _sr.material = FiveKnights.Materials["flash"];
-            On.HealthManager.TakeDamage += HealthManager_TakeDamage;
+            On.HealthManager.TakeDamage += HealthManagerTakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
 			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
+			On.EnemyDreamnailReaction.RecieveDreamImpact += EnemyDreamnailReactionRecieveDreamImpact;
         }
 
 		private void ResetValues(Color color, float amount, float timeUp, float stayTime, float timeDown)
@@ -119,7 +120,12 @@ namespace FiveKnights
             ResetValues(new Color(0.95f, 0.9f, 0.15f), 0.75f, 0.001f, 0.05f, 0.1f);
 		}
 
-        private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
+        public void FlashDreamImpact()
+		{
+            ResetValues(Color.white, 0.9f, 0.01f, 0.25f, 0.75f);
+        }
+
+        private void HealthManagerTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             orig(self, hitInstance);
             if(self.gameObject == gameObject)
@@ -149,11 +155,21 @@ namespace FiveKnights
             }
         }
 
+        private void EnemyDreamnailReactionRecieveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
+        {
+            orig(self);
+			if(self.gameObject == gameObject)
+			{
+                FlashDreamImpact();
+			}
+        }
+
         private void OnDestroy()
         {
-            On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
+            On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
             On.ExtraDamageable.RecieveExtraDamage -= ExtraDamageableRecieveExtraDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact -= EnemyDreamnailReactionRecieveDreamImpact;
         }
 
         private void Log(object o)

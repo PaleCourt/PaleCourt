@@ -19,7 +19,7 @@ namespace FiveKnights.Zemer
         private HealthManager _hm;
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
-        private EnemyDreamnailReaction _dnailReac;
+        private EnemyDreamnailReaction _dreamNailReaction;
         private GameObject _dd;
         private GameObject _dnailEff;
         private Animator _anim;
@@ -55,7 +55,8 @@ namespace FiveKnights.Zemer
         private const float TwoFancyDelay = 0.25f;
         private bool _countering;
         public static bool WaitForTChild = false;
-        private const int MaxDreamAmount = 3;
+        private readonly int DreamConvoAmount = 3;
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM";
 
         private void Awake()
         {
@@ -70,7 +71,7 @@ namespace FiveKnights.Zemer
             _rb.isKinematic = true;
             _rb.interpolation = RigidbodyInterpolation2D.Interpolate;
             _sr = GetComponent<SpriteRenderer>();
-            _dnailReac = gameObject.AddComponent<EnemyDreamnailReaction>();
+            _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             gameObject.AddComponent<AudioSource>();
             gameObject.AddComponent<DamageHero>().damageDealt = 1;
             _dd = FiveKnights.preloadedGO["WD"];
@@ -79,8 +80,9 @@ namespace FiveKnights.Zemer
             // So she gets hit by dcrest I think
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
 
-            _dnailReac.enabled = true;
-            Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
+            _dreamNailReaction.enabled = true;
+            Mirror.SetField(_dreamNailReaction, "convoAmount", DreamConvoAmount);
+            _dreamNailReaction.SetConvoTitle(DreamConvoKey);
 
             _rand = new System.Random();
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
@@ -944,14 +946,12 @@ namespace FiveKnights.Zemer
 
         private void OnReceiveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
-            if (self.name.Contains("Zemer"))
+            orig(self);
+            if(self.name.Contains("Zemer"))
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle("ZEM_DREAM");
             }
-
-            orig(self);
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
