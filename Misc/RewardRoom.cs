@@ -35,7 +35,6 @@ namespace FiveKnights
 			On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
-
         }
 
 		public static void UnHook()
@@ -283,8 +282,7 @@ namespace FiveKnights
             HeroController.instance.EnterWithoutInput(true);
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
-                SceneName = "hidden_reward_room",
-                EntryGateName = "door1",
+                SceneName = "Pale_Court_Credits",
                 Visualization = GameManager.SceneLoadVisualizations.Default,
                 WaitForSceneTransitionCameraFade = false,
                 PreventCameraFadeOut = true,

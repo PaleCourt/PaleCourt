@@ -10,6 +10,7 @@ using UnityEngine;
 using GlobalEnums;
 using Vasi;
 using Random = UnityEngine.Random;
+using SFCore.Utils;
 
 namespace FiveKnights.Hegemol
 {
@@ -23,8 +24,10 @@ namespace FiveKnights.Hegemol
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 91.7f : 45.7f);
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 155.2f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 7.3f : 27.5f);
-        private float CenterX => (LeftX + RightX) / 2;
+        private float MiddleX => (LeftX + RightX) / 2;
         private float Width => RightX - LeftX;
+        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 4;
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "HEG_DREAM" : "HEG_GG_DREAM";
 
         private const float IdleTime = 0f;
 	    private int phase = 1;
@@ -38,6 +41,8 @@ namespace FiveKnights.Hegemol
         private Animator _anim;
         private SpriteRenderer _sr;
         private ExtraDamageable _extraDamageable;
+        private GameObject _dreamImpactPrefab;
+        private EnemyDreamnailReaction _dreamNailReaction;
         private Flash _flash;
         private EnemyHitEffectsArmoured _hitFx;
 
@@ -56,7 +61,7 @@ namespace FiveKnights.Hegemol
 
             gameObject.name = "Hegemol";
             gameObject.layer = (int)PhysLayers.CORPSE;
-            transform.position = new Vector3(RightX - 5f, GroundY + 3f, 0.01f);
+            transform.position = new Vector3(MiddleX + 5f, GroundY + 3f, 0.02f);
             transform.localScale = 1.5f * new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y,
                     transform.localScale.z);
 
@@ -67,17 +72,25 @@ namespace FiveKnights.Hegemol
             _rb = gameObject.GetComponent<Rigidbody2D>();
             _anim = gameObject.GetComponent<Animator>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
+
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
             Mirror.SetField(_extraDamageable, "impactClipTable",
                 Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(_ogrim.GetComponent<ExtraDamageable>(), "impactClipTable"));
             Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
                 Mirror.GetField<ExtraDamageable, AudioSource>(_ogrim.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
+
+            _dreamImpactPrefab = _ogrim.GetComponent<EnemyDreamnailReaction>().GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
+            _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
+            Mirror.SetField(_dreamNailReaction, "convoAmount", DreamConvoAmount);
+            _dreamNailReaction.SetConvoTitle(DreamConvoKey);
+
             _flash = gameObject.AddComponent<Flash>();
             _flash.enabled = true;
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
             _hitFx.enabled = true;
             _hm.hp = 850;
 
+            On.EnemyDreamnailReaction.RecieveDreamImpact += OnRecieveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
         }
@@ -88,7 +101,7 @@ namespace FiveKnights.Hegemol
             while (HeroController.instance == null) yield return null;
             yield return new WaitForSeconds(1f);
 
-            GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalentries["Hegemol"]);
+            GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalEntries["Hegemol"]);
             
             GameObject _maceGO = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
             _maceGO.SetActive(false);
@@ -111,7 +124,7 @@ namespace FiveKnights.Hegemol
             _sr.enabled = true;
             _anim.Play("Arrive");
 
-            _mace.transform.position = new Vector3(transform.position.x - 1f, transform.position.y + 50f, _mace.transform.position.z);
+            _mace.transform.position = new Vector3(transform.position.x, transform.position.y + 50f, _mace.transform.position.z - 0.01f);
             _mace.transform.localScale = new Vector3(-1f, 1f, 1f);
             _mace.gameObject.SetActive(true);
 
@@ -120,11 +133,23 @@ namespace FiveKnights.Hegemol
             _dh = AddDamageToGO(gameObject, 2, false);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
             if (!OWArenaFinder.IsInOverWorld) MusicControl();
-            PlayVoiceClip("HCalm", true, 1f);
+            PlayVoiceClip("HNeutral", true, 1f);
 
             yield return new WaitForSeconds(1f);
 
             yield return new WaitWhile(() => _anim.IsPlaying());
+
+            GameObject area = null;
+            foreach(GameObject i in FindObjectsOfType<GameObject>().Where(x => x.name.Contains("Area Title Holder")))
+            {
+                area = i.transform.Find("Area Title").gameObject;
+            }
+            area = Instantiate(area);
+            area.SetActive(true);
+            AreaTitleCtrl.ShowBossTitle(
+                this, area, 2f,
+                "", "", "",
+                "Hegemol", "Mighty");
 
             _attacking = true;
             yield return IntroAttack();
@@ -135,12 +160,15 @@ namespace FiveKnights.Hegemol
         private IEnumerator IntroAttack()
         {
             Log("Intro Grab");
-            _anim.Play("IntroAttack");
 
             _mace.gameObject.transform.position = transform.position + 50f * Vector3.up;
             _mace.LaunchSpeed = -200f;
             _mace.SpinSpeed = 560f;
             _mace.gameObject.SetActive(true);
+
+            yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y + 30f);
+
+            _anim.Play("IntroAttack");
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
 
@@ -149,7 +177,18 @@ namespace FiveKnights.Hegemol
             yield return new WaitWhile(() => _mace.transform.position.y > transform.position.y + 3f);
 
             _anim.enabled = true;
+            foreach(Collider2D col in _mace.gameObject.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = false;
+            }
+
+            yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
+
             _mace.gameObject.SetActive(false);
+            foreach(Collider2D col in _mace.gameObject.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.enabled = true;
+            }
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
 
@@ -266,7 +305,7 @@ namespace FiveKnights.Hegemol
 
                 yield return new WaitWhile(() => _anim.IsPlaying("JumpAntic"));
 
-                float diff = CenterX - gameObject.transform.position.x;
+                float diff = MiddleX - gameObject.transform.position.x;
                 _rb.gravityScale = 3;
                 _rb.velocity = new Vector2(1.5f * diff, 60f);
 
@@ -374,7 +413,7 @@ namespace FiveKnights.Hegemol
         {
             _anim.speed = 1.25f;
             _anim.Play("AttackAntic");
-            PlayVoiceClip("HCalm", true, 1f);
+            PlayVoiceClip("HNeutral", true, 1f);
             yield return null;
 
             yield return new WaitWhile(() => _anim.IsPlaying("AttackAntic"));
@@ -554,7 +593,7 @@ namespace FiveKnights.Hegemol
                 }
 
                 // Spawn debris that targets the other side of the arena from where he is
-                StartCoroutine(SpawnDebris(i == phase - 1 ? 2 : 1, true, transform.position.x < CenterX ? RightX : LeftX));
+                StartCoroutine(SpawnDebris(i == phase - 1 ? 2 : 1, true, transform.position.x < MiddleX ? RightX : LeftX));
 
                 GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                 PlayAudioClip("HegLand", 1f);
@@ -684,7 +723,7 @@ namespace FiveKnights.Hegemol
 			{
                 Debris deb = debrisArr[i + 2];
 
-                float targetX = transform.localScale.x > 0f ? (RightX + CenterX) / 2 : (LeftX + CenterX) / 2;
+                float targetX = transform.localScale.x > 0f ? (RightX + MiddleX) / 2 : (LeftX + MiddleX) / 2;
                 Vector2 target = new Vector2(targetX + 4f * i, GroundY);
                 Vector2 vel = target - (Vector2)deb.transform.position;
 
@@ -798,8 +837,8 @@ namespace FiveKnights.Hegemol
                 }
                 else
 				{
-                    if(targetX > CenterX) minX = CenterX;
-                    else maxX = CenterX;
+                    if(targetX > MiddleX) minX = MiddleX;
+                    else maxX = MiddleX;
 				}
 
                 Vector2 pos = new Vector2(Random.Range(minX, maxX), GroundY + 15f);
@@ -879,7 +918,7 @@ namespace FiveKnights.Hegemol
 
         private IEnumerator StaggerEnd()
 		{
-            PlayVoiceClip("HCalm", true, 1f);
+            PlayVoiceClip("HNeutral", true, 1f);
             _anim.enabled = true;
 
             yield return new WaitWhile(() => _anim.GetCurrentFrame() < 10);
@@ -911,6 +950,15 @@ namespace FiveKnights.Hegemol
             }
         }
 
+        private void OnRecieveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
+        {
+            orig(self);
+            if(self.name.Contains("Hegemol"))
+            {
+                _dreamImpactPrefab.Spawn(transform.position);
+            }
+        }
+
         private void OnTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             orig(self, hitInstance);
@@ -939,6 +987,9 @@ namespace FiveKnights.Hegemol
             if(OWArenaFinder.IsInOverWorld) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
+
+            GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
+
             _anim.enabled = true;
             _anim.speed = 1f;
             _anim.Play("Stagger");
@@ -977,7 +1028,7 @@ namespace FiveKnights.Hegemol
 
             yield return new WaitForSeconds(1f);
 
-            PlayVoiceClip("HCalm", true, 1f);
+            PlayVoiceClip("HNeutral", true, 1f);
 
             yield return new WaitForSeconds(1f);
 
@@ -1041,7 +1092,7 @@ namespace FiveKnights.Hegemol
 			{
                 switch(clip)
 				{
-                    case "HCalm":
+                    case "HNeutral":
                         num = Random.Range(1, 4);
                         break;
                     case "HGrunt":
@@ -1080,6 +1131,7 @@ namespace FiveKnights.Hegemol
 
         private void OnDestroy()
         {
+            On.EnemyDreamnailReaction.RecieveDreamImpact -= OnRecieveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
         }

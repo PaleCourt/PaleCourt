@@ -13,9 +13,9 @@ namespace FiveKnights
         private PlayMakerFSM _dungTrailControl;
         private ParticleSystem _dungPt;
 
-        private float timer;
-        private float frequency = 0.5f;
-        private int dungDamage = 2;
+        private float _frequency = 0.5f;
+        private int _dungDamage = 2;
+        private float _timer;
 
         private void OnEnable()
         {
@@ -35,7 +35,7 @@ namespace FiveKnights
             }
 
             // Change color of effect
-            dung.Find("Particle 1").AddComponent<ModifyAuraColor>();
+            if(dung.Find("Particle 1").GetComponent<ModifyAuraColor>() == null) dung.Find("Particle 1").AddComponent<ModifyAuraColor>();
 
             _dungTrailControl = _dungTrail.LocateMyFSM("Control");
             _dungPt = _dungTrailControl.Fsm.GetFsmGameObject("Pt Normal").Value.GetComponent<ParticleSystem>();
@@ -64,7 +64,7 @@ namespace FiveKnights
         {
             if(extraDamageTypes == ExtraDamageTypes.Dung || extraDamageTypes == ExtraDamageTypes.Dung2)
             {
-                return dungDamage;
+                return _dungDamage;
             }
             return orig(extraDamageTypes);
         }
@@ -76,10 +76,10 @@ namespace FiveKnights
 
         private void Update()
 		{
-            timer += Time.deltaTime;
-            if(timer > frequency)
+            _timer += Time.deltaTime;
+            if(_timer > _frequency)
 			{
-                timer = 0f;
+                _timer = 0f;
                 GameObject dungTrail = Instantiate(_dungTrail, HeroController.instance.transform.position, Quaternion.identity);
                 dungTrail.transform.localScale *= 2f;
                 dungTrail.transform.SetPositionZ(0.01f);
@@ -89,6 +89,8 @@ namespace FiveKnights
 
         private void OnDisable()
 		{
+            Destroy(_dungTrail);
+
             _dungControl.GetAction<Wait>("Emit Pause", 2).time.Value = 0.5f;
 			_dungControl.GetAction<SpawnObjectFromGlobalPoolOverTime>("Equipped", 0).Enabled = true;
 

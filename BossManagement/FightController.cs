@@ -179,8 +179,8 @@ namespace FiveKnights
             string[] arr = new[]
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
-                "HegJump", "HegLand", "HegShockwave", "HCalm1", "HCalm2", "HCalm3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1",
-                "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
+                "HegJump", "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", 
+                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
             };
 
             IEnumerator LoadSlow()

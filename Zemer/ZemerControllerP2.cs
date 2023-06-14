@@ -46,7 +46,8 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
         private readonly float NailHeightGrab = 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 10f : 19f;
-        
+
+
         private const int Phase2HP = 1500;
         private int DoneFrenzyAtt;
         private const int Phase3HP = 1100;
@@ -93,13 +94,6 @@ namespace FiveKnights.Zemer
 
         public bool DoPhase;
 
-        private readonly string[] _dnailDial =
-        {
-            "ZEM_DREAM_1",
-            "ZEM_DREAM_2",
-            "ZEM_DREAM_3"
-        };
-
         private void Awake()
         {
             DoneFrenzyAtt = 0;
@@ -132,7 +126,6 @@ namespace FiveKnights.Zemer
 
             _dnailReac = GetComponent<EnemyDreamnailReaction>();
             _dnailReac.enabled = true;
-            _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
 
             _hitEffects = gameObject.GetComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
@@ -153,7 +146,7 @@ namespace FiveKnights.Zemer
         {
             _hm.hp = Phase2HP;
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalentries["Zemer"]);
+            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Zemer"]);
             _target = HeroController.instance.gameObject;
 
             yield return EndPhase1(true);
@@ -2987,7 +2980,7 @@ namespace FiveKnights.Zemer
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle(_dnailDial[_rand.Next(_dnailDial.Length)]);
+                _dnailReac.SetConvoTitle("ZEM_GG_DREAM");
             }
 
             orig(self);

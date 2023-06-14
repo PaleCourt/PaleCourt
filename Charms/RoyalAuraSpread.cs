@@ -6,8 +6,8 @@ namespace FiveKnights
 {
     public class RoyalAuraSpread : MonoBehaviour
     {
-        private int repeat = 5;
-        private float cooldown = 0.75f;
+        private int _repeat = 5;
+        private float _cooldown = 0.75f;
 
         private GameObject _dungTrail;
         private PlayMakerFSM _dungTrailControl;
@@ -35,19 +35,26 @@ namespace FiveKnights
 
         private IEnumerator StartCooldown()
         {
-            for(int i = 0; i < repeat; i++)
+            for(int i = 0; i < _repeat; i++)
 			{
+                HealthManager hm = gameObject.GetComponent<HealthManager>();
+                if(hm.hp <= 0 || hm.isDead) break;
+
                 GameObject dungTrail = Instantiate(_dungTrail, gameObject.transform.position, Quaternion.identity);
                 dungTrail.transform.localScale *= 2f;
                 dungTrail.SetActive(true);
-                yield return new WaitForSeconds(cooldown);
+                yield return new WaitForSeconds(_cooldown);
                 yield return new WaitUntil(() => gameObject.activeSelf);
             }
+            // Hopefully to prevent it from self-inducing and making the effect infinite
+            yield return new WaitForSeconds(1f);
             Destroy(this);
         }
 
         private void OnDestroy()
 		{
+            Destroy(_dungTrail);
+
             StopAllCoroutines();
 		}
 

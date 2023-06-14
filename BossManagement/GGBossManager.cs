@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +67,8 @@ namespace FiveKnights.BossManagement
 			}
             
             Instance = this;
+			ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
+
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender"); 
@@ -363,6 +365,8 @@ namespace FiveKnights.BossManagement
                 
                 Log("Won!");
 
+                GameManager.instance.AwardAchievement("PALE_COURT_PANTH_ACH");
+
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
                 yield return new WaitForSeconds(0.5f);
                 CCDreamExit();
@@ -379,6 +383,10 @@ namespace FiveKnights.BossManagement
             dd = GameObject.Find("White Defender");
             dd.GetComponent<DamageHero>().damageDealt = 1;
             dd.Find("Throw Swipe").gameObject.GetComponent<DamageHero>().damageDealt = 1;
+            EnemyDreamnailReaction dreamNailReaction = dd.GetComponent<EnemyDreamnailReaction>();
+            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 3);
+            dreamNailReaction.SetConvoTitle("OGRIM_GG_DREAM");
+
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -404,6 +412,7 @@ namespace FiveKnights.BossManagement
 			PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
+            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 5);
 
             // Disable his burrow and ground spikes
             burrow.enabled = true;
@@ -501,8 +510,8 @@ namespace FiveKnights.BossManagement
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
 
             // Set fields for room transition
-            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "hidden_reward_room";
-            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "door1";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "Pale_Court_Credits";
+            transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).entryGateName = "";
 
             HeroController.instance.MaxHealth();
             HeroController.instance.EnterWithoutInput(true);
@@ -561,13 +570,11 @@ namespace FiveKnights.BossManagement
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Vasi.Mirror.SetField(channelInfo, "clip", clip);
-            //channelInfo.SetAttr("clip", clip);
             MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
             {
                 channelInfo, null, null, null, null, null
             };
             Vasi.Mirror.SetField(musicCue, "channelInfos", channelInfos);
-            //musicCue.SetAttr("channelInfos", channelInfos);
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);

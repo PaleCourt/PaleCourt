@@ -19,7 +19,7 @@ namespace FiveKnights
             GArenaDep, GArenaHub, GArenaHub2, GArenaIsma, GArenaH, GArenaD, GArenaZ, GArenaI, GReward,
             OWArenaD, OWArenaZ, OWArenaH, OWArenaI,
             OWArenaDep, WSArenaDep, WSArena,
-            Misc, Charms, CharmUnlock,
+            Credits, Misc, Charms, CharmUnlock,
             Artist,
             TisoBund
         }
@@ -50,6 +50,7 @@ namespace FiveKnights
                 Bundle.OWArenaDep => "owarenadep",
                 Bundle.WSArenaDep => "workshopdep", 
                 Bundle.WSArena => "workshopentrance",
+                Bundle.Credits => "creditsbundle",
                 Bundle.Misc => "miscbund",
                 Bundle.Charms => "pureamulets",
                 Bundle.CharmUnlock => "charmunlock",

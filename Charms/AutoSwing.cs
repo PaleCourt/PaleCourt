@@ -66,8 +66,7 @@ namespace FiveKnights
             }
 
         }
-        
-        
 
+        private void Log(object o) => Modding.Logger.Log("[AutoSwing] " + o);
     }
 }

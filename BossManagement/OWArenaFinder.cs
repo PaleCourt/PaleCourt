@@ -323,7 +323,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Dryya;
                     PlayerData.instance.dreamReturnScene = arg0.name;
                     FixBlur();
-                    AddBattleGate(422.5f,new Vector3(421.925f, 99.5f));
+                    AddBattleGate(427.5f,new Vector3(421.925f, 99.5f));
                     DreamEntry();
                     AddSuperDashCancel();
                     FixPitDeath();
@@ -351,7 +351,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Ze;
                     PlayerData.instance.dreamReturnScene = PrevZemScene;
                     FixBlur();
-                    AddBattleGate(243f, new Vector2(238.4f, 107f));
+                    AddBattleGate(243.9f, new Vector2(238.4f, 107f));
                     AddSuperDashCancel();
                     FixPitDeath();
                     DreamEntry();
@@ -365,7 +365,7 @@ namespace FiveKnights.BossManagement
                     FixHegemolArena();
                     AddSuperDashCancel();
                     FixPitDeath();
-                    AddBattleGate(427f, new Vector2(420.925f, 156.8f));
+                    AddBattleGate(426.5f, new Vector2(420.925f, 156.8f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -704,8 +704,6 @@ namespace FiveKnights.BossManagement
                 Log($"Name of anim adding is {c.name}");
                 FiveKnights.AnimClips[c.name] = c;
             }
-            //AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.OWArenaI];
-            //FiveKnights.preloadedGO["IsmaArena"] = ab2.LoadAsset<GameObject>("new stuff isma 1");
             foreach (GameObject i in ab.LoadAllAssets<GameObject>())
             {
                 if (i.name == "Isma") FiveKnights.preloadedGO["Isma"] = i;
@@ -713,6 +711,7 @@ namespace FiveKnights.BossManagement
                 else if (i.name == "Plant") FiveKnights.preloadedGO["Plant"] = i;
                 else if (i.name == "Fool") FiveKnights.preloadedGO["Fool"] = i;
                 else if (i.name == "Wall") FiveKnights.preloadedGO["Wall"] = i;
+                else if (i.name == "ThornPlant") FiveKnights.preloadedGO["ThornPlant"] = i;
                 else if (i.name == "Seal") FiveKnights.preloadedGO["Seal"] = i;
                 yield return null;
                 if (i.GetComponent<SpriteRenderer>() == null)

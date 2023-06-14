@@ -1,5 +1,7 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+
 using HutongGames.PlayMaker.Actions;
 using SFCore.Utils;
 using UnityEngine;
@@ -32,16 +34,10 @@ namespace FiveKnights.Tiso
 
         private void OnSceneChange(Scene prev, Scene curr)
         {
-            if (prev.name == TisoScene)
+            if (curr.name is TisoScene && FiveKnights.Instance.SaveSettings.AltStatueMawlek)
             {
-                ABManager.ResetBundle(ABManager.Bundle.TisoBund);
-                Destroy(FiveKnights.preloadedGO["Tiso"]);
-            }
-            else if (curr.name is TisoScene)
-            {
-                ClearOldContent();
-                LoadTiso();
-                GameObject tiso = Instantiate(FiveKnights.preloadedGO["Tiso"]);
+                ClearOldContent(curr);
+                GameObject tiso = LoadTiso();
                 tiso.SetActive(true);
                 tiso.transform.position = HeroController.instance.transform.position;
                 AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
@@ -54,25 +50,20 @@ namespace FiveKnights.Tiso
             }
         }
 
-        private void ClearOldContent()
+        private void ClearOldContent(Scene curr)
         {
-            var battle = GameObject.Find("Battle Scene");
+            var battle = curr.GetRootGameObjects().First(go => go.name == "Battle Scene");
             battle.LocateMyFSM("Activate Boss").enabled = false;
         }
         
-        private void LoadTiso()
+        private GameObject LoadTiso()
         {
             Log("Loading Tiso Bundle");
             TisoAud = new Dictionary<string, AudioClip>();
-            if (FiveKnights.preloadedGO.TryGetValue("Tiso", out var go) && go != null)
-            {
-                Log("Already Loaded Tiso");
-                return;
-            }
 
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.TisoBund];
-            FiveKnights.preloadedGO["Tiso"] = ab.LoadAsset<GameObject>("Tiso");
-            
+            GameObject tiso = ab.LoadAsset<GameObject>("Tiso");
+
             AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
 
             string[] audNames =
@@ -92,6 +83,7 @@ namespace FiveKnights.Tiso
             }
 
             Log("Finished Loading Tiso Bundle");
+			return Instantiate(tiso);
         }
 
         private void SetStatue()
