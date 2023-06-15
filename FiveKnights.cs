@@ -21,6 +21,7 @@ using SFCore.Generics;
 using TMPro;
 using Vasi;
 using GetLanguageString = On.HutongGames.PlayMaker.Actions.GetLanguageString;
+using System.Collections;
 
 namespace FiveKnights
 {
@@ -140,12 +141,11 @@ namespace FiveKnights
                 "PANTH_ACH_TITLE", "PANTH_ACH_DESC", true);
 
             #endregion
-            
+
             #region Language & Hooks
 
             langStrings = new LanguageCtrl();
 
-            On.HeroController.Start += AddJournalEntries;
             ModHooks.BeforeSavegameSaveHook += SaveEntries;
             ModHooks.SetPlayerVariableHook += SetVariableHook;
             ModHooks.GetPlayerVariableHook += GetVariableHook;
@@ -157,12 +157,11 @@ namespace FiveKnights
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
-            On.UIManager.Start += ApplyMenuTextOutline;
-			UIManager.EditMenus += UIManagerEditMenus;
             RewardRoom.Hook();
             Credits.Hook();
 
             #endregion
+
             #region Load Assetbundles
             LoadDep();
             LoadBossBundles();
@@ -193,7 +192,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.13.2023";
+        public override string GetVersion() => "6.14.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -273,6 +272,8 @@ namespace FiveKnights
 
         public override void Initialize(Dictionary<string, Dictionary<string, GameObject>> preloadedObjects)
         {
+            #region Preloads
+            Log("Storing GOs");
             preloadedGO["Tram"] = preloadedObjects["Crossroads_46"]["Tram Main"];
             
             preloadedGO["Heart"] = preloadedObjects["Room_Mansion"]["Heart Piece Folder/Heart Piece"];
@@ -281,7 +282,6 @@ namespace FiveKnights
             preloadedGO["ObjRaise"] = preloadedObjects["GG_Atrium"]["gg_roof_door_pieces"];
             preloadedGO["BombTurret"] = preloadedObjects["Fungus2_03"]["Mushroom Turret (2)"];
             
-            Log("Storing GOs");
             preloadedGO["HornetSphere"] = preloadedObjects["GG_Hornet_1"]["Boss Holder/Hornet Boss 1"];
             preloadedGO["Nosk"] = preloadedObjects["GG_Nosk"]["Mimic Spider"];
             preloadedGO["Thorn Collider"] = preloadedObjects["Fungus3_13"]["Thorn Collider"];
@@ -341,18 +341,52 @@ namespace FiveKnights
 
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
             preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
-            //Unload();
+			#endregion
 
-            // Charms
+			#region Journal Entries
+			journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_DRYYA_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_DRYYA_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_DRYYA_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_DRYYA_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
+            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            #endregion
+
+            #region Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
             //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
             preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
+			#endregion
 
-            Instance = this;
+			Instance = this;
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
+            UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("FSM"));
+            GameManager.instance.StartCoroutine(WaitForTitle());
             PlantChanger();
 
 			GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
@@ -363,15 +397,10 @@ namespace FiveKnights
 
         #region Make Text Readable
 
-        private void ApplyMenuTextOutline(On.UIManager.orig_Start orig, UIManager self)
+        private IEnumerator WaitForTitle()
         {
-            orig(self);
-            //foreach(var item in self.gameObject.GetComponentsInChildren<Text>(true))
-            //{
-            //    var outline = item.gameObject.AddComponent<Outline>();
-            //    outline.effectColor = Color.black;
-            //    outline.effectDistance = new Vector2(1.5f, -1.5f);
-            //}
+            yield return new WaitUntil(() => GameObject.Find("LogoTitle") != null);
+            UIManager.EditMenus += UIManagerEditMenus;
         }
 
         private void UIManagerEditMenus()
@@ -594,47 +623,12 @@ namespace FiveKnights
             Log("Finished bundling");
         }
 
-        private void AddJournalEntries(On.HeroController.orig_Start orig, HeroController self)
-        {
-            orig(self);
-
-            journalEntries.Clear();
-            journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_ISMA_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_ISMA_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalEntries.Add("Dryya", new JournalHelper(SPRITES["journal_icon_dryya"], SPRITES["journal_dryya"], SaveSettings.DryyaEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_DRY_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_DRY_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_DRY_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_DRY_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalEntries.Add("Hegemol", new JournalHelper(SPRITES["journal_icon_hegemol"], SPRITES["journal_hegemol"], SaveSettings.HegemolEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_HEG_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_HEG_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_HEG_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_HEG_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalEntries.Add("Zemer", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.ZemerEntryData, new JournalHelper.JournalNameStrings
-            {
-                name = langStrings.Get("ENTRY_ZEM_LONGNAME", "Journal"),
-                desc = langStrings.Get("ENTRY_ZEM_DESC", "Journal"),
-                note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
-                shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
-            }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-        }
-
         private void SaveEntries(SaveGameData data)
         {
 			SaveSettings.IsmaEntryData = journalEntries["Isma"].playerData;
-			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
 			SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
 			SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
+			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
 		}
 
         private object SetVariableHook(Type t, string key, object obj)
@@ -791,6 +785,11 @@ namespace FiveKnights
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
             GameManager.instance.gameObject.AddComponent<Amulets>();
             GameManager.instance.gameObject.AddComponent<AwardCharms>();
+
+            journalEntries["Isma"].playerData = SaveSettings.IsmaEntryData;
+            journalEntries["Dryya"].playerData = SaveSettings.DryyaEntryData;
+            journalEntries["Hegemol"].playerData = SaveSettings.HegemolEntryData;
+            journalEntries["Zemer"].playerData = SaveSettings.ZemerEntryData;
 
             // Obtain additional preloads
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())

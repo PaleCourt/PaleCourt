@@ -374,6 +374,7 @@ namespace FiveKnights
                                                         && CustomWP.boss == CustomWP.Boss.All))
             {
                 StartCoroutine(AddComponent());
+                StartCoroutine(CameraFixer());
                 HeroController.instance.EnterWithoutInput(true);
             }
 
@@ -626,7 +627,7 @@ namespace FiveKnights
 
             private void Start()
             {
-                if (!PlayerData.instance.statueStateDungDefender.hasBeenSeen) return;
+                if (!PlayerData.instance.statueStateWhiteDefender.isUnlocked) return;
                 if (!FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
                 
                 GameObject entrance = gameObject.transform.parent.gameObject;

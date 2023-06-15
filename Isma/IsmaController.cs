@@ -1943,6 +1943,7 @@ namespace FiveKnights.Isma
 
             // Destroy objects and award achivement
             GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
+            //FiveKnights.journalEntries["Isma"].RecordJournalEntry();
 
             eliminateMinions = true;
             killAllMinions = true;

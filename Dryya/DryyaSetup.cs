@@ -24,7 +24,7 @@ namespace FiveKnights.Dryya
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
         private readonly float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
         private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 4;
-        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "DRY_DREAM" : "DRY_GG_DREAM";
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "DRYYA_DREAM" : "DRYYA_GG_DREAM";
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;

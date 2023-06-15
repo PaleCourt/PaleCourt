@@ -370,7 +370,6 @@ namespace FiveKnights.BossManagement
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
                 yield return new WaitForSeconds(0.5f);
                 CCDreamExit();
-                Destroy(this);
             }
         }
 
@@ -516,6 +515,7 @@ namespace FiveKnights.BossManagement
             HeroController.instance.MaxHealth();
             HeroController.instance.EnterWithoutInput(true);
             transitionFSM.SetState("Fade Out");
+            Destroy(this);
         }
 
 		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)

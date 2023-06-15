@@ -100,8 +100,6 @@ namespace FiveKnights.Hegemol
             _sr.enabled = false;
             while (HeroController.instance == null) yield return null;
             yield return new WaitForSeconds(1f);
-
-            GetComponent<EnemyDeathEffects>().SetJournalEntry(FiveKnights.journalEntries["Hegemol"]);
             
             GameObject _maceGO = Instantiate(FiveKnights.preloadedGO["Mace"], transform);
             _maceGO.SetActive(false);
@@ -989,6 +987,7 @@ namespace FiveKnights.Hegemol
             CustomWP.wonLastFight = true;
 
             GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
+            //FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
 
             _anim.enabled = true;
             _anim.speed = 1f;

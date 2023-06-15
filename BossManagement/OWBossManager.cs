@@ -207,8 +207,8 @@ namespace FiveKnights
                     FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
                     FiveKnights.Instance.SaveSettings.DryyaOWWinCount++;
                     wins = FiveKnights.Instance.SaveSettings.DryyaOWWinCount;
-                    if(wins < 5) msgKey = "DRY_OUTRO_" + wins;
-                    else msgKey = "DRY_OUTRO_5";
+                    if(wins < 5) msgKey = "DRYYA_OUTRO_" + wins;
+                    else msgKey = "DRYYA_OUTRO_5";
                     break;
                 case 1:
                     FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;

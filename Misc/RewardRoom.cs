@@ -1119,7 +1119,7 @@ namespace FiveKnights
 
         private static IEnumerator ZemerAnimControl()
 		{
-            while(true)
+            while(zemerAnim != null)
 			{
                 yield return new WaitForSeconds(3f);
                 zemerAnim.Play("IdleToAlt");

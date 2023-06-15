@@ -130,25 +130,27 @@ namespace FiveKnights.BossManagement
                 }
                 default:
                 {
-                    if (self.sceneName == PrevDryScene)
+                    if (self.sceneName == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(40.5f, 94.4f), Vector2.zero, // 39.2f, 94.4f
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-                    else if (self.sceneName == PrevIsmScene)
+                    else if (self.sceneName == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(95.7f, 18.4f), Vector2.zero, 
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-                    else if (self.sceneName == PrevZemScene && PlayerData.instance.xunRewardGiven)
+                    else if (self.sceneName == PrevZemScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+                            PlayerData.instance.GetBool(nameof(PlayerData.xunRewardGiven)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-                    else if (self.sceneName == PrevHegScene)
+                    else if (self.sceneName == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+                            PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(114.1f, 12.4f), Vector2.zero, 
                             null, null, false, false, true, 
@@ -165,7 +167,7 @@ namespace FiveKnights.BossManagement
         private void ArenaBundleManage()
         {
             Log("Arena bund");
-            if (_currScene == PrevDryScene)
+            if (_currScene == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
             {
                 if (_prevScene == DryyaScene)
                 {
@@ -194,7 +196,8 @@ namespace FiveKnights.BossManagement
                     new Vector2(40.9f, 94.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, DryyaScene, PrevDryScene);
             }
-            else if (_currScene == PrevZemScene && PlayerData.instance.xunRewardGiven)
+            else if (_currScene == PrevZemScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) && 
+                PlayerData.instance.GetBool(nameof(PlayerData.xunRewardGiven)))
             {
                 if (_prevScene == ZemerScene)
                 {
@@ -222,7 +225,8 @@ namespace FiveKnights.BossManagement
                     new Vector2(25.1f, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, ZemerScene, PrevZemScene);
             }
-            else if (_currScene == PrevHegScene)
+            else if (_currScene == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) && 
+                PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)))
             {
                 if (_prevScene == HegemolScene)
                 {
@@ -246,7 +250,7 @@ namespace FiveKnights.BossManagement
                     Vector2.zero, HegemolScene, PrevHegScene);
                 Log("Done with hegemol idiocy");
             }
-            else if (_currScene == PrevIsmScene)
+            else if (_currScene == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
             {
                 if (_prevScene == IsmaScene)
                 {
