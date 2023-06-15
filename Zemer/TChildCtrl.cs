@@ -50,7 +50,8 @@ namespace FiveKnights.Zemer
             var dEntry = GameObject.Find("Dream Entry");
             var fsm = dEntry.LocateMyFSM("Control");
             yield return new WaitWhile(() => !fsm.ActiveStateName.Contains("Anim"));
-            yield return LookAndRun();
+            StartCoroutine(LookAndRun());
+            StartCoroutine(FreezePlayer());
         }
 
         private void Update()
@@ -62,13 +63,6 @@ namespace FiveKnights.Zemer
             StartCoroutine(TPAway());
         }
 
-        private IEnumerator TPAway()
-        {
-            yield return Leave(false);
-            yield return Arrive(new Vector3(StopAtX, GroundY));
-            StartCoroutine(LeaveAndReturn());
-        }
-
         private IEnumerator LookAndRun()
         {
             // Turn to player and run
@@ -77,7 +71,12 @@ namespace FiveKnights.Zemer
             yield return _anim.PlayToFrame("RunStart",2);
             _rb.velocity = new Vector2(17.5f, 0f);
             yield return _anim.PlayToEnd();
-            Run();
+
+            // Start running
+            _anim.speed *= 1.4f;
+            _rb.velocity = new Vector2(15f, 0f);
+            _anim.Play("Run");
+
             // Stops once gets behind Ze'mer or if hit do hit path
             yield return new WaitWhile(() => transform.position.x < StopAtX && !_isAtt && !_run);
             if (_isAtt)
@@ -92,7 +91,28 @@ namespace FiveKnights.Zemer
             _hm.IsInvincible = true;
             _bc.enabled = _hm.enabled = false;
             leaveAndRet = true;
+
             // Waiting for player routine
+            StartCoroutine(LeaveAndReturn());
+        }
+
+        private IEnumerator FreezePlayer()
+		{
+            // Stops player until she leaves
+            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
+
+            OWBossManager.PlayMusic(null);
+            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
+            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            HeroController.instance.RelinquishControl();
+            HeroController.instance.StopAnimationControl();
+            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+        }
+
+        private IEnumerator TPAway()
+        {
+            yield return Leave(false);
+            yield return Arrive(new Vector3(StopAtX, GroundY));
             StartCoroutine(LeaveAndReturn());
         }
 
@@ -100,14 +120,6 @@ namespace FiveKnights.Zemer
         {
             _hm.IsInvincible = true;
             yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
-            
-            OWBossManager.PlayMusic(null);
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            //HeroController.instance.GetComponent<tk2dSpriteAnimator>().Stop();
-            HeroController.instance.RelinquishControl();
-            HeroController.instance.StopAnimationControl();
-            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
             
             yield return new WaitForSeconds(1.5f);
             yield return Leave(true);
@@ -124,7 +136,7 @@ namespace FiveKnights.Zemer
 
             yield return _anim.PlayToFrame("Leave", 2);
 
-            if (unfreezeH)
+            if(unfreezeH)
             {
                 helpZemer = true;
                 HeroController.instance.GetComponent<Rigidbody2D>().WakeUp();
@@ -159,13 +171,6 @@ namespace FiveKnights.Zemer
                 _isAtt = true;
             }
             orig(self, hitinstance);
-        }
-        
-        private void Run(float xSpd = 15f)
-        {
-            _anim.speed *= 1.4f;
-            _rb.velocity = new Vector2(xSpd, 0f);
-            _anim.Play("Run");
         }
         
         private IEnumerator DoAttack()

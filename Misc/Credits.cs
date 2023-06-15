@@ -38,13 +38,20 @@ namespace FiveKnights
 
 	public class CreditsController : MonoBehaviour
 	{
-		private readonly float ScrollSpeed = 130f * (Screen.height / 1080f);
+		// Values measured on a 3840 x 2400 screen
+		private readonly float ScrollSpeed = 290f * (Screen.height / 2400f);
+		private readonly float ScrollY = 17250f * (Screen.height / 2400f);
 
 		private Transform _creditsParent;
 		private Transform _scrollParent;
 		private Transform _thanksParent;
 		private Transform _finalParent;
 		private AudioSource _creditsAudio;
+
+		private Coroutine _creditsCoro;
+		private Coroutine _finalFadeCoro;
+		private Coroutine _returnCoro;
+		private bool _scrolling;
 
 		private void Start()
 		{
@@ -59,7 +66,22 @@ namespace FiveKnights
 			_creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
 			FixFonts();
 			StopAudio();
-			StartCoroutine(RollCredits());
+			_creditsCoro = StartCoroutine(RollCredits());
+		}
+
+		private void Update()
+		{
+			if(_scrolling)
+			{
+				if(_scrollParent.position.y < ScrollY)
+				{
+					_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
+				}
+				else
+				{
+					_scrolling = false;
+				}
+			}
 		}
 
 		private void FixFonts()
@@ -86,9 +108,16 @@ namespace FiveKnights
 		private IEnumerator RollCredits()
 		{
 			Log("Starting credits sequence");
+			Log("Screen height is " + Screen.height);
+			Log("Screen resolution height is " + Screen.currentResolution.height);
 
 			yield return new WaitForSeconds(1f);
+
+			if(FiveKnights.Instance.SaveSettings.HasSeenCredits) _returnCoro = StartCoroutine(ReturnFromCredits());
+
 			_creditsAudio.clip = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("CreditsMusic");
+			_creditsAudio.outputAudioMixerGroup = Vasi.Mirror.GetField<AudioManager, AudioSource[]>(GameManager.instance.AudioManager, 
+				"musicSources")[0].outputAudioMixerGroup;
 			_creditsAudio.Play();
 
 			Log("Fade main credits");
@@ -99,13 +128,8 @@ namespace FiveKnights
 			}
 
 			Log("Scroll credits");
-			float timer = 0f;
-			while(timer < 88f)
-			{
-				_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
-				timer += Time.deltaTime;
-				yield return null;
-			}
+			_scrolling = true;
+			yield return new WaitWhile(() => _scrolling);
 
 			Log("Fade thank yous");
 			for(int i = 0; i < _thanksParent.childCount; i++)
@@ -121,9 +145,9 @@ namespace FiveKnights
 			yield return new WaitForSeconds(3f);
 			SetAlpha(_finalParent.GetChild(1).gameObject.GetComponent<Text>(), 0f);
 			_finalParent.GetChild(1).gameObject.SetActive(true);
-			Coroutine finalFade = StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, true));
+			_finalFadeCoro = StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, true));
 
-			StartCoroutine(ReturnFromCredits());
+			if(_returnCoro == null) StartCoroutine(ReturnFromCredits());
 		}
 
 		private IEnumerator ReturnFromCredits()
@@ -132,8 +156,12 @@ namespace FiveKnights
 
 			Log("Ending credits sequence, going to reward room");
 
-			StartCoroutine(Fade(_finalParent.GetChild(0).gameObject, 1f, false));
-			StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, false));
+			if(_creditsCoro != null) StopCoroutine(_creditsCoro);
+			if(_finalFadeCoro != null) StopCoroutine(_finalFadeCoro);
+
+			FiveKnights.Instance.SaveSettings.HasSeenCredits = true;
+
+			StartCoroutine(Fade(_finalParent.parent.gameObject, 1f, false));
 			StartCoroutine(FadeAudio(2f));
 			yield return new WaitForSeconds(2f);
 

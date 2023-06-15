@@ -22,7 +22,9 @@ namespace FiveKnights.Dryya
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ? 101.0837f : 10.625f;
-        private float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
+        private readonly float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
+        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 4;
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "DRYYA_DREAM" : "DRYYA_GG_DREAM";
 
         private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -54,15 +56,6 @@ namespace FiveKnights.Dryya
         private List<GameObject> _slashes;
         private GameObject _stabFlash;
         private List<ElegyBeam> _elegyBeams;
-
-        private string[] _dreamNailDialogue =
-        {
-            "DRYYA_DIALOG_1",
-            "DRYYA_DIALOG_2",
-            "DRYYA_DIALOG_3",
-            "DRYYA_DIALOG_4",
-            "DRYYA_DIALOG_5",
-        };
 
         private void Awake()
         {
@@ -216,7 +209,7 @@ namespace FiveKnights.Dryya
             orig(self);
             if (self.name.Contains("Dryya"))
             {
-                _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
+                _spriteFlash.flashDreamImpact();
                 _dreamImpactPrefab.Spawn(transform.position);
             }
         }
@@ -237,7 +230,8 @@ namespace FiveKnights.Dryya
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;
-            _dreamNailReaction.SetConvoTitle(_dreamNailDialogue[Random.Range(0, _dreamNailDialogue.Length)]);
+            Vasi.Mirror.SetField(_dreamNailReaction, "convoAmount", DreamConvoAmount);
+            _dreamNailReaction.SetConvoTitle(DreamConvoKey);
 
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;

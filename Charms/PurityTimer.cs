@@ -112,7 +112,10 @@ namespace FiveKnights
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
             _hc.ATTACK_DURATION = ATTACK_DURATION_44;
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
-            this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
+            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .48f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .3f)
+            {
+                this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
+            }
             foreach (NailSlash nailslash in nailSlashes)
             {
                 nailslash.GetComponent<tk2dSprite>().color = Color.white;
@@ -135,10 +138,10 @@ namespace FiveKnights
                 timer = 0;
                 timerRunning = true;
 
-                _hc.ATTACK_COOLDOWN_TIME -= .048f;
-                _hc.ATTACK_COOLDOWN_TIME_CH -= .038f;
-                _hc.ATTACK_DURATION -= .048f;
-                _hc.ATTACK_DURATION_CH -= .038f;
+                _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44)/5;
+                _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32)/7;
+                _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 5;
+                _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 7;
                 //foreach (NailSlash nailslash in nailSlashes)
                 {
                   //  nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
@@ -223,14 +226,12 @@ namespace FiveKnights
         {
             if (To.name == "Deepnest_East_16")
             {
-                Log("fuck");
                 var dummy = To.FindGameObject("Training Dummy");
                 dummy.LocateMyFSM("Hit").GetState("Light Dir").InsertMethod(() => IncrementSpeedDummy(), 0);
             }
         }
         private void IncrementSpeedDummy()
         {
-            Log("Fuck");
             timer = 0;
             timerRunning = true;
 

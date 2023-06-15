@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -67,6 +67,8 @@ namespace FiveKnights.BossManagement
 			}
             
             Instance = this;
+			ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
+
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
                 dd = GameObject.Find("White Defender"); 
@@ -368,7 +370,6 @@ namespace FiveKnights.BossManagement
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
                 yield return new WaitForSeconds(0.5f);
                 CCDreamExit();
-                Destroy(this);
             }
         }
 
@@ -381,6 +382,10 @@ namespace FiveKnights.BossManagement
             dd = GameObject.Find("White Defender");
             dd.GetComponent<DamageHero>().damageDealt = 1;
             dd.Find("Throw Swipe").gameObject.GetComponent<DamageHero>().damageDealt = 1;
+            EnemyDreamnailReaction dreamNailReaction = dd.GetComponent<EnemyDreamnailReaction>();
+            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 3);
+            dreamNailReaction.SetConvoTitle("OGRIM_GG_DREAM");
+
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -406,6 +411,7 @@ namespace FiveKnights.BossManagement
 			PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
+            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 5);
 
             // Disable his burrow and ground spikes
             burrow.enabled = true;
@@ -509,6 +515,7 @@ namespace FiveKnights.BossManagement
             HeroController.instance.MaxHealth();
             HeroController.instance.EnterWithoutInput(true);
             transitionFSM.SetState("Fade Out");
+            Destroy(this);
         }
 
 		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)

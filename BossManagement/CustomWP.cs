@@ -256,9 +256,9 @@ namespace FiveKnights
                 PlayerData.instance.disablePause = false;
                 PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
                 GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
-                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-                pm.SendEvent("FADE OUT");
-                yield return new WaitForSeconds(0.5f);
+				PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+				pm.SendEvent("FADE OUT");
+				yield return new WaitForSeconds(0.5f);
                 boss = Boss.All;
                 ArenaFinder.defeats = PlayerData.instance.whiteDefenderDefeats;
                 PlayerData.instance.whiteDefenderDefeats = 0;
@@ -268,7 +268,7 @@ namespace FiveKnights
                     SceneName = "Dream_04_White_Defender",
                     EntryGateName = "door1",
                     Visualization = GameManager.SceneLoadVisualizations.Dream,
-                    WaitForSceneTransitionCameraFade = true,
+                    WaitForSceneTransitionCameraFade = false,
                     EntryDelay = 0f
                 });
 
@@ -284,7 +284,7 @@ namespace FiveKnights
             FiveKnights.preloadedGO["ThroneCovered"].SetActive(!FiveKnights.Instance.SaveSettings.UnlockedChampionsCall || !FiveKnights.Instance.SaveSettings.SeenChampionsCall);
         }
 
-        private void HubRemove()
+		private void HubRemove()
         {
             foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
             string[] arr = { "Breakable Wall Waterways", "black_fader","White_Palace_throne_room_top_0000_2", "White_Palace_throne_room_top_0001_1",
@@ -385,7 +385,7 @@ namespace FiveKnights
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRY_NAME", "DRY_DESC", "statueStateDryya");
+                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRYYA_NAME", "DRYYA_DESC", "statueStateDryya");
             SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(0f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
@@ -442,7 +442,7 @@ namespace FiveKnights
                         self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "ISMA_LOCKED_DESC";
                         break;
                     case ArenaFinder.DryyaScene:
-                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "DRY_LOCKED_DESC";
+                        self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "DRYYA_LOCKED_DESC";
                         break;
                     case ArenaFinder.ZemerScene:
                         self.Fsm.Variables.FindFsmString("Game Text Convo").Value = "ZEM_LOCKED_DESC";
@@ -527,7 +527,7 @@ namespace FiveKnights
                         bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueIsma, false, false);
                     }
                     break;
-                case "DRY_NAME":
+                case "DRYYA_NAME":
                     if(FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked)
                     {
                         bs.statueStatePD = state;

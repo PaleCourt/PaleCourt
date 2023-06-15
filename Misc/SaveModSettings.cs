@@ -42,6 +42,11 @@ namespace FiveKnights
             newentry = true
         };
 
+        public int IsmaOWWinCount = 0;
+        public int DryyaOWWinCount = 0;
+        public int HegOWWinCount = 0;
+        public int ZemerOWWinCount = 0;
+
         public bool AltStatueIsma;
 
         public bool AltStatueZemer;
@@ -112,5 +117,6 @@ namespace FiveKnights
         public bool HasSeenWorkshopRaised = false;
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
+        public bool HasSeenCredits = false;
     }
 }
