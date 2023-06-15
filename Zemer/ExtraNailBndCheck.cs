@@ -1,4 +1,5 @@
 ﻿using System;
+using FiveKnights.BossManagement;
 using UnityEngine;
 
 namespace FiveKnights.Zemer;
@@ -9,13 +10,16 @@ public class ExtraNailBndCheck : MonoBehaviour
     // to break that accidentally
 
     private Rigidbody2D _rb;
-    private readonly float _nailMaxHeightStop = 
+    private readonly float _nailMaxHeightStop = (OWArenaFinder.IsInOverWorld) ? 118.5f :
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 18.5f : 39f;
-    private readonly float _nailMaxGroundStop = 
-        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 8f : 27.3f;
-    private readonly float _nailMaxLeftStop = 
+    
+    private readonly float _nailMaxGroundStop = (OWArenaFinder.IsInOverWorld) ? 106f :
+        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 7.6f : 27.3f;
+    
+    private readonly float _nailMaxLeftStop = (OWArenaFinder.IsInOverWorld) ? 241.9f :
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 62f : 13f;
-    private readonly float _nailMaxRightStop = 
+    
+    private readonly float _nailMaxRightStop = (OWArenaFinder.IsInOverWorld) ? 271.2f :
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 89f : 43f;
     
     private void Awake()

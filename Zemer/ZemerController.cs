@@ -157,7 +157,7 @@ namespace FiveKnights.Zemer
 			if(!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
 			else yield return new WaitForSeconds(1.7f);
 
-			gameObject.SetActive(true);
+			gameObject.SetActive(true); 
 
             gameObject.transform.position = gameObject.transform.position = new Vector2(RightX - 10f, GroundY + 0.5f);
             
@@ -935,17 +935,15 @@ namespace FiveKnights.Zemer
                 // Predict where it will hit, if it is too high, lower the y until it's not
                 var maskLayer = LayerMask.LayerToName(8);
                 var rc = Physics2D.Raycast(transform.Find("ZNailB").position,
-                    new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed), Mathf.Infinity,
+                    new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
                     LayerMask.GetMask(maskLayer));
-                int i = 0;
-                while (i < 20 && rc.point.y > 32f)
+                while (rc.point.y > GroundY + 3.2f)
                 {
                     hero -= new Vector2(0f, 1f);
                     rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
                     rc = Physics2D.Raycast(transform.Find("ZNailB").position,
-                        new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed), Mathf.Infinity,
+                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
                         LayerMask.GetMask(maskLayer));
-                    i++;
                 }
                 
                 
@@ -1012,7 +1010,7 @@ namespace FiveKnights.Zemer
                         nail.GetComponent<SpriteRenderer>().enabled = false;
                         nail.transform.Find("ZNailN").GetComponent<SpriteRenderer>().enabled = true;
                         rbNail.velocity = Vector2.zero;
-                        Destroy(cc);
+                        Destroy(cc); 
                     };
                 }
                 

@@ -10,20 +10,33 @@ namespace FiveKnights
         public bool Freeze { get; set; }
         public event Action OnCollide;
 
+        private Rigidbody2D _rb;
+
+        private void Awake()
+        {
+            _rb = GetComponent<Rigidbody2D>() ?? transform.parent.GetComponent<Rigidbody2D>();
+        }
+
+        private void Update()
+        {
+            // Added this to make sure the oncollide is invoked even if ontriggerenter doesn't detect a hit
+            if (Hit || _rb.velocity != Vector2.zero) return;
+            OnCollide?.Invoke();
+            Hit = true;
+        }
+
         private void OnTriggerEnter2D(Collider2D col)
         {
             if (col.gameObject.layer != (int) GlobalEnums.PhysLayers.TERRAIN)
                 return;
-
+            
             Hit = true;
             OnCollide?.Invoke();
             
             if (!Freeze) 
                 return;
 
-            Rigidbody2D rb = GetComponent<Rigidbody2D>() ?? transform.parent.GetComponent<Rigidbody2D>();
-            
-            rb.velocity = Vector2.zero;
+            _rb.velocity = Vector2.zero;
         }
 
         private void OnTriggerStay2D(Collider2D col)
