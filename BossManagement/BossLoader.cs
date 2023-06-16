@@ -1,0 +1,399 @@
+using UnityEngine;
+using System.Collections;
+using System.Linq;
+using FiveKnights.BossManagement;
+using FiveKnights.Dryya;
+using FiveKnights.Hegemol;
+using FiveKnights.Isma;
+using FiveKnights.Zemer;
+using HutongGames.PlayMaker.Actions;
+using Random = UnityEngine.Random;
+using System.Collections.Generic;
+
+namespace FiveKnights
+{
+    public static class BossLoader
+    {
+        private static AssetBundle _soundBundle => ABManager.AssetBundles[ABManager.Bundle.Sound];
+        private static AssetBundle _miscBundle => ABManager.AssetBundles[ABManager.Bundle.Misc];
+        private static AssetBundle _ismaBundle => ABManager.AssetBundles[ABManager.Bundle.GIsma];
+        private static AssetBundle _dryyaBundle => ABManager.AssetBundles[ABManager.Bundle.GDryya];
+        private static AssetBundle _hegemolBundle => ABManager.AssetBundles[ABManager.Bundle.GHegemol];
+        private static AssetBundle _zemerBundle => ABManager.AssetBundles[ABManager.Bundle.GZemer];
+
+        public static IsmaController CreateIsma(bool onlyIsma)
+        {
+            Log("Creating Isma");
+            
+            GameObject isma = GameObject.Instantiate(FiveKnights.preloadedGO["Isma"]);
+            isma.SetActive(true);
+            
+            foreach(Collider2D col in isma.GetComponentsInChildren<Collider2D>(true))
+            {
+                col.gameObject.layer = 11;
+                col.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+            }
+            isma.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
+            isma.AddComponent<IsmaController>().onlyIsma = onlyIsma;
+            
+            Log("Done creating Isma");
+            return isma.GetComponent<IsmaController>();
+        }
+        
+        public static DryyaSetup CreateDryya()
+        {
+            Log("Creating Dryya");
+
+            Vector2 pos = OWArenaFinder.IsInOverWorld ? new Vector2(457.6f, 112.5f) : 
+                (CustomWP.boss == CustomWP.Boss.All ? new Vector2(91f, 25.5f) : new Vector2(90f, 25f));
+            GameObject dryya = GameObject.Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
+			IEnumerator DryyaIntro()
+			{
+                BoxCollider2D bc = dryya.GetComponent<BoxCollider2D>();
+				bc.enabled = false;
+				while(dryya.transform.position.y > (OWArenaFinder.IsInOverWorld ? 103f : 20f))
+					yield return new WaitForFixedUpdate();
+				bc.enabled = true;
+			}
+            GameManager.instance.StartCoroutine(DryyaIntro());
+            dryya.AddComponent<DryyaSetup>();
+
+            Log("Done creating Dryya");
+            return dryya.GetComponent<DryyaSetup>();
+        }
+
+        public static HegemolController CreateHegemol()
+        {
+            Log("Creating Hegemol");
+            GameObject _hegemol = GameObject.Instantiate(FiveKnights.preloadedGO["Hegemol"], 
+                OWArenaFinder.IsInOverWorld ? new Vector2(438.4f, 28f) : new Vector2(87f, 28f), Quaternion.identity);
+            _hegemol.SetActive(!OWArenaFinder.IsInOverWorld);
+            _hegemol.AddComponent<HegemolController>();
+
+            Log("Done creating Hegemol");
+            return _hegemol.GetComponent<HegemolController>();
+        }
+        
+        public static ZemerController CreateZemer()
+        {
+            Log("Creating Zemer");
+
+            GameObject zemer = GameObject.Instantiate(FiveKnights.preloadedGO["Zemer"]);
+            zemer.SetActive(true);
+
+            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+            foreach(Transform i in FiveKnights.preloadedGO["TChild"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
+            {
+                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
+                
+                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                
+                i.Find("HB1").gameObject.layer = 22;
+                i.Find("HB2").gameObject.layer = 22;
+            }
+            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingControllerNew"].transform)
+            {
+                foreach (Transform t in tRing)
+                {
+                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<ParryTink>();
+                    }
+                }
+            }
+            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingController"].transform)
+            {
+                foreach (Transform t in tRing)
+                {
+                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<ParryTink>();
+                    }
+                }
+            }
+            foreach (SpriteRenderer i in zemer.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                i.material = new Material(Shader.Find("Sprites/Default"));
+                
+                var bc = i.gameObject.GetComponent<BoxCollider2D>();
+                
+                if (bc == null) 
+                    continue;
+                bc.isTrigger = true;
+                bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
+                bc.gameObject.layer = 22;
+                if (!i.name.Contains("Zemer")) i.gameObject.AddComponent<ParryTink>();
+            }
+            foreach (PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
+            { 
+                i.isTrigger = true;
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<ParryTink>();
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
+                i.gameObject.layer = 22;
+            }
+            
+            var bcMultiDashHB = zemer.transform.Find("MultiDashParryHB").gameObject;
+            bcMultiDashHB.AddComponent<ParryTink>();
+            bcMultiDashHB.AddComponent<Pogoable>().tar = zemer;
+            bcMultiDashHB.layer = 22;
+            bcMultiDashHB.SetActive(false);
+
+            zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
+            ZemerController zc = zemer.AddComponent<ZemerController>();
+
+            Log("Done creating Zemer");
+            return zc;
+        }
+
+        public static void LoadIsmaBundle()
+		{
+            Log("Loading Isma bundle");
+            if(FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
+            {
+                Log("Already loaded Isma");
+                return;
+            }
+
+            // Audio clips
+            string[] clips = new string[]
+            {
+                "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", "IsmaAudVineGrow", "IsmaAudVineHit",
+                "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak", "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3",
+                "IsmaAudAtt4", "IsmaAudAtt5", "IsmaAudAtt6", "IsmaAudAtt7", "IsmaAudAtt8", "IsmaAudAtt9", "IsmaAudDeath",
+                "LoneIsmaIntro", "LoneIsmaLoop", "OgrimMusic", "OgrismaMusic"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+
+            // Animation clips
+            foreach(AnimationClip c in _ismaBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+
+            // GameObjects
+            string[] gos = new string[]
+            {
+                "Isma", "Gulka", "Plant", "Wall", "Fool", "ThornPlant", "Seal"
+            };
+            foreach(string name in gos)
+            {
+                FiveKnights.preloadedGO[name] = _ismaBundle.LoadAsset<GameObject>(name);
+                foreach(SpriteRenderer sr in FiveKnights.preloadedGO[name].GetComponentsInChildren<SpriteRenderer>(true))
+                {
+                    sr.material = new Material(Shader.Find("Sprites/Default"));
+                }
+            }
+
+            // CC Silhouette
+            foreach(Sprite s in _miscBundle.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Sil_Isma_")))
+            {
+                ArenaFinder.Sprites[s.name] = s;
+            }
+
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+
+            #region Custom acid
+            PlayMakerFSM noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
+            GameObject acidOrig = GameObject.Instantiate(noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value);
+            acidOrig.SetActive(false);
+            GameObject.DontDestroyOnLoad(acidOrig);
+
+            // Change particle color to green
+            ParticleSystem.MainModule stmain = acidOrig.transform.Find("Steam").GetComponent<ParticleSystem>().main;
+            ParticleSystem.MainModule stamain = acidOrig.transform.Find("Air Steam").GetComponent<ParticleSystem>().main;
+            stmain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
+            stamain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
+            // Get audio clip
+            var clip = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
+                .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
+            // Store values
+            FiveKnights.Clips["AcidSpitSnd"] = clip;
+            FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
+            #endregion
+
+            Log("Finished loading Isma bundle");
+		}
+
+        public static void LoadDryyaBundle()
+		{
+            Log("Loading Dryya bundle");
+            if(FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
+            {
+                Log("Already loaded Dryya");
+                return;
+            }
+
+            // Audio
+            FiveKnights.Clips["DryyaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaMusic");
+            FiveKnights.Clips["DryyaAreaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaAreaMusic");
+
+            // Animation clips
+            foreach(var c in _dryyaBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+
+            // GameObjects
+            FiveKnights.preloadedGO["Dryya2"] = _dryyaBundle.LoadAsset<GameObject>("Dryya2");
+            FiveKnights.preloadedGO["Beams"] = _dryyaBundle.LoadAsset<GameObject>("Beams");
+            FiveKnights.preloadedGO["Dagger"] = _dryyaBundle.LoadAsset<GameObject>("Dagger");
+            FiveKnights.preloadedGO["Beams"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
+            // CC Silhouette
+            foreach(var i in _miscBundle.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Dryya_Silhouette_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+
+            Log("Finished loading Dryya bundle");
+        }
+
+        public static void LoadHegemolBundle()
+		{
+            Log("Loading Hegemol bundle");
+            if(FiveKnights.preloadedGO.TryGetValue("Hegemol", out var go) && go != null)
+            {
+                Log("Already loaded Hegemol");
+                return;
+            }
+
+            // Audio clips
+            string[] clips = new[]
+            {
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
+                "HegJump", "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath",
+                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3", "HegemolMusic", "HegAreaMusic",
+                "HegAreaMusicIntro", "HegAreaMusicBG"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+
+            // GameObjects
+            FiveKnights.preloadedGO["Hegemol"] = _hegemolBundle.LoadAsset<GameObject>("Hegemol");
+            FiveKnights.preloadedGO["Mace"] = _hegemolBundle.LoadAsset<GameObject>("Mace");
+            FiveKnights.preloadedGO["Debris"] = _hegemolBundle.LoadAsset<GameObject>("Debris");
+            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
+            // Traitor shockwaves
+            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
+            FiveKnights.preloadedGO["TraitorSlam"] =
+                fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
+            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+
+            // CC Dung ball
+            GameObject ball = FiveKnights.preloadedGO["WhiteDef"].LocateMyFSM("Dung Defender").
+                GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
+            FiveKnights.preloadedGO["DungBreakChunks"] = ball.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value;
+
+            // CC Silhouette
+            foreach(var i in _miscBundle.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+
+            Log("Finished loading Hegemol bundle");
+        }
+
+        public static void LoadZemerBundle()
+		{
+            Log("Loading Zemer bundle");
+            if(FiveKnights.preloadedGO.TryGetValue("Zemer", out var go) && go != null)
+            {
+                Log("Already loaded Zemer");
+                return;
+            }
+
+            // Audio clips
+            string[] clips = new[]
+            {
+                "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
+                "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
+                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1",
+                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
+                "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area"
+            };
+            foreach(var name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+            FiveKnights.Clips["NeedleSphere"] = (AudioClip)FiveKnights.preloadedGO["HornetSphere"].LocateMyFSM("Control")
+                .GetAction<AudioPlaySimple>("Sphere A", 0).oneShotClip.Value;
+
+            // Animation clips
+            foreach(var c in _zemerBundle.LoadAllAssets<AnimationClip>())
+            {
+                Log($"Name of anim adding is {c.name}");
+                FiveKnights.AnimClips[c.name] = c;
+            }
+
+            // GameObjects
+            foreach(GameObject asset in _zemerBundle.LoadAllAssets<GameObject>())
+            {
+                if(asset.name == "Zemer") FiveKnights.preloadedGO["Zemer"] = asset;
+                else if(asset.name == "TChild") FiveKnights.preloadedGO["TChild"] = asset;
+                else if(asset.name == "NewSlash") FiveKnights.preloadedGO["SlashBeam"] = asset;
+                else if(asset.name == "NewSlash2") FiveKnights.preloadedGO["SlashBeam2"] = asset;
+                else if(asset.name == "SlashRingController") FiveKnights.preloadedGO["SlashRingController"] = asset;
+                else if(asset.name == "SlashRingControllerNew") FiveKnights.preloadedGO["SlashRingControllerNew"] = asset;
+                else if(asset.name == "AllFlowers") FiveKnights.preloadedGO["AllFlowers"] = asset;
+
+                if(asset.GetComponent<SpriteRenderer>() == null)
+                {
+                    foreach(SpriteRenderer sr in asset.GetComponentsInChildren<SpriteRenderer>(true))
+                    {
+                        sr.material = new Material(Shader.Find("Sprites/Default"));
+                    }
+                }
+                else asset.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+            }
+            FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
+                new Material(Shader.Find("Sprites/Default"));
+
+            // Traitor shockwave
+            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
+            FiveKnights.preloadedGO["TraitorSlam"] =
+                fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
+            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
+
+            // CC Sprites
+            ArenaFinder.Sprites["ZemParticPetal"] = _miscBundle.LoadAsset<Sprite>("petal-test");
+            ArenaFinder.Sprites["ZemParticDung"] = _miscBundle.LoadAsset<Sprite>("dung-test");
+            foreach(Sprite i in _miscBundle.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Zem_Sil_")))
+            {
+                ArenaFinder.Sprites[i.name] = i;
+            }
+
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+
+            Log("Finished loading Zemer bundle");
+        }
+
+		private static void Log(object o) => Modding.Logger.Log("[FiveKnights][BossLoader] " + o);
+    }
+}

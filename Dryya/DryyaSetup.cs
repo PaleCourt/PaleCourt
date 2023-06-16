@@ -331,13 +331,12 @@ namespace FiveKnights.Dryya
             float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
             float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
             float startAngle = 180f - angle;// - 2 * 8f;
-            GameObject dagger = FiveKnights.preloadedGO["Dagger"];
             
             for (int i = -6; i < 7; i++)
             {
                 if (i == 1 || i == 2 || i == 3 || i == -1 || i == -2 || i == -3) continue;
                 PlayAudio("Dagger Throw");
-                GameObject dg = Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle + 5 * i));
+                GameObject dg = Instantiate(FiveKnights.preloadedGO["Dagger"], transform.position, Quaternion.Euler(0f, 0f, startAngle + 5 * i));
                 dg.SetActive(true);
 
                 yield return new WaitForSeconds(0.01f);

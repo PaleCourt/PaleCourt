@@ -27,7 +27,7 @@ namespace FiveKnights
 
         public static int defeats;
 
-        private FightController fightCtrl;
+        private GGBossManager _ggBossManager;
 
         private static bool hasSummonElevator;
 
@@ -397,16 +397,16 @@ namespace FiveKnights
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
 
-            if (fightCtrl != null && arg1.name != "Dream_04_White_Defender" 
+            if (_ggBossManager != null && arg1.name != "Dream_04_White_Defender" 
                                   && arg1.name != "GG_White_Defender" && arg1.name != DryyaScene
                                   && arg1.name != IsmaScene && arg1.name != HegemolScene
                                   && arg1.name != ZemerScene)
             {
-                Log("Destroying fightctrl");
-                if (fightCtrl != null)
+                Log("Destroying GGBossManager");
+                if (_ggBossManager != null)
                 { 
-                    Destroy(fightCtrl);
-                    Log("Killed fightCtrl2");
+                    Destroy(_ggBossManager);
+                    Log("Killed GGBossManager");
                 }
             }
         }
@@ -485,7 +485,7 @@ namespace FiveKnights
         private IEnumerator AddComponent()
         {
             yield return null;
-            fightCtrl = GameManager.instance.gameObject.AddComponent<FightController>();
+            _ggBossManager = GameManager.instance.gameObject.AddComponent<GGBossManager>();
         }
 
         private void LoadHubBundles()
@@ -493,7 +493,6 @@ namespace FiveKnights
             FiveKnights.preloadedGO["hubfloor"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub2].LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             FiveKnights.Materials["WaveEffectMaterial"] = misc.LoadAsset<Material>("WaveEffectMaterial");
-            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
             
             foreach (GameObject i in misc.LoadAllAssets<GameObject>())
             {
