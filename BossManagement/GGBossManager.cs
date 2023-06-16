@@ -258,6 +258,10 @@ namespace FiveKnights.BossManagement
                 yield return a4;
                 
 
+				GameObject bscDummy = new("BSC Dummy");
+				bscDummy.SetActive(false);
+				BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
+
                 GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
                 flowersAnim = new List<Animator>();
                 flowersGlow = new List<Animator>();
