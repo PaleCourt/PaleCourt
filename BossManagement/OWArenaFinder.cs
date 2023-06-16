@@ -199,6 +199,8 @@ namespace FiveKnights.BossManagement
                     if (OWBossManager.Instance != null)
                     {
                         Log("Destroying OWBossManager");
+                        // Stop music first because the scene has no stop music trigger
+                        OWBossManager.PlayMusic(null);
                         Destroy(OWBossManager.Instance);
                     }
                     var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
