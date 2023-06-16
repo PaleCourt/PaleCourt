@@ -366,6 +366,7 @@ namespace FiveKnights.BossManagement
             _hm.hp = 351;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
+			EnemyHPBarImport.RefreshHPBar(dd);
             yield return new WaitForSeconds(1f);
 
             // Begin fight

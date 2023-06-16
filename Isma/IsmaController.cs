@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,6 +88,7 @@ namespace FiveKnights.Isma
             _hmDD = dd.GetComponent<HealthManager>();
             _rbDD = dd.GetComponent<Rigidbody2D>();
             _ddFsm = dd.LocateMyFSM("Dung Defender");
+			EnemyHPBarImport.DisableHPBar(dd);
 
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
             Mirror.SetField(_extraDamageable, "impactClipTable", 
@@ -196,6 +197,7 @@ namespace FiveKnights.Isma
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
             _hm.hp = _hmDD.hp = onlyIsma ? MaxHP : MaxHPDuo;
+			EnemyHPBarImport.MarkAsBoss(gameObject);
 
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
