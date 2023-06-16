@@ -21,11 +21,11 @@ namespace FiveKnights
         private AssetBundle _charmUnlock;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
         private bool pauseShroom = false;
-        public static bool[] firstClear = new bool[4];
+        public bool[] firstClear = new bool[4];
         //public static BindingFlags all = BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.OptionalParamBinding | BindingFlags.PutDispProperty | BindingFlags.SuppressChangeType | BindingFlags.PutRefDispProperty;
+        
         public void Awake()
         {
-            //ModHooks.DoAttackHook += CharmCutscene;
             ModHooks.LanguageGetHook += CutsceneDialogue;
             ModHooks.BeforeSceneLoadHook += SceneCheck;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += BloomPlacement;
@@ -70,16 +70,17 @@ namespace FiveKnights
         {
             var settings = FiveKnights.Instance.SaveSettings;
             var scene = GameManager.instance.sceneName;
-            if (scene == "dryya overworld" && !settings.gotCharms[0] && firstClear[0] ||
-                scene == "zemer overworld arena" && !settings.gotCharms[1] && firstClear[1] ||
-                scene == "hegemol overworld arena" && !settings.gotCharms[2] && firstClear[2] || 
-                scene == "isma overworld" && !settings.upgradedCharm_10 && firstClear[3]) //|| scene == "Dream_04_White_Defender");// && _settings.ZemerEntryData.haskilled)
+            if((scene == "dryya overworld" && !settings.gotCharms[0] && firstClear[0]) ||
+                (scene == "zemer overworld arena" && !settings.gotCharms[1] && firstClear[1]) ||
+                (scene == "hegemol overworld arena" && !settings.gotCharms[2] && firstClear[2]) || 
+                (scene == "isma overworld" && !settings.upgradedCharm_10 && firstClear[3]))
             {
                 var boss = scene.Split(' ');
                 StartCoroutine(AwardCharm(boss[0]));
             }
-            return (sceneName);
+            return sceneName;
         }
+
         private IEnumerator AwardCharm(string boss)
         {
             yield return new WaitUntil(() => HeroController.instance != null);
@@ -196,6 +197,7 @@ namespace FiveKnights
 
 
         }
+
         private void SetupUI(GameObject UI, string charmName, float upDelay)
         {
             Destroy(UI.Find("Single Frag"));
@@ -213,6 +215,7 @@ namespace FiveKnights
             _charmGet.Find("Item Name").LocateMyFSM("color_fader").FindFsmFloatVariable("Up Delay").Value = upDelay;
             _charmGet.Find("Item Name Prefix").LocateMyFSM("color_fader").FindFsmFloatVariable("Up Delay").Value = upDelay;
         }
+
         private IEnumerator AnimCoroutine(GameObject CharmAnim, int charmNumber, string boss, string audioName)
         {
             if (boss == "zemer" || boss == "hegemol")
@@ -263,6 +266,7 @@ namespace FiveKnights
             HeroController.instance.RegainControl();
             pauseShroom = false;
         }
+
         private class FadeOut : MonoBehaviour
         {
             float startTime;
@@ -284,6 +288,13 @@ namespace FiveKnights
             }
         }
 
+        private void OnDestroy()
+		{
+            Log("Destroyed AwardCharms");
+            ModHooks.LanguageGetHook -= CutsceneDialogue;
+            ModHooks.BeforeSceneLoadHook -= SceneCheck;
+            UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= BloomPlacement;
+        }
 
         private static void Log(object message) => Modding.Logger.Log("[FiveKnights][AwardCharms] " + message);
     }

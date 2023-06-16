@@ -607,12 +607,17 @@ namespace FiveKnights
             lockCol.enabled = cla.enabled = true;
         }
 
-        private void OnDestroy() 
+        private void OnDestroy()
         {
+            Log("Destroyed ArenaFinder");
             USceneManager.activeSceneChanged -= SceneChanged;
             //On.SceneManager.Start -= SceneManagerOnStart;
-            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
+            On.BossStatueLever.OnTriggerEnter2D -= BossStatueLever_OnTriggerEnter2D2;
+            On.GameManager.BeginSceneTransition -= GameManager_BeginSceneTransition;
+            On.BossChallengeUI.LoadBoss_int_bool -= BossChallengeUI_LoadBoss_int_bool;
+            On.BossSceneController.Awake -= BossSceneController_Awake;
+            On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;
             On.HeroController.CanInteract -= HeroCanInteract;
         }
 
@@ -627,8 +632,8 @@ namespace FiveKnights
 
             private void Start()
             {
-                if (!PlayerData.instance.statueStateWhiteDefender.isUnlocked) return;
-                if (!FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
+                if(!PlayerData.instance.statueStateWhiteDefender.hasBeenSeen) return;
+                if(!FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
                 
                 GameObject entrance = gameObject.transform.parent.gameObject;
 
@@ -640,8 +645,8 @@ namespace FiveKnights
 
             private void OnTriggerStay2D(Collider2D col)
             {
-                if (!PlayerData.instance.statueStateDungDefender.hasBeenSeen) return;
-                if (FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
+                if(!PlayerData.instance.statueStateWhiteDefender.hasBeenSeen) return;
+                if(FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised) return;
                 FiveKnights.Instance.SaveSettings.HasSeenWorkshopRaised = true;
                 StartCoroutine(RaisePlatform());
             }

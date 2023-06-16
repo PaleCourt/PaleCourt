@@ -120,7 +120,7 @@ namespace FiveKnights
                 DryyaSetup dc = CreateDryya();
                 dc.gameObject.SetActive(false);
                 PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427.5f); 
+                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427.5f);
                 PlayMusic(null);
                 dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);
@@ -198,7 +198,7 @@ namespace FiveKnights
 
         private void WinRoutine(string area, int index)
         {
-            AwardCharms.firstClear[index] = true;
+            if(GameManager.instance.GetComponent<AwardCharms>()) GameManager.instance.GetComponent<AwardCharms>().firstClear[index] = true;
             string msgKey = "placeholder key aaaaaaaa";
             int wins;
 			switch(index)
@@ -251,26 +251,6 @@ namespace FiveKnights
             fsm2.FsmVariables.FindFsmFloat("Fade Time").Value = 0;
             fsm.GetState("Fade Out").RemoveAction(0);
             fsm.ChangeTransition("Take Control", "FINISHED", "Outro Msg 1a");
-
-            /*if (dungAnimation)
-            {
-                IEnumerator PlayDungAnimation()
-                {
-                    GameObject animObj = new GameObject("DungAnim", typeof(MeshRenderer), typeof(MeshFilter), typeof(tk2dSprite));
-                    animObj.transform.position = tmp.transform.position - new Vector3(0f, 2f, 0f);
-                    var dungAnim = animObj.AddComponent<tk2dSpriteAnimator>();
-                    dungAnim.Library = FiveKnights.preloadedGO["Crest Anim Prefab"].GetComponent<tk2dSpriteAnimation>();
-                    foreach (var clip in dungAnim.Library.clips)
-                        Log("Clip name " + clip.name);
-                    yield return dungAnim.PlayAnimWait(dungAnim.Library.clips[0].name);
-                }
-                FsmState state = fsm.CreateState("Dung Transformation");
-                state.Actions = new FsmStateAction[] { new InvokeCoroutine(PlayDungAnimation, true) };
-                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "Dung Transformation");
-                fsm.AddTransition("Dung Transformation", FsmEvent.Finished, "New Scene");
-            }
-            else
-                fsm.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");*/
             fsm.ChangeTransition("Outro Msg 1a", "CONVO_FINISH", "New Scene");
             tmp.color = Color.black;
             tmp.alignment = TextAlignmentOptions.Center;

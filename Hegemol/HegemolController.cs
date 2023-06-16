@@ -1042,7 +1042,7 @@ namespace FiveKnights.Hegemol
 
             GetComponent<EnemyDeathEffects>().RecordJournalEntry();
 	    
-            Destroy(this);
+            Destroy(gameObject);
         }
         
         private void AssignFields()

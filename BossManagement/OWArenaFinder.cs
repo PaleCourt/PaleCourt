@@ -848,6 +848,7 @@ namespace FiveKnights.BossManagement
 
         private void OnDestroy()
         {
+            Log("Destroyed OWArenaFinder");
             USceneManager.activeSceneChanged -= USceneManagerOnactiveSceneChanged;
             On.GameManager.EnterHero -= GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo -= GameManagerOnRefreshTilemapInfo;

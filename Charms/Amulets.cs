@@ -557,8 +557,10 @@ namespace FiveKnights
                 }
             }
         }*/
+
         private void OnDestroy()
         {
+            Log("Destroyed Amulets");
             On.HeroController.Start -= On_HeroController_Start;
             ModHooks.CharmUpdateHook -= CharmUpdate;
         }
