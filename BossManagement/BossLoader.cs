@@ -27,13 +27,6 @@ namespace FiveKnights
             
             GameObject isma = GameObject.Instantiate(FiveKnights.preloadedGO["Isma"]);
             isma.SetActive(true);
-            
-            foreach(Collider2D col in isma.GetComponentsInChildren<Collider2D>(true))
-            {
-                col.gameObject.layer = 11;
-                col.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-            }
-            isma.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
             isma.AddComponent<IsmaController>().onlyIsma = onlyIsma;
             
             Log("Done creating Isma");
@@ -80,81 +73,6 @@ namespace FiveKnights
 
             GameObject zemer = GameObject.Instantiate(FiveKnights.preloadedGO["Zemer"]);
             zemer.SetActive(true);
-
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
-            {
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 22;
-            }
-            foreach(Transform i in FiveKnights.preloadedGO["TChild"].transform)
-            {
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 22;
-            }
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
-            {
-                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
-                
-                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                
-                i.Find("HB1").gameObject.layer = 22;
-                i.Find("HB2").gameObject.layer = 22;
-            }
-            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingControllerNew"].transform)
-            {
-                foreach (Transform t in tRing)
-                {
-                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
-                    {
-                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                        i.gameObject.layer = 22;
-                        i.gameObject.AddComponent<ParryTink>();
-                    }
-                }
-            }
-            foreach (Transform tRing in FiveKnights.preloadedGO["SlashRingController"].transform)
-            {
-                foreach (Transform t in tRing)
-                {
-                    foreach (PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
-                    {
-                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                        i.gameObject.layer = 22;
-                        i.gameObject.AddComponent<ParryTink>();
-                    }
-                }
-            }
-            foreach (SpriteRenderer i in zemer.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.material = new Material(Shader.Find("Sprites/Default"));
-                
-                var bc = i.gameObject.GetComponent<BoxCollider2D>();
-                
-                if (bc == null) 
-                    continue;
-                bc.isTrigger = true;
-                bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.AddComponent<Pogoable>().tar = zemer;
-                bc.gameObject.layer = 22;
-                if (!i.name.Contains("Zemer")) i.gameObject.AddComponent<ParryTink>();
-            }
-            foreach (PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
-            { 
-                i.isTrigger = true;
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.AddComponent<ParryTink>();
-                i.gameObject.AddComponent<Pogoable>().tar = zemer;
-                i.gameObject.layer = 22;
-            }
-            
-            var bcMultiDashHB = zemer.transform.Find("MultiDashParryHB").gameObject;
-            bcMultiDashHB.AddComponent<ParryTink>();
-            bcMultiDashHB.AddComponent<Pogoable>().tar = zemer;
-            bcMultiDashHB.layer = 22;
-            bcMultiDashHB.SetActive(false);
-
-            zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
             ZemerController zc = zemer.AddComponent<ZemerController>();
 
             Log("Done creating Zemer");
@@ -203,14 +121,19 @@ namespace FiveKnights
                     sr.material = new Material(Shader.Find("Sprites/Default"));
                 }
             }
+            foreach(Collider2D col in FiveKnights.preloadedGO["Isma"].GetComponentsInChildren<Collider2D>(true))
+            {
+                col.gameObject.layer = 11;
+                col.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+            }
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+            FiveKnights.preloadedGO["Isma"].GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
 
             // CC Silhouette
             foreach(Sprite s in _miscBundle.LoadAllAssets<Sprite>().Where(x => x.name.Contains("Sil_Isma_")))
             {
                 ArenaFinder.Sprites[s.name] = s;
             }
-
-            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
 
             #region Custom acid
             PlayMakerFSM noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
@@ -372,8 +295,87 @@ namespace FiveKnights
                 }
                 else asset.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             }
+            #region Ze'mer damage
+            GameObject zemer = FiveKnights.preloadedGO["Zemer"];
+            foreach(Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+            foreach(Transform i in FiveKnights.preloadedGO["TChild"].transform)
+            {
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.layer = 22;
+            }
+            foreach(Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
+            {
+                i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
+
+                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
+
+                i.Find("HB1").gameObject.layer = 22;
+                i.Find("HB2").gameObject.layer = 22;
+            }
+            foreach(Transform tRing in FiveKnights.preloadedGO["SlashRingControllerNew"].transform)
+            {
+                foreach(Transform t in tRing)
+                {
+                    foreach(PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<ParryTink>();
+                    }
+                }
+            }
+            foreach(Transform tRing in FiveKnights.preloadedGO["SlashRingController"].transform)
+            {
+                foreach(Transform t in tRing)
+                {
+                    foreach(PolygonCollider2D i in t.GetComponentsInChildren<PolygonCollider2D>(true))
+                    {
+                        i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                        i.gameObject.layer = 22;
+                        i.gameObject.AddComponent<ParryTink>();
+                    }
+                }
+            }
+            foreach(SpriteRenderer i in zemer.GetComponentsInChildren<SpriteRenderer>(true))
+            {
+                i.material = new Material(Shader.Find("Sprites/Default"));
+
+                var bc = i.gameObject.GetComponent<BoxCollider2D>();
+
+                if(bc == null)
+                    continue;
+                bc.isTrigger = true;
+                bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
+                bc.gameObject.layer = 22;
+                if(!i.name.Contains("Zemer")) i.gameObject.AddComponent<ParryTink>();
+            }
+            foreach(PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
+            {
+                i.isTrigger = true;
+                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                i.gameObject.AddComponent<ParryTink>();
+                i.gameObject.AddComponent<Pogoable>().tar = zemer;
+                i.gameObject.layer = 22;
+            }
+
+            var bcMultiDashHB = zemer.transform.Find("MultiDashParryHB").gameObject;
+            bcMultiDashHB.AddComponent<ParryTink>();
+            bcMultiDashHB.AddComponent<Pogoable>().tar = zemer;
+            bcMultiDashHB.layer = 22;
+            bcMultiDashHB.SetActive(false);
+            #endregion
+
+            // Set materials
             FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
                 new Material(Shader.Find("Sprites/Default"));
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+            zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
 
             // Traitor shockwave
             PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
@@ -388,8 +390,6 @@ namespace FiveKnights
             {
                 ArenaFinder.Sprites[i.name] = i;
             }
-
-            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
 
             Log("Finished loading Zemer bundle");
         }
