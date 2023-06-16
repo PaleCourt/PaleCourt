@@ -103,6 +103,7 @@ namespace FiveKnights.Zemer
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
+            On.HealthManager.Die += HealthManagerOnDie;
 
             _hm = GetComponent<HealthManager>();
             _anim = GetComponent<Animator>();
@@ -140,6 +141,12 @@ namespace FiveKnights.Zemer
             _destroyAtEnd = new List<GameObject>();
 
             AssignFields();
+        }
+
+        private void HealthManagerOnDie(On.HealthManager.orig_Die orig, HealthManager self, float? attackDirection, AttackTypes attackType, bool ignoreEvasion)
+        {
+            if(self.gameObject.name.Contains("Zemer")) return;
+            orig(self, attackDirection, attackType, ignoreEvasion);
         }
 
         private IEnumerator Start()
@@ -3318,6 +3325,7 @@ namespace FiveKnights.Zemer
         private void OnDestroy()
         {
             On.HealthManager.Hit -= OnBlockedHit;
+            On.HealthManager.Die -= HealthManagerOnDie;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
         }

@@ -60,12 +60,13 @@ namespace FiveKnights.Zemer
         private const float NailSpeed = 80f;
         private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
         private readonly int DreamConvoAmount = 3;
-        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM";
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM"; 
 
         private void Awake()
         {
             OnDestroy();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
+            On.HealthManager.Die += HealthManagerOnDie;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
             _hm = gameObject.AddComponent<HealthManager>();
@@ -120,7 +121,13 @@ namespace FiveKnights.Zemer
             gameObject.transform.localScale *= 0.8f;
             gameObject.layer = 11;
         }
-        
+
+        private void HealthManagerOnDie(On.HealthManager.orig_Die orig, HealthManager self, float? attackDirection, AttackTypes attackType, bool ignoreEvasion)
+        {
+            if(self.gameObject.name.Contains("Zemer")) return;
+            orig(self, attackDirection, attackType, ignoreEvasion);
+        }
+
         // Sorry for this but Unity was being annoying :/
         IEnumerator ForceDisableHB()
         {
@@ -270,6 +277,7 @@ namespace FiveKnights.Zemer
                 Log("[Setting Attacks]");
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
+                bool isPhase2 = _hm.hp < DoSpinSlashPhase;
 
                 //If the player is close
                 if (posH.y > GroundY + 3f && (posH.x <= LeftX + 1f || posH.x >= RightX - 1))
@@ -294,7 +302,8 @@ namespace FiveKnights.Zemer
                         Log("Dodge");
                         yield return Dodge();
                         Log("End Dodge");
-                        var lst = new List<Func<IEnumerator>> {Dash, Dash, FancyAttack, null, null};
+                        var lst = new List<Func<IEnumerator>> { FancyAttack, null, null};
+                        if (isPhase2) lst = new List<Func<IEnumerator>> { FancyAttack, NailLaunch };
                         var att = MiscMethods.ChooseAttack(lst, rep, max);
                         if (att != null)
                         {
@@ -317,8 +326,14 @@ namespace FiveKnights.Zemer
                 
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
-                    Dash, Attack1Base, Attack1Base, AerialAttack, NailLaunch, NailLaunch, ZemerSlam
+                    Dash, Attack1Base, Attack1Base, AerialAttack, ZemerSlam
                 };
+
+                if (isPhase2)
+                {
+                    attLst.Add(NailLaunch);
+                }
+                
                 Func<IEnumerator> currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
                 
                 Log("Doing " + currAtt.Method.Name);
@@ -330,10 +345,10 @@ namespace FiveKnights.Zemer
                 if (currAtt == Attack1Base)
                 {
                     List<Func<IEnumerator>> lst2 = new List<Func<IEnumerator>>{ FancyAttack, Attack1Complete, null };
-                    if (_hm.hp < DoSpinSlashPhase) lst2 = new List<Func<IEnumerator>> { FancyAttack, FancyAttack, Attack1Complete };
+                    if (isPhase2) lst2 = new List<Func<IEnumerator>> { FancyAttack, FancyAttack, Attack1Complete };
                     if (FastApproximately(transform.position.x, _target.transform.position.x, 7f))
                     {
-                        lst2 = (_hm.hp < DoSpinSlashPhase) ? new List<Func<IEnumerator>> {Attack1Complete} : new List<Func<IEnumerator>> {Attack1Complete, null};
+                        lst2 = (isPhase2) ? new List<Func<IEnumerator>> {Attack1Complete} : new List<Func<IEnumerator>> {Attack1Complete, null};
                     }
 
                     currAtt = MiscMethods.ChooseAttack(lst2, rep, max);
@@ -347,7 +362,7 @@ namespace FiveKnights.Zemer
 
                     if (currAtt == FancyAttack)
                     {
-                        int rand = _rand.Next(0, 3);
+                        int rand = _rand.Next(0, isPhase2 ? 4 : 3);
                         if (rand == 0)
                         {
                             Log("Doing Special Fancy Attack");
@@ -359,6 +374,10 @@ namespace FiveKnights.Zemer
                         else if (rand == 1)
                         {
                             yield return ZemerSlam();
+                        }
+                        else if (isPhase2 && rand == 2)
+                        {
+                            yield return NailLaunch();
                         }
                         else
                         {
@@ -1358,6 +1377,7 @@ namespace FiveKnights.Zemer
         private void OnDestroy()
         {
             On.HealthManager.Hit -= OnBlockedHit;
+            On.HealthManager.Die -= HealthManagerOnDie;
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
         }

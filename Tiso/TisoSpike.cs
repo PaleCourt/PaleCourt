@@ -17,6 +17,8 @@ namespace FiveKnights.Tiso
         private const float GroundY = 3.2f;
         private Rigidbody2D _rb;
         public bool isDead;
+        // this one is for if the player hits the spike after it has landed once already (we want to permanently destroy it now)
+        public bool isDead2;
         public bool isDeflected;
         public const int EnemyDamage = 10;
         private const float SpikeVel = 60f;
@@ -60,14 +62,35 @@ namespace FiveKnights.Tiso
         private void OnTriggerEnter2D(Collider2D other)
         {
             if (other.gameObject.layer != (int)PhysLayers.HERO_ATTACK ||
-                other.gameObject.name.Contains("Spike")) return;
+                other.gameObject.name.Contains("Spike") || 
+                other.gameObject.name.Contains("Tiso")) return;
 
+            if (other.CompareTag("Hero Spell"))
+            {
+                AllSpikes.Remove(gameObject);
+                Destroy(this);
+                return;
+            }
+            
+            if (isDead && !isDead2)
+            {
+                if (ShootBasedOnHit(other))
+                {
+                    isDeflected = true;
+                    isDead2 = true;
+                }
+                return;
+            }
+            
             if (isDeflected || isDead) return;
-            
-            isDeflected = true;
-            
-            Modding.Logger.Log($"Name of collider is {other.name}, and tag is {other.tag}");
+            if (ShootBasedOnHit(other))
+            {
+                isDeflected = true;   
+            }
+        }
 
+        private bool ShootBasedOnHit(Collider2D other)
+        {
             if (other.name.Contains("Up"))
             {
                 float rot = Random.Range(70, 110) * Mathf.Deg2Rad;
@@ -80,11 +103,6 @@ namespace FiveKnights.Tiso
                 transform.SetRotation2D(rot * Mathf.Rad2Deg);
                 _rb.velocity = new Vector2(40f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
             }
-            else if (other.CompareTag("Hero Spell"))
-            {
-                AllSpikes.Remove(gameObject);
-                Destroy(this);
-            }
             else if (other.CompareTag("Nail Attack"))
             {
                 // Positive if spike is on left of player
@@ -92,6 +110,12 @@ namespace FiveKnights.Tiso
                 transform.SetRotation2D(0);
                 _rb.velocity = new Vector2(SpikeVel * dir, 0f);
             }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

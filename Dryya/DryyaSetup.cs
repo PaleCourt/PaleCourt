@@ -362,7 +362,8 @@ namespace FiveKnights.Dryya
             IEnumerator DaggerThrow()
             {
                 _bc.isTrigger = true;
-                float signX = Mathf.Sign(transform.localScale.x);
+                var localScale = transform.localScale;
+                float signX = Mathf.Sign(localScale.x);
                 _rb.velocity = new Vector2(0f, 0f);
                 _rb.gravityScale = 0f;
                 _rb.isKinematic = true;
@@ -375,6 +376,10 @@ namespace FiveKnights.Dryya
                 yield return new WaitWhile(() => _anim.CurrentFrame < 5);
                 _anim.ClipFps = 24;
                 PlayVoice(true);
+                signX = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
+                localScale = new Vector3(Mathf.Abs(localScale.x) * signX, localScale.y,
+                    localScale.z);
+                transform.localScale = localScale;
                 _rb.velocity = new Vector2(signX * 55f, 25f);
                 yield return new WaitWhile(() => _anim.CurrentFrame < 8);
                 _rb.velocity = new Vector2(signX * 30f, _rb.velocity.y);

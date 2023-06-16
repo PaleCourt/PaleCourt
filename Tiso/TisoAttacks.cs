@@ -313,8 +313,8 @@ namespace FiveKnights.Tiso
             Shield shCtrl = shields[0].GetComponent<Shield>();
             yield return new WaitWhile(() => !shCtrl.isDoneFlag ||
                 (dir > 0
-                ? shields[0].transform.position.x < transform.position.x - 3
-                : shields[0].transform.position.x >= transform.position.x + 3f));
+                ? shields[0].transform.position.x < transform.position.x - 3.5
+                : shields[0].transform.position.x >= transform.position.x + 3.5f));
             _anim.enabled = true;
             _anim.speed = 3.5f;
             yield return _anim.PlayToFrame("TisoThrowCatch", 2);
@@ -329,7 +329,12 @@ namespace FiveKnights.Tiso
             towardsX = Mathf.Min(towardsX, TisoController.RightX);
             float dir = FacePos(new Vector2(towardsX, 0f));
             _anim.speed = 2f;
-            yield return _anim.PlayToEnd("TisoRunStart");
+            _anim.Play("TisoRunStart", -1, 0f);
+            yield return new WaitForEndOfFrame();
+            _anim.enabled = false;
+            yield return new WaitForSeconds(0.15f);
+            _anim.enabled = true;
+            yield return _anim.PlayToEnd();
             _anim.Play("TisoRun");
             
             bool isDoneWalking = false;

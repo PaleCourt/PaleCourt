@@ -71,6 +71,9 @@ namespace FiveKnights.Tiso
                 "AudSpikeHitWall", "AudTisoJump", "AudTisoLand", "AudTisoShoot", "AudTisoSpin", "AudTisoThrowShield",
                 "AudTisoWalk", "AudTisoDeath", "AudTisoRoar", "AudTisoYell", "AudLand"
             };
+            
+            FiveKnights.Clips["TisoMusicStart"] = snd.LoadAsset<AudioClip>("TisoMusicStart");
+            FiveKnights.Clips["TisoMusicLoop"] = snd.LoadAsset<AudioClip>("TisoMusicLoop");
 
             foreach (var audName in audNames)
             {

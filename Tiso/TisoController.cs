@@ -9,6 +9,7 @@ using HutongGames.PlayMaker.Actions;
 using static FiveKnights.Tiso.TisoAudio;
 using SFCore.Utils;
 using UnityEngine;
+using UnityEngine.Audio;
 using Vasi;
 using Random = System.Random;
 
@@ -152,16 +153,37 @@ namespace FiveKnights.Tiso
             yield return _anim.PlayToEnd("TisoLand");
             
             // Play Music
-            var battle = GameObject.Find("Battle Scene").LocateMyFSM("Activate Boss");
-            battle.enabled = true;
-            battle.SetState("Music");
-
+            StartCoroutine(MusicControl());
+                
             _anim.Play("TisoRoar");
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
             _hit = false;
             yield return new WaitSecWhile(() => !_hit, TisoFinder.TisoAud["AudTisoRoar"].length);
             Destroy(aud.gameObject);
+        }
+
+        private IEnumerator MusicControl()
+        {
+            PlayMusic(FiveKnights.Clips["TisoMusicStart"]);
+            yield return new WaitForSeconds(FiveKnights.Clips["TisoMusicStart"].length);
+            PlayMusic(FiveKnights.Clips["TisoMusicLoop"]);
+        }
+        
+        private void PlayMusic(AudioClip clip)
+        {
+            MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
+            MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
+            Mirror.SetField(channelInfo, "clip", clip);
+
+            MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
+            {
+                channelInfo, null, null, null, null, null
+            };
+            Mirror.SetField(musicCue, "channelInfos", channelInfos);
+            var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
+            yoursnapshot.TransitionTo(0);
+            GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
         }
 
         private IEnumerator Attacks()
@@ -309,7 +331,7 @@ namespace FiveKnights.Tiso
             if (!other.gameObject.name.Contains("Spike")) return;
             // Dont count spike as hit unless it is deflected first
             var ts = other.GetComponent<TisoSpike>();
-            if (!ts.isDeflected || ts.isDead) return;
+            if (!ts.isDeflected || (ts.isDead && !ts.isDead2)) return;
             HitInstance hit = new HitInstance
             {
                 DamageDealt = TisoSpike.EnemyDamage,
@@ -320,7 +342,7 @@ namespace FiveKnights.Tiso
                 CircleDirection = true
             };
             _hm.Hit(hit);
-        }
+        }   
 
         private void AssignFields()
         {
