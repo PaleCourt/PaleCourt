@@ -25,7 +25,6 @@ namespace FiveKnights
         private HealthManager _hm;
         private PlayMakerFSM _fsm;
         private GameObject _dd;
-        private Texture acidOldTex;
         private tk2dSpriteAnimator _tk;
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
@@ -77,11 +76,11 @@ namespace FiveKnights
         {
             Instance = this;
             var oldDung = GameObject.Find("White Defender");
-            if (oldDung!= null)
+            if(oldDung != null)
             {
                 Destroy(oldDung);
             }
-            
+
             _dd = Instantiate(FiveKnights.preloadedGO["WhiteDef"]);
             FiveKnights.preloadedGO["WD"] = _dd;
             _dd.SetActive(false);
@@ -94,11 +93,10 @@ namespace FiveKnights
             if (CustomWP.boss == CustomWP.Boss.Isma)
             {
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
-                CreateIsma();
                 GameObject ogrim = GameObject.Find("Ogrim");
                 yield return new WaitWhile(() => HeroController.instance == null);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110.5f);
-                IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+                IsmaController ic = BossLoader.CreateIsma(true);
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
@@ -117,10 +115,10 @@ namespace FiveKnights
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
                 yield return new WaitWhile(() => HeroController.instance == null);
-                DryyaSetup dc = CreateDryya();
+                DryyaSetup dc = BossLoader.CreateDryya();
                 dc.gameObject.SetActive(false);
                 PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
-                yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427.5f);
+                yield return new WaitWhile(() => HeroController.instance.transform.position.x < 427.5f);
                 PlayMusic(null);
                 dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);
@@ -141,7 +139,7 @@ namespace FiveKnights
 
                 AddTramAndNPCs();
                 
-                HegemolController hegemolCtrl = CreateHegemol();
+                HegemolController hegemolCtrl = BossLoader.CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
 
                 yield return new WaitWhile(() => HeroController.instance == null);
@@ -164,7 +162,7 @@ namespace FiveKnights
             else if (CustomWP.boss == CustomWP.Boss.Ze)
             {
                 ZemerController.WaitForTChild = true;
-                ZemerController zc = CreateZemer();
+                ZemerController zc = BossLoader.CreateZemer();
                 PlayMusic(FiveKnights.Clips["Zem_Area"]);
                 GameObject zem = zc.gameObject;
                 zem.SetActive(true);
@@ -302,180 +300,6 @@ namespace FiveKnights
             audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
             audioSource.Play();
         }
-
-        private void CreateIsma()
-        {
-            Log("Creating Isma");
-            
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-
-            // Get isma's music from bundle
-            string[] arr = new string[]
-            {
-                "LoneIsmaIntro", "LoneIsmaLoop", "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", 
-                "IsmaAudVineGrow", "IsmaAudVineHit", "IsmaAudWallGrow", "IsmaAudWallHit"
-            };
-            foreach(string name in arr)
-            {
-                FiveKnights.Clips[name] = snd.LoadAsset<AudioClip>(name);
-            }
-
-            // List of Isma's voice lines
-            string[] voice =
-            {
-                "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3","IsmaAudAtt4","IsmaAudAtt5",
-                "IsmaAudAtt6","IsmaAudAtt7","IsmaAudAtt8","IsmaAudAtt9","IsmaAudDeath"
-            };
-
-            // Loads Isma's voice lines a frame at a time, not sure why though 
-            IEnumerator LoadSlow()
-            {
-                foreach (var i in voice)
-                {
-                    FiveKnights.IsmaClips[i] = snd.LoadAsset<AudioClip>(i);
-                    yield return null;
-                }
-            }
-            // This is for the flash effect when getting hit, not sure if it's used anymore
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-            // Load voice lines 
-            StartCoroutine(LoadSlow());
-            
-            // Load the one and only Isma
-            GameObject isma = Instantiate(FiveKnights.preloadedGO["Isma"]);
-            // Awful way to keep access to Isma
-            FiveKnights.preloadedGO["Isma2"] = isma;
-            isma.SetActive(false);
-            // Setting material of spriterenderers and adding their damage
-            foreach (SpriteRenderer i in isma.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.material = new Material(Shader.Find("Sprites/Default"));
-                
-                if (i.name == "FrontW")
-                    continue;
-
-                if (!i.gameObject.GetComponent<PolygonCollider2D>() && !i.gameObject.GetComponent<BoxCollider2D>()) 
-                    continue;
-                
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 11;
-            }
-            
-            foreach (Transform i in isma.transform.Find("Arm2").Find("TentArm"))
-            {
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 11;
-            }
-
-            foreach (Transform par in isma.transform.Find("Thorn"))
-            {
-                foreach (Transform i in par)
-                {
-                    i.gameObject.layer = 11;
-                    i.gameObject.AddComponent<DamageHero>().damageDealt = 1;   
-                }
-            }
-
-            foreach (BoxCollider2D i in isma.transform.Find("Whip")
-                .GetComponentsInChildren<BoxCollider2D>(true))
-            {
-                i.gameObject.layer = 17;
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-            }
-            
-            // Doing acid spit stuff
-            var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
-            var acidOrig = Instantiate(noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value);
-            acidOrig.SetActive(false);
-            
-            // Change particle color to green
-            var stmain = acidOrig.transform.Find("Steam").GetComponent<ParticleSystem>().main;
-            var stamain = acidOrig.transform.Find("Air Steam").GetComponent<ParticleSystem>().main;
-            stmain.startColor = new ParticleSystem.MinMaxGradient(new Color(128/255f,226/255f,169/255f,217/255f));
-            stamain.startColor = new ParticleSystem.MinMaxGradient(new Color(128/255f,226/255f,169/255f,217/255f));
-            // Get audio actor and audio clip
-            var actorOrig = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
-                .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioPlayer.Value;
-            actorOrig.SetActive(false);
-            var clip = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
-                .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
-            // Change texture
-            tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
-            acidOldTex = def.material.mainTexture;
-            def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
-            // Store values
-            FiveKnights.Clips["AcidSpitSnd"] = clip;
-            FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
-            FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
-
-            // Have to move arena up a little
-            GameObject.Find("acid stuff").transform.position += new Vector3(0f, 0.18f, 0f);
-            var sr = isma.GetComponent<SpriteRenderer>();
-            sr.material = FiveKnights.Materials["flash"];
-
-            isma.AddComponent<IsmaController>().onlyIsma = false;
-            isma.SetActive(false);
-            
-            Log("Done creating Isma");
-        }
-        
-        private DryyaSetup CreateDryya()
-        {
-            Log("Creating Dryya");
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            FiveKnights.Clips["DryyaMusic"] = snd.LoadAsset<AudioClip>("DryyaMusic");
-            FiveKnights.Clips["DryyaAreaMusic"] = snd.LoadAsset<AudioClip>("DryyaAreaMusic");
-            
-            Vector2 pos = new Vector2(457.6f, 112.5f);
-            GameObject dryya = Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
-            IEnumerator DryyaIntro()
-            {
-                var bc = dryya.GetComponent<BoxCollider2D>();
-                bc.enabled = false;
-                while(dryya.transform.position.y > 103f)
-                    yield return new WaitForFixedUpdate();
-                bc.enabled = true;
-            }
-            StartCoroutine(DryyaIntro());
-            Log("Done creating dryya");
-            return dryya.AddComponent<DryyaSetup>();
-        }
-
-        private HegemolController CreateHegemol()
-        {
-            Log("Creating Hegemol");
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            FiveKnights.Clips["HegemolMusic"] = snd.LoadAsset<AudioClip>("HegemolMusic");
-            FiveKnights.Clips["HegAreaMusic"] = snd.LoadAsset<AudioClip>("HegAreaMusic");
-            FiveKnights.Clips["HegAreaMusicIntro"] = snd.LoadAsset<AudioClip>("HegAreaMusicIntro");
-            FiveKnights.Clips["HegAreaMusicBG"] = snd.LoadAsset<AudioClip>("HegAreaMusicBG");
-
-            string[] arr = new[]
-            {
-                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegJump", 
-                "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath", "HGrunt1", 
-                "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3"
-            };
-            foreach(var i in arr)
-            {
-                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
-            }
-
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-            foreach (var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
-            {
-                ArenaFinder.Sprites[i.name] = i;
-            }
-
-            GameObject hegemol = Instantiate(FiveKnights.preloadedGO["Hegemol"], new Vector2(438.4f, 28), Quaternion.identity);
-            hegemol.SetActive(false);
-            Log("Adding HegemolController component");
-            return hegemol.AddComponent<HegemolController>();
-        }
         
         private ZemerController CreateZemer()
         {
@@ -559,11 +383,6 @@ namespace FiveKnights
         {
             _ap?.StopMusic();
             _ap2?.StopMusic();
-            if (acidOldTex == null) return;
-            var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
-            var acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
-            tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
-            def.material.mainTexture = acidOldTex;
         }
 
         private void Log(object o)

@@ -23,7 +23,6 @@ namespace FiveKnights.BossManagement
         private PlayMakerFSM _fsm;
         public GameObject dd; 
         private tk2dSpriteAnimator _tk;
-        private List<AssetBundle> _assetBundles;
         public static bool alone;
         private bool HIT_FLAG;
         public static GGBossManager Instance;
@@ -69,9 +68,11 @@ namespace FiveKnights.BossManagement
             Instance = this;
 			ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
 
+            dd = Instantiate(FiveKnights.preloadedGO["WhiteDef"]);
+            dd.SetActive(false);
             if (CustomWP.boss is CustomWP.Boss.All or CustomWP.Boss.Ogrim)
             {
-                dd = GameObject.Find("White Defender"); 
+                dd = GameObject.Find("White Defender");
                 PlayerData.instance.SetBool(nameof(PlayerData.atBench), false);
             }
             _hm = dd.GetComponent<HealthManager>();
@@ -80,7 +81,6 @@ namespace FiveKnights.BossManagement
             FiveKnights.preloadedGO["WD"] = dd;
 
             alone = true;
-            _assetBundles= new List<AssetBundle>();
             Unload();
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
 			On.HealthManager.ApplyExtraDamage += HealthManagerApplyExtraDamage;
@@ -97,10 +97,8 @@ namespace FiveKnights.BossManagement
                 FiveKnights.Clips["LoneIsmaLoop"] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("LoneIsmaLoop");
                 FiveKnights.Clips["LoneIsmaIntro"] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("LoneIsmaIntro");
 
-                yield return LoadIsmaBundle();
-                dd.SetActive(false);
-                FightController.Instance.CreateIsma(true);
-                IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+                BossLoader.LoadIsmaBundle();
+                IsmaController ic = BossLoader.CreateIsma(true);
                 yield return new WaitWhile(() => ic != null);
                 if (CustomWP.wonLastFight)
                 {
@@ -120,11 +118,7 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
             {
-                AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-                FiveKnights.Clips["OgrimMusic"] = snd.LoadAsset<AudioClip>("OgrimMusic");
-                FiveKnights.Clips["OgrismaMusic"] = snd.LoadAsset<AudioClip>("OgrismaMusic");
-
-                yield return LoadIsmaBundle();
+                BossLoader.LoadIsmaBundle();
                 // Manually play music for now because the original scene is missing it
                 PlayMusic(FiveKnights.Clips["OgrimMusic"], 1f);
                 yield return OgrimIsmaFight();
@@ -148,10 +142,9 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
-                yield return LoadDryyaBundle();
-                
-                dd.SetActive(false);
-                DryyaSetup dc = FightController.Instance.CreateDryya();
+                BossLoader.LoadDryyaBundle();
+                DryyaSetup dc = BossLoader.CreateDryya();
+
                 yield return new WaitWhile(() => dc != null);
                 if (CustomWP.wonLastFight)
                 {
@@ -176,11 +169,10 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Hegemol)
             {
-                yield return LoadHegemolBundle();
-                
-                dd.SetActive(false);
-                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+                BossLoader.LoadHegemolBundle();
+                HegemolController hegemolCtrl = BossLoader.CreateHegemol();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 if (CustomWP.wonLastFight)
                 {
@@ -200,12 +192,12 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
-                yield return LoadZemerBundle();
-                dd.SetActive(false);
+                BossLoader.LoadZemerBundle();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;
-                ZemerController zc = FightController.Instance.CreateZemer();
+                ZemerController zc = BossLoader.CreateZemer();
                 GameObject zem = zc.gameObject;
+
                 yield return new WaitWhile(() => zc != null);
                 if (zem == null)
                 {
@@ -245,18 +237,10 @@ namespace FiveKnights.BossManagement
             else if (CustomWP.boss == CustomWP.Boss.All)
             {
                 yield return null;
-                //bool flag = false;
-                //StartCoroutine(Wow());
-                var a1 = StartCoroutine(LoadHegemolBundle());
-                var a2 = StartCoroutine(LoadIsmaBundle());
-                var a3 = StartCoroutine(LoadDryyaBundle());
-                var a4 = StartCoroutine(LoadZemerBundle());
-
-                yield return a1;
-                yield return a2;
-                yield return a3;
-                yield return a4;
-                
+                BossLoader.LoadIsmaBundle();
+                BossLoader.LoadDryyaBundle();
+                BossLoader.LoadHegemolBundle();
+                BossLoader.LoadZemerBundle();
 
 				GameObject bscDummy = new("BSC Dummy");
 				bscDummy.SetActive(false);
@@ -290,14 +274,6 @@ namespace FiveKnights.BossManagement
                 }
                 yield return null;
 
-                AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-                var r1 = snd.LoadAssetAsync<AudioClip>("OgrimMusic");
-                var r2 = snd.LoadAssetAsync<AudioClip>("OgrismaMusic");
-                yield return r1;
-                yield return r2;
-                FiveKnights.Clips["OgrimMusic"] = r1.asset as AudioClip;
-                FiveKnights.Clips["OgrismaMusic"] = r2.asset as AudioClip;
-
                 yield return OgrimIsmaFight();
 
 				foreach (Animator anim in flowersAnim)
@@ -310,7 +286,7 @@ namespace FiveKnights.BossManagement
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
-				DryyaSetup dc = FightController.Instance.CreateDryya();
+				DryyaSetup dc = BossLoader.CreateDryya();
 				sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
                 yield return new WaitForSeconds(0.1f);
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_2"];
@@ -324,11 +300,6 @@ namespace FiveKnights.BossManagement
 
 				yield return new WaitForSeconds(3.5f);
 
-                AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-                foreach(var i in misc.LoadAllAssets<Sprite>().Where(x => x.name.Contains("hegemol_silhouette_")))
-                {
-                    ArenaFinder.Sprites[i.name] = i;
-                }
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
                 hegSil.transform.localScale *= 1.55f;
@@ -346,13 +317,13 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 Destroy(hegSil);
 
-                HegemolController hegemolCtrl = FightController.Instance.CreateHegemol();
+                HegemolController hegemolCtrl = BossLoader.CreateHegemol();
                 yield return new WaitWhile(() => hegemolCtrl != null);
 
 				yield return new WaitForSeconds(1.5f);
 
                 // Silhouette is handled in Zemer code now
-                ZemerController zc = FightController.Instance.CreateZemer();
+                ZemerController zc = BossLoader.CreateZemer();
                 GameObject zem = zc.gameObject;
 
                 yield return new WaitForSeconds(0.5f);
@@ -360,7 +331,6 @@ namespace FiveKnights.BossManagement
                 // Grow flowers if in pantheon
                 StartCoroutine(PlayFlowers(7));
 
-                //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
@@ -368,10 +338,9 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => zc2 != null);
                 
                 Log("Won!");
-
                 GameManager.instance.AwardAchievement("PALE_COURT_PANTH_ACH");
-
                 FiveKnights.Instance.SaveSettings.ChampionsCallClears++;
+
                 yield return new WaitForSeconds(0.5f);
                 CCDreamExit();
             }
@@ -440,8 +409,7 @@ namespace FiveKnights.BossManagement
 
             // Delay Isma appearing slightly
             yield return new WaitForSeconds(1f);
-            FightController.Instance.CreateIsma(false);
-            IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
+            IsmaController ic = BossLoader.CreateIsma(false);
             
             // Grow flowers if in pantheon
             if (flowersAnim != null)
@@ -587,265 +555,6 @@ namespace FiveKnights.BossManagement
         private void Log(object o)
         {
             Modding.Logger.Log("[GGBossManager] " + o);
-        }
-        
-        private IEnumerator LoadIsmaBundle()
-        {
-            Log("Loading Isma Bundle");
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            string[] arr = new string[]
-            {
-                "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", "IsmaAudVineGrow", "IsmaAudVineHit", 
-                "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak"
-            };
-            foreach(string name in arr)
-            {
-                FiveKnights.Clips[name] = snd.LoadAsset<AudioClip>(name);
-            }
-
-            if (FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
-            {
-                Log("Already loaded Isma");
-                yield break;
-            }
-
-            AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GIsma];
-            List<GameObject> gos;
-            
-            if (CustomWP.boss == CustomWP.Boss.All)
-            {
-                var r1 = ab.LoadAssetAsync<GameObject>("Isma");
-                var r2 = ab.LoadAssetAsync<GameObject>("Gulka");
-                var r3 = ab.LoadAssetAsync<GameObject>("Plant");
-                var r4 = ab.LoadAssetAsync<GameObject>("Wall");
-                var r5 = ab.LoadAssetAsync<GameObject>("Fool");
-                var r6 = ab.LoadAssetAsync<GameObject>("ThornPlant");
-                var r7 = ab.LoadAssetAsync<GameObject>("Seal");
-
-                yield return r1;
-                yield return r2;
-                yield return r3;
-                yield return r4;
-                yield return r5;
-                yield return r6;
-                yield return r7;
-
-                gos = new List<GameObject>
-                {
-                    r1.asset as GameObject, 
-                    r2.asset as GameObject, 
-                    r3.asset as GameObject, 
-                    r4.asset as GameObject,
-                    r5.asset as GameObject,
-                    r6.asset as GameObject,
-                    r7.asset as GameObject
-                };
-            }
-            else
-            {
-                gos = new List<GameObject>
-                {
-                    ab.LoadAsset<GameObject>("Isma"),
-                    ab.LoadAsset<GameObject>("Gulka"),
-                    ab.LoadAsset<GameObject>("Plant"),
-                    ab.LoadAsset<GameObject>("Wall"),
-                    ab.LoadAsset<GameObject>("Fool"),
-                    ab.LoadAsset<GameObject>("ThornPlant"),
-                    ab.LoadAsset<GameObject>("Seal")
-                };
-            }
-            
-            foreach (var c in ab.LoadAllAssets<AnimationClip>())
-            {
-                Log($"Name of anim adding is {c.name}");
-                FiveKnights.AnimClips[c.name] = c;
-            }
-            
-            foreach (var i in gos)
-            {
-                FiveKnights.preloadedGO[i.name] = i;
-                if (i.GetComponent<SpriteRenderer>() == null)
-                {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
-                    {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
-                    }
-                }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-
-            if (CustomWP.boss != CustomWP.Boss.All)
-            {
-                AssetBundle ab2 = ABManager.AssetBundles[ABManager.Bundle.GArenaIsma];
-                FiveKnights.preloadedGO["ismaBG"] = ab2.LoadAsset<GameObject>("gg_dung_set (1)");
-            }
-
-            Log("Finished Loading Isma Bundle");
-        }
-        
-        private IEnumerator LoadDryyaBundle()
-        {
-            Log("Loading Dryya Bundle");
-            if (FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
-            {
-                Log("broke Dryya");
-                yield break;
-            }
-
-            AssetBundle dryyaAssetBundle = ABManager.AssetBundles[ABManager.Bundle.GDryya];
-            
-            foreach (var c in dryyaAssetBundle.LoadAllAssets<AnimationClip>())
-            {
-                Log($"Name of anim adding is {c.name}");
-                FiveKnights.AnimClips[c.name] = c;
-            }
-            
-            if (CustomWP.boss == CustomWP.Boss.All)
-            {
-                var r1 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dryya2");
-                var r2 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Stab Effect");
-                var r3 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dive Effect");
-                var r4 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Beams");
-                var r5 = dryyaAssetBundle.LoadAssetAsync<GameObject>("Dagger");
-
-                yield return r1;
-                yield return r2;
-                yield return r3;
-                yield return r4;
-                yield return r5;
-
-                FiveKnights.preloadedGO["Dryya2"] = r1.asset as GameObject;
-                FiveKnights.preloadedGO["Stab Effect"] = r2.asset as GameObject;
-                FiveKnights.preloadedGO["Dive Effect"] = r3.asset as GameObject;
-                FiveKnights.preloadedGO["Beams"] = r4.asset as GameObject;
-                FiveKnights.preloadedGO["Dagger"] = r5.asset as GameObject;
-            }
-            else
-            {
-                FiveKnights.preloadedGO["Dryya2"] = dryyaAssetBundle.LoadAsset<GameObject>("Dryya2");
-                FiveKnights.preloadedGO["Stab Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Stab Effect");
-                FiveKnights.preloadedGO["Dive Effect"] = dryyaAssetBundle.LoadAsset<GameObject>("Dive Effect");
-                FiveKnights.preloadedGO["Beams"] = dryyaAssetBundle.LoadAsset<GameObject>("Beams");
-                FiveKnights.preloadedGO["Dagger"] = dryyaAssetBundle.LoadAsset<GameObject>("Dagger");
-            }
-            FiveKnights.preloadedGO["Beams"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            FiveKnights.preloadedGO["Dagger"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-
-            Log("Finished Loading Dryya Bundle");
-        }
-
-        private IEnumerator LoadHegemolBundle()
-        {
-            Log("Loading Hegemol Bundle");
-            if(FiveKnights.preloadedGO.TryGetValue("Hegemol", out var go) && go != null)
-            {
-                Log("Already Loaded Hegemol");
-                yield break;
-            }
-
-            yield return null;
-
-            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
-            FiveKnights.preloadedGO["TraitorSlam"] =
-                fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
-            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
-
-            AssetBundle hegemolBundle = ABManager.AssetBundles[ABManager.Bundle.GHegemol];
-
-            if(CustomWP.boss == CustomWP.Boss.All)
-            {
-                var r1 = hegemolBundle.LoadAssetAsync<GameObject>("Hegemol");
-                var r2 = hegemolBundle.LoadAssetAsync<GameObject>("Mace");
-                var r3 = hegemolBundle.LoadAssetAsync<GameObject>("Debris");
-
-                yield return r1;
-                yield return r2;
-                yield return r3;
-
-                FiveKnights.preloadedGO["Hegemol"] = r1.asset as GameObject;
-                FiveKnights.preloadedGO["Mace"] = r2.asset as GameObject;
-                FiveKnights.preloadedGO["Debris"] = r3.asset as GameObject;
-            }
-            else
-            {
-                FiveKnights.preloadedGO["Hegemol"] = hegemolBundle.LoadAsset<GameObject>("Hegemol");
-                FiveKnights.preloadedGO["Mace"] = hegemolBundle.LoadAsset<GameObject>("Mace");
-                FiveKnights.preloadedGO["Debris"] = hegemolBundle.LoadAsset<GameObject>("Debris");
-            }
-            FiveKnights.preloadedGO["Mace"].GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            GameObject ball = dd.LocateMyFSM("Dung Defender").GetAction<SpawnObjectFromGlobalPool>("Throw 1", 1).gameObject.Value;
-            FiveKnights.preloadedGO["DungBreakChunks"] = ball.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value;
-
-            Log("Finished Loading Hegemol Bundle");
-        }
-        
-        private IEnumerator LoadZemerBundle()
-        {
-            Log("Loading Zemer Bundle");
-            
-            if (FiveKnights.preloadedGO.TryGetValue("Zemer", out var go) && go != null)
-            {
-                Log("broke Zemer");
-                yield break;
-            }
-
-            Object[] allassets;
-            
-            PlayMakerFSM fsm = FiveKnights.preloadedGO["Traitor"].LocateMyFSM("Mantis");
-            FiveKnights.preloadedGO["TraitorSlam"] =
-                fsm.GetAction<SpawnObjectFromGlobalPool>("Waves", 0).gameObject.Value;
-            FiveKnights.Clips["TraitorSlam"] = fsm.GetAction<AudioPlayerOneShotSingle>("Waves", 4).audioClip.Value as AudioClip;
-            
-            FiveKnights.Clips["NeedleSphere"] = (AudioClip) FiveKnights.preloadedGO["HornetSphere"].LocateMyFSM("Control")
-                .GetAction<AudioPlaySimple>("Sphere A", 0).oneShotClip.Value;
-
-            AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.GZemer];
-
-            if (CustomWP.boss == CustomWP.Boss.All)
-            {
-                var r1 = ab.LoadAllAssetsAsync<GameObject>();
-                
-                yield return r1;
-                
-                allassets = r1.allAssets;
-            }
-            else
-            {
-                allassets = ab.LoadAllAssets<GameObject>();
-            }
-
-            foreach (var o in allassets)
-            {
-                var i = (GameObject) o;
-                if (i.name == "Zemer") FiveKnights.preloadedGO["Zemer"] = i;
-                if (i.name == "TChild") FiveKnights.preloadedGO["TChild"] = i;
-                else if (i.name == "NewSlash") FiveKnights.preloadedGO["SlashBeam"] = i;
-                else if (i.name == "NewSlash2") FiveKnights.preloadedGO["SlashBeam2"] = i;
-                else if (i.name == "SlashRingController") FiveKnights.preloadedGO["SlashRingController"] = i;
-                else if (i.name == "SlashRingControllerNew") FiveKnights.preloadedGO["SlashRingControllerNew"] = i;
-                else if (i.name == "AllFlowers") FiveKnights.preloadedGO["AllFlowers"] = i;
-                yield return null;
-                if (i.GetComponent<SpriteRenderer>() == null)
-                {
-                    foreach (SpriteRenderer sr in i.GetComponentsInChildren<SpriteRenderer>(true))
-                    {
-                        sr.material = new Material(Shader.Find("Sprites/Default"));
-                    }
-                }
-                else i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-
-            FiveKnights.preloadedGO["SlashBeam"].GetComponent<SpriteRenderer>().material =
-                new Material(Shader.Find("Sprites/Default"));
-
-            foreach (var c in ab.LoadAllAssets<AnimationClip>())
-            {
-                Log($"Name of anim adding is {c.name}");
-                FiveKnights.AnimClips[c.name] = c;
-            }
-
-            Log("Finished Loading Zemer Bundle");
         }
         
         private void OnDestroy()

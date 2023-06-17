@@ -201,7 +201,7 @@ namespace FiveKnights.Tiso
                 yield return _anim.PlayToEnd();
             }
             
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             yield return Jump();
             yield return Glide();
             yield return Slam();
@@ -215,7 +215,7 @@ namespace FiveKnights.Tiso
             Transform arm = transform.Find("SwapWeapon").Find("s3").Find("s8");
             arm.position = new Vector3(arm.position.x, arm.position.y, 0.5f);
             GameObject spikePar = arm.Find("Spikes").gameObject; 
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             
             // Have to do this once here so the canon doesn't appear at the wrong angle at the start
             Vector2 tarPos = _target.transform.position;
@@ -290,7 +290,7 @@ namespace FiveKnights.Tiso
         public IEnumerator ThrowShield()
         {
             float dir = FaceHero();
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             PlayAudio(_tc, Clip.ThrowShield);
             yield return _anim.PlayToEnd("TisoThrow");
 
@@ -438,7 +438,7 @@ namespace FiveKnights.Tiso
             _anim.Play("TisoRoar");
             PlayAudio(_tc, Clip.Roar);
 
-            yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
+            yield return new WaitForSeconds(TisoAud["AudTisoRoar"].length);
             
             mawlek.SetActive(true);
             mawlek.LocateMyFSM("Mawlek Control").FsmVariables.FindFsmBool("Skip Title").Value = true;
