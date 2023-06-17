@@ -242,6 +242,10 @@ namespace FiveKnights.BossManagement
                 BossLoader.LoadHegemolBundle();
                 BossLoader.LoadZemerBundle();
 
+				GameObject bscDummy = new("BSC Dummy");
+				bscDummy.SetActive(false);
+				BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
+
                 GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
                 flowersAnim = new List<Animator>();
                 flowersGlow = new List<Animator>();
