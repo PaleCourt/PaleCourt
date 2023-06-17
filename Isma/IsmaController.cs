@@ -40,7 +40,7 @@ namespace FiveKnights.Isma
         private PlayMakerFSM _ddFsm;
         private Animator _anim;
         private Texture _acidTexture;
-        private List<AudioClip> _randVoice => FiveKnights.IsmaClips.Values.Where(x => x != null && !x.name.Contains("Death")).ToList();
+        private List<AudioClip> _randVoice => FiveKnights.Clips.Values.Where(x => x != null && x.name.Contains("IsmaAudAtt")).ToList();
         private System.Random _rand;
         private int _healthPool;
         private bool _waitForHitStart;
@@ -135,36 +135,9 @@ namespace FiveKnights.Isma
                 yield return new WaitForSeconds(0.8f);
             }
 
-            // Create missing objects for Godhome arena and remove foreground objects
+            // Create seed columns for Godhome arena
             if(!OWArenaFinder.IsInOverWorld)
             {
-                #region Acid Spit
-                var noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
-                var acidOrig = Instantiate(noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value);
-                acidOrig.SetActive(false);
-
-                // Change particle color to green
-                var stmain = acidOrig.transform.Find("Steam").GetComponent<ParticleSystem>().main;
-                var stamain = acidOrig.transform.Find("Air Steam").GetComponent<ParticleSystem>().main;
-                stmain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
-                stamain.startColor = new ParticleSystem.MinMaxGradient(new Color(128 / 255f, 226 / 255f, 169 / 255f, 217 / 255f));
-                // Get audio actor and audio clip
-                var actorOrig = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
-                    .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioPlayer.Value;
-                actorOrig.SetActive(false);
-                var clip = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Glob Audio")
-                    .GetAction<AudioPlayerOneShotSingle>("SFX", 0).audioClip.Value as AudioClip;
-                // Change texture
-                tk2dSpriteDefinition def = acidOrig.GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
-                _acidTexture = def.material.mainTexture;
-                def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
-                // Store values
-                FiveKnights.Clips["AcidSpitSnd"] = clip;
-                FiveKnights.preloadedGO["AcidSpit"] = acidOrig;
-                FiveKnights.preloadedGO["AcidSpitPlayer"] = actorOrig;
-                #endregion
-
-                #region Seed columns
                 GameObject sc = new GameObject();
                 sc.name = "SeedCols";
 
@@ -192,10 +165,14 @@ namespace FiveKnights.Isma
                     slcol.size = new Vector2(1f, 7f);
                     sl.transform.parent = sc.transform;
                 }
-                #endregion
 			}
 
-			foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
+            // Save vanilla acid texture
+            tk2dSpriteDefinition def = FiveKnights.preloadedGO["AcidSpit"].GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+            _acidTexture = def.material.mainTexture;
+            def.material.mainTexture = FiveKnights.SPRITES["acid_b"].texture;
+
+            foreach(Transform sidecols in GameObject.Find("SeedCols").transform)
             {
                 sidecols.gameObject.AddComponent<EnemyPlantSpawn>();
                 sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
@@ -957,24 +934,12 @@ namespace FiveKnights.Isma
                 if (!_isLanded && _fsm.ActiveStateName == "In Air" && transform.position.y < SlimeY)
                 {
                     _isLanded = true;
-                    PlayGndSnd();
+                    this.PlayAudio(FiveKnights.Clips["AcidSpitSnd"], 1f, 0f, HeroController.instance.transform);
                     var pos = transform.position;
                     transform.position = new Vector3(pos.x, SlimeY, pos.z);
                     _fsm.SetState("Land");
+                    Destroy(this);
                 }
-            }
-
-            void PlayGndSnd()
-            {
-                var actor = Instantiate(FiveKnights.preloadedGO["AcidSpitPlayer"]);
-                actor.transform.position = HeroController.instance.transform.position;
-                var aud = actor.GetComponent<AudioSource>();
-                actor.SetActive(true);
-                aud.enabled = true;
-                aud.clip = null;
-                aud.pitch = aud.volume = 1f;
-                aud.PlayOneShot(FiveKnights.Clips["AcidSpitSnd"], 1f);
-                Destroy(this);
             }
         }
 
@@ -2178,7 +2143,7 @@ namespace FiveKnights.Isma
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
-                this.PlayAudio(FiveKnights.IsmaClips["IsmaAudDeath"], 1f);
+                this.PlayAudio(FiveKnights.Clips["IsmaAudDeath"], 1f);
             }
         }
         
@@ -2232,7 +2197,10 @@ namespace FiveKnights.Isma
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter -= MarkDungBalls;
 
-            var def = FiveKnights.preloadedGO["AcidSpit"].GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
+            // Revert acid texture to vanilla because it's shared
+            //PlayMakerFSM noskFSM = FiveKnights.preloadedGO["Nosk"].LocateMyFSM("Mimic Spider");
+            //GameObject acidOrig = noskFSM.GetAction<FlingObjectsFromGlobalPool>("Spit 1", 1).gameObject.Value;
+            tk2dSpriteDefinition def = FiveKnights.preloadedGO["AcidSpit"].GetComponentInChildren<tk2dSprite>().GetCurrentSpriteDef();
             def.material.mainTexture = _acidTexture;
         }
 

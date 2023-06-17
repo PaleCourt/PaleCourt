@@ -14,7 +14,6 @@ namespace FiveKnights.Tiso
     {
         private const string TisoScene = "GG_Brooding_Mawlek_V";
         private const string StatueScene = "GG_Workshop";
-        public static Dictionary<string, AudioClip> TisoAud;
         
         private void Awake()
         {
@@ -37,12 +36,8 @@ namespace FiveKnights.Tiso
             if (curr.name is TisoScene && FiveKnights.Instance.SaveSettings.AltStatueMawlek)
             {
                 ClearOldContent(curr);
-                GameObject tiso = LoadTiso();
-                tiso.SetActive(true);
-                tiso.transform.position = HeroController.instance.transform.position;
-                AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-                FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-                tiso.AddComponent<TisoController>();
+                BossLoader.LoadTisoBundle();
+                BossLoader.CreateTiso();
             }
             if (curr.name is StatueScene)
             {
@@ -54,39 +49,6 @@ namespace FiveKnights.Tiso
         {
             var battle = curr.GetRootGameObjects().First(go => go.name == "Battle Scene");
             battle.LocateMyFSM("Activate Boss").enabled = false;
-        }
-        
-        private GameObject LoadTiso()
-        {
-            Log("Loading Tiso Bundle");
-            TisoAud = new Dictionary<string, AudioClip>();
-
-            AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.TisoBund];
-            GameObject tiso = ab.LoadAsset<GameObject>("Tiso");
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-
-            string[] audNames =
-            {
-                "AudSpikeHitWall", "AudTisoJump", "AudTisoLand", "AudTisoShoot", "AudTisoSpin", "AudTisoThrowShield",
-                "AudTisoWalk", "AudTisoDeath", "AudTisoRoar", "AudTisoYell", "AudLand"
-            };
-            
-            FiveKnights.Clips["TisoMusicStart"] = snd.LoadAsset<AudioClip>("TisoMusicStart");
-            FiveKnights.Clips["TisoMusicLoop"] = snd.LoadAsset<AudioClip>("TisoMusicLoop");
-
-            foreach (var audName in audNames)
-            {
-                TisoAud[audName] = snd.LoadAsset<AudioClip>(audName);
-            }
-            
-            for (int i = 1; i < 7; i++)
-            {
-                TisoAud[$"AudTiso{i}"] = snd.LoadAsset<AudioClip>($"AudTiso{i}");
-            }
-
-            Log("Finished Loading Tiso Bundle");
-			return Instantiate(tiso);
         }
 
         private void SetStatue()
@@ -165,11 +127,6 @@ namespace FiveKnights.Tiso
                 bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
             }
 
-
-            /*if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
-            {
-                
-            }*/
             Log("Finish tiso statue.");
         }
         

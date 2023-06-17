@@ -139,7 +139,7 @@ namespace FiveKnights.Tiso
             _rb.gravityScale = 1.5f;
             _rb.isKinematic = false;
             _anim.Play("TisoSpin");
-            this.PlayAudio(TisoFinder.TisoAud["AudTiso1"]);
+            this.PlayAudio(TisoAud["AudTiso1"]);
             PlayAudio(this, Clip.Spin);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
@@ -159,7 +159,7 @@ namespace FiveKnights.Tiso
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
             _hit = false;
-            yield return new WaitSecWhile(() => !_hit, TisoFinder.TisoAud["AudTisoRoar"].length);
+            yield return new WaitSecWhile(() => !_hit, TisoAud["AudTisoRoar"].length);
             Destroy(aud.gameObject);
         }
 
