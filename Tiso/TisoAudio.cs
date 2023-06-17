@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace FiveKnights.Tiso;
 
 public static class TisoAudio
 {
+    public static Dictionary<string, AudioClip> TisoAud;
     public enum Clip
     {
         SpikeHitWall,
@@ -31,18 +33,18 @@ public static class TisoAudio
     {
         return clip switch
         {
-            Clip.SpikeHitWall => TisoFinder.TisoAud["AudSpikeHitWall"],
-            Clip.Jump => TisoFinder.TisoAud["AudTisoJump"],
-            Clip.Land => TisoFinder.TisoAud["AudTisoLand"],
-            Clip.LandHard => TisoFinder.TisoAud["AudLand"],
-            Clip.Shoot => TisoFinder.TisoAud["AudTisoShoot"],
-            Clip.Spin => TisoFinder.TisoAud["AudTisoSpin"],
-            Clip.ThrowShield => TisoFinder.TisoAud["AudTisoThrowShield"],
-            Clip.Walk => TisoFinder.TisoAud["AudTisoWalk"],
-            Clip.Death => TisoFinder.TisoAud["AudTisoDeath"],
-            Clip.Roar => TisoFinder.TisoAud["AudTisoRoar"],
-            Clip.Yell => TisoFinder.TisoAud["AudTisoYell"],
-            _ => TisoFinder.TisoAud["AudTisoYell"],
+            Clip.SpikeHitWall => TisoAud["AudSpikeHitWall"],
+            Clip.Jump => TisoAud["AudTisoJump"],
+            Clip.Land => TisoAud["AudTisoLand"],
+            Clip.LandHard => TisoAud["AudLand"],
+            Clip.Shoot => TisoAud["AudTisoShoot"],
+            Clip.Spin => TisoAud["AudTisoSpin"],
+            Clip.ThrowShield => TisoAud["AudTisoThrowShield"],
+            Clip.Walk => TisoAud["AudTisoWalk"],
+            Clip.Death => TisoAud["AudTisoDeath"],
+            Clip.Roar => TisoAud["AudTisoRoar"],
+            Clip.Yell => TisoAud["AudTisoYell"],
+            _ => TisoAud["AudTisoYell"],
         };
     }
 }

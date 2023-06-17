@@ -9,6 +9,7 @@ using FiveKnights.Zemer;
 using HutongGames.PlayMaker.Actions;
 using Random = UnityEngine.Random;
 using System.Collections.Generic;
+using FiveKnights.Tiso;
 
 namespace FiveKnights
 {
@@ -20,6 +21,7 @@ namespace FiveKnights
         private static AssetBundle _dryyaBundle => ABManager.AssetBundles[ABManager.Bundle.GDryya];
         private static AssetBundle _hegemolBundle => ABManager.AssetBundles[ABManager.Bundle.GHegemol];
         private static AssetBundle _zemerBundle => ABManager.AssetBundles[ABManager.Bundle.GZemer];
+        private static AssetBundle _tisoBundle => ABManager.AssetBundles[ABManager.Bundle.TisoBund];
 
         public static IsmaController CreateIsma(bool onlyIsma)
         {
@@ -77,6 +79,19 @@ namespace FiveKnights
 
             Log("Done creating Zemer");
             return zc;
+        }
+
+        public static TisoController CreateTiso()
+		{
+            Log("Creating Tiso");
+
+            GameObject tiso = GameObject.Instantiate(FiveKnights.preloadedGO["Tiso"]);
+            tiso.transform.position = HeroController.instance.transform.position;
+            tiso.SetActive(true);
+            TisoController tc = tiso.AddComponent<TisoController>();
+
+            Log("Done creating Tiso");
+            return tc;
         }
 
         public static void LoadIsmaBundle()
@@ -392,6 +407,42 @@ namespace FiveKnights
             }
 
             Log("Finished loading Zemer bundle");
+        }
+
+        public static void LoadTisoBundle()
+		{
+            Log("Loading Tiso bundle");
+            if(FiveKnights.preloadedGO.TryGetValue("Tiso", out var go) && go != null)
+            {
+                Log("Already loaded Tiso");
+                return;
+            }
+
+            // Audio clips
+            TisoAudio.TisoAud = new Dictionary<string, AudioClip>();
+            string[] clips =
+            {
+                "AudSpikeHitWall", "AudTisoJump", "AudTisoLand", "AudTisoShoot", "AudTisoSpin", "AudTisoThrowShield",
+                "AudTisoWalk", "AudTisoDeath", "AudTisoRoar", "AudTisoYell", "AudLand"
+            };
+            foreach(string audName in clips)
+            {
+                TisoAudio.TisoAud[audName] = _soundBundle.LoadAsset<AudioClip>(audName);
+            }
+            for(int i = 1; i < 7; i++)
+            {
+                TisoAudio.TisoAud[$"AudTiso{i}"] = _soundBundle.LoadAsset<AudioClip>($"AudTiso{i}");
+            }
+
+            // THE ONLY THING THEY FEAR IS TISO
+            FiveKnights.Clips["TisoMusicStart"] = _soundBundle.LoadAsset<AudioClip>("TisoMusicStart");
+            FiveKnights.Clips["TisoMusicLoop"] = _soundBundle.LoadAsset<AudioClip>("TisoMusicLoop");
+
+            // The man himself
+            FiveKnights.preloadedGO["Tiso"] = _tisoBundle.LoadAsset<GameObject>("Tiso");
+            FiveKnights.Materials["flash"] = _miscBundle.LoadAsset<Material>("UnlitFlashMat");
+
+            Log("Finished loading Tiso bundle");
         }
 
 		private static void Log(object o) => Modding.Logger.Log("[FiveKnights][BossLoader] " + o);

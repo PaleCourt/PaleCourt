@@ -386,8 +386,6 @@ namespace FiveKnights
             if (arg1.name == "White_Palace_09")
             {
                 CustomWP.isInGodhome = true;
-
-                ResetBossBundle();
                 LoadHubBundles();
                 if (CustomWP.Instance == null)
                 {
@@ -418,44 +416,6 @@ namespace FiveKnights
                 return true;
             }
             return orig;
-        }
-
-        private void ResetBossBundle()
-        {
-            Log($"Destroying {CustomWP.boss}");
-            if (GGBossManager.Instance != null)
-            {
-                Log("Destroying ggbossmanager");
-                Destroy(GGBossManager.Instance);
-            }
-            if (CustomWP.boss == CustomWP.Boss.Dryya)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GDryya);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaD);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Hegemol)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GHegemol);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaH);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Isma || CustomWP.boss == CustomWP.Boss.Ogrim)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GIsma);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaI);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaIsma);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GArenaZ);
-                ABManager.ResetBundle(ABManager.Bundle.GZemer);
-            }
-
-            if (CustomWP.boss != CustomWP.Boss.None)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.Sound);
-            }
-
-            Log("Destroying2");
         }
 
         private IEnumerator CameraFixer()

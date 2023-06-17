@@ -27,7 +27,7 @@ namespace FiveKnights.Misc
         {
             if (prev.name == "Room_nailmaster_02")
             {
-                ABManager.ResetBundle(ABManager.Bundle.Artist);
+                //ABManager.ResetBundle(ABManager.Bundle.Artist);
                 Destroy(_sheo);
                 Destroy(_smith);
                 Destroy(this);
