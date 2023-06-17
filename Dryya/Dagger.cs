@@ -10,8 +10,7 @@ namespace FiveKnights.Dryya
 {
     public class Dagger : MonoBehaviour
     {
-        public float Speed = 69f; // unused now, keeping so I don't need to rebuild the bundle
-        private const float ActualSpeed = 40f;
+        private const float Speed = 37f;
 
         private void Start()
         {
@@ -26,7 +25,7 @@ namespace FiveKnights.Dryya
 
         private void FixedUpdate()
         {
-            transform.position += transform.up * Time.fixedDeltaTime * ActualSpeed;
+            transform.position += transform.up * Time.fixedDeltaTime * Speed;
         }
     }
 }
