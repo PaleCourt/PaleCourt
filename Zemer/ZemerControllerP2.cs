@@ -155,6 +155,14 @@ namespace FiveKnights.Zemer
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             _deathEff.SetJournalEntry(FiveKnights.journalEntries["Zemer"]);
             _target = HeroController.instance.gameObject;
+            
+            foreach (var i in FindObjectsOfType<Rigidbody2D>(true))
+            {
+                if (i.name.Contains("Nail") && i.transform.parent == null)
+                {
+                    Destroy(i.gameObject);
+                }
+            }
 
             yield return EndPhase1(true);
         }
@@ -1754,7 +1762,7 @@ namespace FiveKnights.Zemer
 
         IEnumerator FlowerBloomer()
         {
-            yield return GGBossManager.Instance.PlayFlowers();
+            yield return GGBossManager.Instance.PlayFlowers(2);
             GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             //List<Transform> children = GGBossManager.Instance.flowersAnim.SelectMany(i => i.transform.Cast<Transform>()).ToList();
@@ -3242,14 +3250,6 @@ namespace FiveKnights.Zemer
                 Instant();
         }
 
-        public static void SaveTextureAsPNG(Texture2D _texture, string _fullPath)
-        {
-            byte[] _bytes = _texture.EncodeToPNG();
-            System.IO.File.WriteAllBytes(_fullPath, _bytes);
-            Debug.Log(_bytes.Length / 1024 + "Kb was saved as: " + _fullPath);
-        }
-        
-        
         private void AssignFields()
         {
             Transform slash = transform.Find("NewSlash3");

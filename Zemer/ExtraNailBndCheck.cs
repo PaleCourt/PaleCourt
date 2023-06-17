@@ -14,7 +14,7 @@ public class ExtraNailBndCheck : MonoBehaviour
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 18.5f : 39f;
     
     private readonly float _nailMaxGroundStop = (OWArenaFinder.IsInOverWorld) ? 106f :
-        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 7.6f : 27.3f;
+        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 27.3f;
     
     private readonly float _nailMaxLeftStop = (OWArenaFinder.IsInOverWorld) ? 241.9f :
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 62f : 13f;

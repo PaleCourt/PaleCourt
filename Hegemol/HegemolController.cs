@@ -936,16 +936,33 @@ namespace FiveKnights.Hegemol
             if(_hm.hp <= 0 && phase <= 3)
             {
                 phase++;
+                StopAllCoroutines();
+                PlayDeathFor(transform.gameObject);
+                PlayDeathFor(transform.gameObject);
                 if(phase > 3)
 				{
-                    StopAllCoroutines();
                     StartCoroutine(Die());
                     return;
                 }
-                StopAllCoroutines();
                 StartCoroutine(Stagger());
                 Log("Going to phase " + phase);
             }
+        }
+
+        private void PlayDeathFor(GameObject go)
+        {
+            EnemyDeathEffectsUninfected _deathEff = FiveKnights.preloadedGO["WD"].GetComponent<EnemyDeathEffectsUninfected>();
+            GameObject eff1 = Instantiate(_deathEff.uninfectedDeathPt);
+            GameObject eff2 = Instantiate(_deathEff.whiteWave);
+
+            eff1.SetActive(true);
+            eff2.SetActive(true);
+
+            eff1.transform.position = eff2.transform.position = go.transform.position;
+
+            _deathEff.EmitSound();
+
+            GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
         }
 
         private void OnRecieveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
@@ -1095,7 +1112,7 @@ namespace FiveKnights.Hegemol
                         num = Random.Range(1, 4);
                         break;
                     case "HGrunt":
-                        num = Random.Range(1, 5);
+                        num = Random.Range(1, 5); 
                         break;
                     case "HTired":
                         num = Random.Range(1, 4);

@@ -32,25 +32,58 @@ namespace FiveKnights.BossManagement
         public List<Animator> flowersAnim;
         public List<Animator> flowersGlow;
 
-        public IEnumerator PlayFlowers(int toFrame=-1) 
+        private void StartFlowers()
         {
+            GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
+            flowersAnim = new List<Animator>();
+            flowersGlow = new List<Animator>();
+            flowers.SetActive(true);
+            foreach (Transform group in flowers.transform)
+            {
+                GameObject glowOld = group.Find("Flower").Find("Glow").gameObject;
+                glowOld.SetActive(false);
+                flowersGlow.Add(glowOld.GetComponent<Animator>());
+                foreach (Transform flower in group)
+                {
+                    Animator anim = flower.GetComponent<Animator>();
+                    flowersAnim.Add(anim);
+                    anim.Play("Grow", -1, 0f);
+                    if (anim.name == "Flower" || anim.GetComponent<SpriteRenderer>().color == Color.black) continue;
+                    GameObject newGlow = Instantiate(glowOld, anim.transform, false);
+                    newGlow.name = "Glow";
+                    newGlow.transform.localPosition = new Vector3(glowOld.transform.localPosition.x,
+                        glowOld.transform.localPosition.y, -0.0001f);
+                    Animator anim2 = newGlow.GetComponent<Animator>();
+                    flowersGlow.Add(anim2);
+                    anim2.enabled = false;
+                    newGlow.SetActive(false);
+                }
+            }
+        }
+        
+        public IEnumerator PlayFlowers(int step)
+        {
+            var types = new[]
+            {
+                new [] {2, 5, 9}, 
+                new [] {1, 3, 6}, 
+                new [] {3, 5, 9}
+            };
+
             foreach (var anim in flowersAnim) anim.enabled = true;
-            yield return null;
+            yield return new WaitForEndOfFrame();
             foreach (var anim in flowersAnim)
             {
                 switch (anim.transform.parent.name)
                 {
                     case "FlowersA":
-                        if (toFrame == -1) yield return anim.PlayToEnd();
-                        else yield return anim.WaitToFrame(toFrame + 1);
+                        yield return anim.WaitToFrame(types[0][step]);
                         break;
                     case "FlowersB":
-                        if (toFrame == -1) yield return anim.PlayToEnd();
-                        else yield return anim.WaitToFrame(toFrame);
+                        yield return anim.WaitToFrame(types[1][step]);
                         break;
                     case "FlowersC":
-                        if (toFrame == -1) yield return anim.PlayToEnd();
-                        else yield return anim.WaitToFrame(toFrame + 2);
+                        yield return anim.WaitToFrame(types[2][step]);
                         break;
                 }
                 anim.enabled = false;
@@ -256,34 +289,6 @@ namespace FiveKnights.BossManagement
                 yield return a2;
                 yield return a3;
                 yield return a4;
-                
-
-                GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
-                flowersAnim = new List<Animator>();
-                flowersGlow = new List<Animator>();
-                flowers.SetActive(true);
-                foreach (Transform group in flowers.transform)
-                {
-                    GameObject glowOld = group.Find("Flower").Find("Glow").gameObject;
-                    glowOld.SetActive(false);
-                    flowersGlow.Add(glowOld.GetComponent<Animator>());
-                    foreach (Transform flower in group)
-                    {
-                        Animator anim = flower.GetComponent<Animator>();
-                        flowersAnim.Add(anim);
-                        anim.Play("Grow", -1, 0f);
-                        anim.enabled = true;
-                        if (anim.name == "Flower" || anim.GetComponent<SpriteRenderer>().color == Color.black) continue;
-                        GameObject newGlow = Instantiate(glowOld, anim.transform, false);
-                        newGlow.name = "Glow";
-                        newGlow.transform.localPosition = new Vector3(glowOld.transform.localPosition.x,
-                            glowOld.transform.localPosition.y, -0.0001f);
-                        Animator anim2 = newGlow.GetComponent<Animator>();
-                        flowersGlow.Add(anim2);
-                        anim2.enabled = false;
-                        newGlow.SetActive(false);
-                    }
-                }
                 yield return null;
 
                 AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
@@ -295,11 +300,6 @@ namespace FiveKnights.BossManagement
                 FiveKnights.Clips["OgrismaMusic"] = r2.asset as AudioClip;
 
                 yield return OgrimIsmaFight();
-
-				foreach (Animator anim in flowersAnim)
-                {
-                    anim.enabled = false;
-                }
 
                 yield return new WaitForSeconds(1.5f);
                 
@@ -354,7 +354,7 @@ namespace FiveKnights.BossManagement
                 yield return new WaitForSeconds(0.5f);
                 
                 // Grow flowers if in pantheon
-                StartCoroutine(PlayFlowers(7));
+                StartCoroutine(PlayFlowers(1));
 
                 //Destroy(zemSil);
                 yield return new WaitWhile(() => zc != null);
@@ -440,9 +440,11 @@ namespace FiveKnights.BossManagement
             IsmaController ic = FiveKnights.preloadedGO["Isma2"].GetComponent<IsmaController>();
             
             // Grow flowers if in pantheon
-            if (flowersAnim != null)
+            if (CustomWP.boss == CustomWP.Boss.All)
             {
-                StartCoroutine(PlayFlowers(2));
+                Log("made flowers");
+                StartFlowers();
+                StartCoroutine(PlayFlowers(0));
             }
 
             // After Isma falls down
