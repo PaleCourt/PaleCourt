@@ -14,7 +14,6 @@ namespace FiveKnights.Tiso
     {
         private const string TisoScene = "GG_Brooding_Mawlek_V";
         private const string StatueScene = "GG_Workshop";
-        public static Dictionary<string, AudioClip> TisoAud;
         
         private void Awake()
         {
