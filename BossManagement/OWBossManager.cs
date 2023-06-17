@@ -198,7 +198,7 @@ namespace FiveKnights
 
         private void WinRoutine(string area, int index)
         {
-            if(GameManager.instance.GetComponent<AwardCharms>()) GameManager.instance.GetComponent<AwardCharms>().firstClear[index] = true;
+            if(GameManager.instance.GetComponent<AwardCharms>()) GameManager.instance.GetComponent<AwardCharms>().bossWin[index] = true;
             string msgKey = "placeholder key aaaaaaaa";
             int wins;
 			switch(index)

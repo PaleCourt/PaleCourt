@@ -21,7 +21,8 @@ namespace FiveKnights
         private AssetBundle _charmUnlock;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
         private bool pauseShroom = false;
-        public bool[] firstClear = new bool[4];
+        public bool[] bossWin = new bool[4];
+
         //public static BindingFlags all = BindingFlags.Default | BindingFlags.Instance | BindingFlags.Public | BindingFlags.Static | BindingFlags.CreateInstance | BindingFlags.DeclaredOnly | BindingFlags.ExactBinding | BindingFlags.FlattenHierarchy | BindingFlags.GetField | BindingFlags.GetProperty | BindingFlags.IgnoreCase | BindingFlags.IgnoreReturn | BindingFlags.InvokeMethod | BindingFlags.NonPublic | BindingFlags.SetField | BindingFlags.SetProperty | BindingFlags.OptionalParamBinding | BindingFlags.PutDispProperty | BindingFlags.SuppressChangeType | BindingFlags.PutRefDispProperty;
         
         public void Awake()
@@ -70,13 +71,16 @@ namespace FiveKnights
         {
             var settings = FiveKnights.Instance.SaveSettings;
             var scene = GameManager.instance.sceneName;
-            if((scene == "dryya overworld" && !settings.gotCharms[0] && firstClear[0]) ||
-                (scene == "zemer overworld arena" && !settings.gotCharms[1] && firstClear[1]) ||
-                (scene == "hegemol overworld arena" && !settings.gotCharms[2] && firstClear[2]) || 
-                (scene == "isma overworld" && !settings.upgradedCharm_10 && firstClear[3]))
+            if((scene == "dryya overworld" && !settings.gotCharms[0] && bossWin[0]) ||
+                (scene == "zemer overworld arena" && !settings.gotCharms[1] && bossWin[1]) ||
+                (scene == "hegemol overworld arena" && !settings.gotCharms[2] && bossWin[2]) || 
+                (scene == "isma overworld" && !settings.upgradedCharm_10 && bossWin[3]))
+
             {
+                
+
                 var boss = scene.Split(' ');
-                StartCoroutine(AwardCharm(boss[0]));
+                StartCoroutine(AwardCharm(boss[0]));        
             }
             return sceneName;
         }

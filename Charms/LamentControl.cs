@@ -74,11 +74,15 @@ namespace FiveKnights
                         }
                         else
                         {
+                            try
+                            {
+                                enemy.GetComponent<Afflicted>().visible = true;
+                                enemy.GetComponent<Afflicted>().SoulEffect.SetActive(true);
+                                enemy.GetComponent<Afflicted>().SoulEffect.GetComponent<ParticleSystem>().Play();
+                                Log("Reactivated Soul Effeect");
+                            }
+                            catch ( NullReferenceException e) { }; 
 
-                            enemy.GetComponent<Afflicted>().visible = true;
-                            enemy.GetComponent<Afflicted>().SoulEffect.SetActive(true);
-                            enemy.GetComponent<Afflicted>().SoulEffect.GetComponent<ParticleSystem>().Play();
-                            Log("Reactivated Soul Effeect");
                         }
                     }
                 }
@@ -275,6 +279,7 @@ namespace FiveKnights
             Log("Called PureVesselBlastFadeIn");
             Log("Recieved GO: " + gameObject.name);
 
+
            StartCoroutine(FadeOut());
 
             _createLine = CreateLine(gameObject, gameObject.transform.position);
@@ -302,7 +307,7 @@ namespace FiveKnights
             anim.speed = 1;
             if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
             {
-                anim.speed *= 1.5f;
+                anim.speed *= 1.33f;
             }
 
             if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
@@ -318,7 +323,7 @@ namespace FiveKnights
             var wait = 1f;
             if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
             {
-                wait *= 1.5f;
+                wait /= 1.33f;
             }
             if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
             {
