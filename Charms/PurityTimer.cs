@@ -22,9 +22,10 @@ namespace FiveKnights
         private bool audioMax = false;
         private float duration;
         private const float PURITY_DURATION_DEFAULT = 1.7f;
-        private const float PURITY_DURATION_18 = 1.9f;
-        private const float PURITY_DURATION_13 = 2.1f;
-        private const float PURITY_DURATION_18_13 = 2.25f;
+        private const float PURITY_DURATION_26 = 2.1f;
+        //private const float PURITY_DURATION_18 = 1.9f;
+        // private const float PURITY_DURATION_13 = 2.1f;
+        // private const float PURITY_DURATION_18_13 = 2.25f;
         private const float ATTACK_COOLDOWN_DEFAULT = .41f;
         private const float ATTACK_COOLDOWN_DEFAULT_32 = .25f;
         private const float ATTACK_COOLDOWN_44 = .49f;
@@ -38,6 +39,7 @@ namespace FiveKnights
         private HeroController _hc = HeroController.instance;
         private PlayerData _pd = PlayerData.instance;
         private List<NailSlash> nailSlashes;
+
         private void OnEnable()
         {
             nailSlashes = new List<NailSlash>()
@@ -47,7 +49,7 @@ namespace FiveKnights
                 HeroController.instance.downSlash,
                 HeroController.instance.upSlash,
                 HeroController.instance.wallSlash,
-            };
+            };     
             On.HealthManager.TakeDamage += IncrementSpeed;
             //ModHooks.CharmUpdateHook += SetDuration;
             ModHooks.CharmUpdateHook += Duration;
@@ -64,11 +66,7 @@ namespace FiveKnights
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
         }
 
-        private void Duration(PlayerData data, HeroController controller)
-        {
-            if (data.equippedCharm_26) { duration = PURITY_DURATION_13; }
-            else { duration = PURITY_DURATION_DEFAULT; }
-        }
+
 
         private void OnDisable()
         {
@@ -144,6 +142,12 @@ namespace FiveKnights
         
         private void IncrementSpeed(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
+            if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
+            {
+                float damageDealt = hitInstance.DamageDealt;
+                damageDealt *= .75f;
+                hitInstance.DamageDealt = Mathf.RoundToInt(damageDealt);
+            }
             orig(self, hitInstance);
             if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
             {
@@ -156,17 +160,27 @@ namespace FiveKnights
                 timerRunning = true;
                 if (hitInstance.AttackType == AttackTypes.Nail)
                 {
-                    _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 5;
-                    _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 7;
-                    _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 5;
-                    _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 7;
+                    if (!_pd.equippedCharm_35 || _pd.equippedCharm_35 && _pd.health < _pd.CurrentMaxHealth)
+                    {
+                        _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
+                        _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
+                        _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
+                        _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
+                    }
+                    else
+                    {
+                        _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
+                        _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
+                        _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
+                        _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
+                    }
                 }
                 if (hitInstance.AttackType == AttackTypes.NailBeam)
                 {
-                    _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 10;
-                    _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 14;
-                    _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 10;
-                    _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 14;
+                    _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
+                    _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
+                    _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
+                    _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
                 }
 
                 if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)     
@@ -195,8 +209,13 @@ namespace FiveKnights
 
             }
         }
+        private void Duration(PlayerData data, HeroController controller)
+        {
+            if (data.equippedCharm_26) { duration = PURITY_DURATION_26; }
+            else { duration = PURITY_DURATION_DEFAULT; }
+        }
 
-        private void SetDuration(PlayerData data, HeroController controller)
+        /*private void SetDuration(PlayerData data, HeroController controller)
         {
             bool ln = data.equippedCharm_18;
             bool mop = data.equippedCharm_13;
@@ -242,8 +261,8 @@ namespace FiveKnights
                 }
 
             }
-
-        }
+            
+        }*/
         private void Dummy(Scene From, Scene To)
         {
             if (To.name == "Deepnest_East_16")
@@ -257,10 +276,10 @@ namespace FiveKnights
             timer = 0;
             timerRunning = true;
 
-            _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 5;
-            _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 7;
-            _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 5;
-            _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 7;
+            _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
+            _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
+            _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
+            _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
             //foreach(NailSlash nailslash in nailSlashes)
             //{
             //	nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
