@@ -50,6 +50,7 @@ namespace FiveKnights
             };
             On.HealthManager.TakeDamage += IncrementSpeed;
             //ModHooks.CharmUpdateHook += SetDuration;
+            ModHooks.CharmUpdateHook += Duration;
             //On.NailSlash.SetLongnail += CancelLongnail;
             //On.NailSlash.SetMantis += CancelMantis;
             On.HeroController.CanDoubleJump += FixDoubleJump;
@@ -57,15 +58,17 @@ namespace FiveKnights
             ModHooks.AfterTakeDamageHook += ResetSpeed;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += Dummy;
 
-            duration = PURITY_DURATION_DEFAULT;
-
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
             _hc.ATTACK_DURATION = ATTACK_DURATION_44;
             _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
         }
 
-
+        private void Duration(PlayerData data, HeroController controller)
+        {
+            if (data.equippedCharm_26) { duration = PURITY_DURATION_13; }
+            else { duration = PURITY_DURATION_DEFAULT; }
+        }
 
         private void OnDisable()
         {
@@ -92,18 +95,22 @@ namespace FiveKnights
                 if (timer >= duration)
                 {
                     timerRunning = false;
+                    if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .48f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .3f)
+                    {
+                        Log("Play Reset Audio");
+                        this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
+                    }
                     _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
                     _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
                     _hc.ATTACK_DURATION = ATTACK_DURATION_44;
-                    _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
-                    if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .48f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .3f)
-                    {
-                        this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
-                    }
+                    _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;              
                     foreach (NailSlash nailslash in nailSlashes)
                     {
-                        nailslash.GetComponent<tk2dSprite>().color = Color.white;
-                        nailslash.GetComponent<AudioSource>().pitch = 1;
+                        if (nailslash.GetComponent<tk2dSprite>().color != Color.black)
+                        {
+                            nailslash.GetComponent<tk2dSprite>().color = Color.white;
+                            nailslash.GetComponent<AudioSource>().pitch = 1;
+                        }
                     }
                     audioMax = false;
                     timer = 0;
@@ -113,18 +120,22 @@ namespace FiveKnights
         private int ResetSpeed(int hazardType, int damageAmount)
         {
             timerRunning = false;
+            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .48f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .3f)
+            {
+                Log("Play Reset Audio");
+                this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
+            }
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
             _hc.ATTACK_DURATION = ATTACK_DURATION_44;
-            _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;
-            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .48f || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .3f)
-            {
-                this.PlayAudio(ABManager.AssetBundles[ABManager.Bundle.CharmUnlock].LoadAsset<AudioClip>("purity_reset"), 1f);
-            }
+            _hc.ATTACK_DURATION_CH = ATTACK_DURATION_44_32;       
             foreach (NailSlash nailslash in nailSlashes)
             {
-                nailslash.GetComponent<tk2dSprite>().color = Color.white;
-                nailslash.GetComponent<AudioSource>().pitch = 1;
+                if(nailslash.GetComponent<tk2dSprite>().color != Color.black) {
+                    nailslash.GetComponent<tk2dSprite>().color = Color.white;
+                    nailslash.GetComponent<AudioSource>().pitch = 1;
+                }
+                
             }
             audioMax = false;
             timer = 0;
@@ -158,7 +169,7 @@ namespace FiveKnights
                     _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 14;
                 }
 
-                if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME == .17f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH == .13f && !audioMax)
+                if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)     
                 {
                     audioMax = true;
                     Log("Play Audio");
@@ -177,7 +188,7 @@ namespace FiveKnights
                     {
                         foreach (NailSlash nailslash in nailSlashes)
                         {
-                            nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f);
+                            if (nailslash.GetComponent<tk2dSprite>().color != Color.black) { nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f); }
                         }
                     }
                 }
@@ -256,7 +267,7 @@ namespace FiveKnights
             //	if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
             //}
 
-            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME == .17f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH == .13f && !audioMax)
+            if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)
             {
                 audioMax = true;
                 Log("Play Audio");
@@ -275,7 +286,7 @@ namespace FiveKnights
                 {
                     foreach (NailSlash nailslash in nailSlashes)
                     {
-                        nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f);
+                        if (nailslash.GetComponent<tk2dSprite>().color != Color.black) { nailslash.GetComponent<tk2dSprite>().color = new Color(.619f, .798f, .881f); }
                     }
                 }
             }
