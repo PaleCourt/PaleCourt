@@ -59,7 +59,8 @@ namespace FiveKnights.Zemer
         private const float NailSize = 1.15f;
         private const float NailSpeed = 80f;
         private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
-        private readonly int DreamConvoAmount = 3;
+        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 
+            ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? 4 : 3);
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM"; 
 
         private void Awake()
@@ -1261,7 +1262,7 @@ namespace FiveKnights.Zemer
                     _hasDied = true;
                     _bc.enabled = false;
 
-                    GameManager.instance.AwardAchievement("PALE_COURT_ZEM_ACH");
+                    if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_ZEM_ACH");
 
                     if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
                     else GGBossManager.Instance.PlayMusic(null, 1f);

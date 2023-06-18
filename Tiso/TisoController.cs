@@ -36,8 +36,8 @@ namespace FiveKnights.Tiso
         public const float LeftX = 52f;
         public const float RightX = 69.7f;
         public const float MiddleX = 61f;
-        private const int MaxHp = 1200;
         private const int MaxDreamAmount = 3;
+        private readonly int MaxHP = BossSceneController.Instance.BossLevel == 0 ? 1100 : 1400;
         private Random _rand;
         private TisoAttacks _attacks;
         // Flag that is set to true when Tiso is hit, reset before using
@@ -100,7 +100,7 @@ namespace FiveKnights.Tiso
 
             AssignFields();
 
-            _hm.hp = MaxHp;
+            _hm.hp = MaxHP;
             gameObject.layer = (int) PhysLayers.ENEMIES;
         }
 

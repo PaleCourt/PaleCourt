@@ -356,7 +356,7 @@ namespace FiveKnights.BossManagement
             dd.GetComponent<DamageHero>().damageDealt = 1;
             dd.Find("Throw Swipe").gameObject.GetComponent<DamageHero>().damageDealt = 1;
             EnemyDreamnailReaction dreamNailReaction = dd.GetComponent<EnemyDreamnailReaction>();
-            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 3);
+            Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 2);
             dreamNailReaction.SetConvoTitle("OGRIM_GG_DREAM");
 
             _hm = dd.GetComponent<HealthManager>();
@@ -421,6 +421,7 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => !ic.introDone);
 			_fsm.enabled = true;
             _fsm.SetState("Stun Recover");
+            dd.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
             yield return null;
 
             // WD scream
@@ -429,7 +430,6 @@ namespace FiveKnights.BossManagement
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Stun Recover");
             yield return new WaitWhile(() => _fsm.ActiveStateName == "Rage Roar");
             _fsm.RemoveAction("Idle", 1);
-            dd.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
             PlayerData.instance.isInvincible = false;
             burrow.enabled = true;
             foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())

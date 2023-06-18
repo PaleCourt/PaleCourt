@@ -488,47 +488,15 @@ namespace FiveKnights.BossManagement
             lockCol.enabled = cla.enabled = true;
         }
 
-        private void FixCameraIsma()
-        {
-            foreach (var i in FindObjectsOfType<CameraLockArea>())
-            {
-                Destroy(i);
-            }
-            CreateCameraLock("CLA1", new Vector2(50.24f,9.5f),new Vector2(108.83f, 25f),
-                new Vector2(1f, 1f), new Vector2(0f, 0f), 
-                new Vector2(0f, 12f), new Vector2(88.8f, 12f), true);
-
-            CreateCameraLock("CLA2", new Vector2(122.3f, 9.5f),new Vector2(35.6f, 25f),
-                new Vector2(1f, 1f), new Vector2(0f, 0f), 
-                new Vector2(119f, 12f), new Vector2(125f, 12f), true);
-                
-            
-            Log("Fixed floor");
-        }
-
         private void FixIsmaSprites()
         {
-            foreach (var i in FindObjectsOfType<MeshRenderer>()
-                .Where(x=>x.gameObject.name.Contains("Chunk")))
-            {
-                i.material.shader = Shader.Find("Sprites/Default");
-            }
-
-            foreach (var i in FindObjectsOfType<ParticleSystemRenderer>())
+            foreach(var i in FindObjectsOfType<ParticleSystemRenderer>())
             {
                 string partic = i.name == "Fungus_Steam" ? "Sprites/Default" : "Particles/Additive (Soft)";
                 i.material.shader = Shader.Find(partic);
             }
 
-            foreach (Transform i in GameObject.Find("wp_clouds").transform)
-            {
-                i.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
-            }
-
-            foreach (var i in FindObjectsOfType<SpriteRenderer>()
-                .Where(x=> x.name.Contains("_white") || 
-                                      x.name.Contains("water_fog") || 
-                                      x.name.Contains("wp_rib")))
+            foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x=> x.name.Contains("_white")))
             {
                 i.material.shader = Shader.Find("Sprites/Default");
             }

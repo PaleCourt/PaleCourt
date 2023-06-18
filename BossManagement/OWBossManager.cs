@@ -29,48 +29,6 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
-
-        private void AddTramAndNPCs()
-        {
-            var mobs = GameObject.Find("BG_Mobs"); 
-            foreach (Transform grp in mobs.transform)
-            {
-                foreach (Transform m in grp)
-                {
-                    GameObject mob = m.gameObject;
-                    switch (grp.name)
-                    {
-                        case "Carriage":
-                            mob.AddComponent<Carriage>();
-                            break;
-                        case "Husk":
-                            mob.AddComponent<HuskCitizen>();
-                            break;
-                        case "HuskCart":
-                            mob.AddComponent<HuskCart>();
-                            break;
-                        case "Maggot":
-                            mob.AddComponent<Maggot>();
-                            break;
-                        case "MineCart":
-                            mob.AddComponent<MineBugCart>(); 
-                            break;
-                    }
-                }
-            }
-                
-            var tram = Instantiate(FiveKnights.preloadedGO["Tram"]);
-            tram.AddComponent<Tram>();
-            GameObject riders = GameObject.Find("Riders");
-            riders.transform.position = tram.transform.position;
-            riders.transform.parent = tram.transform;
-            riders.transform.localPosition = new Vector3(0f, -2.45f, 0f);
-            tram.SetActive(true);
-            
-            var tram2 = Instantiate(FiveKnights.preloadedGO["Tram"]);
-            tram2.AddComponent<TramSmall>();
-            tram2.SetActive(true);
-        }
         
         private IEnumerator Start()
         {
@@ -154,6 +112,11 @@ namespace FiveKnights
 
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 yield return new WaitForSeconds(1.0f);
+
+                foreach(Tram tram in UnityEngine.Object.FindObjectsOfType<Tram>())
+				{
+                    tram.FadeAudio();
+				}
 
                 WinRoutine(OWArenaFinder.PrevHegScene, 2);
                 Log("Done with Heg, transitioning out");
@@ -264,7 +227,16 @@ namespace FiveKnights
             HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
             fsm.SetState("Fade Out");
+            GameManager.instance.StartCoroutine(ClearWhiteScreen());
+        }
 
+        private IEnumerator ClearWhiteScreen()
+		{
+            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.J));
+            Log("Clearing white screen");
+            GameObject.Find("Blanker White").LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
+            HeroController.instance.EnableRenderer();
+            HeroController.instance.AcceptInput();
         }
 
         public static void PlayMusic(AudioClip clip)
@@ -281,6 +253,48 @@ namespace FiveKnights
             var yoursnapshot = Resources.FindObjectsOfTypeAll<AudioMixer>().First(x => x.name == "Music").FindSnapshot("Main Only");
             yoursnapshot.TransitionTo(0);
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
+        }
+
+        private void AddTramAndNPCs()
+        {
+            var mobs = GameObject.Find("BG_Mobs"); 
+            foreach (Transform grp in mobs.transform)
+            {
+                foreach (Transform m in grp)
+                {
+                    GameObject mob = m.gameObject;
+                    switch (grp.name)
+                    {
+                        case "Carriage":
+                            mob.AddComponent<Carriage>();
+                            break;
+                        case "Husk":
+                            mob.AddComponent<HuskCitizen>();
+                            break;
+                        case "HuskCart":
+                            mob.AddComponent<HuskCart>();
+                            break;
+                        case "Maggot":
+                            mob.AddComponent<Maggot>();
+                            break;
+                        case "MineCart":
+                            mob.AddComponent<MineBugCart>(); 
+                            break;
+                    }
+                }
+            }
+                
+            var tram = Instantiate(FiveKnights.preloadedGO["Tram"]);
+            tram.AddComponent<Tram>();
+            GameObject riders = GameObject.Find("Riders");
+            riders.transform.position = tram.transform.position;
+            riders.transform.parent = tram.transform;
+            riders.transform.localPosition = new Vector3(0f, -2.45f, 0f);
+            tram.SetActive(true);
+            
+            var tram2 = Instantiate(FiveKnights.preloadedGO["Tram"]);
+            tram2.AddComponent<TramSmall>();
+            tram2.SetActive(true);
         }
         
         private static void PlayHegemolBGSound(HegemolController heg)
@@ -299,84 +313,6 @@ namespace FiveKnights
             audioSource.maxDistance = 150;
             audioSource.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
             audioSource.Play();
-        }
-        
-        private ZemerController CreateZemer()
-        {
-            Log("Creating Zemer");
-            
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-            string[] arr =
-            {
-                "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
-                "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
-                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1", 
-                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
-                "Zem_Area"
-            };
-            
-            foreach (var i in arr)
-            {
-                FiveKnights.Clips[i] = snd.LoadAsset<AudioClip>(i);
-            }
-
-            AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-            ArenaFinder.Sprites["ZemParticPetal"] = misc.LoadAsset<Sprite>("petal-test");
-            ArenaFinder.Sprites["ZemParticDung"] = misc.LoadAsset<Sprite>("dung-test");
-            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-
-            GameObject zemer = Instantiate(FiveKnights.preloadedGO["Zemer"]);
-            zemer.SetActive(true);
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam"].transform)
-            {
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 22;
-            }
-
-            foreach (Transform i in FiveKnights.preloadedGO["TChild"].transform)
-            {
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.layer = 22;
-            }
-            foreach (Transform i in FiveKnights.preloadedGO["SlashBeam2"].transform)
-            {
-                i.GetComponent<SpriteRenderer>().material =  new Material(Shader.Find("Sprites/Default"));   
-                
-                i.Find("HB1").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.Find("HB2").gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                
-                i.Find("HB1").gameObject.layer = 22;
-                i.Find("HB2").gameObject.layer = 22;
-            }
-            foreach (SpriteRenderer i in zemer.GetComponentsInChildren<SpriteRenderer>(true))
-            {
-                i.material = new Material(Shader.Find("Sprites/Default"));
-                
-                var bc = i.gameObject.GetComponent<BoxCollider2D>();
-                
-                if (bc == null) 
-                    continue;
-                
-                bc.isTrigger = true;
-                bc.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.AddComponent<Pogoable>().tar = zemer;
-                bc.gameObject.layer = 22;
-            }
-            foreach (PolygonCollider2D i in zemer.GetComponentsInChildren<PolygonCollider2D>(true))
-            { 
-                i.isTrigger = true;
-                i.gameObject.AddComponent<DamageHero>().damageDealt = 1;
-                i.gameObject.AddComponent<ParryTink>();
-                i.gameObject.AddComponent<Pogoable>().tar = zemer;
-                i.gameObject.layer = 22;
-                
-            }
-
-            zemer.GetComponent<SpriteRenderer>().material = FiveKnights.Materials["flash"];
-            var zc = zemer.AddComponent<ZemerController>();
-            Log("Done creating Zemer");
-            zemer.SetActive(false);
-            return zc;
         }
 
         private void OnDestroy()

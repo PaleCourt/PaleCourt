@@ -39,7 +39,7 @@ namespace FiveKnights.Tiso
                 BossLoader.LoadTisoBundle();
                 BossLoader.CreateTiso();
             }
-            if (curr.name is StatueScene)
+            if (curr.name is StatueScene && PlayerData.instance.GetBool(nameof(PlayerData.tisoDead)))
             {
                 SetStatue();
             }
