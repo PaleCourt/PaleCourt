@@ -16,7 +16,9 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private int Health => phase == 1 ? 650 : (phase == 2 ? 700 : 850);
+        private readonly int Phase1HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 650 : 600;
+        private readonly int Phase2HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 800 : 700;
+        private readonly int Phase3HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 950 : 800;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
@@ -112,7 +114,7 @@ namespace FiveKnights.Hegemol
             AddDamageToGO(_hitter, 2, true);
 
             AssignFields();
-            _hm.hp = Health;
+            _hm.hp = Phase1HP;
 
             StartCoroutine(IntroGreet());
         }
@@ -871,7 +873,7 @@ namespace FiveKnights.Hegemol
         private IEnumerator Stagger()
 		{
             Log("Staggered");
-            _hm.hp = Health;
+            _hm.hp = phase == 2 ? Phase2HP : Phase3HP;
 
             _anim.enabled = true;
             _anim.speed = 1f;
@@ -1003,7 +1005,7 @@ namespace FiveKnights.Hegemol
             else GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
 
-            GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
+            if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
             //FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
 
             _anim.enabled = true;
@@ -1056,8 +1058,6 @@ namespace FiveKnights.Hegemol
             _sr.enabled = false;
 
             yield return new WaitForSeconds(1f);
-
-            GetComponent<EnemyDeathEffects>().RecordJournalEntry();
 	    
             Destroy(gameObject);
         }

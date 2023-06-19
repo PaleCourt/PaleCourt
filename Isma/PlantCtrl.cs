@@ -13,7 +13,6 @@ namespace FiveKnights.Isma
         private Animator _anim;
         private HealthManager _hm;
         private BoxCollider2D _bc;
-        private MusicPlayer _ap;
         private ShadeOnlyPass _sp;
 
         private const int PLANTHP = 35;
@@ -25,20 +24,6 @@ namespace FiveKnights.Isma
             _sp = gameObject.AddComponent<ShadeOnlyPass>();
             _sp.disableCollider = _bc;
             _sp.colliderEnabled = false;
-
-            PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
-            GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
-            PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
-            GameObject actor = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
-
-            _ap = new MusicPlayer
-            {
-                Volume = 1f,
-                Player = actor,
-                MaxPitch = 1f,
-                MinPitch = 1f,
-                Spawn = gameObject
-            };
 
             gameObject.layer = (int)GlobalEnums.PhysLayers.HERO_DETECTOR;
             transform.position -= new Vector3(0f, 0.2f, 0f);
@@ -63,8 +48,7 @@ namespace FiveKnights.Isma
             _anim.enabled = false;
             yield return new WaitForSeconds(0.9f);
             _anim.enabled = true;
-            _ap.Clip = FiveKnights.Clips["IsmaAudVineGrow"];
-            _ap.DoPlayRandomClip();
+            this.PlayAudio(FiveKnights.Clips["IsmaAudVineGrow"]);
             yield return new WaitWhile(() => _anim.IsPlaying());
 			_bc.isTrigger = false;
 			_sp.colliderEnabled = true;

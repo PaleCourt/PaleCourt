@@ -29,14 +29,14 @@ namespace FiveKnights
 
         private bool CancelNailArts(On.HeroController.orig_CanNailCharge orig, HeroController self)
         {
-            if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .17f || !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f)
+           /* if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .17f || !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f)
             {
                 return false;
             }
             else
-            {
+            {*/
                 return orig(self);
-            }
+            //}
         }
 
         private void OnDisable()
@@ -55,8 +55,8 @@ namespace FiveKnights
 
             if (InputHandler.Instance.inputActions.attack.IsPressed)
             {
-                if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .13f ||
-                    !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .17f)
+                //if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .13f ||
+                  //  !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .17f)
                 {
                     if (ReflectionHelper.CallMethod<HeroController, bool>(HeroController.instance, "CanAttack"))
                     {

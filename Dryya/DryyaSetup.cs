@@ -17,7 +17,9 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private int _hp = 1500;
+        private readonly int MaxHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1500 : 1300;
+        private readonly int Phase2HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1000 : 900;
+        private readonly int Phase3HP = 250;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
@@ -102,6 +104,8 @@ namespace FiveKnights.Dryya
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
             _control.Fsm.GetFsmBool("GG Form").Value = false;
             _control.Fsm.GetFsmFloat("Ground").Value = GroundY;
+            _control.Fsm.GetFsmInt("Phase 2 HP").Value = Phase2HP;
+            _control.Fsm.GetFsmInt("Phase 3 HP").Value = Phase3HP;
 
             _control.InsertMethod("Activate", 0, () => _hm.enabled = true);
             
@@ -171,10 +175,10 @@ namespace FiveKnights.Dryya
         
         private void DeathHandler()
         {
-            if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
+            if(!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
 
-            GameManager.instance.AwardAchievement("PALE_COURT_DRYYA_ACH");
+            if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_DRYYA_ACH");
         }
 
         private GameObject _dreamImpactPrefab;
@@ -212,7 +216,7 @@ namespace FiveKnights.Dryya
 
             _hm = gameObject.AddComponent<HealthManager>();
             _hm.enabled = false;
-            _hm.hp = _hp;
+            _hm.hp = MaxHP;
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
 

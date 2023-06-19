@@ -53,12 +53,14 @@ namespace FiveKnights.Isma
         private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : CustomWP.boss == CustomWP.Boss.All ? 3 : 5;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ISMA_DREAM" : "ISMA_GG_DREAM";
 
-        private const int MAX_HP = 1700;
-        private const int WALL_HP = 1100;
-        private const int SPIKE_HP = 600;
-        private const int MAX_HP_DUO = 1800;
-        private const int WALL_HP_DUO = 1300;
-        private const int SPIKE_HP_DUO = 700;
+        private readonly int MaxHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1750 : 1500;
+        private readonly int WallHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1200 : 1100;
+        private readonly int SpikeHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 600 : 550;
+        private readonly int MaxHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1800 : 1600;
+        private readonly int WallHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1300 : 1150;
+        private readonly int SpikeHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 700 : 600;
+        private readonly int FrenzyHP = 250;
+
         private const float IDLE_TIME = 0f; // can be changed if we want to later ig???
         private const int GULKA_DAMAGE = 20;
 
@@ -121,7 +123,7 @@ namespace FiveKnights.Isma
         {
             Log("Begin Isma");
             yield return null;
-            _healthPool = onlyIsma ? MAX_HP : MAX_HP_DUO;
+            _healthPool = onlyIsma ? MaxHP : MaxHPDuo;
             offsetTime = 0f;
 
             if (CustomWP.boss == CustomWP.Boss.All)
@@ -193,7 +195,7 @@ namespace FiveKnights.Isma
 			On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter += MarkDungBalls;
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
-            _hm.hp = _hmDD.hp = (onlyIsma ? MAX_HP : MAX_HP_DUO) + 200;
+            _hm.hp = _hmDD.hp = (onlyIsma ? MaxHP : MaxHPDuo) + 200;
 
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
@@ -518,7 +520,7 @@ namespace FiveKnights.Isma
         {
             if(!startedOgrimRage && !startedIsmaRage)
             {
-                yield return new WaitWhile(() => _healthPool > (onlyIsma ? WALL_HP : WALL_HP_DUO));
+                yield return new WaitWhile(() => _healthPool > (onlyIsma ? WallHP : WallHPDuo));
                 if(onlyIsma)
                 {
                     yield return new WaitWhile(() => _attacking);
@@ -571,7 +573,7 @@ namespace FiveKnights.Isma
                 if(hPos.x > RightX - 6f) _target.transform.position = new Vector2(RightX - 6f, hPos.y);
                 else if(hPos.x < LeftX + 6f) _target.transform.position = new Vector2(LeftX + 6f, hPos.y);
 
-                yield return new WaitWhile(() => _healthPool > (onlyIsma ? SPIKE_HP : SPIKE_HP_DUO));
+                yield return new WaitWhile(() => _healthPool > (onlyIsma ? SpikeHP : SpikeHPDuo));
 
                 if(onlyIsma)
                 {
@@ -1587,7 +1589,7 @@ namespace FiveKnights.Isma
             Log("Started Ogrim rage");
 
             _attacking = true;
-            _healthPool = _hm.hp = _hmDD.hp = MAX_HP_DUO;
+            _healthPool = _hm.hp = _hmDD.hp = MaxHPDuo;
 
             // Isma dies and leaves
             Destroy(whip);
@@ -1653,7 +1655,7 @@ namespace FiveKnights.Isma
             _ddFsm.InsertMethod("Rage Roar", () =>
             {
                 _rbDD.velocity = Vector2.zero;
-                _healthPool = 180;
+                _healthPool = FrenzyHP;
                 preventDamage = false;
             }, 0);
             _ddFsm.InsertMethod("Set Rage", () => Destroy(_ddFsm.FsmVariables.FindFsmGameObject("Roar Emitter").Value), 0);
@@ -1743,7 +1745,7 @@ namespace FiveKnights.Isma
         {
             Log("Started Isma rage");
 
-            _healthPool = _hm.hp = _hmDD.hp = MAX_HP_DUO;
+            _healthPool = _hm.hp = _hmDD.hp = MaxHPDuo;
 
             // Prevent music from cutting out
             void TransitionToAudioSnapshotOnEnter(On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.orig_OnEnter orig, TransitionToAudioSnapshot self)
@@ -1811,7 +1813,7 @@ namespace FiveKnights.Isma
             StartCoroutine(TrackIsmaPos());
 
             // Wait for death
-            _healthPool = 180;
+            _healthPool = FrenzyHP;
             preventDamage = false;
             yield return new WaitWhile(() => _healthPool > 0);
 
@@ -1893,7 +1895,7 @@ namespace FiveKnights.Isma
 		private IEnumerator IsmaLoneDeath()
         {
             Log("Started Isma Lone Death");
-            _healthPool = 300;
+            _healthPool = FrenzyHP;
             preventDamage = false;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -1907,7 +1909,7 @@ namespace FiveKnights.Isma
             }
 
             // Destroy objects and award achivement
-            GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
+            if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
             //FiveKnights.journalEntries["Isma"].RecordJournalEntry();
 
             eliminateMinions = true;

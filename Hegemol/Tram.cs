@@ -79,7 +79,7 @@ public class Tram : MonoBehaviour
         }
     }
 
-    IEnumerator DelayedStart()
+    private IEnumerator DelayedStart()
     {
         yield return new WaitForSeconds(3f);
         _aud.loop = true;
@@ -87,10 +87,24 @@ public class Tram : MonoBehaviour
         yield return Accelerate(0f, MaxVel.x); 
     }
     
-    IEnumerator DelayedEnd()
+    private IEnumerator DelayedEnd()
     {
         _aud.loop = false;
         yield return Accelerate(MaxVel.x, 0f);
         yield return DelayedStart();
+    }
+
+    public void FadeAudio()
+	{
+        IEnumerator Fade()
+        {
+            float changeCounter = 0f;
+            while(changeCounter < 1f)
+            {
+                _aud.volume -= Time.deltaTime / 1.5f;
+                yield return null;
+            }
+        }
+        StartCoroutine(Fade());
     }
 }

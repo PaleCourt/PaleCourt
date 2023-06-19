@@ -190,8 +190,8 @@ namespace FiveKnights
                     journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
             }
         }
-        
-        public override string GetVersion() => "6.16.2023";
+
+        public override string GetVersion() => "6.18.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
