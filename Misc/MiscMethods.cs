@@ -2,12 +2,42 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using ModCommon;
+using UnityEngine;
+using UnityEngine.SceneManagement;
+using Random = System.Random;
 
 namespace FiveKnights.Misc;
 
 public static class MiscMethods
 {
     private static Random _rand = new();
+    
+    public static GameObject FindGameObject(this Scene scene, string name)
+    {
+        if (!scene.IsValid())
+            return null;
+        GameObject[] rootGameObjects = scene.GetRootGameObjects();
+        try
+        {
+            foreach (GameObject gameObject in rootGameObjects)
+            {
+                if (!(gameObject == null))
+                {
+                    GameObject objectInChildren = gameObject.FindGameObjectInChildren(name);
+                    if (objectInChildren != null)
+                        return objectInChildren;
+                }
+                else
+                    break;
+            }
+        }
+        catch (Exception ex)
+        {
+            Dev.Log("Exception: " + ex.Message);
+        }
+        return null;
+    }
 
     public static Func<IEnumerator> ChooseAttack(List<Func<IEnumerator>> attLst, Dictionary<Func<IEnumerator>, int> rep,
         Dictionary<Func<IEnumerator>, int> max)
