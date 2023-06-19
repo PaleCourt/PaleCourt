@@ -40,7 +40,6 @@ namespace FiveKnights.Dryya
         private tk2dSpriteAnimator _anim;
         private Rigidbody2D _rb;
         private BoxCollider2D _bc;
-        private GameObject _ap;
 
         private GameObject _diveShockwave;
         private GameObject _ogrim;
@@ -59,9 +58,8 @@ namespace FiveKnights.Dryya
 
         private void Awake()
         {
-            GameObject go = gameObject;
-            go.SetActive(true);
-            go.layer = 11;
+            gameObject.SetActive(true);
+            gameObject.layer = 11;
 
 			#region Colliders
 			_corpse = gameObject.FindGameObjectInChildren("Corpse Dryya");
@@ -98,6 +96,7 @@ namespace FiveKnights.Dryya
 
             AddComponents();
             GetComponents();
+            AssignFields();
 
             _control.SetState("Init");
             _control.Fsm.GetFsmGameObject("Hero").Value = HeroController.instance.gameObject;
@@ -126,12 +125,8 @@ namespace FiveKnights.Dryya
 
             _control.InsertMethod("Counter End", 0, () => _hm.IsInvincible = false);
             _control.InsertMethod("Counter Slash Antic", 0, () => _hm.IsInvincible = false);
-
             _control.InsertCoroutine("Countered", 0, () => GameManager.instance.FreezeMoment(0.04f, 0.35f, 0.04f, 0f));
-            
             _control.InsertMethod("Dive Land Heavy", 0, () => SpawnShockwaves(1.3f, 25f, 1));
-
-            //_control.InsertCoroutine("Dagger Throw", 0, () => SpawnDaggers());
 
             // Manually spawn beams
             ModifyBeams();
@@ -143,35 +138,14 @@ namespace FiveKnights.Dryya
             ModifyDaggers();
 
 			GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
-            AssignFields();
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
-            On.HutongGames.PlayMaker.Actions.SendRandomEventV3.OnEnter += SendRandomEventV3OnOnEnter;
-
-        }
-
-        private void SendRandomEventV3OnOnEnter(SendRandomEventV3.orig_OnEnter orig, HutongGames.PlayMaker.Actions.SendRandomEventV3 self)
-        {
-            // Makes it so the dagger throw only happens if close to player
-            if (self.State.Name is "Choice P1" or "Choice P2")
-            {
-                if (HeroController.instance.transform.position.x.Within(transform.position.x, 8f))
-                {
-                    if (Random.Range(0, 3) == 0)
-                    {
-                        self.Fsm.Event("DAGGER"); 
-                        self.Finish();
-                        return;
-                    }
-                }
-            }
-            orig(self);
         }
 
         private IEnumerator Start()
         {
-            var rb = gameObject.GetComponent<Rigidbody2D>();
+            Rigidbody2D rb = gameObject.GetComponent<Rigidbody2D>();
             yield return new WaitWhile(()=> rb.velocity.y == 0f);
             yield return new WaitWhile(()=> rb.velocity.y != 0f);
             MusicControl();
@@ -266,10 +240,9 @@ namespace FiveKnights.Dryya
             _anim = GetComponent<tk2dSpriteAnimator>();
             _rb = GetComponent<Rigidbody2D>();
             _bc = GetComponent<BoxCollider2D>();
-            _ap = transform.Find("Audio Player").gameObject;
 
             EnemyDeathEffects deathEffects = GetComponent<EnemyDeathEffects>();
-            deathEffects.corpseSpawnPoint = transform.position + Vector3.up * 2;
+            deathEffects.corpseSpawnPoint = transform.position + Vector3.up * 2f;
 
             GameObject corpse = Instantiate(_corpse);
             corpse.SetActive(false);
@@ -306,6 +279,22 @@ namespace FiveKnights.Dryya
                 fi.SetValue(_hm, fi.GetValue(ogrimHealth));
         }
 
+        private void Update()
+        {
+            // For daggers
+            Vector2 pos = transform.position;
+            if (pos.x > RightX && _rb.velocity.x > 0)
+            {
+                transform.position = new Vector3(RightX, pos.y);
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+            }
+            else if (pos.x < LeftX && _rb.velocity.x < 0)
+            {
+                transform.position = new Vector3(LeftX, pos.y);
+                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+            }
+        }
+
         private void SpawnShockwaves(float vertScale, float speed, int damage)
         {
             bool[] facingRightBools = {false, true};
@@ -324,40 +313,9 @@ namespace FiveKnights.Dryya
             }
         }
 
-        private IEnumerator SpawnDaggers()
-        {
-            float yDist = transform.position.y - HeroController.instance.transform.position.y;
-            float xDist = transform.position.x - HeroController.instance.transform.position.x;
-            float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
-            float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
-            float startAngle = 180f - angle;// - 2 * 8f;
-            GameObject dagger = FiveKnights.preloadedGO["Dagger"];
-            
-            for (int i = -6; i < 7; i++)
-            {
-                if (i == 1 || i == 2 || i == 3 || i == -1 || i == -2 || i == -3) continue;
-                PlayAudio("Dagger Throw");
-                GameObject dg = Instantiate(dagger, transform.position, Quaternion.Euler(0f, 0f, startAngle + 5 * i));
-                dg.SetActive(true);
-
-                yield return new WaitForSeconds(0.01f);
-            }
-        }
-
         private void ModifyDaggers()
         {
-            var state = _control.AddState("ModifiedDaggerThrow");
-            _control.ChangeTransition("Choice P1", "DAGGER", "ModifiedDaggerThrow");
-            _control.ChangeTransition("Choice P2", "DAGGER", "ModifiedDaggerThrow");
-
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).weights[3] = 0;
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).eventMax[3] = 0;
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P1", 0).missedMax[3] = 999;
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).weights[4] = 0;
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).eventMax[4] = 0;
-            _control.GetAction<HutongGames.PlayMaker.Actions.SendRandomEventV3>("Choice P2", 1).missedMax[4] = 999;
-
-            Vasi.FsmUtil.AddCoroutine(state, DaggerThrow);
+            Vasi.FsmUtil.AddCoroutine(_control.GetState("Dagger Throw"), DaggerThrow);
             
             IEnumerator DaggerThrow()
             {
@@ -369,10 +327,13 @@ namespace FiveKnights.Dryya
                 _rb.isKinematic = true;
                 transform.position -= new Vector3(0f, 1.7f, 0f);
                 _anim.Play("Throw");
+
                 yield return new WaitWhile(() => _anim.CurrentFrame < 3);
                 _anim.Pause();
-                yield return new WaitForSeconds(0.15f);
+
+                yield return new WaitForSeconds(0.2f);
                 _anim.Resume();
+
                 yield return new WaitWhile(() => _anim.CurrentFrame < 5);
                 _anim.ClipFps = 24;
                 PlayVoice(true);
@@ -381,15 +342,21 @@ namespace FiveKnights.Dryya
                     localScale.z);
                 transform.localScale = localScale;
                 _rb.velocity = new Vector2(signX * 55f, 25f);
+
                 yield return new WaitWhile(() => _anim.CurrentFrame < 8);
+                PlayAudio("Jump");
                 _rb.velocity = new Vector2(signX * 30f, _rb.velocity.y);
+
                 yield return new WaitWhile(() => _anim.CurrentFrame < 9);
                 _rb.gravityScale = 3f;
                 _rb.isKinematic = false;
+
                 yield return new WaitWhile(() => _anim.CurrentFrame < 10);
                 _anim.ClipFps = 12;
                 StartCoroutine(SpawnDaggers());
+
                 yield return new WaitWhile(() => transform.position.y > GroundY - 1.7f);
+                PlayAudio("Land");
                 transform.position = new Vector3(transform.position.x, GroundY);
                 _bc.isTrigger = false;
                 _rb.velocity = new Vector2(0f, 0f);
@@ -398,18 +365,25 @@ namespace FiveKnights.Dryya
             }
         }
 
-        private void Update()
+        private IEnumerator SpawnDaggers()
         {
-            Vector2 pos = transform.position;
-            if (pos.x > RightX && _rb.velocity.x > 0)
+            float yDist = transform.position.y - HeroController.instance.transform.position.y;
+            float xDist = transform.position.x - HeroController.instance.transform.position.x;
+            float hypotenuse = Mathf.Sqrt((yDist * yDist) + (xDist * xDist));
+            float angle = Mathf.Rad2Deg * Mathf.Asin(xDist / hypotenuse);
+            float startAngle = 180f - angle;// - 2 * 8f;
+            
+            for(int i = -2; i < 3; i++)
             {
-                transform.position = new Vector3(RightX, pos.y);
-                _rb.velocity = new Vector2(0f, _rb.velocity.y);
-            }
-            else if (pos.x < LeftX && _rb.velocity.x < 0)
-            {
-                transform.position = new Vector3(LeftX, pos.y);
-                _rb.velocity = new Vector2(0f, _rb.velocity.y);
+                PlayAudio("Dagger Throw");
+                GameObject dg = Instantiate(FiveKnights.preloadedGO["Dagger"], transform.position,
+                    Quaternion.Euler(0f, 0f, startAngle + 20f * i));
+                dg.AddComponent<Dagger>();
+                dg.AddComponent<Tink>();
+                dg.AddComponent<Pogoable>();
+                dg.SetActive(true);
+
+                yield return new WaitForSeconds(0.01f);
             }
         }
 
@@ -501,7 +475,7 @@ namespace FiveKnights.Dryya
             _control.InsertMethod("Backstep 1", () => PlayVoice(false), 0);
             _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(false), 0);
             _control.InsertMethod("Counter Collider 1", () => PlayVoice(false), 0);
-            _control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
+            //_control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
             _control.InsertMethod("Dive", () => PlayVoice(false), 0);
             _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice(true), 0);
             _control.InsertMethod("Stab", () => PlayVoice(false), 0);
@@ -514,7 +488,7 @@ namespace FiveKnights.Dryya
             // SFX
             _control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
 			_control.InsertMethod("Countered", () => PlayAudio("Counter"), 0);
-			_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
+			//_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
 			_control.InsertMethod("Stab", () => PlayAudio("Dash"), 0);
 			_control.InsertMethod("Ground Stab 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
 			_control.InsertMethod("Ground Air 11", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
@@ -526,11 +500,11 @@ namespace FiveKnights.Dryya
 			_control.InsertMethod("Dive Land Light", () => PlayAudio("Dive Land Soft"), 0);
 			_control.InsertMethod("Dive Jump", () => PlayAudio("Jump"), 0);
 			_control.InsertMethod("Ground Stab 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Dagger Jump", () => PlayAudio("Jump"), 0);
+			//_control.InsertMethod("Dagger Jump", () => PlayAudio("Jump"), 0);
 			_control.InsertMethod("Ground Air 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
 			_control.InsertMethod("Evade Recover", () => PlayAudio("Land"), 0);
 			_control.InsertMethod("Super 15", () => PlayAudio("Land", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Dagger End", () => PlayAudio("Land"), 0);
+			//_control.InsertMethod("Dagger End", () => PlayAudio("Land"), 0);
 			_control.InsertMethod("Counter Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
 			_control.InsertMethod("Beams Slash 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
 			_control.InsertMethod("Beams Slash 2", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
@@ -565,10 +539,9 @@ namespace FiveKnights.Dryya
 
         private void OnDestroy()
         {
-            _hm.OnDeath += DeathHandler;
+            _hm.OnDeath -= DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
-            On.HutongGames.PlayMaker.Actions.SendRandomEventV3.OnEnter -= SendRandomEventV3OnOnEnter;
         }
 
         private void Log(object o)

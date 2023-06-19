@@ -296,6 +296,13 @@ namespace FiveKnights.Zemer
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
                     Log("Done " + currAtt.Method.Name);
+                    
+                    if ((currAtt == ZemerSlam || currAtt == Dash) && rep[NailLaunch] < max[NailLaunch] &&
+                        UnityEngine.Random.Range(0, 2) == 0)
+                    {
+                        rep[NailLaunch]++;
+                        yield return NailLaunch();
+                    }
 
                     if (currAtt == Attack1Base)
                     {
@@ -409,7 +416,7 @@ namespace FiveKnights.Zemer
                         yield return Dash();
                     }
                     else
-                    {
+                    {   
                         yield return Dodge();
                     }
                 }
@@ -444,13 +451,13 @@ namespace FiveKnights.Zemer
                 float velmag = 80f; //hero.y < GroundY + 2f ? 70f : 70f;
                 parRB.velocity = new Vector2(Mathf.Cos(rot) * velmag, Mathf.Sin(rot) * velmag);
                 nailPar.AddComponent<ExtraNailBndCheck>();
+
                 yield return new WaitForSeconds(0.01f);
 
                 var cc = nailPar.transform.Find("ZNailC").gameObject.AddComponent<CollisionCheck>();
                 cc.Freeze = true;
                 cc.OnCollide += () =>
                 {
-                    Log($"Collision debug 1: {nailPar.GetComponent<Rigidbody2D>().velocity}");
                     PlayAudioClip("AudLand");
                     GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
                     nailPar.GetComponent<SpriteRenderer>().enabled = false;
@@ -1386,6 +1393,7 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Dash()
         {
+            // This isn't really a dash, it's the one where she makes the horizontal beam
             IEnumerator Dash()
             {
                 float dir = FaceHero();
@@ -1472,10 +1480,7 @@ namespace FiveKnights.Zemer
                 _anim.speed = 2f;
                 _rb.velocity = new Vector2(-dir * DashXVel, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
-                _anim.enabled = false;
                 _anim.speed = 1f;
-                yield return new WaitForSeconds(0.2f);
-                _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -1762,10 +1767,11 @@ namespace FiveKnights.Zemer
 
         IEnumerator FlowerBloomer()
         {
-            yield return GGBossManager.Instance.PlayFlowers(2);
+            GGBossManager.Instance.PlayFlowers(2);
+            yield return new WaitForSeconds(0.2f);
+            
             GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
-            //List<Transform> children = GGBossManager.Instance.flowersAnim.SelectMany(i => i.transform.Cast<Transform>()).ToList();
             foreach (var glow in GGBossManager.Instance.flowersGlow)
             {
                 glow.gameObject.SetActive(true); 
@@ -2648,254 +2654,6 @@ namespace FiveKnights.Zemer
                     }
                 }
             }
-        }
-
-
-        private bool offsetAngle;
-        private bool scaleOffset;
-        
-        private void SpawnSlashes(int type)
-        {
-            Log("Laser Pattern " + type);
-
-            IEnumerator Pattern1()
-            {
-                Transform slash = transform.Find("NewSlash3");
-                int sc = scaleOffset ? 1 : -1;
-                slash.localScale = new Vector3(sc*Mathf.Abs(slash.localScale.x),slash.localScale.y,slash.localScale.z);
-                slash.localPosition = new Vector3(sc < 0 ? 18.2f : -16f, 3.5f,
-                    slash.localPosition.z);
-                scaleOffset = !scaleOffset;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
-                slash.Find("1").gameObject.SetActive(true);
-                slash.Find("2").gameObject.SetActive(true);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                slash.Find("4").gameObject.SetActive(true);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
-                slash.Find("3").gameObject.SetActive(true);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
-                slash.Find("5").gameObject.SetActive(true);
-                slash.Find("6").gameObject.SetActive(true);
-                Animator anim = slash.Find("6").GetComponent<Animator>();
-                yield return anim.PlayToEnd();
-                foreach (Transform i in slash)
-                {
-                    i.gameObject.SetActive(false);
-                }
-            }
-
-            IEnumerator Pattern4()
-            {
-                Transform slash = transform.Find("NewSlash3");
-                slash.gameObject.SetActive(true);
-                int sc = scaleOffset ? 1 : -1;
-                slash.localScale = new Vector3(sc * Mathf.Abs(slash.localScale.x),slash.localScale.y,slash.localScale.z);
-                slash.localPosition = new Vector3(sc < 0 ? 18.2f : -16f, 3.5f,
-                    slash.localPosition.z);
-                scaleOffset = !scaleOffset;
-                
-                yield return _anim.WaitToFrame(3);
-                
-                foreach (Transform i in slash)
-                {
-                    StartCoroutine(Test(i.GetComponent<Animator>()));
-                }
-	
-                Log($"Wait to frame 6, is curr at frame {_anim.GetCurrentFrame()}");
-                yield return _anim.WaitToFrame(10);
-                Log("Wait to frame 7");
-
-                foreach (Transform i in slash)
-                {
-                    var anim = i.GetComponent<Animator>();
-                    anim.speed = 1.2f;
-                    anim.enabled = true;
-                }
-                Log("Wait to finished");
-                foreach (Transform i in slash)
-                {
-                    var anim = i.GetComponent<Animator>();
-                    yield return anim.PlayToEnd();
-                }
-                Log("Finished");
-                
-                foreach (Transform i in slash)
-                {
-                   i.gameObject.SetActive(false);
-                }
-	
-                slash.gameObject.SetActive(false);
-            }
-
-            IEnumerator Test(Animator anim)
-            {
-                anim.gameObject.SetActive(true);
-                anim.PlayAt("NewSlash3", 0);
-                anim.speed = 1f;
-                yield return null;
-                anim.enabled = true;
-                yield return anim.WaitToFrame(3);
-                anim.enabled = false;
-            }
-
-            
-            IEnumerator Pattern3()
-            {
-                string typ = "SlashBeam2";
-                GameObject origSlashA = FiveKnights.preloadedGO[typ].transform.Find("SlashA").gameObject;
-                GameObject origSlashB = FiveKnights.preloadedGO[typ].transform.Find("SlashB").gameObject;
-                IList<GameObject> SlashA = new List<GameObject>();
-                IList<GameObject> SlashB = new List<GameObject>();
-                int origA = (int) origSlashA.transform.GetRotation2D();
-                int origB = (int) origSlashB.transform.GetRotation2D();
-                for (int i = origA, j = origB; i < 270 + origA; i += 35, j -= 35)
-                {
-                    GameObject slashA = Instantiate(origSlashA);
-                    GameObject slashB = Instantiate(origSlashB);
-                    slashA.SetActive(false);
-                    slashB.SetActive(false);
-                    slashA.transform.SetRotation2D(i + (offsetAngle ? 20f : 0f));
-                    slashB.transform.SetRotation2D(j - (offsetAngle ? 0f : 20f));
-                    slashA.transform.position = new Vector3(transform.position.x, 7.4f);
-                    slashB.transform.position = new Vector3(transform.position.x, 7.4f);
-                    slashA.transform.localScale = origSlashA.transform.lossyScale;
-                    slashB.transform.localScale = origSlashB.transform.lossyScale;
-                    slashA.transform.localScale *= 0.68f;
-                    slashB.transform.localScale *= 0.68f;
-                    slashA.GetComponent<Animator>().speed = 1.5f;
-                    slashB.GetComponent<Animator>().speed = 1.5f;
-                    SlashA.Add(slashA);
-                    SlashB.Add(slashB);
-                }
-
-                offsetAngle = !offsetAngle;
-
-                SlashA = SlashA.OrderBy(a => Guid.NewGuid()).ToList();
-                SlashB = SlashB.OrderBy(a => Guid.NewGuid()).ToList();
-                for (int i = 0; i < SlashA.Count; i++)
-                {
-                    SlashA[i].SetActive(true);
-                    SlashB[i].SetActive(true);
-                    yield return new WaitForSeconds(0.05f);
-                }
-
-                Animator anim2 = SlashA[SlashA.Count - 1].GetComponent<Animator>();
-                yield return new WaitWhile(() => anim2.IsPlaying());
-
-                for (int i = 0; i < SlashA.Count; i++)
-                {
-                    Destroy(SlashA[i]);
-                    Destroy(SlashB[i]);
-                }
-            }
-
-            /*IEnumerator Pattern1()
-            {
-                List<float> lstRight = new List<float>();
-                List<float> lstLeft = new List<float>();
-                for (float i = LeftX + 3; i < RightX + 3; i += UnityEngine.Random.Range(7.5f, 8.2f)) lstRight.Add(i);
-                for (float i = RightX - 3; i > LeftX - 3; i -= UnityEngine.Random.Range(7.5f, 8.2f)) lstLeft.Add(i);
-                while (lstRight.Count != 0 || lstLeft.Count != 0)
-                {
-                    if (lstLeft.Count > 0)
-                    {
-                        int rot = -24;
-                        int ind = _rand.Next(0, lstLeft.Count);
-                        StartCoroutine(SingleSlashControl(lstLeft[ind], -1, rot));
-                        lstLeft.RemoveAt(ind);
-                    }
-
-                    if (lstRight.Count > 0)
-                    {
-                        int rot = 24;
-                        int ind = _rand.Next(0, lstRight.Count);
-                        StartCoroutine(SingleSlashControl(lstRight[ind], 1, rot));
-                        lstRight.RemoveAt(ind);
-                    }
-
-                    yield return new WaitForSeconds(0.05f);
-                }
-            }
-
-            IEnumerator Pattern2()
-            {
-                List<float> lstRight = new List<float>();
-                List<float> lstLeft = new List<float>();
-                for (float i = LeftX + 3; i < RightX + 3; i += UnityEngine.Random.Range(7.5f, 8.2f)) lstRight.Add(i);
-                for (float i = RightX - 3; i > LeftX - 3; i -= UnityEngine.Random.Range(7.5f, 8.2f)) lstLeft.Add(i);
-                while (lstRight.Count != 0 || lstLeft.Count != 0)
-                {
-                    if (lstLeft.Count > 0)
-                    {
-                        int rot = 110;
-                        int ind = _rand.Next(0, lstLeft.Count);
-                        StartCoroutine(SingleSlashControl(lstLeft[ind], 1, rot));
-                        lstLeft.RemoveAt(ind);
-                    }
-
-                    if (lstRight.Count > 0)
-                    {
-                        int rot = 260;
-                        int ind = _rand.Next(0, lstRight.Count);
-                        StartCoroutine(SingleSlashControl(lstRight[ind], -1, rot));
-                        lstRight.RemoveAt(ind);
-                    }
-
-                    yield return new WaitForSeconds(0.05f);
-                }
-            }*/
-
-            IEnumerator Randomized()
-            {
-                int zemX = (int) transform.position.x;
-                List<int> lstRight = new List<int>();
-                List<int> lstLeft = new List<int>();
-                for (int i = zemX + 5; i < RightX + 3; i += _rand.Next(3, 6)) lstRight.Add(i);
-                for (int i = zemX - 5; i > LeftX - 3; i -= _rand.Next(3, 6)) lstLeft.Add(i);
-                while (lstRight.Count != 0 || lstLeft.Count != 0)
-                {
-                    int scale = _rand.Next(0, 2) == 0 ? -1 : 1;
-                    int rot = _rand.Next(-10, 10);
-                    if (lstLeft.Count > 0)
-                    {
-                        int ind = _rand.Next(0, lstLeft.Count);
-                        StartCoroutine(SingleSlashControl(lstLeft[ind], scale, rot));
-                        lstLeft.RemoveAt(ind);
-                    }
-
-                    if (lstRight.Count > 0)
-                    {
-                        int ind = _rand.Next(0, lstRight.Count);
-                        StartCoroutine(SingleSlashControl(lstRight[ind], scale, rot));
-                        lstRight.RemoveAt(ind);
-                    }
-
-                    yield return new WaitForSeconds(0.05f);
-                }
-            }
-
-            IEnumerator SingleSlashControl(float posX, float scaleSig, float angle)
-            {
-                yield return new WaitForSeconds(_rand.Next(12, 25) / 100f);
-                GameObject slash = Instantiate(FiveKnights.preloadedGO["SlashBeam"]);
-                Animator anim = slash.GetComponent<Animator>();
-                //slash.transform.localScale *= 1.43f;
-                slash.transform.position = new Vector3(posX, GroundY + 4.5f); //GroundY - 1.3f
-                slash.transform.SetRotation2D(angle);
-                slash.SetActive(true);
-                anim.enabled = true;
-                anim.speed /= 1.5f;
-                Vector3 vec = slash.transform.localScale;
-                slash.transform.localScale = new Vector3(scaleSig * vec.x, vec.y, vec.z);
-            }
-
-            IEnumerator run = type switch
-            {
-                1 => Pattern1(),
-                3 => Pattern3(),
-                _ => Randomized()
-            };
-            StartCoroutine(Pattern4());
         }
 
         private bool IsFacingPlayer()

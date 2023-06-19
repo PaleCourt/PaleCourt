@@ -25,6 +25,7 @@ namespace FiveKnights.Tiso
 
         private void Awake()
         {
+            AllSpikes.RemoveAll(spike => spike == null);
             if (AllSpikes.Count > MaxSpikes)
             {
                 for (int i = 0; i < 5; i++)
@@ -67,8 +68,7 @@ namespace FiveKnights.Tiso
 
             if (other.CompareTag("Hero Spell"))
             {
-                AllSpikes.Remove(gameObject);
-                Destroy(this);
+                Destroy(gameObject);
                 return;
             }
             
@@ -76,6 +76,7 @@ namespace FiveKnights.Tiso
             {
                 if (ShootBasedOnHit(other))
                 {
+                    StartCoroutine(DestroyAfterTime());
                     isDeflected = true;
                     isDead2 = true;
                 }
@@ -116,6 +117,13 @@ namespace FiveKnights.Tiso
             }
 
             return true;
+        }
+
+        private IEnumerator DestroyAfterTime()
+        {
+            yield return new WaitForSeconds(10f);
+            if (gameObject == null) yield break;
+            Destroy(gameObject);
         }
     }
 }

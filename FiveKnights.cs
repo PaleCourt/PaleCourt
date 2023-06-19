@@ -33,7 +33,6 @@ namespace FiveKnights
         public static bool isDebug = true;
         public static Dictionary<string, AudioClip> Clips { get; } = new ();
         public static Dictionary<string, AnimationClip> AnimClips { get; } = new ();
-        public static Dictionary<string, AudioClip> IsmaClips { get; } = new ();
         public static Dictionary<string, Material> Materials { get; } = new ();
         private LanguageCtrl langStrings { get; set; }
         public static Dictionary<string, GameObject> preloadedGO = new ();
@@ -191,8 +190,8 @@ namespace FiveKnights
                     journalHelper.nameStrings.shortname = langStrings.Get(prefix + "_NAME", "Journal");
             }
         }
-
-        public override string GetVersion() => "6.15.2023.2";
+        
+        public override string GetVersion() => "6.16.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -799,10 +798,11 @@ namespace FiveKnights
                     Log("Adding explosion");
                     preloadedGO["Explosion"] = i.gameObject;
                 }
-                
+
                 if (!(i.name == "Slash" && i.transform.parent != null && i.transform.parent.gameObject.name == "Hollow Shade"))
                     continue;
-                
+
+                Log("Adding parry tink");
                 preloadedGO["parryFX"] = i.LocateMyFSM("nail_clash_tink").GetAction<SpawnObjectFromGlobalPool>("No Box Down", 1).gameObject.Value;
 
                 AudioClip aud = i

@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using UnityEngine;
@@ -17,8 +19,9 @@ namespace FiveKnights.Zemer
         private bool _run;
         private const float GroundY = 107.32f;
         private const float StopAtX = 265.9f;
-        
+
         public bool helpZemer;
+        public GameObject zemer;
         private bool leaveAndRet;
 
         private void Awake()
@@ -126,8 +129,74 @@ namespace FiveKnights.Zemer
             
             yield return new WaitForSeconds(1f);
             yield return Arrive(new Vector3(259.1f, 108.4f, 7f));
+
+            StartCoroutine(HeadTurn());
+        }
+
+        IEnumerator HeadTurn()
+        {
+            Dictionary<int, (int, int)> ranges = new Dictionary<int, (int, int)>
+            {
+                [-2] = (0, 252),
+                [-1] = (252, 258),
+                [0] = (258, 262),
+                [1] = (262, 500)
+            };
             
-            Destroy(this);
+            // What from to go to if going from left to right
+            Dictionary<int, int> typeToFrameFromLeft = new Dictionary<int, int>
+            {
+                [-2] = 0,
+                [-1] = 1,
+                [0] = 3,
+                [1] = 5
+            };
+            
+            // What frame to go to if going from right to left
+            Dictionary<int, int> typeToFrameFromRight = new Dictionary<int, int>
+            {
+                [-2] = 5,
+                [-1] = 4,
+                [0] = 2,
+                [1] = 0
+            };
+
+            int oldType = 0;
+            
+            while (zemer != null)
+            {
+                float xPos = zemer.transform.position.x;
+
+                // If we are at the correct range, then do nothing
+                if (xPos > ranges[oldType].Item1 && xPos < ranges[oldType].Item2)
+                {
+                    yield return null;
+                    continue;
+                }
+
+                int newType = FindCorrectRange(xPos);
+                _anim.enabled = true;
+                
+                if (newType > oldType)
+                {
+                    yield return _anim.PlayToFrameAt("LookRight", typeToFrameFromLeft[oldType],
+                        typeToFrameFromLeft[newType]);
+                }
+                else
+                {
+                    yield return _anim.PlayToFrameAt("LookLeft", typeToFrameFromRight[oldType],
+                        typeToFrameFromRight[newType]);
+                }
+
+                _anim.enabled = false;
+                oldType = newType;
+            }
+
+            int FindCorrectRange(float xPos)
+            {
+                return (from kp in ranges where xPos > kp.Value.Item1 && xPos < kp.Value.Item2 select kp.Key)
+                    .FirstOrDefault();
+            }
         }
 
         private IEnumerator Leave(bool unfreezeH)

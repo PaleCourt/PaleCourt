@@ -30,7 +30,7 @@ namespace FiveKnights.Dryya
 
         private void OnEnable()
         {
-            StartCoroutine(Beam());
+            GameManager.instance.StartCoroutine(Beam());
         }
 
         private IEnumerator Beam()

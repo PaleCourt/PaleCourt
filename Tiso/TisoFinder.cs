@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using HutongGames.PlayMaker.Actions;
+using ModCommon;
 using SFCore.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -14,7 +15,6 @@ namespace FiveKnights.Tiso
     {
         private const string TisoScene = "GG_Brooding_Mawlek_V";
         private const string StatueScene = "GG_Workshop";
-        public static Dictionary<string, AudioClip> TisoAud;
         
         private void Awake()
         {
@@ -26,7 +26,6 @@ namespace FiveKnights.Tiso
         {
             if (self.name == "GG_Statue_Mawlek" && doanim)
             {
-                Log($"Doing swap for {self.name}");
                 FiveKnights.Instance.SaveSettings.AltStatueMawlek = !FiveKnights.Instance.SaveSettings.AltStatueMawlek;
             }
             yield return orig(self, doanim);
@@ -37,16 +36,19 @@ namespace FiveKnights.Tiso
             if (curr.name is TisoScene && FiveKnights.Instance.SaveSettings.AltStatueMawlek)
             {
                 ClearOldContent(curr);
-                GameObject tiso = LoadTiso();
-                tiso.SetActive(true);
-                tiso.transform.position = HeroController.instance.transform.position;
-                AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
-                FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
-                tiso.AddComponent<TisoController>();
+                BossLoader.LoadTisoBundle();
+                BossLoader.CreateTiso();
             }
+            
             if (curr.name is StatueScene)
             {
                 SetStatue();
+            }
+
+            if (prev.name == StatueScene)
+            {
+                prev.FindGameObject("GG_Statue_Mawlek").GetComponent<BossStatue>()
+                    .SetDreamVersion(false, false, false);
             }
         }
 
@@ -54,39 +56,6 @@ namespace FiveKnights.Tiso
         {
             var battle = curr.GetRootGameObjects().First(go => go.name == "Battle Scene");
             battle.LocateMyFSM("Activate Boss").enabled = false;
-        }
-        
-        private GameObject LoadTiso()
-        {
-            Log("Loading Tiso Bundle");
-            TisoAud = new Dictionary<string, AudioClip>();
-
-            AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.TisoBund];
-            GameObject tiso = ab.LoadAsset<GameObject>("Tiso");
-
-            AssetBundle snd = ABManager.AssetBundles[ABManager.Bundle.Sound];
-
-            string[] audNames =
-            {
-                "AudSpikeHitWall", "AudTisoJump", "AudTisoLand", "AudTisoShoot", "AudTisoSpin", "AudTisoThrowShield",
-                "AudTisoWalk", "AudTisoDeath", "AudTisoRoar", "AudTisoYell", "AudLand"
-            };
-            
-            FiveKnights.Clips["TisoMusicStart"] = snd.LoadAsset<AudioClip>("TisoMusicStart");
-            FiveKnights.Clips["TisoMusicLoop"] = snd.LoadAsset<AudioClip>("TisoMusicLoop");
-
-            foreach (var audName in audNames)
-            {
-                TisoAud[audName] = snd.LoadAsset<AudioClip>(audName);
-            }
-            
-            for (int i = 1; i < 7; i++)
-            {
-                TisoAud[$"AudTiso{i}"] = snd.LoadAsset<AudioClip>($"AudTiso{i}");
-            }
-
-            Log("Finished Loading Tiso Bundle");
-			return Instantiate(tiso);
         }
 
         private void SetStatue()
@@ -103,6 +72,7 @@ namespace FiveKnights.Tiso
             }
             
             BossStatue bs = statue.GetComponent<BossStatue>();
+            
             string sceneN = TisoScene;
             string stateN = "statueStateMawlek2";
             string key = "TISO_NAME";
@@ -114,7 +84,7 @@ namespace FiveKnights.Tiso
             bs.dreamStatueStatePD = stateN;
 
             /* 56's code { */
-            Destroy(statue.FindGameObjectInChildren("StatueAlt"));
+            Destroy(USceneUtil.FindGameObjectInChildren(statue, "StatueAlt"));
             GameObject displayStatue = bs.statueDisplay;
             GameObject alt = Instantiate
             (
@@ -139,12 +109,12 @@ namespace FiveKnights.Tiso
             details.descriptionSheet = "Speech";
             bs.dreamBossDetails = details;
 
-            GameObject altLever = statue.FindGameObjectInChildren("alt_lever");
+            GameObject altLever = USceneUtil.FindGameObjectInChildren(statue, "alt_lever");
             altLever.SetActive(true);
-            GameObject switchBracket = altLever.FindGameObjectInChildren("GG_statue_switch_bracket");
+            GameObject switchBracket = USceneUtil.FindGameObjectInChildren(altLever, "GG_statue_switch_bracket");
             switchBracket.SetActive(true);
 
-            GameObject switchLever = altLever.FindGameObjectInChildren("GG_statue_switch_lever");
+            GameObject switchLever = USceneUtil.FindGameObjectInChildren(altLever, "GG_statue_switch_lever");
             switchLever.SetActive(true);
 
             BossStatueLever toggle = statue.GetComponentInChildren<BossStatueLever>(); 
@@ -155,21 +125,15 @@ namespace FiveKnights.Tiso
             bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionMawlek2;
 
             StartCoroutine(Test());
-
+            
             IEnumerator Test()
             {
                 yield return new WaitForSeconds(1f);
-                Log($"Alt stat is at {FiveKnights.Instance.SaveSettings.AltStatueMawlek}");
                 bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
                 bs.SetDreamVersion(!FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
                 bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
             }
 
-
-            /*if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
-            {
-                
-            }*/
             Log("Finish tiso statue.");
         }
         
@@ -179,7 +143,6 @@ namespace FiveKnights.Tiso
             Log("Destroyed TisoFinder");
             USceneManager.activeSceneChanged -= OnSceneChange;
             On.BossStatue.SwapStatues -= BossStatueOnSwapStatues;
-
         }
         
         private static void Log(object o)

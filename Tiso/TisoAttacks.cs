@@ -18,6 +18,7 @@ namespace FiveKnights.Tiso
         private GameObject _shield;
         private TisoController _tc;
         private EnemyDeathEffectsUninfected _deathEff;
+        private List<GameObject> _destroyOnDeath;
 
         private const float RunSpeed = 12f;
         private const float DodgeSpeed = 20f;
@@ -35,6 +36,7 @@ namespace FiveKnights.Tiso
             _target = HeroController.instance.gameObject;
             _deathEff = deathEff;
             _tc = transform.GetComponent<TisoController>();
+            _destroyOnDeath = new List<GameObject>();
 
             foreach (Transform shield in this.transform.Find("ShieldHB"))
             {
@@ -201,7 +203,7 @@ namespace FiveKnights.Tiso
                 yield return _anim.PlayToEnd();
             }
             
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             yield return Jump();
             yield return Glide();
             yield return Slam();
@@ -215,7 +217,7 @@ namespace FiveKnights.Tiso
             Transform arm = transform.Find("SwapWeapon").Find("s3").Find("s8");
             arm.position = new Vector3(arm.position.x, arm.position.y, 0.5f);
             GameObject spikePar = arm.Find("Spikes").gameObject; 
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             
             // Have to do this once here so the canon doesn't appear at the wrong angle at the start
             Vector2 tarPos = _target.transform.position;
@@ -290,11 +292,12 @@ namespace FiveKnights.Tiso
         public IEnumerator ThrowShield()
         {
             float dir = FaceHero();
-            _tc.PlayAudio(TisoFinder.TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
+            _tc.PlayAudio(TisoAud[TisoRandAudio.PickRandomTisoAud(2, 6)]);
             PlayAudio(_tc, Clip.ThrowShield);
             yield return _anim.PlayToEnd("TisoThrow");
 
             GameObject[] shields = {Object.Instantiate(_shield), Object.Instantiate(_shield)};
+            _destroyOnDeath.AddRange(shields);
             int ind = 0;
             foreach (float i in new [] {0.4f, -0.4f})
             {
@@ -318,6 +321,7 @@ namespace FiveKnights.Tiso
             _anim.enabled = true;
             _anim.speed = 3.5f;
             yield return _anim.PlayToFrame("TisoThrowCatch", 2);
+            foreach (GameObject shield in shields) _destroyOnDeath.Remove(shield);
             foreach (GameObject shield in shields) Object.Destroy(shield);
             _anim.speed = 1f;
             yield return _anim.PlayToEnd();
@@ -365,13 +369,24 @@ namespace FiveKnights.Tiso
             float dir = FaceHero();
             // If near the edges and backing into the edge, then jump off edge instead
             // Don't do this if already did JumpGlideSlam once
-            if (_tc.Rep[Dodge] == 0 && ((transform.position.x < TisoController.LeftX + 4f && dir < 0) ||
-                (transform.position.x > TisoController.RightX - 4f && dir > 0)))
+            if ((transform.position.x < TisoController.LeftX + 4f && dir < 0) ||
+                 (transform.position.x > TisoController.RightX - 4f && dir > 0))
             {
-                _tc.Rep[Dodge]++;
-                yield return JumpGlideSlam();
+                Modding.Logger.Log($"Choosing to do jump log spam {_tc.Rep[JumpGlideSlam]}");
+                if (_tc.Rep[JumpGlideSlam] == 0)
+                {
+                    Modding.Logger.Log($"Can repeat jumpglideslam {_tc.Rep[JumpGlideSlam]}");
+                    _tc.Rep[JumpGlideSlam]++;
+                    yield return JumpGlideSlam();
+                }
+                else
+                {
+                    _tc.Rep[JumpGlideSlam] = 0;
+                    yield return BlockUp();
+                }
                 yield break;
             }
+            
             _rb.velocity = new Vector2(DodgeSpeed * dir, 0f);
             yield return _anim.PlayToEnd("TisoDodge");
             _rb.velocity = Vector2.zero;
@@ -407,7 +422,8 @@ namespace FiveKnights.Tiso
         public IEnumerator Death()
         {
             PlayerData.instance.isInvincible = true;
-            
+            // Destroy no longer used objects like any shields that were spawned
+            foreach (var go in _destroyOnDeath) Object.Destroy(go);
             GameObject mawlek = GameObject.Find("Mawlek Body");
             if (mawlek == null)
             {
@@ -438,7 +454,7 @@ namespace FiveKnights.Tiso
             _anim.Play("TisoRoar");
             PlayAudio(_tc, Clip.Roar);
 
-            yield return new WaitForSeconds(TisoFinder.TisoAud["AudTisoRoar"].length);
+            yield return new WaitForSeconds(TisoAud["AudTisoRoar"].length);
             
             mawlek.SetActive(true);
             mawlek.LocateMyFSM("Mawlek Control").FsmVariables.FindFsmBool("Skip Title").Value = true;
@@ -499,6 +515,7 @@ namespace FiveKnights.Tiso
                         _anim.enabled = true;
                         _anim.Play("TisoDeath");
                         PlayAudio(_tc, Clip.Death);
+                        _tc.PlayMusic(null);
                         transform.position -= new Vector3(0f, 0.5f, 0f);
                         transform.localScale.Scale(new Vector3(-1f, 1f, 1f));
                         yield break;

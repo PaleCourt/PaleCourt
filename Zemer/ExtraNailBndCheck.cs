@@ -14,7 +14,7 @@ public class ExtraNailBndCheck : MonoBehaviour
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 18.5f : 39f;
     
     private readonly float _nailMaxGroundStop = (OWArenaFinder.IsInOverWorld) ? 106f :
-        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 27.3f;
+        (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 3f : 27.3f;
     
     private readonly float _nailMaxLeftStop = (OWArenaFinder.IsInOverWorld) ? 241.9f :
         (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 62f : 13f;
@@ -48,6 +48,7 @@ public class ExtraNailBndCheck : MonoBehaviour
         }
         else if (nailPos.y < _nailMaxGroundStop && _rb.velocity.y < 0)
         {
+            Modding.Logger.Log("Stopped at gnd zem");
             _rb.velocity = Vector2.zero;
             transform.position = new Vector3(nailPos.x, _nailMaxGroundStop);
         }

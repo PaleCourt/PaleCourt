@@ -96,6 +96,7 @@ namespace FiveKnights.Tiso
                 [_attacks.ThrowShield] = 1,
                 [_attacks.JumpGlideSlam] = 1,
                 [_attacks.SpawnBombs] = 1,
+                [_attacks.Dodge] = 1
             };
 
             AssignFields();
@@ -139,7 +140,7 @@ namespace FiveKnights.Tiso
             _rb.gravityScale = 1.5f;
             _rb.isKinematic = false;
             _anim.Play("TisoSpin");
-            this.PlayAudio(TisoFinder.TisoAud["AudTiso1"]);
+            this.PlayAudio(TisoAud["AudTiso1"]);
             PlayAudio(this, Clip.Spin);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
@@ -159,7 +160,7 @@ namespace FiveKnights.Tiso
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
             _hit = false;
-            yield return new WaitSecWhile(() => !_hit, TisoFinder.TisoAud["AudTisoRoar"].length);
+            yield return new WaitSecWhile(() => !_hit, TisoAud["AudTisoRoar"].length);
             Destroy(aud.gameObject);
         }
 
@@ -170,7 +171,7 @@ namespace FiveKnights.Tiso
             PlayMusic(FiveKnights.Clips["TisoMusicLoop"]);
         }
         
-        private void PlayMusic(AudioClip clip)
+        public void PlayMusic(AudioClip clip)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();

@@ -58,6 +58,7 @@ namespace FiveKnights.Zemer
         private const float ThrowDelay = 0.2f;
         private const float NailSize = 1.15f;
         private const float NailSpeed = 80f;
+        private const float DashSpeed = 60f;
         private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
         private readonly int DreamConvoAmount = 3;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM"; 
@@ -340,9 +341,13 @@ namespace FiveKnights.Zemer
                 yield return currAtt();
                 Log("Done " + currAtt.Method.Name);
 
-                yield return null;
-                
-                if (currAtt == Attack1Base)
+                if (isPhase2 && (currAtt == ZemerSlam || currAtt == Dash) && rep[NailLaunch] < max[NailLaunch] &&
+                    Random.Range(0, 2) == 0)
+                {
+                    rep[NailLaunch]++;
+                    yield return NailLaunch();
+                }
+                else if (currAtt == Attack1Base)
                 {
                     List<Func<IEnumerator>> lst2 = new List<Func<IEnumerator>>{ FancyAttack, Attack1Complete, null };
                     if (isPhase2) lst2 = new List<Func<IEnumerator>> { FancyAttack, FancyAttack, Attack1Complete };
@@ -385,9 +390,6 @@ namespace FiveKnights.Zemer
                         }
                     }
                 }
-                
-                yield return null;
-                
                 Log("[Done Doing Attacks]");
 
                 _anim.Play("ZIdle");
@@ -798,11 +800,11 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
                 PlayAudioClip("AudDash");
                 _anim.speed = 2f;
-                _rb.velocity = new Vector2(-dir * 60f, 0f);
+                _rb.velocity = new Vector2(-dir * DashSpeed, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
                 _anim.enabled = false;
                 _anim.speed = 1f;
-                yield return new WaitForSeconds(0.2f);
+                yield return new WaitForSeconds(0.1f);
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
                 _rb.velocity = Vector2.zero;

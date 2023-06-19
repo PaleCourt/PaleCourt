@@ -27,7 +27,7 @@ namespace FiveKnights
 
         public static int defeats;
 
-        private FightController fightCtrl;
+        private GGBossManager _ggBossManager;
 
         private static bool hasSummonElevator;
 
@@ -386,8 +386,6 @@ namespace FiveKnights
             if (arg1.name == "White_Palace_09")
             {
                 CustomWP.isInGodhome = true;
-
-                ResetBossBundle();
                 LoadHubBundles();
                 if (CustomWP.Instance == null)
                 {
@@ -397,16 +395,16 @@ namespace FiveKnights
                 MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
 
-            if (fightCtrl != null && arg1.name != "Dream_04_White_Defender" 
+            if (_ggBossManager != null && arg1.name != "Dream_04_White_Defender" 
                                   && arg1.name != "GG_White_Defender" && arg1.name != DryyaScene
                                   && arg1.name != IsmaScene && arg1.name != HegemolScene
                                   && arg1.name != ZemerScene)
             {
-                Log("Destroying fightctrl");
-                if (fightCtrl != null)
+                Log("Destroying GGBossManager");
+                if (_ggBossManager != null)
                 { 
-                    Destroy(fightCtrl);
-                    Log("Killed fightCtrl2");
+                    Destroy(_ggBossManager);
+                    Log("Killed GGBossManager");
                 }
             }
         }
@@ -418,44 +416,6 @@ namespace FiveKnights
                 return true;
             }
             return orig;
-        }
-
-        private void ResetBossBundle()
-        {
-            Log($"Destroying {CustomWP.boss}");
-            if (GGBossManager.Instance != null)
-            {
-                Log("Destroying ggbossmanager");
-                Destroy(GGBossManager.Instance);
-            }
-            if (CustomWP.boss == CustomWP.Boss.Dryya)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GDryya);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaD);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Hegemol)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GHegemol);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaH);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Isma || CustomWP.boss == CustomWP.Boss.Ogrim)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GIsma);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaI);
-                ABManager.ResetBundle(ABManager.Bundle.GArenaIsma);
-            }
-            else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.GArenaZ);
-                ABManager.ResetBundle(ABManager.Bundle.GZemer);
-            }
-
-            if (CustomWP.boss != CustomWP.Boss.None)
-            {
-                ABManager.ResetBundle(ABManager.Bundle.Sound);
-            }
-
-            Log("Destroying2");
         }
 
         private IEnumerator CameraFixer()
@@ -485,7 +445,7 @@ namespace FiveKnights
         private IEnumerator AddComponent()
         {
             yield return null;
-            fightCtrl = GameManager.instance.gameObject.AddComponent<FightController>();
+            _ggBossManager = GameManager.instance.gameObject.AddComponent<GGBossManager>();
         }
 
         private void LoadHubBundles()
@@ -493,7 +453,6 @@ namespace FiveKnights
             FiveKnights.preloadedGO["hubfloor"] = ABManager.AssetBundles[ABManager.Bundle.GArenaHub2].LoadAsset<GameObject>("white_palace_floor_set_02 (16)");
             AssetBundle misc = ABManager.AssetBundles[ABManager.Bundle.Misc];
             FiveKnights.Materials["WaveEffectMaterial"] = misc.LoadAsset<Material>("WaveEffectMaterial");
-            FiveKnights.Materials["flash"] = misc.LoadAsset<Material>("UnlitFlashMat");
             
             foreach (GameObject i in misc.LoadAllAssets<GameObject>())
             {

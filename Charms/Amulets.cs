@@ -440,7 +440,7 @@ namespace FiveKnights
             anim.speed = 1;
             if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
             {
-                anim.speed *= 1.5f;
+                anim.speed *= 1.3f;
             }
 
             if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
