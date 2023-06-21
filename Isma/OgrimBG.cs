@@ -1,44 +1,51 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace FiveKnights.Isma
 {
     public class OgrimBG : MonoBehaviour
     {
-        private Animator _anim;
         public Transform target;
-        private const float Leftest = 107f;
-        private const float LeftLeft = 112f;
-        private const float Left = 116f;
-        private const float Right = 122f;
-        private const float Rightest = 132f;
+
+        private Animator _anim;
+        private bool lookingRight;
 
         private void Awake()
         {
             _anim = GetComponent<Animator>();
         }
-        private void Update()
+
+        private void Start()
+		{
+            Log("Start following Isma");
+            _anim.Play("IdleLeft");
+            lookingRight = false;
+            StartCoroutine(FollowIsma());
+        }
+
+        private IEnumerator FollowIsma()
         {
-            switch (target.position.x)
-            {
-                case < Leftest:
-                    _anim.Play("LookLeftest");
-                    break;
-                case < LeftLeft:
-                    _anim.Play("LookLeftLeft");
-                    break;
-                case < Left:
-                    _anim.Play("LookLeft");
-                    break;
-                case < Right:
-                    _anim.Play("LookMid");
-                    break;
-                case < Rightest:
-                    _anim.Play("LookRight");
-                    break;
-                default:
-                    _anim.Play("LookRightest");
-                    break;
+            while(target != null)
+			{
+                if(lookingRight && target.position.x < transform.position.x)
+                {
+                    yield return _anim.PlayBlocking("LookLeft");
+                    _anim.Play("IdleLeft");
+                    lookingRight = false;
+                }
+                else if(!lookingRight && target.position.x > transform.position.x)
+                {
+                    yield return _anim.PlayBlocking("LookRight");
+                    _anim.Play("IdleRight");
+                    lookingRight = true;
+                }
+				else
+				{
+                    yield return null;
+				}
             }
         }
+
+        private void Log(object o) => Modding.Logger.Log("[FiveKnights][OgrimBG] " + o);
     }
 }

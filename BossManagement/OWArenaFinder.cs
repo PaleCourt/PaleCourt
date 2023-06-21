@@ -265,13 +265,13 @@ namespace FiveKnights.BossManagement
             {
                 string matName = i.material.name;
                 string badShader = "Hidden/InternalErrorShader";
-                if (i.material.shader.name == badShader)
+                if(i.material.shader.name == badShader)
                 {
-                    if (i.material.name.Contains("Particle_Lift_Dust"))
+                    if(i.material.name.Contains("Particle_Lift_Dust"))
                     {
                         i.material.shader = Shader.Find("Sprites/Lit");
                     }
-                    else if (!ParticleMatToShader.ContainsKey(matName))
+                    else if(!ParticleMatToShader.ContainsKey(matName))
                     {
                         Log($"Did not have shader of mat {matName}");
                     }
@@ -283,9 +283,9 @@ namespace FiveKnights.BossManagement
                 }
                 else
                 {
-                    if (ParticleMatToShader.ContainsKey(i.material.name) && 
+                    if(ParticleMatToShader.ContainsKey(i.material.name) &&
                         ParticleMatToShader[i.material.name].name != badShader) continue;
-                    ParticleMatToShader.Add(i.material.name, i.material.shader);   
+                    ParticleMatToShader.Add(i.material.name, i.material.shader);
                 }
             }
         }
@@ -302,7 +302,7 @@ namespace FiveKnights.BossManagement
                 case DryyaScene:
                     Log("Trying to enter fight dryya");
                     CustomWP.boss = CustomWP.Boss.Dryya;
-                    PlayerData.instance.dreamReturnScene = arg0.name;
+                    PlayerData.instance.dreamReturnScene = PrevDryScene;
                     FixBlur();
                     AddBattleGate(427.5f,new Vector3(421.925f, 99.5f));
                     DreamEntry();
@@ -314,16 +314,15 @@ namespace FiveKnights.BossManagement
                     break;
                 case IsmaScene:
                     Log("Trying to enter fight isma");
-
                     CustomWP.boss = CustomWP.Boss.Isma;
-                    PlayerData.instance.dreamReturnScene = arg0.name;
+                    PlayerData.instance.dreamReturnScene = PrevIsmScene;
                     FixBlur();
                     //FixCameraIsma();
                     AddBattleGate(110f,new Vector3(104.5f, 8.5f));
                     DreamEntry();
                     FixIsmaSprites();
-                    // Falling off pit doesn't send you back anymore so this is here to patch that
                     AddSuperDashCancel();
+                    // Falling off pit doesn't send you back anymore so this is here to patch that
                     FixPitDeath();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -490,13 +489,7 @@ namespace FiveKnights.BossManagement
 
         private void FixIsmaSprites()
         {
-            foreach(var i in FindObjectsOfType<ParticleSystemRenderer>())
-            {
-                string partic = i.name == "Fungus_Steam" ? "Sprites/Default" : "Particles/Additive (Soft)";
-                i.material.shader = Shader.Find(partic);
-            }
-
-            foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x=> x.name.Contains("_white")))
+			foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x=> x.name.Contains("_white")))
             {
                 i.material.shader = Shader.Find("Sprites/Default");
             }

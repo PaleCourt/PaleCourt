@@ -53,12 +53,12 @@ namespace FiveKnights.Isma
         private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : CustomWP.boss == CustomWP.Boss.All ? 3 : 5;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ISMA_DREAM" : "ISMA_GG_DREAM";
 
-        private readonly int MaxHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1750 : 1500;
-        private readonly int WallHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1200 : 1100;
-        private readonly int SpikeHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 600 : 550;
-        private readonly int MaxHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1800 : 1600;
-        private readonly int WallHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1300 : 1150;
-        private readonly int SpikeHPDuo = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 700 : 600;
+        private readonly int MaxHP = CustomWP.lev > 0 ? 1650 : 1450;
+        private readonly int WallHP = CustomWP.lev > 0 ? 1150 : 1050;
+        private readonly int SpikeHP = CustomWP.lev > 0 ? 600 : 550;
+        private readonly int MaxHPDuo = CustomWP.lev > 0 ? 1800 : 1600;
+        private readonly int WallHPDuo = CustomWP.lev > 0 ? 1300 : 1150;
+        private readonly int SpikeHPDuo = CustomWP.lev > 0 ? 700 : 600;
         private readonly int FrenzyHP = 250;
 
         private const float IDLE_TIME = 0f; // can be changed if we want to later ig???
@@ -195,7 +195,7 @@ namespace FiveKnights.Isma
 			On.HutongGames.PlayMaker.Actions.ReceivedDamage.OnEnter += MarkDungBalls;
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
-            _hm.hp = _hmDD.hp = (onlyIsma ? MaxHP : MaxHPDuo) + 200;
+            _hm.hp = _hmDD.hp = onlyIsma ? MaxHP : MaxHPDuo;
 
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
@@ -727,6 +727,7 @@ namespace FiveKnights.Isma
                         Destroy(localSeed, 3f);
                     }
                 }
+                StartCoroutine(IdleTimer(IDLE_TIME));
                 yield return new WaitWhile(() => anim.IsPlaying());
                 Destroy(bomb);
             }
@@ -747,7 +748,6 @@ namespace FiveKnights.Isma
                 _bc.enabled = false;
                 yield return _anim.PlayToEnd();
                 ToggleIsma(false);
-                StartCoroutine(IdleTimer(IDLE_TIME));
             }
 
             StartCoroutine(BombThrow());
@@ -1261,9 +1261,10 @@ namespace FiveKnights.Isma
                 // Wait for Thorn Pillars
                 yield return new WaitForSeconds(1f);
                 yield return WaitToAttack();
-                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
-                    && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value && 
+                        _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
+                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _rbDD.velocity.y > 0f && 
+                        _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 if(startedIsmaRage)
                 {
@@ -1287,7 +1288,7 @@ namespace FiveKnights.Isma
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(60f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(50f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -1952,7 +1953,6 @@ namespace FiveKnights.Isma
             _anim.speed = 1f;
             _anim.PlayAt("IsmaTired", 0);
             yield return new WaitForSeconds(1f);
-            transform.position = new Vector3(transform.position.x, GroundY + 2.35f, transform.position.z);
             sc = transform.localScale;
             transform.localScale = new Vector3(sc.x * -1f, sc.y, sc.z);
             _anim.PlayAt("LoneDeath", 5);

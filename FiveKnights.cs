@@ -191,7 +191,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.18.2023";
+        public override string GetVersion() => "6.21.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -773,6 +773,8 @@ namespace FiveKnights
                 SaveSettings.CompletionZemer.hasBeenSeen = true;
                 SaveSettings.CompletionHegemol.isUnlocked = true;
                 SaveSettings.CompletionHegemol.hasBeenSeen = true;
+                SaveSettings.CompletionMawlek2.isUnlocked = true;
+                SaveSettings.CompletionMawlek2.hasBeenSeen = true;
             }
             StartGame();
         }

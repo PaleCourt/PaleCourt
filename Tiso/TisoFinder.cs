@@ -38,16 +38,16 @@ namespace FiveKnights.Tiso
                 BossLoader.LoadTisoBundle();
                 BossLoader.CreateTiso();
             }
-
-            if (curr.name is StatueScene && PlayerData.instance.GetBool(nameof(PlayerData.tisoDead)))
+            if (curr.name is StatueScene && (PlayerData.instance.GetBool(nameof(PlayerData.tisoEncounteredColosseum)) || 
+                FiveKnights.Instance.SaveSettings.CompletionMawlek2.isUnlocked))
             {
                 SetStatue();
             }
 
             if (prev.name == StatueScene)
             {
-                prev.FindGameObject("GG_Statue_Mawlek").GetComponent<BossStatue>()
-                    .SetDreamVersion(false, false, false);
+                BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateMawlek");
+                completion.usingAltVersion = false;
             }
         }
 
@@ -98,7 +98,7 @@ namespace FiveKnights.Tiso
             spr.gameObject.transform.position = new Vector3(45.54f, 8.16f,1.94f);
             spr.gameObject.transform.localScale = new Vector3(1.6f, 1.6f, 1.6f);
             alt.name = "StatueAlt";
-            bs.statueDisplayAlt = alt; 
+            bs.statueDisplayAlt = alt;
             /* } 56's code */
             
             BossStatue.BossUIDetails details = new BossStatue.BossUIDetails();
@@ -124,7 +124,7 @@ namespace FiveKnights.Tiso
             bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionMawlek2;
 
             StartCoroutine(Test());
-            
+
             IEnumerator Test()
             {
                 yield return new WaitForSeconds(1f);

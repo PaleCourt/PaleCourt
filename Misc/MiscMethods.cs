@@ -1,8 +1,8 @@
-﻿using System;
+﻿using SFCore.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using ModCommon;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = System.Random;
@@ -34,7 +34,7 @@ public static class MiscMethods
         }
         catch (Exception ex)
         {
-            Dev.Log("Exception: " + ex.Message);
+            Modding.Logger.Log("Exception: " + ex.Message);
         }
         return null;
     }

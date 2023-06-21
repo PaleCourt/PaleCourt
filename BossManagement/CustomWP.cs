@@ -380,6 +380,7 @@ namespace FiveKnights
             // Do win effect
             GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
             if(wonLastFight) GameManager.instance.OnFinishedEnteringScene += GMOnFinishedEnteringScene;
+            else lev = 0;
             wonLastFight = false;
 
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
@@ -494,6 +495,7 @@ namespace FiveKnights
                 plaque.GetComponent<BossStatueTrophyPlaque>().tierCompleteEffectDelay = 0.5f;
                 plaque.GetComponent<BossStatueTrophyPlaque>().DoTierCompleteEffect((BossStatueTrophyPlaque.DisplayType)lev);
             }
+            lev = 0;
         }
 
         // WARNING: THIS METHOD IS EXTREMELY JANK, PROCEED AT YOUR OWN RISK
