@@ -48,9 +48,9 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 10f : 19f;
 
 
-        private const int Phase2HP = 1500;
+        private readonly int Phase2HP = CustomWP.lev > 0 ? 1350 : 1200;
         private int DoneFrenzyAtt;
-        private const int Phase3HP = 1100;
+        private readonly int Phase3HP = CustomWP.lev > 0 ? 950 : 800;
 
         private readonly float NailMaxHeightStop = 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 18.5f : 39f;
@@ -2766,7 +2766,7 @@ namespace FiveKnights.Zemer
                     DoneFrenzyAtt++;
                     StartCoroutine(EndPhase1(false));
                 }
-                if (_hm.hp <= 200)
+                if (_hm.hp <= 0)
                 {
                     Log("Going to die :(");
                     StopAllCoroutines();

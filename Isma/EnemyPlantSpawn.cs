@@ -102,24 +102,24 @@ namespace FiveKnights.Isma
             StartCoroutine(Phase2Spawn(turOrig1, turret1));
             StartCoroutine(Phase2Spawn(turOrig2, turret2));
             
-            WaitForInitFinish(turret1.LocateMyFSM("Plant Turret"), turret2.LocateMyFSM("Plant Turret"));
+            StartCoroutine(WaitForInitFinish(turret1.LocateMyFSM("Plant Turret"), turret2.LocateMyFSM("Plant Turret")));
         }
 
-        private async void WaitForInitFinish(PlayMakerFSM fsm1, PlayMakerFSM fsm2)
+        private IEnumerator WaitForInitFinish(PlayMakerFSM fsm1, PlayMakerFSM fsm2)
         {
             string stopState = "Idle Anim";
-            while (!_hasP2GulkaInit) await Task.Yield();
+            yield return new WaitUntil(() => _hasP2GulkaInit);
             while (fsm1.gameObject != null && fsm2.gameObject != null)
             {
                 fsm1.enabled = fsm2.enabled = true;
                 fsm1.SetState("Shoot Antic"); fsm2.SetState("Shoot Antic");
                 
-                while (fsm1.ActiveStateName != stopState && fsm2.ActiveStateName != stopState) await Task.Yield();
+                yield return new WaitUntil(() => fsm1.ActiveStateName == stopState || fsm2.ActiveStateName == stopState);
                 if (fsm1.ActiveStateName == stopState)
                 {
                     fsm1.enabled = false;
                     fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
-                    while (fsm2.ActiveStateName != stopState) await Task.Yield();
+                    yield return new WaitUntil(() => fsm2.ActiveStateName == stopState);
                     fsm2.enabled = false;
                     fsm2.GetComponent<tk2dSpriteAnimator>().Play("Idle");
                 }
@@ -127,12 +127,11 @@ namespace FiveKnights.Isma
                 {
                     fsm2.enabled = false;
                     fsm2.GetComponent<tk2dSpriteAnimator>().Play("Idle");
-                    while (fsm1.ActiveStateName != stopState) await Task.Yield();
+                    yield return new WaitUntil(() => fsm1.ActiveStateName == stopState);
                     fsm1.enabled = false;
                     fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
                 }
-                
-                await Task.Delay(2000 + Random.Range(0, 4) * 100);
+                yield return new WaitForSeconds(2000f + Random.Range(0, 4) * 100f);
             }
         }
 
@@ -500,13 +499,15 @@ namespace FiveKnights.Isma
                 _fsmEnemyDmg = gameObject.LocateMyFSM("damages_enemy");
                 _fsmEnemyDmg.enabled = false;
                 _fsmSpit = gameObject.LocateMyFSM("spike ball control");
+                Trigger2dEventLayer triggerEvent = _fsmSpit.GetAction<Trigger2dEventLayer>("Idle", 1);
+                triggerEvent.trigger = PlayMakerUnity2d.Trigger2DType.OnTriggerStay2D;
             }
 
-            private void Start() => WaitForPlayerHit();
+            private void Start() => StartCoroutine(WaitForPlayerHit());
 
-            private async void WaitForPlayerHit()
+            private IEnumerator WaitForPlayerHit()
             {
-                while (_fsmSpit.ActiveStateName != "Nail Hit") await Task.Yield();
+                yield return new WaitUntil(() => _fsmSpit.ActiveStateName == "Nail Hit");
                 gameObject.layer = 17;
                 _fsmEnemyDmg.enabled = true;
             }

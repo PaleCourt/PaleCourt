@@ -17,9 +17,9 @@ namespace FiveKnights.Dryya
 {
     public class DryyaSetup : MonoBehaviour
     {
-        private readonly int MaxHP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1500 : 1300;
-        private readonly int Phase2HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 1000 : 900;
-        private readonly int Phase3HP = 250;
+        private readonly int MaxHP = CustomWP.lev > 0 ? 1700 : 1500;
+        private readonly int Phase2HP = CustomWP.lev > 0 ? 1150 : 1000;
+        private readonly int Phase3HP = CustomWP.lev > 0 ? 300 : 250;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 422 : 61.0f;
         private readonly float RightX = OWArenaFinder.IsInOverWorld ? 455 : 91.0f;
@@ -483,7 +483,7 @@ namespace FiveKnights.Dryya
             _control.InsertMethod("Dive", () => PlayVoice(false), 0);
             _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice(true), 0);
             _control.InsertMethod("Stab", () => PlayVoice(false), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams" + Random.Range(1, 3)), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams" + Random.Range(1, 4)), 0);
 			_control.InsertMethod("Super Start 3", () => PlayVoice(false), 0);
             _control.InsertMethod("Ground Stab 4", () => PlayVoice(false), 0);
             _control.InsertMethod("Ground Air 4", () => PlayVoice(false), 0);
@@ -526,11 +526,11 @@ namespace FiveKnights.Dryya
             string clip = "Voice";
             if(alt)
             {
-                clip += "Alt" + Random.Range(1, 4);
+                clip += "Alt" + Random.Range(1, 7);
             }
             else
             {
-                clip += Random.Range(1, 6);
+                clip += Random.Range(1, 8);
             }
             PlayAudio(clip, 1f, 1f);
 		}

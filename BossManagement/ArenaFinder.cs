@@ -355,8 +355,7 @@ namespace FiveKnights
                 Arena();
             }
 
-            if (arg0.name == "White_Palace_09" && 
-                arg1.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
+            if (arg1.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
             {
                 SetSceneSettings(arg1);
                 StartCoroutine(AddComponent());

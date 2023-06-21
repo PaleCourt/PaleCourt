@@ -16,9 +16,9 @@ namespace FiveKnights.Hegemol
 {
     public class HegemolController : MonoBehaviour
     {
-        private readonly int Phase1HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 650 : 600;
-        private readonly int Phase2HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 800 : 700;
-        private readonly int Phase3HP = (GGBossManager.Instance != null && CustomWP.lev > 0) ? 950 : 800;
+        private readonly int Phase1HP = CustomWP.lev > 0 ? 650 : 600;
+        private readonly int Phase2HP = CustomWP.lev > 0 ? 800 : 700;
+        private readonly int Phase3HP = CustomWP.lev > 0 ? 950 : 800;
 
         private readonly float LeftX = OWArenaFinder.IsInOverWorld ? 421.6f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 60.3f : 11.2f);
