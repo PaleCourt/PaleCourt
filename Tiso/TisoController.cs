@@ -177,7 +177,7 @@ namespace FiveKnights.Tiso
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Mirror.SetField(channelInfo, "clip", clip);
 
-            MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
+            MusicCue.MusicChannelInfo[] channelInfos = 
             {
                 channelInfo, null, null, null, null, null
             };
