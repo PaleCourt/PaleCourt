@@ -273,7 +273,9 @@ namespace FiveKnights.BossManagement
 
 				GameObject bscDummy = new("BSC Dummy");
 				bscDummy.SetActive(false);
-				BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
+				BossSceneController bsc = BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
+				bsc.bosses = new HealthManager[0];
+				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
                 
                 yield return null;
 
