@@ -102,7 +102,7 @@ namespace FiveKnights.Isma
             StartCoroutine(Phase2Spawn(turOrig1, turret1));
             StartCoroutine(Phase2Spawn(turOrig2, turret2));
             
-            WaitForInitFinish(turret1.LocateMyFSM("Plant Turret"), turret2.LocateMyFSM("Plant Turret"));
+            StartCoroutine(WaitForInitFinish(turret1.LocateMyFSM("Plant Turret"), turret2.LocateMyFSM("Plant Turret")));
         }
 
         private IEnumerator WaitForInitFinish(PlayMakerFSM fsm1, PlayMakerFSM fsm2)
