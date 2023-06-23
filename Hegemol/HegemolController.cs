@@ -115,6 +115,7 @@ namespace FiveKnights.Hegemol
 
             AssignFields();
             _hm.hp = Phase1HP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
 
             StartCoroutine(IntroGreet());
         }
@@ -874,6 +875,7 @@ namespace FiveKnights.Hegemol
 		{
             Log("Staggered");
             _hm.hp = phase == 2 ? Phase2HP : Phase3HP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
 
             _anim.enabled = true;
             _anim.speed = 1f;
