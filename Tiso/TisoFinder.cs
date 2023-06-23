@@ -19,7 +19,23 @@ namespace FiveKnights.Tiso
         {
             USceneManager.activeSceneChanged += OnSceneChange;
             On.BossStatue.SwapStatues += BossStatueOnSwapStatues;
+            /*
+            On.GameManager.BeginSceneTransition += GameManagerOnBeginSceneTransition;
+        */
         }
+
+        /*private void GameManagerOnBeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
+        {
+            if (self.sceneName == StatueScene)
+            {
+                BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateBroodingMawlek"); 
+                completion.usingAltVersion = false;
+                PlayerData.instance.SetVariable("statueStateBroodingMawlek", completion);
+                GameObject.Find("GG_Statue_Mawlek").GetComponent<BossStatue>().SetDreamVersion(false, false, false);
+            }
+
+            orig(self, info);
+        }*/
 
         private IEnumerator BossStatueOnSwapStatues(On.BossStatue.orig_SwapStatues orig, BossStatue self, bool doanim)
         {
@@ -42,12 +58,6 @@ namespace FiveKnights.Tiso
                 FiveKnights.Instance.SaveSettings.CompletionMawlek2.isUnlocked))
             {
                 SetStatue();
-            }
-
-            if (prev.name == StatueScene)
-            {
-                BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateMawlek");
-                completion.usingAltVersion = false;
             }
         }
 
@@ -132,7 +142,7 @@ namespace FiveKnights.Tiso
                 bs.SetDreamVersion(!FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
                 bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueMawlek, true, false);
             }
-
+            
             Log("Finish tiso statue.");
         }
         
