@@ -1559,6 +1559,7 @@ namespace FiveKnights.Isma
                 isDead = true;
                 preventDamage = true;
                 _healthPool = 100;
+				EnemyHPBarImport.DisableHPBar(gameObject);
                 if(onlyIsma)
                 {
                     _hm.hp = 800;
@@ -1658,7 +1659,8 @@ namespace FiveKnights.Isma
             _ddFsm.InsertMethod("Rage Roar", () =>
             {
                 _rbDD.velocity = Vector2.zero;
-                _healthPool = FrenzyHP;
+				_healthPool = _hm.hp = _hmDD.hp = FrenzyHP;
+				EnemyHPBarImport.EnableHPBar(gameObject);
                 preventDamage = false;
             }, 0);
             _ddFsm.InsertMethod("Set Rage", () => Destroy(_ddFsm.FsmVariables.FindFsmGameObject("Roar Emitter").Value), 0);
@@ -1816,7 +1818,8 @@ namespace FiveKnights.Isma
             StartCoroutine(TrackIsmaPos());
 
             // Wait for death
-            _healthPool = FrenzyHP;
+			_healthPool = _hm.hp = _hmDD.hp = FrenzyHP;
+			EnemyHPBarImport.EnableHPBar(gameObject);
             preventDamage = false;
             yield return new WaitWhile(() => _healthPool > 0);
 
@@ -1898,7 +1901,8 @@ namespace FiveKnights.Isma
 		private IEnumerator IsmaLoneDeath()
         {
             Log("Started Isma Lone Death");
-            _healthPool = FrenzyHP;
+            _healthPool = _hm.hp = FrenzyHP;
+			EnemyHPBarImport.EnableHPBar(gameObject);
             preventDamage = false;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);

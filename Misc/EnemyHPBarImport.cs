@@ -13,6 +13,10 @@ namespace FiveKnights
 			EnemyHPBar.DisableHPBar?.Invoke(go);
 		}
 
+		public static void EnableHPBar(GameObject go) {
+			EnemyHPBar.EnableHPBar?.Invoke(go);
+		}
+
 		public static void RefreshHPBar(GameObject go)
 		{
 			EnemyHPBar.RefreshHPBar?.Invoke(go);
@@ -32,6 +36,7 @@ namespace FiveKnights
 		internal static class EnemyHPBar
 		{
 			public static Action<GameObject> DisableHPBar;
+			public static Action<GameObject> EnableHPBar;
 			public static Action<GameObject> RefreshHPBar;
 			public static Action<GameObject> MarkAsBoss;
 		}
