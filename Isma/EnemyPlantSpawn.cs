@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -456,15 +456,8 @@ namespace FiveKnights.Isma
             private void Update()
             {
                 if (!IsmaController.killAllMinions) return;
-                Destroy(gameObject);
-            }
-
-            private void OnDestroy()
-            {
-                if (hm != null)
-                {
-                    hm.Die(new float?(0f), AttackTypes.Nail, true);
-                }
+				hm.Die(new float?(0f), AttackTypes.Nail, true);
+				Destroy(gameObject);
             }
 
             // Recreation of DropThroughFloor from the Corpse MonoBehaviour
