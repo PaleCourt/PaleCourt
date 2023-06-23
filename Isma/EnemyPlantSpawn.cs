@@ -109,7 +109,7 @@ namespace FiveKnights.Isma
         {
             string stopState = "Idle Anim";
             yield return new WaitUntil(() => _hasP2GulkaInit);
-            while (fsm1.gameObject != null && fsm2.gameObject != null)
+            while (fsm1 != null && fsm2 != null)
             {
                 fsm1.enabled = fsm2.enabled = true;
                 fsm1.SetState("Shoot Antic"); fsm2.SetState("Shoot Antic");
