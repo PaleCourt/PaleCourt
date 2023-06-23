@@ -77,7 +77,10 @@ namespace FiveKnights
                 (scene == "isma overworld" && !settings.upgradedCharm_10 && bossWin[3]))
 
             {
-                
+                bossWin[0] = false;
+                bossWin[1] = false;
+                bossWin[2] = false;
+                bossWin[3] = false;
 
                 var boss = scene.Split(' ');
                 StartCoroutine(AwardCharm(boss[0]));        
@@ -92,6 +95,7 @@ namespace FiveKnights
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
             {
+                _hc.IgnoreInput();
                 CharmCutscene(boss);
             }
             
@@ -268,6 +272,7 @@ namespace FiveKnights
                 FiveKnights.Instance.SaveSettings.newCharms[charmNumber] = true;
             }
             HeroController.instance.RegainControl();
+            _hc.AcceptInput();
             pauseShroom = false;
         }
 

@@ -288,7 +288,7 @@ namespace FiveKnights
             _focusLines.GetComponent<tk2dSpriteAnimator>().Play("Focus Effect");
 
 
-            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value, 1.2f, 1.5f);
+            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value, 0, 1.5f);
             _blast = Instantiate(FiveKnights.preloadedGO["Blast"]); 
             _blast.transform.position += gameObject.transform.position;
             _blast.SetActive(true);
@@ -389,7 +389,7 @@ namespace FiveKnights
             damageEnemies.ignoreInvuln = false;
             damageEnemies.enabled = true;
             Log("Playing AudioClip");
-            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f, 1.5f);
+            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 0, 1.5f);
             Log("Audio Clip finished");
             yield return new WaitForSeconds(.11f);
             blastCollider.enabled = false;

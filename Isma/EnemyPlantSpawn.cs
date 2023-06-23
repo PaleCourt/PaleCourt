@@ -131,7 +131,7 @@ namespace FiveKnights.Isma
                     fsm1.enabled = false;
                     fsm1.GetComponent<tk2dSpriteAnimator>().Play("Idle");
                 }
-                yield return new WaitForSeconds(2000f + Random.Range(0, 4) * 100f);
+                yield return new WaitForSeconds(2f + 0.1f * Random.Range(0, 4));
             }
         }
 

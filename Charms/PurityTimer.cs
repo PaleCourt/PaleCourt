@@ -21,8 +21,8 @@ namespace FiveKnights
         private bool timerRunning = false;
         private bool audioMax = false;
         private float duration;
-        private const float PURITY_DURATION_DEFAULT = 1.7f;
-        private const float PURITY_DURATION_26 = 2.1f;
+        private const float PURITY_DURATION_DEFAULT = 3.4f;
+        private const float PURITY_DURATION_26 = 5.2f;
         //private const float PURITY_DURATION_18 = 1.9f;
         // private const float PURITY_DURATION_13 = 2.1f;
         // private const float PURITY_DURATION_18_13 = 2.25f;
@@ -145,7 +145,7 @@ namespace FiveKnights
             if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
             {
                 float damageDealt = hitInstance.DamageDealt;
-                damageDealt *= .75f;
+                damageDealt *= .8f;
                 hitInstance.DamageDealt = Mathf.RoundToInt(damageDealt);
             }
             orig(self, hitInstance);
@@ -160,27 +160,12 @@ namespace FiveKnights
                 timerRunning = true;
                 if (hitInstance.AttackType == AttackTypes.Nail)
                 {
-                    if (!_pd.equippedCharm_35 || _pd.equippedCharm_35 && _pd.health < _pd.CurrentMaxHealth)
-                    {
-                        _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
-                        _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
-                        _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
-                        _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
-                    }
-                    else
-                    {
-                        _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
-                        _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
-                        _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
-                        _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
-                    }
-                }
-                if (hitInstance.AttackType == AttackTypes.NailBeam)
-                {
-                    _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
-                    _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
-                    _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 16;
-                    _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 20;
+
+                    _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
+                    _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
+                    _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
+                    _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
+
                 }
 
                 if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)     
@@ -276,10 +261,10 @@ namespace FiveKnights
             timer = 0;
             timerRunning = true;
 
-            _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
-            _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
-            _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 8;
-            _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 10;
+            _hc.ATTACK_COOLDOWN_TIME -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
+            _hc.ATTACK_COOLDOWN_TIME_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
+            _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
+            _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
             //foreach(NailSlash nailslash in nailSlashes)
             //{
             //	nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;

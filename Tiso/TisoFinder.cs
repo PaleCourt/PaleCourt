@@ -146,10 +146,14 @@ namespace FiveKnights.Tiso
             Log("Finish tiso statue.");
         }
         
-
         private void OnDestroy()
         {
             Log("Destroyed TisoFinder");
+
+            BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateBroodingMawlek");
+            completion.usingAltVersion = false;
+            PlayerData.instance.SetVariable("statueStateBroodingMawlek", completion);
+
             USceneManager.activeSceneChanged -= OnSceneChange;
             On.BossStatue.SwapStatues -= BossStatueOnSwapStatues;
         }
