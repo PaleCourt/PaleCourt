@@ -158,6 +158,7 @@ namespace FiveKnights
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             RewardRoom.Hook();
             Credits.Hook();
+            BloomParkour.Hook();
 
             #endregion
 
@@ -263,9 +264,14 @@ namespace FiveKnights
                 ("Fungus2_03", "Mushroom Turret (2)"),
                 
                 // Tram
-                ("Crossroads_46", "Tram Main")
+                ("Crossroads_46", "Tram Main"),
 
-               
+                // For Bloom Parkour
+                ("Deepnest_East_11", "Breakable Wall top"),
+                ("Deepnest_38", "Collapser Small"),
+                ("Abyss_10", "higher_being/shadow_gate")
+
+
             };
         }
 
@@ -340,10 +346,14 @@ namespace FiveKnights
 
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
             preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
-			#endregion
 
-			#region Journal Entries
-			journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            preloadedGO["BreakableCeiling"] = preloadedObjects["Deepnest_East_11"]["Breakable Wall top"];
+            preloadedGO["CollapseFloor"] = preloadedObjects["Deepnest_38"]["Collapser Small"];
+            preloadedGO["ShadeGate"] = preloadedObjects["Abyss_10"]["higher_being/shadow_gate"];
+            #endregion
+
+            #region Journal Entries
+            journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
             {
                 name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
                 desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
@@ -618,6 +628,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GArenaIsma);
             ABManager.Load(ABManager.Bundle.GReward);
             ABManager.Load(ABManager.Bundle.Credits);
+            ABManager.Load(ABManager.Bundle.BloomParkour);
 
             Log("Finished bundling");
         }

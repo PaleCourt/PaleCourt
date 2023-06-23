@@ -50,7 +50,7 @@ namespace FiveKnights
         public bool AltStatueIsma;
 
         public bool AltStatueZemer;
-        
+
         public bool AltStatueMawlek;
 
         public bool[] newCharms = new bool[] { true, true, true, true };
@@ -68,7 +68,7 @@ namespace FiveKnights
             Charms.charmCost_43,
             Charms.charmCost_44,
         };
-        
+
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 

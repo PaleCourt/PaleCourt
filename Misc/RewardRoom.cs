@@ -38,7 +38,7 @@ namespace FiveKnights
         }
 
 		public static void UnHook()
-        {
+        {   
             ModHooks.LanguageGetHook -= LangGet;
             On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero -= GameManagerEnterHero;
