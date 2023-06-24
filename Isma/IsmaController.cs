@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -32,7 +32,8 @@ namespace FiveKnights.Isma
         private EnemyDreamnailReaction _dreamNailReaction;
         private ExtraDamageable _extraDamageable;
         private EnemyHitEffectsUninfected _hitEffects;
-        private EnemyDeathEffectsUninfected _deathEff;
+        private EnemyDeathEffectsUninfected _deathFx;
+        private EnemyDeathEffectsUninfected _ddDeathFx;
         private GameObject _dnailEff;
         private SpriteRenderer _sr;
         private GameObject _target;
@@ -64,15 +65,16 @@ namespace FiveKnights.Isma
         private const float IDLE_TIME = 0f; // can be changed if we want to later ig???
         private const int GULKA_DAMAGE = 20;
 
+        private bool _isDead;
+        private bool _isIsmaHitLast;
+        private bool _usingThornPillars;
+        private bool _ogrimEvaded;
+        private Coroutine _wallsCoro;
+
         public static float offsetTime;
         public static bool killAllMinions;
-        private bool isDead;
         public static bool eliminateMinions;
-        private bool isIsmaHitLast;
         public bool introDone;
-        private bool usingThornPillars;
-        private bool ogrimEvaded;
-        private Coroutine wallsCoro;
 
         private void Awake()
         {
@@ -88,6 +90,7 @@ namespace FiveKnights.Isma
             _hmDD = dd.GetComponent<HealthManager>();
             _rbDD = dd.GetComponent<Rigidbody2D>();
             _ddFsm = dd.LocateMyFSM("Dung Defender");
+			EnemyHPBarImport.DisableHPBar(dd);
 
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
             Mirror.SetField(_extraDamageable, "impactClipTable", 
@@ -105,11 +108,10 @@ namespace FiveKnights.Isma
 
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
-            _deathEff = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Isma"]);
+            _deathFx = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathFx.SetJournalEntry(FiveKnights.journalEntries["Isma"]);
 
             gameObject.AddComponent<Flash>();
-            gameObject.AddComponent<AudioSource>();
 
             _rand = new Random();
             _healthPool = 9999; // Just a dummy health value while waiting for onlyIsma to be set
@@ -196,6 +198,7 @@ namespace FiveKnights.Isma
             AssignFields(gameObject);
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
             _hm.hp = _hmDD.hp = onlyIsma ? MaxHP : MaxHPDuo;
+			EnemyHPBarImport.MarkAsBoss(gameObject);
 
             gameObject.layer = 11;
             _target = HeroController.instance.gameObject;
@@ -292,7 +295,7 @@ namespace FiveKnights.Isma
             _rb.velocity = Vector2.zero;
             ToggleIsma(false);
             _attacking = false;
-			wallsCoro = StartCoroutine(SpawnWalls());
+			_wallsCoro = StartCoroutine(SpawnWalls());
 
             if(onlyIsma)
             {
@@ -394,21 +397,28 @@ namespace FiveKnights.Isma
             // Increase delay after ground slam
             _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
 
+            // Decrease screenshake while WD is underground
+            _ddFsm.GetAction<SetFsmBool>("Tunneling R", 0).variableName.Value = "RumblingSmall";
+            _ddFsm.GetAction<SetFsmBool>("Erupt Antic", 3).variableName.Value = "RumblingSmall";
+            _ddFsm.GetAction<SetFsmBool>("Erupt Antic R", 2).variableName.Value = "RumblingSmall";
+            _ddFsm.GetAction<SetFsmBool>("Erupt Out First", 1).variableName.Value = "RumblingSmall";
+            _ddFsm.GetAction<SetFsmBool>("Erupt Out", 2).variableName.Value = "RumblingSmall";
+
             // WD rolls before using Ground Slam if in the middle of the arena
             void EvadeBeforeAttack()
 			{
-                if(!ogrimEvaded && _wallActive && (FastApproximately(dd.transform.GetPositionX(), MiddleX, 4f) ||
+                if(!_ogrimEvaded && _wallActive && (FastApproximately(dd.transform.GetPositionX(), MiddleX, 4f) ||
                     (dd.transform.GetPositionX() < MiddleX - 4f && dd.transform.GetPositionX() - _target.transform.GetPositionX() > 0f) ||
                     (dd.transform.GetPositionX() > MiddleX + 4f && dd.transform.GetPositionX() - _target.transform.GetPositionX() < 0f)))
                 {
                     _ddFsm.SetState("Evade Dir");
                     _ddFsm.GetAction<SendRandomEvent>("After Evade", 0).weights[0].Value = 0f;
-                    ogrimEvaded = true;
+                    _ogrimEvaded = true;
                 }
                 else
                 {
                     _ddFsm.GetAction<SendRandomEvent>("After Evade", 0).weights[0].Value = 0.5f;
-                    ogrimEvaded = false;
+                    _ogrimEvaded = false;
                 }
             }
             _ddFsm.InsertMethod("G Slam Antic", EvadeBeforeAttack, 0);
@@ -423,7 +433,7 @@ namespace FiveKnights.Isma
                 _ddFsm.FsmVariables.FindFsmFloat("Throw Speed Crt").Value = 12f;
             });
 
-            // Add anticheese to bounce by adding to counter when knight hits WD and make him dive if he's been juggled too long
+            // Add anticheese to bounce by adding to a counter when knight hits WD and make him dive if he's been juggled too long
             _ddFsm.InsertMethod("Ball Hit Up", () =>
             {
                 _ddFsm.FsmVariables.FindFsmInt("Bounces").Value--;
@@ -431,9 +441,10 @@ namespace FiveKnights.Isma
             _ddFsm.InsertCoroutine("RJ In Air", 8, CheckPos);
             IEnumerator CheckPos()
             {
-                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value
-                    && _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
-                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
+                yield return new WaitUntil(() => (!_ddFsm.FsmVariables.FindFsmBool("Still Bouncing").Value &&
+                        _ddFsm.FsmVariables.FindFsmBool("Air Dive Height").Value) ||
+                    (FastApproximately(dd.transform.position.y, 13.5f, 0.75f) && _rbDD.velocity.y > 0f &&
+                        _ddFsm.FsmVariables.FindFsmInt("Bounces").Value < -3) ||
                     startedIsmaRage);
                 _ddFsm.SendEvent("AIR DIVE");
             }
@@ -486,7 +497,7 @@ namespace FiveKnights.Isma
 			_ddFsm.RemoveAction("RJ Launch", 0);
             _ddFsm.InsertMethod("RJ Launch", () =>
             {
-                usingThornPillars = false;
+                _usingThornPillars = false;
 				IEnumerator WaitForThornPillars()
 				{
                     yield return WaitToAttack();
@@ -494,7 +505,7 @@ namespace FiveKnights.Isma
 				}
 				StartCoroutine(WaitForThornPillars());
 			}, 0);
-            _ddFsm.InsertMethod("RJ Speed Adjust", () => usingThornPillars = true, 0);
+            _ddFsm.InsertMethod("RJ Speed Adjust", () => _usingThornPillars = true, 0);
 
             // Ogrim Strike - After bouncing
             StartCoroutine(OgrimStrike());
@@ -1151,11 +1162,11 @@ namespace FiveKnights.Isma
 
                     // Create ball related objects
                     GameObject squish = gameObject.transform.Find("Squish").gameObject;
-                    GameObject ball = Instantiate(gameObject.transform.Find(usingThornPillars ? "Ball" : "VineBall").gameObject);
+                    GameObject ball = Instantiate(gameObject.transform.Find(_usingThornPillars ? "Ball" : "VineBall").gameObject);
                     GameObject particles = Instantiate(go.LocateMyFSM("Ball Control").FsmVariables.FindFsmGameObject("Break Chunks").Value);
                     DungBall db = ball.AddComponent<DungBall>();
                     db.particles = particles;
-                    db.usingThornPillars = usingThornPillars;
+                    db.usingThornPillars = _usingThornPillars;
                     if(!_wallActive)
                     {
                         db.LeftX = LeftX + 1f;
@@ -1288,7 +1299,7 @@ namespace FiveKnights.Isma
                     offset2 += 180f;
                 }
                 float rot = Mathf.Atan(diff.y / diff.x) + offset2 * Mathf.Deg2Rad;
-                Vector2 vel = new Vector2(50f * Mathf.Cos(rot), 40f * Mathf.Sin(rot));
+                Vector2 vel = new Vector2(50f * Mathf.Cos(rot), 45f * Mathf.Sin(rot));
                 bool setVel = false;
                 _ddFsm.InsertMethod("Air Dive", () =>
                 {
@@ -1551,19 +1562,20 @@ namespace FiveKnights.Isma
 
         private void Update()
         {
-            if(_healthPool <= 0 && !isDead)
+            if(_healthPool <= 0 && !_isDead)
             {
                 Log("Victory");
-                isDead = true;
+                _isDead = true;
                 preventDamage = true;
                 _healthPool = 100;
+				EnemyHPBarImport.DisableHPBar(gameObject);
                 if(onlyIsma)
                 {
                     _hm.hp = 800;
                     _hm.isDead = false;
                     startedIsmaDeath = true;
                 }
-                else if(isIsmaHitLast)
+                else if(_isIsmaHitLast)
                 {
                     startedOgrimRage = true;
                     StopAllCoroutines();
@@ -1573,7 +1585,7 @@ namespace FiveKnights.Isma
                 else
                 {
                     startedIsmaRage = true;
-                    StopCoroutine(wallsCoro);
+                    StopCoroutine(_wallsCoro);
                     StartCoroutine(IsmaRage());
                     StartCoroutine(SpawnWalls());
                 }
@@ -1656,7 +1668,8 @@ namespace FiveKnights.Isma
             _ddFsm.InsertMethod("Rage Roar", () =>
             {
                 _rbDD.velocity = Vector2.zero;
-                _healthPool = FrenzyHP;
+				_healthPool = _hm.hp = _hmDD.hp = FrenzyHP;
+				EnemyHPBarImport.EnableHPBar(gameObject);
                 preventDamage = false;
             }, 0);
             _ddFsm.InsertMethod("Set Rage", () => Destroy(_ddFsm.FsmVariables.FindFsmGameObject("Roar Emitter").Value), 0);
@@ -1710,7 +1723,7 @@ namespace FiveKnights.Isma
             }
             Coroutine c = StartCoroutine(OgrimCatchPos());
             Log("After start coroutine");
-            _deathEff.RecordJournalEntry();
+            _deathFx.RecordJournalEntry();
             yield return new WaitWhile(() => !FastApproximately(transform.GetPositionY(), dd.transform.GetPositionY(), 1.6f) && dd.transform.GetPositionY() > 13f);
             Log("After wait while");
             if(c != null) StopCoroutine(c);
@@ -1814,7 +1827,8 @@ namespace FiveKnights.Isma
             StartCoroutine(TrackIsmaPos());
 
             // Wait for death
-            _healthPool = FrenzyHP;
+			_healthPool = _hm.hp = _hmDD.hp = FrenzyHP;
+			EnemyHPBarImport.EnableHPBar(gameObject);
             preventDamage = false;
             yield return new WaitWhile(() => _healthPool > 0);
 
@@ -1847,7 +1861,7 @@ namespace FiveKnights.Isma
             // Ogrim starts tracking her again
             Vector3 scDD2 = dd.transform.localScale;
             float side2 = Mathf.Sign(gameObject.transform.localScale.x);
-            _deathEff.RecordJournalEntry();
+            _deathFx.RecordJournalEntry();
 
             dd.transform.localScale = new Vector3(side2 * Mathf.Abs(scDD2.x), scDD2.y, scDD2.z);
             
@@ -1872,7 +1886,8 @@ namespace FiveKnights.Isma
             _rbDD.velocity = new Vector2(5f, 0f);
             dd.transform.localScale = new Vector3(side * Mathf.Abs(scDD.x), scDD.y, scDD.z);
             _ddFsm.enabled = true;
-            _ddFsm.SetState("Erupt Out First");
+            _ddFsm.FsmVariables.FindFsmBool("Intro Attack").Value = false;
+            _ddFsm.SetState("First?");
             GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect").SendEvent("BURROW END");
             yield return new WaitWhile(() => 
                 !FastApproximately(transform.GetPositionY(), dd.transform.GetPositionY(), 0.9f));
@@ -1896,7 +1911,8 @@ namespace FiveKnights.Isma
 		private IEnumerator IsmaLoneDeath()
         {
             Log("Started Isma Lone Death");
-            _healthPool = FrenzyHP;
+            _healthPool = _hm.hp = FrenzyHP;
+			EnemyHPBarImport.EnableHPBar(gameObject);
             preventDamage = false;
             Coroutine c = StartCoroutine(LoopedAgony());
             transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
@@ -2059,12 +2075,12 @@ namespace FiveKnights.Isma
                 }
                 if(!preventDamage) _healthPool -= spawningWalls ? damage / 2 : damage;
                 _hitEffects.RecieveHitEffect(dir);
-                isIsmaHitLast = true;
+                _isIsmaHitLast = true;
             }
             else if (tar.name.Contains("White Defender"))
             {
                 if(!preventDamage) _healthPool -= spawningWalls ? damage / 2 : damage;
-                isIsmaHitLast = false;
+                _isIsmaHitLast = false;
             }
         }
 
@@ -2136,12 +2152,12 @@ namespace FiveKnights.Isma
 
         private void PlayDeathFor(GameObject go)
         {
-            GameObject eff1 = Instantiate(_deathEff.uninfectedDeathPt);
-            GameObject eff2 = Instantiate(_deathEff.whiteWave);
+            GameObject eff1 = Instantiate(_ddDeathFx.uninfectedDeathPt);
+            GameObject eff2 = Instantiate(_ddDeathFx.whiteWave);
             eff1.SetActive(true);
             eff2.SetActive(true);
             eff1.transform.position = eff2.transform.position = go.transform.position;
-            _deathEff.EmitSound();
+            _ddDeathFx.EmitSound();
             GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
             if (go.name.Contains("Isma"))
             {
@@ -2166,7 +2182,7 @@ namespace FiveKnights.Isma
                 fi.SetValue(hitEff,
                     fi.Name.Contains("Origin") ? new Vector3(-0.2f, 1.3f, 0f) : fi.GetValue(ogrimHitEffects));
             }
-            _deathEff = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
+            _ddDeathFx = _ddFsm.gameObject.GetComponent<EnemyDeathEffectsUninfected>();
         }
 
         private bool FastApproximately(float a, float b, float threshold)

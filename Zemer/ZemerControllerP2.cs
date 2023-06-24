@@ -1696,8 +1696,8 @@ namespace FiveKnights.Zemer
                 {
                     _anim.enabled = false;
                     // TODO This is breaking stuff, idk yall figure it out smh
-                    // _deathEff.RecordWithoutNotes();
-                    yield return new WaitForSeconds(1.75f);
+                    _deathEff.RecordJournalEntry();
+					yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);

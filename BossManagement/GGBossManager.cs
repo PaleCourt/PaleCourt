@@ -136,13 +136,15 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
+
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
@@ -159,13 +161,14 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
 
 				Destroy(this);
             }
@@ -182,17 +185,18 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionDryya = (BossStatue.Completion) box;
-                }
-                yield return new WaitForSeconds(5.0f);
 
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+					yield return new WaitForSeconds(5.0f);
 
-                yield return null;
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					yield return null;
+				}
 
                 Destroy(this);
             }
@@ -210,13 +214,15 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionHegemol = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
+
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
@@ -253,13 +259,14 @@ namespace FiveKnights.BossManagement
                         fi.SetValue(box, true);
                         FiveKnights.Instance.SaveSettings.CompletionZemer2 = (BossStatue.Completion) box;
                     }
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
 
                 Destroy(this);
             }
@@ -363,16 +370,17 @@ namespace FiveKnights.BossManagement
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
             alone = false;
-            _hm.hp = 950;
+            _hm.hp = 351;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
+			EnemyHPBarImport.RefreshHPBar(dd);
             yield return new WaitForSeconds(1f);
 
             // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
 
-            yield return new WaitWhile(() => _hm.hp > 600);
+            yield return new WaitWhile(() => _hm.hp > 1);
             HIT_FLAG = false;
 
             // Transition to phase 2

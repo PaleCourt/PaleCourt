@@ -47,6 +47,7 @@ namespace FiveKnights.Hegemol
         private EnemyDreamnailReaction _dreamNailReaction;
         private Flash _flash;
         private EnemyHitEffectsArmoured _hitFx;
+        private EnemyDeathEffectsUninfected _deathFx;
 
         private Mace _mace;
         private GameObject _hitter;
@@ -90,7 +91,11 @@ namespace FiveKnights.Hegemol
             _flash.enabled = true;
             _hitFx = gameObject.AddComponent<EnemyHitEffectsArmoured>();
             _hitFx.enabled = true;
-            _hm.hp = 850;
+            _deathFx = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
+            _deathFx.enabled = true;
+
+            // Dummy value so that HP bar hopefully works correctly
+            _hm.hp = Phase3HP;
 
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnRecieveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -115,6 +120,7 @@ namespace FiveKnights.Hegemol
 
             AssignFields();
             _hm.hp = Phase1HP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
 
             StartCoroutine(IntroGreet());
         }
@@ -874,6 +880,7 @@ namespace FiveKnights.Hegemol
 		{
             Log("Staggered");
             _hm.hp = phase == 2 ? Phase2HP : Phase3HP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
 
             _anim.enabled = true;
             _anim.speed = 1f;
@@ -940,7 +947,6 @@ namespace FiveKnights.Hegemol
                 phase++;
                 StopAllCoroutines();
                 PlayDeathFor(transform.gameObject);
-                PlayDeathFor(transform.gameObject);
                 if(phase > 3)
 				{
                     StartCoroutine(Die());
@@ -1006,9 +1012,9 @@ namespace FiveKnights.Hegemol
             CustomWP.wonLastFight = true;
 
             if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
-            //FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
+			_deathFx.RecordJournalEntry();
 
-            _anim.enabled = true;
+			_anim.enabled = true;
             _anim.speed = 1f;
             _anim.Play("Stagger");
             _sr.material.SetFloat("_FlashAmount", 0f);

@@ -389,7 +389,12 @@ namespace FiveKnights
             PlantChanger();
 
 			GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
-			// GSPImport.AddInfiniteChallengeReturnScenePredicate((info) => info.SceneName is "White_Palace_09");
+			GSPImport.AddInfiniteChallengeReturnScenePredicate((info) =>
+				GameManager.instance.sceneName is
+					ArenaFinder.Isma2Scene or ArenaFinder.DryyaScene or ArenaFinder.ZemerScene
+					or ArenaFinder.HegemolScene or ArenaFinder.IsmaScene
+				&& info.SceneName is "White_Palace_09"
+			);
 
             Log("Initializing");
         }
