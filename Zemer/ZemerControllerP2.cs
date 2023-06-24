@@ -2102,9 +2102,8 @@ namespace FiveKnights.Zemer
                         IEnumerator DelayedFlash()
                         {
                             yield return FlashRepeat(p2 - new Vector2(0f, 6f), 0.1f);
-                            tarPos = new Vector3(_target.transform.position.x, GroundY);
+                            tarPos = new Vector3(MIDDLE, GroundY);
                             yield return FlashRepeat(p3, 0.1f);
-                            tarPos = new Vector3(_target.transform.position.x, GroundY);
                             yield return FlashRepeat(tarPos, 0.1f);
                         }
                     }
@@ -2181,7 +2180,7 @@ namespace FiveKnights.Zemer
                     timePass += Time.deltaTime;
                     if (timePass / duration > 0.55f &&  _anim.GetCurrentFrame() >= 4) _anim.enabled = false;
 
-                    yield return null;
+                    yield return null; 
                 }
                 transform.position = p3;
                 
