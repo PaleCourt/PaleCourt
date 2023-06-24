@@ -439,8 +439,11 @@ namespace FiveKnights.Dryya
 		{
             foreach(ElegyBeam elegy in _elegyBeams)
             {
-                elegy.activate = true;
-                PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
+                if(elegy != null)
+				{
+                    elegy.activate = true;
+                    PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
+                }
                 yield return new WaitForSeconds(0.05f);
             }
         }
@@ -448,6 +451,7 @@ namespace FiveKnights.Dryya
         private IEnumerator ActivateSingleBeam(ElegyBeam elegy)
 		{
             yield return new WaitForSeconds(0.5f);
+            if(elegy == null) yield break;
             elegy.activate = true;
             PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
         }

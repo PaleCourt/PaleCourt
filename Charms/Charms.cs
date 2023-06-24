@@ -53,7 +53,7 @@
         public const int AbyssalBloomBackboard = 34;
 
         public const int charmCost_41 = 3;
-        public const int charmCost_42 = 3;
+        public const int charmCost_42 = 1;
         public const int charmCost_43 = 4;
         public const int charmCost_44 = 5;
     }

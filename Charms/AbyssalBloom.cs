@@ -68,16 +68,6 @@ namespace FiveKnights
 			On.tk2dSpriteAnimator.Play_string += Tk2dSpriteAnimatorPlay;
         }
 
-		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
-		{
-            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
-			{
-                self.Play("Idle");
-                return;
-			}
-            orig(self, name);
-		}
-
 		private void OnDisable()
 		{
             SetLevel(0);
@@ -139,6 +129,16 @@ namespace FiveKnights
             }
         }
 
+		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
+		{
+            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
+			{
+                self.Play("Idle");
+                return;
+			}
+            orig(self, name);
+		}
+
         private void HealthManagerHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
             if(hitInstance.AttackType == AttackTypes.Nail)
@@ -179,11 +179,14 @@ namespace FiveKnights
             if(_pd.GetBool(nameof(PlayerData.equippedCharm_32)))
             {
                 Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION_CH);
+                Mirror.SetField(_hc, "attack_cooldown", _hc.ATTACK_COOLDOWN_TIME_CH);
             }
             else
             {
                 Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION);
+                Mirror.SetField(_hc, "attack_cooldown", _hc.ATTACK_COOLDOWN_TIME);
             }
+            _hc.cState.recoiling = false;
 
             if(hc.cState.wallSliding)
             {
@@ -211,32 +214,40 @@ namespace FiveKnights
             }
         }
 
-        private void CancelTendrilAttack()
+        public void CancelTendrilAttack()
 		{
             Log("Canceling attack");
-            StopCoroutine(_sideSlashCoro);
+            if(_sideSlashCoro != null) StopCoroutine(_sideSlashCoro);
             Destroy(_sideSlash);
 			_knightBall.SetActive(false);
             _hc.GetComponent<MeshRenderer>().enabled = true;
-            _hc.cState.attacking = false;
+            ResetTendrilAttack();
         }
 
-        private void CancelVerticalTendrilAttack()
+        public void CancelVerticalTendrilAttack()
 		{
             Log("Canceling vertical attack");
-            StopCoroutine(_vertSlashCoro);
+            if(_vertSlashCoro != null) StopCoroutine(_vertSlashCoro);
             Destroy(_shadeSlashContainer);
             _hc.StartAnimationControl();
-            _hc.cState.attacking = false;
+            ResetTendrilAttack();
         }
 
-        private void CancelWallTendrilAttack()
+        public void CancelWallTendrilAttack()
 		{
             Log("Canceling wall attack");
-            StopCoroutine(_wallSlashCoro);
+            if(_wallSlashCoro != null) StopCoroutine(_wallSlashCoro);
             Destroy(_wallSlash);
             _hc.StartAnimationControl();
+            ResetTendrilAttack();
+        }
+
+        private void ResetTendrilAttack()
+		{
             _hc.cState.attacking = false;
+            _hc.cState.upAttacking = false;
+            _hc.cState.downAttacking = false;
+            Mirror.SetField(_hc, "attack_time", 0f);
         }
 
         private IEnumerator TendrilAttack()
@@ -301,8 +312,9 @@ namespace FiveKnights
         private IEnumerator VerticalTendrilAttack(bool up)
         {
             _hc.cState.attacking = true;
+            if(up) _hc.cState.upAttacking = true;
+            else _hc.cState.downAttacking = true;
 
-            Rigidbody2D rb = _hc.GetComponent<Rigidbody2D>();
             string animName = up ? "Up" : "Down";
 
             _hc.StopAnimationControl();
@@ -380,6 +392,8 @@ namespace FiveKnights
             yield return new WaitWhile(() => _hcAnim.Playing && _hcAnim.IsPlaying(animName + "Slash Void"));
             _hc.StartAnimationControl();
             _hc.cState.attacking = false;
+            if(up) _hc.cState.upAttacking = false;
+            else _hc.cState.downAttacking = false;
         }
 
         private IEnumerator WallTendrilAttack()

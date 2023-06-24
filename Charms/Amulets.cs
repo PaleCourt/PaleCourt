@@ -94,9 +94,10 @@ namespace FiveKnights
             _hc.gameObject.AddComponent<AbyssalBloom>().enabled = false;
             _hc.gameObject.AddComponent<CheckBloomStage>().enabled = true;
             AddVoidAttacks(_hc);
-            ModifyFuryForAbyssalBloom();
+            ModifyFuryForBloom();
+            ModifySpellsForBloom();
 
-            //  FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
+            // FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
             /*FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[1] = true;
@@ -367,7 +368,7 @@ namespace FiveKnights
             }
         }
 
-        private void ModifyFuryForAbyssalBloom()
+        private void ModifyFuryForBloom()
         {
             PlayMakerFSM fury = _hc.gameObject.FindGameObjectInChildren("Charm Effects").LocateMyFSM("Fury");
             Log("Fury Color: " + fury.GetAction<Tk2dSpriteSetColor>("Activate", 17).color.Value);
@@ -379,6 +380,28 @@ namespace FiveKnights
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 19).color.Value = color;
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 20).color.Value = color;
             });
+        }
+
+        private void ModifySpellsForBloom()
+		{
+            _spellControl.InsertMethod("Wallside?", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
+            _spellControl.InsertMethod("Quake Antic", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
+            _spellControl.InsertMethod("Level Check 3", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
         }
 
         private void CharmUpdate(PlayerData playerData, HeroController hc)

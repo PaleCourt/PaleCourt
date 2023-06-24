@@ -78,9 +78,8 @@ namespace FiveKnights
             int increment = shaman ? 20 : 25;
             for(int angle = angleMin; angle <= angleMax; angle += increment)
             {
-                GameObject dagger =
-                    Instantiate(_dagger, HeroController.instance.transform.position, Quaternion.identity);
-                dagger.SetActive(true);
+                GameObject dagger = Instantiate(_dagger, HeroController.instance.transform.position, Quaternion.identity);
+                dagger.SetActive(false);
                 dagger.layer = 17;
                 Destroy(dagger.GetComponent<DamageHero>());
                 Destroy(dagger.LocateMyFSM("Control"));
@@ -95,7 +94,9 @@ namespace FiveKnights
                 float yVel = DaggerSpeed * Mathf.Sin(Mathf.Deg2Rad * angle);
                 rb.velocity = new Vector2(xVel, yVel);
                 dagger.AddComponent<Dagger>().upgraded = upgraded;
-                Destroy(dagger, 5);
+
+                dagger.SetActive(true);
+                Destroy(dagger, 5f);
             }
         }
 
