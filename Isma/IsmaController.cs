@@ -182,13 +182,11 @@ namespace FiveKnights.Isma
                 sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
             }
 
+            PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
             if(OWArenaFinder.IsInOverWorld)
             {
-                HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-                HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-                HeroController.instance.RelinquishControl();
-                HeroController.instance.StopAnimationControl();
-                HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+                roarFSM.GetFsmGameObjectVariable("Roar Object").Value = gameObject;
+                roarFSM.SendEvent("ROAR ENTER");
             }
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;
@@ -227,8 +225,7 @@ namespace FiveKnights.Isma
             if(OWArenaFinder.IsInOverWorld)
             {
                 yield return new WaitForSeconds(0.75f);
-                HeroController.instance.RegainControl();
-                HeroController.instance.StartAnimationControl();
+                roarFSM.SendEvent("ROAR EXIT");
             }
 
 			StartCoroutine("Start2");

@@ -13,7 +13,8 @@ namespace FiveKnights
 			GodSeekerPlus.AddFastDashPredicate?.Invoke(predicate);
 		}
 
-		public static void AddInfiniteChallengeReturnScenePredicate(Func<GameManager.SceneLoadInfo, bool> predicate) {
+		public static void AddInfiniteChallengeReturnScenePredicate(Func<GameManager.SceneLoadInfo, bool> predicate)
+		{
 			GodSeekerPlus.AddInfiniteChallengeReturnScenePredicate?.Invoke(predicate);
 		}
 

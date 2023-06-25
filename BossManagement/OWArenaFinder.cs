@@ -79,7 +79,6 @@ namespace FiveKnights.BossManagement
             switch (self.sceneName)
             {
                 case SheoScene:
-                {
                     Log("Sheo scene");
                     if (PlayerData.instance.nailsmithSheo && PlayerData.instance.sheoConvoNailsmith &&
                         PlayerData.instance.nailsmithConvoArt && FiveKnights.Instance.SaveSettings.UnlockedChampionsCall)
@@ -87,16 +86,14 @@ namespace FiveKnights.BossManagement
                         GameManager.instance.gameObject.AddComponent<Artists>();
                     }
                     break;
-                }
                 case DryyaScene:
-                {
+                    HeroController.instance.MaxHealth();
                     CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
                         null, null, true, false, true, 
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
-                }
                 case IsmaScene:
-                {
+                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -105,9 +102,8 @@ namespace FiveKnights.BossManagement
                         null, null, true, false, true, 
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
-                }
                 case ZemerScene:
-                {
+                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -116,9 +112,8 @@ namespace FiveKnights.BossManagement
                         null, null, true, false, true, 
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
-                }
                 case HegemolScene:
-                {
+                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -127,9 +122,7 @@ namespace FiveKnights.BossManagement
                         null, null, true, false, true, 
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
-                }
                 default:
-                {
                     if (self.sceneName == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(40.5f, 94.4f), Vector2.zero, // 39.2f, 94.4f
@@ -156,9 +149,12 @@ namespace FiveKnights.BossManagement
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-
+                    if(_prevScene is DryyaScene or IsmaScene or ZemerScene or HegemolScene)
+					{
+                        HeroController.instance.MaxHealth();
+                        HeroController.instance.ClearMP();
+                    }
                     break;
-                }
             }
 
             orig(self, additivegatesearch);
