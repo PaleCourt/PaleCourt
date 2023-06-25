@@ -119,8 +119,7 @@ namespace FiveKnights
 		private void KnightHatchlingOnEnable(On.KnightHatchling.orig_OnEnable orig, KnightHatchling self)
 		{
             orig(self);
-            Vasi.Mirror.SetField(self, "details", self.normalDetails with { damage = self.dungDetails.damage, dung = true });
-            self.dungExplosionPrefab = _dungCloud;
+            Vasi.Mirror.SetField(self, "details", self.normalDetails with { damage = self.dungDetails.damage, dung = true, spatterColor = Color.white });
             ParticleSystem.MainModule main = self.dungPt.main;
             main.startColor = PaleColor;
 		}

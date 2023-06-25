@@ -286,6 +286,8 @@ namespace FiveKnights.BossManagement
                 
                 yield return null;
 
+                // Disable the check that prevents music if it finds a BSC
+                _fsm.RemoveAction("Music", 0);
                 yield return OgrimIsmaFight();
 
                 yield return new WaitForSeconds(1.5f);
@@ -454,6 +456,12 @@ namespace FiveKnights.BossManagement
 
         private void CCDreamExit()
 		{
+            foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
+            {
+                hcFSM.SendEvent("FSM CANCEL");
+            }
+            HeroController.instance.AffectedByGravity(true);
+            HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();
             PlayerData.instance.disablePause = true;
             GameObject dreamPts = GameObject.Find("Dream Exit Particle Field");

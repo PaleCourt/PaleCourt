@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SFCore.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,11 +106,9 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
 
             OWBossManager.PlayMusic(null);
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            HeroController.instance.RelinquishControl();
-            HeroController.instance.StopAnimationControl();
-            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+            PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+            roarFSM.GetFsmGameObjectVariable("Roar Object").Value = gameObject;
+            roarFSM.SendEvent("ROAR ENTER");
         }
 
         private IEnumerator TPAway()
@@ -208,9 +207,8 @@ namespace FiveKnights.Zemer
             if(unfreezeH)
             {
                 helpZemer = true;
-                HeroController.instance.GetComponent<Rigidbody2D>().WakeUp();
-                HeroController.instance.RegainControl();
-                HeroController.instance.StartAnimationControl();
+                PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+                roarFSM.SendEvent("ROAR EXIT");
             }
             
             _rb.velocity = new Vector2(10f, 0f);

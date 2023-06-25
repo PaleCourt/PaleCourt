@@ -91,6 +91,31 @@ namespace FiveKnights
         private IEnumerator AwardCharm(string boss)
         {
             yield return new WaitUntil(() => HeroController.instance != null);
+
+            // Award charms now so people can skip the cutscenes if they really want
+            var settings = FiveKnights.Instance.SaveSettings;
+            if(boss == "isma")
+            {
+                PlayerData.instance.gotCharm_10 = true;
+                settings.upgradedCharm_10 = true;
+                PlayerData.instance.newCharm_10 = true;
+            }
+            else if(boss == "dryya")
+            {
+                settings.gotCharms[0] = true;
+                settings.newCharms[0] = true;
+            }
+            else if(boss == "zemer")
+            {
+                settings.gotCharms[1] = true;
+                settings.newCharms[1] = true;
+            }
+            else if(boss == "hegemol")
+            {
+                settings.gotCharms[2] = true;
+                settings.newCharms[2] = true;
+            }
+
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Prostrate Rise");
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
@@ -201,9 +226,6 @@ namespace FiveKnights
 
 
             StartCoroutine(AnimCoroutine(CharmAnim, charmNumber, boss, audioName));
-
-
-
         }
 
         private void SetupUI(GameObject UI, string charmName, float upDelay)
