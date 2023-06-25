@@ -354,7 +354,7 @@ namespace FiveKnights
                 Arena();
             }
 
-            if(from.name == "White_Palace_09" && to.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
+            if(CustomWP.boss != CustomWP.Boss.None && to.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
             {
                 SetSceneSettings(to);
                 StartCoroutine(AddComponent());
