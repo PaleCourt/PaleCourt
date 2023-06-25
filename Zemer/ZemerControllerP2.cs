@@ -37,7 +37,7 @@ namespace FiveKnights.Zemer
 
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :   
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f; 
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
@@ -2771,8 +2771,9 @@ namespace FiveKnights.Zemer
                 isHit = true;   
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
 
-                if ((DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP) || 
-                    (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP))
+                /*(DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP)|| 
+                (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP)*/
+                if ((DoneFrenzyAtt == 0 && _hm.hp < 0.5f * Phase2HP))
                 {
                     Log($"Doing frenzy p{DoneFrenzyAtt}");
                     StopAllCoroutines();
