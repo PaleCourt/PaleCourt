@@ -44,15 +44,18 @@ public static class MiscMethods
     {
         List<Func<IEnumerator>> cpyList = new List<Func<IEnumerator>>(attLst);
         Func<IEnumerator> currAtt = cpyList[_rand.Next(0, cpyList.Count)];
-
+        cpyList.Remove(currAtt);
+        
         while (currAtt != null && cpyList.Count > 0 && rep[currAtt] >= max[currAtt])
         {
             currAtt = cpyList[_rand.Next(0, cpyList.Count)];
             cpyList.Remove(currAtt);
         }
 
+        if (currAtt == null) return null;
+
         // Right side of AND is required so we don't skip the last attack
-        if (cpyList.Count == 0 && (currAtt == null || rep[currAtt] >= max[currAtt]))
+        if (cpyList.Count == 0 && rep[currAtt] >= max[currAtt])
         {
             foreach (var att in attLst.Where(x => x != null)) rep[att] = 0;
             currAtt = attLst[_rand.Next(0, attLst.Count)];

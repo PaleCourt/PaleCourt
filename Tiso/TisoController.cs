@@ -134,7 +134,7 @@ namespace FiveKnights.Tiso
             yield return new WaitForSeconds(3f);
             // Spawn him in top right of arena so he jumps down
             _sr.enabled = true;
-            _bc.enabled = true;
+            _bc.enabled = false;
             transform.position = new Vector3(MiddleX + 5f, GroundY + 14f);
             _bc.enabled = false;
             _rb.gravityScale = 1.5f;
@@ -144,7 +144,7 @@ namespace FiveKnights.Tiso
             PlayAudio(this, Clip.Spin);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
-            _bc.enabled = true;
+            _bc.enabled = false;
             _rb.gravityScale = 0f;
             _rb.isKinematic = true;
             _rb.velocity = Vector2.zero;
@@ -160,6 +160,7 @@ namespace FiveKnights.Tiso
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
             _hit = false;
+            _bc.enabled = true;
             yield return new WaitSecWhile(() => !_hit, TisoAud["AudTisoRoar"].length);
             Destroy(aud.gameObject);
         }

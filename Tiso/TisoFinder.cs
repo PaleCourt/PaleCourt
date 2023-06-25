@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FiveKnights.Misc;
 using HutongGames.PlayMaker.Actions;
+using Modding;
 using SFCore.Utils;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -19,23 +20,7 @@ namespace FiveKnights.Tiso
         {
             USceneManager.activeSceneChanged += OnSceneChange;
             On.BossStatue.SwapStatues += BossStatueOnSwapStatues;
-            /*
-            On.GameManager.BeginSceneTransition += GameManagerOnBeginSceneTransition;
-        */
         }
-
-        /*private void GameManagerOnBeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
-        {
-            if (self.sceneName == StatueScene)
-            {
-                BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateBroodingMawlek"); 
-                completion.usingAltVersion = false;
-                PlayerData.instance.SetVariable("statueStateBroodingMawlek", completion);
-                GameObject.Find("GG_Statue_Mawlek").GetComponent<BossStatue>().SetDreamVersion(false, false, false);
-            }
-
-            orig(self, info);
-        }*/
 
         private IEnumerator BossStatueOnSwapStatues(On.BossStatue.orig_SwapStatues orig, BossStatue self, bool doanim)
         {
@@ -48,6 +33,10 @@ namespace FiveKnights.Tiso
 
         private void OnSceneChange(Scene prev, Scene curr)
         {
+            if (curr.name == TisoScene)
+            {
+                Log($"We are on scene change and checking if alt is right {FiveKnights.Instance.SaveSettings.AltStatueMawlek}");
+            }
             if (curr.name is TisoScene && FiveKnights.Instance.SaveSettings.AltStatueMawlek)
             {
                 ClearOldContent(curr);
@@ -70,7 +59,7 @@ namespace FiveKnights.Tiso
         private void SetStatue()
         {
             Log("Setting Statue For Tiso.");
-            
+
             GameObject statue = GameObject.Find("GG_Statue_Mawlek");
             Sprite tisoSprite = ABManager.AssetBundles[ABManager.Bundle.WSArena].LoadAsset<Sprite>("Tiso_Statue");
             
@@ -149,11 +138,6 @@ namespace FiveKnights.Tiso
         private void OnDestroy()
         {
             Log("Destroyed TisoFinder");
-
-            BossStatue.Completion completion = PlayerData.instance.GetVariable<BossStatue.Completion>("statueStateBroodingMawlek");
-            completion.usingAltVersion = false;
-            PlayerData.instance.SetVariable("statueStateBroodingMawlek", completion);
-
             USceneManager.activeSceneChanged -= OnSceneChange;
             On.BossStatue.SwapStatues -= BossStatueOnSwapStatues;
         }
