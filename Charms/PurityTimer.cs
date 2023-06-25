@@ -22,7 +22,7 @@ namespace FiveKnights
         private bool audioMax = false;
         private float duration;
         private const float PURITY_DURATION_DEFAULT = 3.4f;
-        private const float PURITY_DURATION_26 = 5.2f;
+        private const float PURITY_DURATION_26 = 4f;
         //private const float PURITY_DURATION_18 = 1.9f;
         // private const float PURITY_DURATION_13 = 2.1f;
         // private const float PURITY_DURATION_18_13 = 2.25f;

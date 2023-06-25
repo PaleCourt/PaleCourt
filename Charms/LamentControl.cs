@@ -396,10 +396,16 @@ namespace FiveKnights
             yield return new WaitForSeconds(0.69f);
 
             Destroy(_blast);
-            Destroy(_focusLines);           
-            LamentControl.markedEnemies.RemoveAt(LamentControl.markedEnemies.IndexOf(gameObject));
+            Destroy(_focusLines);
             Log("Blast Finished");
-            Destroy(gameObject.GetComponent<Afflicted>());
+            try
+            {
+                LamentControl.markedEnemies.RemoveAt(LamentControl.markedEnemies.IndexOf(gameObject));
+                Destroy(gameObject.GetComponent<Afflicted>());
+            }
+            catch (NullReferenceException e) { }
+            
+           
             
         }
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][LamentControl] " + message);
