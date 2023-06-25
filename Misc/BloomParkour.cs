@@ -22,8 +22,21 @@ namespace FiveKnights
         private static List<string> spikygates = new List<string>()
         {
            "spiky_gate",
-           "spiky_gate_1"
+           "spiky_gate_1",
+           "spiky_gate_2",
+           "spike_gate_3"
         };
+        private static List<string> hazardspikes = new List<string>()
+        {
+            "Spikepit_01",
+            "Spikewall_01",
+            "Spikewall_02",
+            "Spikewall_03",
+            "Spikes_01",
+            "Spikes_02",
+            "Spikes_03"
+        };
+
         public static void Hook()
         {
             On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
@@ -52,6 +65,7 @@ namespace FiveKnights
             if (To.name == "Parkour")
             {
                 SetupShadegates(To);
+                //FixHazardSpikes(To);
             }
         }
 
@@ -67,8 +81,8 @@ namespace FiveKnights
                 var slasheffect = GameObject.Instantiate(shadegate.Find("Slash Effect"));
                 slasheffect.name = "Slash Effect";
                 slasheffect.transform.parent = spikygate.transform;
-                slasheffect.transform.position = spikygate.transform.position + new Vector3(4,0,0);
-               slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
+                slasheffect.transform.position = spikygate.transform.position + new Vector3(4, 0, 0);
+                slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
                 var slashfsm = slasheffect.LocateMyFSM("Control");
                 var effectS = slashfsm.GetState("Effect");
                 slashfsm.GetState("Init").GetAction<GetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
@@ -87,9 +101,7 @@ namespace FiveKnights
                 slashfsm.GetState("R").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
                 slashfsm.GetState("R").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
                 slashfsm.GetState("L").RemoveFsmAction(3);
-                Log("Just checking");
-                slashfsm.GetState("R").GetAction<SendMessage>(3).functionCall.FunctionName = "RecoilDown";
-                Log("Has it been this the whole time somehow?");
+                slashfsm.GetState("R").GetAction<SendMessage>(3).functionCall.FunctionName = nameof(HeroController.instance.RecoilDown);
                 slashfsm.GetState("Pause").GetAction<SetPosition>(3).y = slashfsm.FindFloatVariable("Self X");
                 slashfsm.GetState("Pause").GetAction<SetPosition>(3).x = slashfsm.FindFloatVariable("Hero Y");
                 slasheffect.SetActive(true);
@@ -117,8 +129,17 @@ namespace FiveKnights
                 particlesystem.name = "Particle System";
                 particlesystem.transform.parent = spikygate.transform;
                 particlesystem.transform.position = spikygate.transform.position;
+                particlesystem.transform.SetScaleX(1.4518f);
                 particlesystem.transform.rotation = Quaternion.Euler(0, 0, 0);
                 particlesystem.SetActive(true);
+            }
+        }
+        private static void FixHazardSpikes(UnityEngine.SceneManagement.Scene scene)
+        {
+            foreach (string name in hazardspikes)
+            {
+                var spikes = scene.Find(name);
+                spikes.AddComponent<Tink>();
             }
         }
         private static void SetupEntranceTerrain(UnityEngine.SceneManagement.Scene scene)
