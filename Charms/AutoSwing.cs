@@ -43,6 +43,7 @@ namespace FiveKnights
         {
             On.HeroController.CanNailCharge -= CancelNailArts;
         }
+
         private void Update()
         {
             if (HeroController.instance.vertical_input > Mathf.Epsilon) { attackDir = AttackDirection.upward; }

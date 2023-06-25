@@ -58,9 +58,6 @@ namespace FiveKnights
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
-                // PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
-                /*yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
-                PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);*/
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null);
 
@@ -194,6 +191,12 @@ namespace FiveKnights
                     else msgKey = "ISMA_OUTRO_5";
                     break;
             }
+            foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
+			{
+                hcFSM.SendEvent("FSM CANCEL");
+			}
+            HeroController.instance.AffectedByGravity(true);
+            HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();
             PlayerData.instance.disablePause = true;
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
@@ -228,7 +231,6 @@ namespace FiveKnights
             HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
             fsm.SetState("Fade Out");
-            GameManager.instance.StartCoroutine(ClearWhiteScreen());
         }
 
         private IEnumerator ClearWhiteScreen()
@@ -320,6 +322,7 @@ namespace FiveKnights
         {
             _ap?.StopMusic();
             _ap2?.StopMusic();
+            GameManager.instance.StartCoroutine(ClearWhiteScreen());
         }
 
         private void Log(object o)

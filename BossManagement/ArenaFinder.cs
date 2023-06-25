@@ -230,22 +230,21 @@ namespace FiveKnights
             _allowInteract = true;
         }
 
-        private void SceneChanged(Scene arg0, Scene arg1)
+        private void SceneChanged(Scene from, Scene to)
         {
-            if(arg0.name == "White_Palace_13" && arg1.name == "White_Palace_09")
+            if(from.name == "White_Palace_13" && to.name == "White_Palace_09")
             {
                 CustomWP.isInGodhome = false;
                 return;
             }
 
-            if ((arg0.name == "GG_Workshop" && arg1.name == PrevFightScene) ||
-                (arg0.name == PrevFightScene && arg1.name == "GG_Workshop"))
+            if ((from.name == "GG_Workshop" && to.name == PrevFightScene) ||
+                (from.name == PrevFightScene && to.name == "GG_Workshop"))
             {
                 StartCoroutine(DelayInspection());
             }
 
-
-            if (arg1.name is DryyaScene or IsmaScene or HegemolScene or ZemerScene)
+            if (to.name is DryyaScene or IsmaScene or HegemolScene or ZemerScene)
             {
                 // Done using SFGrenade code
                 StartCoroutine(wow());
@@ -324,7 +323,7 @@ namespace FiveKnights
                     yield return null;
                     EventRegister.SendEvent("GG TRANSITION IN");
                     BossSceneController.Instance.GetType().GetProperty("HasTransitionedIn").SetValue(BossSceneController.Instance, true, null);
-                    if (arg1.name is ZemerScene or HegemolScene)
+                    if (to.name is ZemerScene or HegemolScene)
                     {
                         bsc.GetComponent<BossSceneController>().heroSpawn.position = new Vector3(25.0f, 27.4f);
                         HeroController.instance.transform.position = new Vector3(25.0f, 27.4f); 
@@ -343,33 +342,34 @@ namespace FiveKnights
                 Log("Done dream entry");
             }
 
-            if (arg0.name == "White_Palace_09")
+            if (from.name == "White_Palace_09")
             {
                 Destroy(CustomWP.Instance);
                 CustomWP.Instance = null;
             }
             
-            if (arg1.name == "GG_Workshop")
+            if (to.name == "GG_Workshop")
             {
                 StartCoroutine(CameraFixer());
                 Arena();
             }
 
-            if (arg1.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
+            if(CustomWP.boss != CustomWP.Boss.None && to.name is DryyaScene or IsmaScene or ZemerScene or HegemolScene or "GG_White_Defender")
             {
-                SetSceneSettings(arg1);
+                SetSceneSettings(to);
                 StartCoroutine(AddComponent());
             }
 
-            if (arg1.name == "White_Palace_09" && 
-                arg0.name is IsmaScene or DryyaScene or ZemerScene or HegemolScene or "GG_White_Defender" or "Dream_04_White_Defender")
+            if (to.name == "White_Palace_09" && 
+                from.name is IsmaScene or DryyaScene or ZemerScene or HegemolScene or "GG_White_Defender" or "Dream_04_White_Defender")
             {
-                //GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
                 PlayerData.instance.isInvincible = false;
+                HeroController.instance.MaxHealth();
+                HeroController.instance.ClearMP();
             }
 
-            if ((arg0.name == "White_Palace_09" && arg1.name == "Dream_04_White_Defender") ||
-                (arg0.name == "Dream_04_White_Defender" && arg1.name == "Dream_04_White_Defender" 
+            if ((from.name == "White_Palace_09" && to.name == "Dream_04_White_Defender") ||
+                (from.name == "Dream_04_White_Defender" && to.name == "Dream_04_White_Defender" 
                                                         && CustomWP.boss == CustomWP.Boss.All))
             {
                 StartCoroutine(AddComponent());
@@ -377,12 +377,12 @@ namespace FiveKnights
                 HeroController.instance.EnterWithoutInput(true);
             }
 
-            if (arg1.name == "White_Palace_09" && arg0.name == "Dream_04_White_Defender") //DO arg1.name == "White_Palace_09" EVENTUALLY
+            if (to.name == "White_Palace_09" && from.name == "Dream_04_White_Defender")
             {
                 PlayerData.instance.whiteDefenderDefeats = defeats;
             }
             
-            if (arg1.name == "White_Palace_09")
+            if (to.name == "White_Palace_09")
             {
                 CustomWP.isInGodhome = true;
                 LoadHubBundles();
@@ -391,17 +391,17 @@ namespace FiveKnights
                     GameManager.instance.gameObject.AddComponent<CustomWP>();
                 }
                 StartCoroutine(CameraFixer());
-                MakeBench(arg1.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
+                MakeBench(to.name, "WhiteBenchNew2", new Vector3(110.6f, 94.1f, 1));
             }
 
-            if (_ggBossManager != null && arg1.name != "Dream_04_White_Defender" 
-                                  && arg1.name != "GG_White_Defender" && arg1.name != DryyaScene
-                                  && arg1.name != IsmaScene && arg1.name != HegemolScene
-                                  && arg1.name != ZemerScene)
+            if (_ggBossManager != null && to.name != "Dream_04_White_Defender" 
+                                  && to.name != "GG_White_Defender" && to.name != DryyaScene
+                                  && to.name != IsmaScene && to.name != HegemolScene
+                                  && to.name != ZemerScene)
             {
                 Log("Destroying GGBossManager");
                 if (_ggBossManager != null)
-                { 
+                {
                     Destroy(_ggBossManager);
                     Log("Killed GGBossManager");
                 }
@@ -502,7 +502,7 @@ namespace FiveKnights
             Destroy(GameObject.Find("GG_statues_0003_2 (5)"));
         }
         
-        void SetSceneSettings(Scene arg1)
+        void SetSceneSettings(Scene scene)
         {
             GameObject pref = null;
             foreach (var i in FindObjectsOfType<SceneManager>())
@@ -529,7 +529,7 @@ namespace FiveKnights
             sm.defaultColor = new Color(0.934f, 0.961f, 0.961f, 1f);
             sm.mapZone = MapZone.GODS_GLORY;
             sm.noParticles = true;
-            switch (arg1.name)
+            switch (scene.name)
             {
                 case ZemerScene:
                     sm.environmentType = 7;
