@@ -120,7 +120,6 @@ namespace FiveKnights
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
             {
-                _hc.IgnoreInput();
                 CharmCutscene(boss);
             }
             
@@ -294,7 +293,6 @@ namespace FiveKnights
                 FiveKnights.Instance.SaveSettings.newCharms[charmNumber] = true;
             }
             HeroController.instance.RegainControl();
-            _hc.AcceptInput();
             pauseShroom = false;
         }
 
