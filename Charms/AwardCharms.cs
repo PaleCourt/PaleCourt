@@ -15,8 +15,6 @@ namespace FiveKnights
 
     internal partial class AwardCharms : MonoBehaviour
     {
-        private HeroController _hc;
-        private PlayerData _pd;
         private GameObject _charmGet;
         private AssetBundle _charmUnlock;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
@@ -120,6 +118,7 @@ namespace FiveKnights
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
             {
+                HeroController.instance.IgnoreInput();
                 CharmCutscene(boss);
             }
             
@@ -177,7 +176,7 @@ namespace FiveKnights
                 case "isma":
                     charm = "CrestUpgrade";
                     charmName = "CREST_NAME";
-                    audioName = "kings_brand_get";
+                    audioName = "kings_honor_get";
                     upDelay = 2.8f;
             
                     break;
@@ -260,12 +259,13 @@ namespace FiveKnights
             }
             else if (boss == "isma")
             {
-                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
+                
                 yield return new WaitForSeconds(1.5f);
                 CharmAnim.SetActive(true);
                 CharmAnim.GetComponent<SpriteRenderer>().enabled = true;
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("new_heartpiece_puzzle_bit"));
                 yield return new WaitForSeconds(.5f);
-                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName), 1.5f);
             }
             else if (boss == "bloom")
             {
@@ -292,6 +292,7 @@ namespace FiveKnights
                 FiveKnights.Instance.SaveSettings.gotCharms[charmNumber] = true;
                 FiveKnights.Instance.SaveSettings.newCharms[charmNumber] = true;
             }
+            HeroController.instance.AcceptInput();
             HeroController.instance.RegainControl();
             pauseShroom = false;
         }
