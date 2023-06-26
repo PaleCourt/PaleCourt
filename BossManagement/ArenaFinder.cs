@@ -361,11 +361,13 @@ namespace FiveKnights
             }
 
             if (to.name == "White_Palace_09" && 
-                from.name is IsmaScene or DryyaScene or ZemerScene or HegemolScene or "GG_White_Defender" or "Dream_04_White_Defender")
+                from.name is IsmaScene or DryyaScene or ZemerScene or HegemolScene or 
+                "GG_White_Defender" or "Dream_04_White_Defender" or "hidden_reward_room")
             {
                 PlayerData.instance.isInvincible = false;
                 HeroController.instance.MaxHealth();
-                HeroController.instance.ClearMP();
+                PlayerData.instance.UpdateBlueHealth();
+                HeroController.instance.ClearMPSendEvents();
             }
 
             if ((from.name == "White_Palace_09" && to.name == "Dream_04_White_Defender") ||

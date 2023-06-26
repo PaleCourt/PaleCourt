@@ -87,13 +87,11 @@ namespace FiveKnights.BossManagement
                     }
                     break;
                 case DryyaScene:
-                    HeroController.instance.MaxHealth();
                     CreateGateway("door1", new Vector2(385.36f, 98.4f), Vector2.zero, 
                         null, null, true, false, true, 
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
                 case IsmaScene:
-                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -103,7 +101,6 @@ namespace FiveKnights.BossManagement
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
                 case ZemerScene:
-                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -113,7 +110,6 @@ namespace FiveKnights.BossManagement
                         GameManager.SceneLoadVisualizations.Dream);
                     break;
                 case HegemolScene:
-                    HeroController.instance.MaxHealth();
                     if (GameObject.Find("door1") != null)
                     {
                         Destroy(GameObject.Find("door1"));
@@ -149,11 +145,6 @@ namespace FiveKnights.BossManagement
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                     }
-                    if(_prevScene is DryyaScene or IsmaScene or ZemerScene or HegemolScene)
-					{
-                        HeroController.instance.MaxHealth();
-                        HeroController.instance.ClearMP();
-                    }
                     break;
             }
 
@@ -175,6 +166,9 @@ namespace FiveKnights.BossManagement
                     var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
                     fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
                     HeroController.instance.RelinquishControl();
+                    HeroController.instance.MaxHealth();
+                    PlayerData.instance.UpdateBlueHealth();
+                    HeroController.instance.ClearMPSendEvents();
                     PlayerData.instance.disablePause = true;
                 }
                 BossLoader.LoadDryyaBundle();
@@ -202,6 +196,9 @@ namespace FiveKnights.BossManagement
                     var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
                     fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
                     HeroController.instance.RelinquishControl();
+                    HeroController.instance.MaxHealth();
+                    PlayerData.instance.UpdateBlueHealth();
+                    HeroController.instance.ClearMPSendEvents();
                 }
                 BossLoader.LoadZemerBundle();
                 CreateDreamGateway("Dream Enter", "door1", 
@@ -221,6 +218,9 @@ namespace FiveKnights.BossManagement
                     var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
                     fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
                     HeroController.instance.RelinquishControl();
+                    HeroController.instance.MaxHealth();
+                    PlayerData.instance.UpdateBlueHealth();
+                    HeroController.instance.ClearMPSendEvents();
                 }
                 BossLoader.LoadHegemolBundle();
                 CreateDreamGateway("Dream Enter", "door1", 
@@ -240,6 +240,9 @@ namespace FiveKnights.BossManagement
                     var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
                     fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
                     HeroController.instance.RelinquishControl();
+                    HeroController.instance.MaxHealth();
+                    PlayerData.instance.UpdateBlueHealth();
+                    HeroController.instance.ClearMPSendEvents();
                     PlayerData.instance.disablePause = true;
                 }
                 BossLoader.LoadIsmaBundle();

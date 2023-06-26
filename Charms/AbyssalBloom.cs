@@ -269,7 +269,7 @@ namespace FiveKnights
             _sideSlash.transform.localScale = Vector3.one;
             _sideSlash.SetActive(false);
 
-            AddDamageEnemiesFsm(_sideSlash, AttackDirection.normal);
+            AddDamageEnemies(_sideSlash, AttackDirection.normal);
 
             PolygonCollider2D slashPoly = _sideSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
@@ -337,7 +337,7 @@ namespace FiveKnights
             shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
             shadeSlash.transform.localScale = new Vector3(2f, 2f, 2f);
 
-            AddDamageEnemiesFsm(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
+            AddDamageEnemies(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
 
             // Create hitboxes
             PolygonCollider2D slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
@@ -415,7 +415,7 @@ namespace FiveKnights
             _wallSlash.transform.localScale = Vector3.one;
             _wallSlash.SetActive(false);
 
-            AddDamageEnemiesFsm(_wallSlash, AttackDirection.normal);
+            AddDamageEnemies(_wallSlash, AttackDirection.normal);
 
             PolygonCollider2D slashPoly = _wallSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
@@ -464,25 +464,27 @@ namespace FiveKnights
             playingAudio = false;
         }
 
-        private void AddDamageEnemiesFsm(GameObject o, AttackDirection dir)
+        private void AddDamageEnemies(GameObject o, AttackDirection dir)
         {
-            PlayMakerFSM tempFsm = o.AddComponent<PlayMakerFSM>();
-            PlayMakerFSM fsm = _hc.gameObject.Find("AltSlash").LocateMyFSM("damages_enemy");
-            foreach(var fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic |
-                                                              BindingFlags.Public))
-            {
-                fi.SetValue(tempFsm, fi.GetValue(fsm));
-            }
+            DamageEnemies de = o.AddComponent<DamageEnemies>();
+            de.attackType = AttackTypes.Nail;
+            de.circleDirection = false;
+            de.damageDealt = _pd.GetInt(nameof(PlayerData.nailDamage));
+            de.ignoreInvuln = false;
+            de.magnitudeMult = 1f;
+            de.moveDirection = false;
+            de.specialType = SpecialTypes.None;
+
             switch(dir)
 			{
                 case AttackDirection.normal:
-                    tempFsm.GetFsmFloatVariable("direction").Value = _hc.cState.facingRight ? 0f : 180f;
+                    de.direction = _hc.cState.facingRight ? 0f : 180f;
                     break;
                 case AttackDirection.upward:
-                    tempFsm.GetFsmFloatVariable("direction").Value = 90f;
+                    de.direction = 90f;
                     break;
                 case AttackDirection.downward:
-                    tempFsm.GetFsmFloatVariable("direction").Value = 270f;
+                    de.direction = 270f;
                     break;
 			}
         }
