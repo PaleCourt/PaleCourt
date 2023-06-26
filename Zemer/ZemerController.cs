@@ -428,7 +428,7 @@ namespace FiveKnights.Zemer
                 float xVel = FaceHero() * -1f;
                 transform.Find("BladeAerialShadow").gameObject.SetActive(false);
                 _anim.Play("ZAerial2");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 8));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 _anim.enabled = false;
@@ -530,6 +530,7 @@ namespace FiveKnights.Zemer
             IEnumerator Slam()
             {
                 transform.position += new Vector3(0f, 1.32f);
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
                 yield return _anim.PlayToFrame("ZSlamNew", 7);
                 
                 SpawnShockwaves(2f, 50f, 1, transform.position);
@@ -637,7 +638,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 4));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -695,7 +696,7 @@ namespace FiveKnights.Zemer
 
                 float xVel = FaceHero() * -1f;
                 _anim.Play("ZAtt1Base");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _anim.enabled = false;
@@ -719,7 +720,7 @@ namespace FiveKnights.Zemer
                 }
 
                 float xVel = FaceHero() * -1f;
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return _anim.PlayToFrame("ZAtt1Intro", 1);
                 
                 _anim.enabled = false;
@@ -768,7 +769,7 @@ namespace FiveKnights.Zemer
 
             float dir = FaceHero();
             transform.Find("HyperCut").gameObject.SetActive(false);
-
+            PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
             _anim.Play("ZDash");
             transform.position = new Vector3(transform.position.x, GroundY - 0.3f, transform.position.z);
 
@@ -846,7 +847,6 @@ namespace FiveKnights.Zemer
                 float xVel = FaceHero() * -1f;
 
                 _anim.Play("ZDodge", -1, 0f);
-                //PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -906,7 +906,7 @@ namespace FiveKnights.Zemer
                 float rot = Mathf.Atan(diffY / diffX);
                 rot = (xVel < 0) ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 PlayAudioClip("AudDashIntro");
@@ -962,7 +962,7 @@ namespace FiveKnights.Zemer
                 dir = FaceHero();
                 float rot;
                 _anim.Play("ZThrow1");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return _anim.WaitToFrame(2);
                 _anim.enabled = false;
                 yield return new WaitForSeconds(ThrowDelay / 2f);

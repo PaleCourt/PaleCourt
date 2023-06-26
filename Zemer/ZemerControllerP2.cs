@@ -377,7 +377,7 @@ namespace FiveKnights.Zemer
 
                 _anim.Play("ZAerial2");
                 
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 
                 yield return _anim.WaitToFrame(8);
 
@@ -442,7 +442,7 @@ namespace FiveKnights.Zemer
                 dir = FaceHero();
                 float rot;
                 _anim.Play("ZThrow1");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return _anim.WaitToFrame(2);
                 _anim.enabled = false;
                 yield return new WaitForSeconds(ThrowDelay / 2f);
@@ -556,7 +556,7 @@ namespace FiveKnights.Zemer
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 nail.SetActive(false);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 _anim.speed = 1f;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 4);
                 _anim.enabled = false;
@@ -771,6 +771,7 @@ namespace FiveKnights.Zemer
             IEnumerator Slam()
             {
                 transform.position += new Vector3(0f, 1.32f);
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
                 yield return _anim.PlayToFrame("ZSlamNew", 7);
                 
                 SpawnShockwaves(2f, 50f, 1, transform.position);
@@ -860,7 +861,7 @@ namespace FiveKnights.Zemer
                 }
 
                 float xVel = FaceHero() * -1f;
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return _anim.PlayToFrame("ZAtt1Intro", 1);
                 
                 _anim.enabled = false;
@@ -968,7 +969,7 @@ namespace FiveKnights.Zemer
 
                 float dir = FaceHero();
                 
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return _anim.PlayToEndWithActions
                 (
                     "ZAtt2",
@@ -1068,7 +1069,7 @@ namespace FiveKnights.Zemer
                 else heroX = dir > 0 ? heroX - offset : heroX + offset;
 
                 _anim.Play("Z4AirSweep");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 13));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 PlayAudioClip("AudDash");
@@ -1325,7 +1326,7 @@ namespace FiveKnights.Zemer
                 else heroX = dir > 0 ? heroX - offset : heroX + offset;
 
                 _anim.Play("Z4AirSweep");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 //PlayAudioClip("AudDash");
@@ -1613,7 +1614,7 @@ namespace FiveKnights.Zemer
                 float rot = Mathf.Atan(diffY / diffX);
                 rot = xVel < 0 ? Mathf.PI - rot : rot;
                 _anim.Play("ZSpin");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 PlayAudioClip("AudDashIntro");
@@ -1653,7 +1654,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 4));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1707,11 +1708,17 @@ namespace FiveKnights.Zemer
                 PlayDeathFor(gameObject);
                 _anim.enabled = true;
                 _anim.Play("ZKnocked");
-                PlayAudioClip("ZAudP1Death");
-                
+
                 if (DoPhase)
                 {
-                    StartCoroutine(PlayDeathSound());
+                    PlayAudioClip("ZAudP1DeathD");
+                    StartCoroutine(PlayDeathSound(FiveKnights.Clips["ZAudP1DeathD"].length));
+                }
+                else
+                {
+                    string[] deathSounds = { "ZAudP1DeathA", "ZAudP1DeathB", "ZAudP1DeathC"};
+                    string deathSound = deathSounds[_rand.Next(deathSounds.Length)];
+                    PlayAudioClip(deathSound);
                 }
 
                 _anim.speed = 1f;
@@ -1748,10 +1755,10 @@ namespace FiveKnights.Zemer
                     yield return Recover(firstDeath);
                 }
                 
-                IEnumerator PlayDeathSound()
+                IEnumerator PlayDeathSound(float waitLen)
                 {
-                    yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
-                    PlayAudioClip("ZAudP2Death2");
+                    yield return new WaitForSeconds(waitLen);
+                    PlayAudioClip("ZAudP1Death2");
                 }
             }
 
@@ -1783,7 +1790,7 @@ namespace FiveKnights.Zemer
                 rot = heroX < MIDDLE ? rot + Mathf.PI : rot;
                 _rb.velocity = new Vector2(55f * Mathf.Cos(rot), 55f * Mathf.Sin(rot));
                 _anim.Play("Z1ZipIn");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip("ZAudAtt14");
                 yield return null;
                 yield return new WaitWhile(() => transform.position.y > GroundY - 0.95f);
                 transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
@@ -1909,7 +1916,7 @@ namespace FiveKnights.Zemer
                 {
                     numTimes--;
                     _anim.Play("Z6LaserSpin", -1, 0f);
-                    PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                    PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                     _anim.speed = 1.75f;
                     yield return null;
                     _anim.enabled = false;
@@ -1972,7 +1979,7 @@ namespace FiveKnights.Zemer
                 yield return null;
                 _anim.enabled = false;
                 yield return new WaitForSeconds(0.1f);
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(1, 6));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 8));
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 transform.position = new Vector3(transform.position.x, GroundY - 1.2f);
@@ -2052,6 +2059,7 @@ namespace FiveKnights.Zemer
                 Destroy(startCircleNew);
 
                 GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+                PlayAudioClip("ZAudAtt15");
                 for (int i = 0; i < 4; i++)
                 {
                     GameObject whiteFlash = Instantiate(whiteflashOld);
@@ -2103,6 +2111,7 @@ namespace FiveKnights.Zemer
                 _anim.speed = 1;
                 for (int i = 0; i < 2; i++)
                 {
+                    if (i == 1) PlayAudioClip("ZAudAtt16");
                     float signX = i == 0 ? dir : Mathf.Sign(gameObject.transform.GetPositionX() - MIDDLE);
                     float destination =
                         -signX < 0 ? LeftX + 0.8f * (MIDDLE - LeftX) : RightX - 0.8f * (RightX - MIDDLE);
@@ -2276,7 +2285,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
 
                 _anim.Play("ZAtt2");
-                PlayAudioClip(ZemRandAudio.PickRandomZemAud(2, 4));
+                PlayAudioClip(ZemRandAudio.PickRandomZemAud(9, 13));
                 _anim.speed = 2f;
                 yield return null;
                 PlayAudioClip("AudBasicSlash1");
@@ -2864,9 +2873,9 @@ namespace FiveKnights.Zemer
 
             IEnumerator PlayDeathSound()
             {
-                PlayAudioClip("ZAudP1Death");
-                yield return new WaitForSeconds(FiveKnights.Clips["ZAudP2Death1"].length);
-                PlayAudioClip("ZAudP2Death2");
+                PlayAudioClip("ZAudP1DeathD");
+                yield return new WaitForSeconds(FiveKnights.Clips["ZAudP1DeathD"].length);
+                PlayAudioClip("ZAudP1Death2");
             }
         }
 

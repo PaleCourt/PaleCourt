@@ -270,11 +270,13 @@ namespace FiveKnights
             // Audio clips
             string[] clips = new[]
             {
-                "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
-                "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
-                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1",
+                "ZP2Intro","ZP1Loop", "ZAudAtt4", "ZAudP1DeathA", "ZAudP1DeathB", "ZAudP1DeathC", "ZAudP1DeathD",
+                "ZAudP1Death2", "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
+                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt6","AudBasicSlash1",
                 "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
-                "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area"
+                "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area",  "ZAudAtt7", "ZAudAtt8",
+                "ZAudAtt9", "ZAudAtt10", "ZAudAtt11", "ZAudAtt12", "ZAudAtt13", 
+                "ZAudAtt14", "ZAudAtt15", "ZAudAtt16"
             };
             foreach(var name in clips)
             {
