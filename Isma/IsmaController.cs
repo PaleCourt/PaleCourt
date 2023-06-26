@@ -51,7 +51,7 @@ namespace FiveKnights.Isma
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ||
             CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 5.9f : 6.67f;
         private float MiddleX => (LeftX + RightX) / 2;
-        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : CustomWP.boss == CustomWP.Boss.All ? 3 : 5;
+        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : (CustomWP.boss == CustomWP.Boss.All ? 5 : 3);
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ISMA_DREAM" : "ISMA_GG_DREAM";
 
         private readonly int MaxHP = CustomWP.lev > 0 ? 1650 : 1450;
@@ -182,6 +182,13 @@ namespace FiveKnights.Isma
                 sidecols.gameObject.layer = (int)GlobalEnums.PhysLayers.ENEMY_DETECTOR;
             }
 
+            gameObject.layer = 11;
+            _target = HeroController.instance.gameObject;
+            if(!onlyIsma) PositionIsma();
+            else transform.position = new Vector3(LeftX + (RightX - LeftX) / 1.6f, GroundY, 1f);
+            FaceHero();
+            _bc.enabled = false;
+
             PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
             if(OWArenaFinder.IsInOverWorld)
             {
@@ -197,13 +204,6 @@ namespace FiveKnights.Isma
             _ddFsm.FsmVariables.FindFsmInt("Rage HP").Value = 801;
             _hm.hp = _hmDD.hp = onlyIsma ? MaxHP : MaxHPDuo;
 			EnemyHPBarImport.MarkAsBoss(gameObject);
-
-            gameObject.layer = 11;
-            _target = HeroController.instance.gameObject;
-            if (!onlyIsma) PositionIsma();
-            else transform.position = new Vector3(LeftX + (RightX-LeftX)/1.6f, GroundY, 1f);
-            FaceHero();
-            _bc.enabled = false;
 
             // Wait for a bit while Ogrim is down
             if(!OWArenaFinder.IsInOverWorld && !onlyIsma)

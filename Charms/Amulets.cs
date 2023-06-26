@@ -476,43 +476,47 @@ namespace FiveKnights
 
         private IEnumerator PureVesselBlast()
         {
-            Log("Pure Vessel Blast");
-            _blastKnight.layer = 17;
-            Animator anim = _blastKnight.GetComponent<Animator>();
-            anim.speed = 1;
-            int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
-            anim.PlayInFixedTime(hash, -1, 0.8f);
-
-            Log("Adding CircleCollider2D");
-            CircleCollider2D blastCollider = _blastKnight.AddComponent<CircleCollider2D>();
-            blastCollider.radius = 2.5f;
-            if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
+            if (_blastKnight != null)
             {
-                blastCollider.radius *= 2.5f;
-            }
-            else
-            {
-                blastCollider.radius *= 1.5f;
-            }
+                Log("Pure Vessel Blast");
+                _blastKnight.layer = 17;
+                Animator anim = _blastKnight.GetComponent<Animator>();
+                anim.speed = 1;
+                int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
+                anim.PlayInFixedTime(hash, -1, 0.8f);
 
-            blastCollider.offset = Vector3.down;
-            blastCollider.isTrigger = true;
-            Log("Adding DebugColliders");
-            //_blast.AddComponent<DebugColliders>();
-            Log("Adding DamageEnemies");
-            _blastKnight.AddComponent<DamageEnemies>();
-            DamageEnemies damageEnemies = _blastKnight.GetComponent<DamageEnemies>();
-            damageEnemies.damageDealt = 40;
-            damageEnemies.attackType = AttackTypes.Spell;
-            damageEnemies.ignoreInvuln = false;
-            damageEnemies.enabled = true;
-            Log("Playing AudioClip");
-            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f, 1.5f);
-            Log("Audio Clip finished");
-            yield return new WaitForSeconds(.11f);
-            blastCollider.enabled = false;
-            yield return new WaitForSeconds(0.69f);
-            Destroy(_blastKnight);
+                Log("Adding CircleCollider2D");
+                CircleCollider2D blastCollider = _blastKnight.AddComponent<CircleCollider2D>();
+                blastCollider.radius = 2.5f;
+                if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
+                {
+                    blastCollider.radius *= 2.5f;
+                }
+                else
+                {
+                    blastCollider.radius *= 1.5f;
+                }
+
+                blastCollider.offset = Vector3.down;
+                blastCollider.isTrigger = true;
+                Log("Adding DebugColliders");
+                //_blast.AddComponent<DebugColliders>();
+                Log("Adding DamageEnemies");
+                _blastKnight.AddComponent<DamageEnemies>();
+                DamageEnemies damageEnemies = _blastKnight.GetComponent<DamageEnemies>();
+                if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus)) { damageEnemies.damageDealt = 80; }
+                else { damageEnemies.damageDealt = 40; }
+                damageEnemies.attackType = AttackTypes.Spell;
+                damageEnemies.ignoreInvuln = false;
+                damageEnemies.enabled = true;
+                Log("Playing AudioClip");
+                this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f);
+                Log("Audio Clip finished");
+                yield return new WaitForSeconds(.11f);
+                blastCollider.enabled = false;
+                yield return new WaitForSeconds(0.69f);
+                Destroy(_blastKnight);
+            }         
         }
 
         private void CancelBlast()

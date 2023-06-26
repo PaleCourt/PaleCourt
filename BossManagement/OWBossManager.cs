@@ -239,6 +239,7 @@ namespace FiveKnights
             GameObject.Find("Blanker White").LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
             HeroController.instance.EnableRenderer();
             HeroController.instance.AcceptInput();
+            HeroController.instance.RegainControl();
         }
 
         public static void PlayMusic(AudioClip clip)
