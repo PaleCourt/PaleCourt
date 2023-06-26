@@ -133,12 +133,14 @@ namespace FiveKnights
                 tChild.zemer = zem;
 
                 yield return null;
-
+                
+                Log("BLAHJK");
                 yield return new WaitWhile(() => !tChild.helpZemer);
+                Log("BLAHJK2");
                 
                 ZemerController.WaitForTChild = false;
                 zem.GetComponent<HealthManager>().IsInvincible = false;
-
+                Log("BLAHJK3");
                 yield return new WaitWhile(() => zc != null);
                 if (zem == null)
                 {
