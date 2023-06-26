@@ -322,7 +322,7 @@ namespace FiveKnights
                     }
                     else
 					{
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
@@ -354,7 +354,7 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
@@ -381,7 +381,7 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
@@ -494,8 +494,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
@@ -520,8 +520,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
@@ -541,8 +541,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
@@ -630,8 +630,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
@@ -656,8 +656,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
@@ -677,8 +677,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
@@ -766,7 +766,7 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
                             !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
                             key = "RR_HEGEMOL_CHARM_1";
@@ -792,8 +792,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
+                           !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
                             key = "RR_HEGEMOL_CHARM_1";
                             FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
@@ -813,8 +813,8 @@ namespace FiveKnights
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
+                           !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
                             key = "RR_HEGEMOL_CHARM_1";
                             FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
@@ -896,7 +896,7 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo1)
                     {
                         key = "RR_ZEMER_FIRST_1_1";
-                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo1 = true;
+                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo1 = true; 
                     }
                     else if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo2)
                     {
