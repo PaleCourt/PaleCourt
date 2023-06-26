@@ -227,6 +227,7 @@ namespace FiveKnights.BossManagement
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
+                ZemerController.WaitForTChild = false;
                 BossLoader.LoadZemerBundle();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;

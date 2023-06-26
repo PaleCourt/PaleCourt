@@ -36,6 +36,7 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 91.0f : 45.7f;
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
+        // HP if the fight is mystic zemer version
         private readonly int MaxHPV2 = 500;
         private readonly int MaxHPV1 = CustomWP.lev > 0 ? 1400 : 1200;
         private readonly int DoSpinSlashPhase = CustomWP.lev > 0 ? 800 : 700;
@@ -283,7 +284,9 @@ namespace FiveKnights.Zemer
                 //If the player is close
                 if (posH.y > GroundY + 3f && (posH.x <= LeftX + 1f || posH.x >= RightX - 1))
                 {
+                    Log("Doing Spin Cheese Counter");
                     yield return SpinAttack();
+                    Log("Done Spin Cheese Counter");
                 }
                 else if (FastApproximately(posZem.x, posH.x, 5f))
                 {
@@ -300,18 +303,21 @@ namespace FiveKnights.Zemer
                     else if (r < 4)
                     {
                         counterCount = 0;
-                        Log("Dodge");
+                        Log("Doing Special Dodge");
                         yield return Dodge();
-                        Log("End Dodge");
+                        Log("Done Special Dodge's Dodge");
                         var lst = new List<Func<IEnumerator>> { FancyAttack, null, null};
                         if (isPhase2) lst = new List<Func<IEnumerator>> { FancyAttack, NailLaunch };
+                        Log("Choosing Attack");
                         var att = MiscMethods.ChooseAttack(lst, rep, max);
+                        Log("Done Choosing Attack");
                         if (att != null)
                         {
                             Log("Doing " + att.Method.Name);
-                            yield return att;
-                            Log("Doing " + att.Method.Name);
+                            yield return att();
+                            Log("Done " + att.Method.Name);
                         }
+                        Log("Done Special Dodge");
                     }
                     else
                     {
@@ -335,7 +341,9 @@ namespace FiveKnights.Zemer
                     attLst.Add(NailLaunch);
                 }
                 
+                Log("Choosing Attack");
                 Func<IEnumerator> currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
+                Log("Done Choosing Attack");
                 
                 Log("Doing " + currAtt.Method.Name);
                 yield return currAtt();
@@ -345,7 +353,9 @@ namespace FiveKnights.Zemer
                     Random.Range(0, 2) == 0)
                 {
                     rep[NailLaunch]++;
+                    Log("Doing NailLaunch");
                     yield return NailLaunch();
+                    Log("Done NailLaunch");
                 }
                 else if (currAtt == Attack1Base)
                 {
@@ -355,8 +365,10 @@ namespace FiveKnights.Zemer
                     {
                         lst2 = (isPhase2) ? new List<Func<IEnumerator>> {Attack1Complete} : new List<Func<IEnumerator>> {Attack1Complete, null};
                     }
-
+                    
+                    Log("Choosing Attack");
                     currAtt = MiscMethods.ChooseAttack(lst2, rep, max);
+                    Log("Done Choosing Attack");
                     
                     if (currAtt != null)
                     { 
@@ -378,15 +390,21 @@ namespace FiveKnights.Zemer
                         }
                         else if (rand == 1)
                         {
+                            Log("Doing Slam");
                             yield return ZemerSlam();
+                            Log("Done Slam");
                         }
                         else if (isPhase2 && rand == 2)
                         {
+                            Log("Doing NailLaunch");
                             yield return NailLaunch();
+                            Log("Done NailLaunch");
                         }
                         else
                         {
+                            Log("Doing Dash");
                             yield return Dash();
+                            Log("Done Dash");
                         }
                     }
                 }
@@ -555,7 +573,7 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Turn()
         {
-            _anim.Play("ZTurn");
+            _anim.Play("ZTurn", -1, 0f);
             yield return new WaitForSeconds(TurnDelay);
         }
 
@@ -827,7 +845,7 @@ namespace FiveKnights.Zemer
 
                 float xVel = FaceHero() * -1f;
 
-                _anim.Play("ZDodge");
+                _anim.Play("ZDodge", -1, 0f);
                 //PlayAudioClip("ZAudAtt" + _rand.Next(1,7));
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
@@ -930,8 +948,9 @@ namespace FiveKnights.Zemer
                 if (hero.x.Within(transform.position.x, 10f))
                 {
                     // Too close to wall
-                    if (transform.position.x.Within(LeftX, 6f) || transform.position.x.Within(RightX, 6f))
+                    if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
                     {
+                        Log("DOING DASH");
                         yield return Dash();
                     }
                     else
@@ -975,7 +994,20 @@ namespace FiveKnights.Zemer
                 GameObject arm = transform.Find("NailHand").gameObject;
                 GameObject nailPar = Instantiate(transform.Find("ZNailB").gameObject);
                 Rigidbody2D parRB = nailPar.GetComponent<Rigidbody2D>();
-                
+
+                if (CustomWP.boss == CustomWP.Boss.Mystic || CustomWP.boss == CustomWP.Boss.Ze)
+                {
+                    Log("double size for reg");
+                    var a = nailPar.transform.Find("ZNailC").GetComponent<BoxCollider2D>();
+                    a.size *= 2.5f;
+                }
+                else if (CustomWP.boss == CustomWP.Boss.All)
+                {
+                    Log("incr size for pantheon");
+                    var a = nailPar.transform.Find("ZNailC").GetComponent<BoxCollider2D>();
+                    a.size *= 1.5f;
+                }
+
                 nailPar.transform.position = transform.Find("ZNailB").position;
                 nailPar.transform.localScale = new Vector3(Mathf.Sign(transform.localScale.x) * NailSize, NailSize, NailSize);
                 arm.transform.SetRotation2D(rotArm * Mathf.Rad2Deg);

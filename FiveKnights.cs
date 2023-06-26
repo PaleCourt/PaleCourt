@@ -191,7 +191,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.25.2023";
+        public override string GetVersion() => "6.25.2023.2";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -651,6 +651,12 @@ namespace FiveKnights
                 SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
             else if (key == "statueStateMawlek2")
                 SaveSettings.CompletionMawlek2 = (BossStatue.Completion)obj;
+            else if (key == "statueStateBroodingMawlek")
+            {
+                var a = (BossStatue.Completion)obj;
+                a.usingAltVersion = false;
+                return a;
+            }
             return obj;
         }
 
@@ -670,6 +676,12 @@ namespace FiveKnights
                 return SaveSettings.CompletionHegemol;
             if (key == "statueStateMawlek2")
                 return SaveSettings.CompletionMawlek2;
+            if (key == "statueStateBroodingMawlek")
+            {
+                var a = (BossStatue.Completion)orig;
+                a.usingAltVersion = SaveSettings.AltStatueMawlek;
+                return a;
+            }
             return orig;
         }
 

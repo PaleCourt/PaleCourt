@@ -37,7 +37,7 @@ namespace FiveKnights.Zemer
 
         private readonly float deathGndOffset = (OWArenaFinder.IsInOverWorld) ? 1.18f : 0.7f;
         private readonly float GroundY = (OWArenaFinder.IsInOverWorld) ? 108.3f :   
-            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f;
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 9f : 28.8f; 
         private readonly float LeftX = (OWArenaFinder.IsInOverWorld) ? 240.1f :
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 61.0f : 11.2f;
         private readonly float RightX = (OWArenaFinder.IsInOverWorld) ? 273.9f :
@@ -240,7 +240,9 @@ namespace FiveKnights.Zemer
 
                 if (posH.y > GroundY + 9f && (posH.x <= LeftX || posH.x >= RightX))
                 {
+                    Log("Doing SpinAttack");
                     yield return SpinAttack();
+                    Log("Done SpinAttack");
                 }
                 else if (FastApproximately(posZem.x, posH.x, 5f) && 
                          !((DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP) || (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP)))
@@ -258,17 +260,20 @@ namespace FiveKnights.Zemer
                     else
                     {
                         counterCount = 0;
-                        Log("Dodge");
+                        Log("Doing Special Dodge");
                         yield return Dodge();
-                        Log("End Dodge");
+                        Log("End Special Dodge's Dodge");
                         var lst = new List<Func<IEnumerator>> {Dash, FancyAttack, NailLaunch, null};
+                        Log("Choosing Attack");
                         var att = MiscMethods.ChooseAttack(lst, rep, max);
+                        Log("Done Choosing Attack");
                         if (att != null)
                         {
                             Log("Doing " + att.Method.Name);
-                            yield return att;
-                            Log("Doing " + att.Method.Name);
+                            yield return att();
+                            Log("Done " + att.Method.Name);
                         }
+                        Log("End Special Dodge");
                     }
                 }
 
@@ -291,7 +296,9 @@ namespace FiveKnights.Zemer
                         AerialAttack, DoubleFancy, SweepDash, ZemerSlam
                     };
                     
+                    Log("Choosing Attack");
                     currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
+                    Log("Done Choosing Attack");
                     
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
@@ -301,7 +308,9 @@ namespace FiveKnights.Zemer
                         UnityEngine.Random.Range(0, 2) == 0)
                     {
                         rep[NailLaunch]++;
+                        Log("Doing NailLaunch");
                         yield return NailLaunch();
+                        Log("Done NailLaunch");
                     }
 
                     if (currAtt == Attack1Base)
@@ -309,8 +318,11 @@ namespace FiveKnights.Zemer
                         List<Func<IEnumerator>> lst2 = FastApproximately(transform.position.x, _target.transform.position.x, 7f) ? 
                             new List<Func<IEnumerator>> {Attack1Complete} : 
                             new List<Func<IEnumerator>> {Attack1Complete, FancyAttack, FancyAttack};
-
+                        
+                        Log("Choosing Attack");
                         currAtt = MiscMethods.ChooseAttack(lst2, rep, max);
+                        Log("Done Choosing Attack");
+                        
                         Log("Doing " + currAtt.Method.Name);
                         yield return currAtt();
                         Log("Done " + currAtt.Method.Name);
@@ -324,11 +336,16 @@ namespace FiveKnights.Zemer
                             {
                                 Log("Doing Special Fancy Attack Nail Launch version");
                                 yield return NailLaunch();
+                                Log("Done NailLaunch");
                             }
                             else
                             {
+                                Log("Doing FancyAttack");
                                 yield return FancyAttack();
+                                Log("Done FancyAttack");
+                                Log("Doing Dash");
                                 yield return Dash();
+                                Log("Done Dash");
                             }
                             Log("Done Special Fancy Attack");
                         }
@@ -408,15 +425,16 @@ namespace FiveKnights.Zemer
                 Vector2 hero = _target.transform.position;
                 
                 // If player is too close dodge back or if too close to wall as well dash forward
-                if (hero.x.Within(transform.position.x, 8f))
+                if (hero.x.Within(transform.position.x, 10f))
                 {
                     // Too close to wall
-                    if (transform.position.x.Within(LeftX, 6f) || transform.position.x.Within(RightX, 6f))
+                    if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
                     {
+                        Log("DOING DASH");
                         yield return Dash();
                     }
                     else
-                    {   
+                    {
                         yield return Dodge();
                     }
                 }
@@ -440,6 +458,22 @@ namespace FiveKnights.Zemer
                 GameObject arm = transform.Find("NailHand").gameObject;
                 GameObject nailPar = Instantiate(transform.Find("ZNailB").gameObject);
                 Rigidbody2D parRB = nailPar.GetComponent<Rigidbody2D>();
+                
+                
+                if (CustomWP.boss == CustomWP.Boss.Mystic || CustomWP.boss == CustomWP.Boss.Ze)
+                {
+                    Log("double size for reg");
+                    var a = nailPar.transform.Find("ZNailC").GetComponent<BoxCollider2D>();
+                    a.size *= 2.5f;
+                }
+                else if (CustomWP.boss == CustomWP.Boss.All)
+                {
+                    Log("incr size for pantheon");
+                    var a = nailPar.transform.Find("ZNailC").GetComponent<BoxCollider2D>();
+                    a.size *= 1.5f;
+                }
+                
+                
                 arm.transform.SetRotation2D(rotArm * Mathf.Rad2Deg);
                 nailPar.transform.SetRotation2D(rotArm * Mathf.Rad2Deg);
                 nailPar.transform.position = transform.Find("ZNailB").position;
@@ -1504,7 +1538,7 @@ namespace FiveKnights.Zemer
 
                 float xVel = FaceHero() * -1f;
 
-                _anim.Play("ZDodge");
+                _anim.Play("ZDodge", -1, 0f);
                 //PlayAudioClip("ZAudAtt" + _rand.Next(2,5));
                 _rb.velocity = new Vector2(-xVel * 40f, 0f);
                 yield return null;
@@ -2102,9 +2136,8 @@ namespace FiveKnights.Zemer
                         IEnumerator DelayedFlash()
                         {
                             yield return FlashRepeat(p2 - new Vector2(0f, 6f), 0.1f);
-                            tarPos = new Vector3(_target.transform.position.x, GroundY);
+                            tarPos = new Vector3(MIDDLE, GroundY);
                             yield return FlashRepeat(p3, 0.1f);
-                            tarPos = new Vector3(_target.transform.position.x, GroundY);
                             yield return FlashRepeat(tarPos, 0.1f);
                         }
                     }
@@ -2181,7 +2214,7 @@ namespace FiveKnights.Zemer
                     timePass += Time.deltaTime;
                     if (timePass / duration > 0.55f &&  _anim.GetCurrentFrame() >= 4) _anim.enabled = false;
 
-                    yield return null;
+                    yield return null; 
                 }
                 transform.position = p3;
                 
@@ -2665,7 +2698,7 @@ namespace FiveKnights.Zemer
 
         private IEnumerator Turn()
         {
-            _anim.Play("ZTurn");
+            _anim.Play("ZTurn", -1, 0f);
             yield return new WaitForSeconds(TurnDelay);
         }
 
@@ -2738,8 +2771,9 @@ namespace FiveKnights.Zemer
                 isHit = true;   
                 _hitEffects.RecieveHitEffect(hitInstance.Direction);
 
-                if ((DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP) || 
-                    (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP))
+                /*(DoneFrenzyAtt == 0 && _hm.hp < 0.65f * Phase2HP)|| 
+                (DoneFrenzyAtt == 1 && _hm.hp < 0.35f * Phase2HP)*/
+                if ((DoneFrenzyAtt == 0 && _hm.hp < 0.5f * Phase2HP))
                 {
                     Log($"Doing frenzy p{DoneFrenzyAtt}");
                     StopAllCoroutines();

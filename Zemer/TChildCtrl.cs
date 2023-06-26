@@ -121,7 +121,7 @@ namespace FiveKnights.Zemer
         private IEnumerator LeaveAndReturn()
         {
             _hm.IsInvincible = true;
-            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
+            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 253f);
             
             yield return new WaitForSeconds(1.5f);
             yield return Leave(true);
@@ -138,8 +138,8 @@ namespace FiveKnights.Zemer
             {
                 [-2] = (0, 252),
                 [-1] = (252, 258),
-                [0] = (258, 262),
-                [1] = (262, 500)
+                [0] = (258, 264),
+                [1] = (264, 500)
             };
             
             // What from to go to if going from left to right
