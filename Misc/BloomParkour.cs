@@ -24,7 +24,7 @@ namespace FiveKnights
            "spiky_gate",
            "spiky_gate_1",
            "spiky_gate_2",
-           "spike_gate_3"
+           "spiky_gate_3"
         };
         private static List<string> hazardspikes = new List<string>()
         {

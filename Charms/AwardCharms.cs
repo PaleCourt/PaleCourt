@@ -15,8 +15,6 @@ namespace FiveKnights
 
     internal partial class AwardCharms : MonoBehaviour
     {
-        private HeroController _hc;
-        private PlayerData _pd;
         private GameObject _charmGet;
         private AssetBundle _charmUnlock;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
@@ -36,25 +34,36 @@ namespace FiveKnights
         private void BloomPlacement(Scene From, Scene To)
         {
 
-            if (To.name == "White_Palace_08")
+            if (To.name == "Parkour")
             {
+                Log("Went to Bloom Parkour");
                 if (!FiveKnights.Instance.SaveSettings.gotCharms[3])
                 {
+                    Log("Don't have charm, placing Shiny");
                     var saveSettings = FiveKnights.Instance.SaveSettings;
 
                     GameObject bloomShiny = Instantiate(FiveKnights.preloadedGO["Shiny"]);
-                    Destroy(bloomShiny.transform.GetChild(0).gameObject.GetComponent<PersistentBoolItem>());
+                    var shiny = bloomShiny.transform.GetChild(0);
+                    Destroy(shiny.gameObject.GetComponent<PersistentBoolItem>());
 
                     bloomShiny.SetActive(false);
-                    bloomShiny.transform.GetChild(0).gameObject.SetActive(true);
-                    bloomShiny.transform.position = new Vector3(110.8f, 20.6f, 0.05f);
+                    shiny.gameObject.SetActive(true);
+                    shiny.GetComponent<Rigidbody2D>().gravityScale = 0;
+                    shiny.GetComponent<SpriteRenderer>().color = Color.black;
+                    shiny.Find("White Wave").GetComponent<WaveEffectControl>().blackWave = true;
+                    shiny.Find("White Wave").GetComponent<WaveEffectControl>().scaleMultiplier = .5f;
+                    bloomShiny.transform.position = new Vector3(116.73f, 3.52f, 0.061f);
 
-                    var shinyFsm = bloomShiny.transform.GetChild(0).gameObject.LocateMyFSM("Shiny Control");
+                    var shinyFsm = shiny.gameObject.LocateMyFSM("Shiny Control");
                     var shinyFsmVars = shinyFsm.FsmVariables;
 
                     shinyFsm.ChangeFsmTransition("Init", "FINISHED", "Idle");
+                    shinyFsm.GetState("Hero Down").GetAction<Tk2dPlayAnimation>().clipName = "Collect SD 1";
+                    shinyFsm.GetState("Hero Down").GetAction<Wait>().time = .5f;
+                    shinyFsm.GetState("Big Get Flash").RemoveAction<Tk2dPlayAnimation>();
                     shinyFsm.GetState("Type").InsertMethod(() => CharmCutscene("bloom"), 0);
                     shinyFsm.ChangeFsmTransition("Type", "QUEEN", "Msg");
+                    shinyFsm.GetState("Hero Up").GetAction<Tk2dPlayAnimationWithEvents>().clipName = "Collect SD 1 Back";
                     shinyFsm.GetState("Hero Up").RemoveAction<CallMethodProper>();
 
 
@@ -62,7 +71,7 @@ namespace FiveKnights
                     shinyFsmVars.FindFsmBool("Queen Charm").Value = true;
 
                     bloomShiny.SetActive(true);
-
+                    Log("Shiny Placed");
                 }
             }
         }
@@ -95,7 +104,7 @@ namespace FiveKnights
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
             {
-                _hc.IgnoreInput();
+                HeroController.instance.IgnoreInput();
                 CharmCutscene(boss);
             }
             
@@ -181,7 +190,7 @@ namespace FiveKnights
             CharmAnim.SetActive(false);
             CharmAnim.transform.parent = _charmGet.transform;
             CharmAnim.transform.position = new Vector3(.19f, 2.5f, -3.1f);
-            CharmAnim.transform.localScale = new Vector3(1.25f, 1.25f, 1);
+            CharmAnim.transform.localScale = new Vector3(1.4f, 1.4f, 1);
             CharmAnim.GetComponent<SpriteRenderer>().material = new Material(Shader.Find("Sprites/Default"));
             CharmAnim.GetComponent<SpriteRenderer>().sortingLayerID = 629535577;
             //BloomAnim.AddComponent<PlayMakerFSM>();
@@ -272,7 +281,7 @@ namespace FiveKnights
                 FiveKnights.Instance.SaveSettings.newCharms[charmNumber] = true;
             }
             HeroController.instance.RegainControl();
-            _hc.AcceptInput();
+            HeroController.instance.AcceptInput();
             pauseShroom = false;
         }
 
