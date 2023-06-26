@@ -60,9 +60,9 @@ namespace FiveKnights.Zemer
         private const float NailSpeed = 80f;
         private const float DashSpeed = 60f;
         private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
-        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 
-            ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? 4 : 3);
-        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" : "ZEM_GG_DREAM"; 
+        private readonly int DreamConvoAmount = 3;
+        private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" :
+            ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? "ZEM_GG_DREAM" : "ZEM_CC_DREAM");
 
         private void Awake()
         {
