@@ -191,7 +191,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.25.2023.3";
+        public override string GetVersion() => "6.27.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -798,6 +798,23 @@ namespace FiveKnights
 
         private void StartGame()
         {
+            if(PlayerData.instance.bossRushMode && !SaveSettings.HasSeenWorkshopRaised)
+            {
+                SaveSettings.gotCharms = new bool[] { true, true, true, true };
+                SaveSettings.upgradedCharm_10 = true;
+                SaveSettings.HasSeenWorkshopRaised = true;
+                SaveSettings.CompletionIsma.isUnlocked = true;
+                SaveSettings.CompletionIsma.hasBeenSeen = true;
+                SaveSettings.CompletionDryya.isUnlocked = true;
+                SaveSettings.CompletionDryya.hasBeenSeen = true;
+                SaveSettings.CompletionZemer.isUnlocked = true;
+                SaveSettings.CompletionZemer.hasBeenSeen = true;
+                SaveSettings.CompletionHegemol.isUnlocked = true;
+                SaveSettings.CompletionHegemol.hasBeenSeen = true;
+                SaveSettings.CompletionMawlek2.isUnlocked = true;
+                SaveSettings.CompletionMawlek2.hasBeenSeen = true;
+            }
+
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<TisoFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();

@@ -73,7 +73,8 @@ namespace FiveKnights
                 DryyaSetup dc = BossLoader.CreateDryya();
                 dc.gameObject.SetActive(false);
                 PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
-                yield return new WaitWhile(() => HeroController.instance.transform.position.x < 427.5f);
+                HeroController hc = HeroController.instance;
+                yield return new WaitUntil(() => hc.transform.position.x > 427.5f && hc.transform.position.y < 120f);
                 PlayMusic(null);
                 dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);

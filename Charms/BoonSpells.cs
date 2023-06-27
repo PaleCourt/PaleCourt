@@ -54,8 +54,11 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Quake1 Down", "HERO LANDED", "Q1 Land Plumes");
                 _spellControl.ChangeTransition("Quake2 Down", "HERO LANDED", "Q2 Land Plumes");
 
-                _spellControl.ChangeTransition("Level Check", "LEVEL 1", "Fireball 1 SmallShots");
-                _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2 SmallShots");
+                if(!PlayerData.instance.GetBool(nameof(PlayerData.equippedCharm_11)))
+                {
+                    _spellControl.ChangeTransition("Level Check", "LEVEL 1", "Fireball 1 SmallShots");
+                    _spellControl.ChangeTransition("Level Check", "LEVEL 2", "Fireball 2 SmallShots");
+                }
             }
             else
             {

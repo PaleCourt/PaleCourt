@@ -30,12 +30,14 @@ namespace FiveKnights
         private GameObject _wallSlash;
 
         private int _level;
+        private bool _fury;
         private int _shadeSlashNum = 1;
         private bool playingAudio;
         private float audioCooldown = 0.2f;
-        private float damageBuff => 0.075f * (_pd.maxHealth - _pd.health) // 7.5% extra per missing mask
-            * (_level == 2 ? 1.5f : 1f) // Multiplies current buff by 1.5 when at 1 hp
-            * (_pd.equippedCharm_6 && _pd.health == 1 ? 1.75f : 1f); // Manually add the fury multiplier because otherwise it gets ignored
+        private float damageScale => _pd.equippedCharm_16 ? 0.1f : 0.075f;
+        private float damageBuff => damageScale * (_pd.equippedCharm_27 ? Math.Max(_pd.joniHealthBlue - _pd.healthBlue, 0) :
+            (_pd.maxHealth - _pd.health)) // Extra per missing mask
+            * (_level == 2 ? 1.5f : 1f); // Multiplies current buff by 1.5 when using tendrils
 
 		private void OnEnable()
 		{
@@ -66,6 +68,8 @@ namespace FiveKnights
 			On.HeroController.CancelDownAttack += HeroControllerCancelDownAttack;
             On.HeroController.Attack += DoVoidAttack;
 			On.tk2dSpriteAnimator.Play_string += Tk2dSpriteAnimatorPlay;
+			On.KnightHatchling.OnEnable += KnightHatchlingOnEnable;
+			On.SpriteFlash.FlashingFury += SpriteFlashFlashingFury;
         }
 
 		private void OnDisable()
@@ -76,6 +80,8 @@ namespace FiveKnights
             On.HeroController.CancelDownAttack -= HeroControllerCancelDownAttack;
             On.HeroController.Attack -= DoVoidAttack;
             On.tk2dSpriteAnimator.Play_string -= Tk2dSpriteAnimatorPlay;
+            On.KnightHatchling.OnEnable -= KnightHatchlingOnEnable;
+            On.SpriteFlash.FlashingFury -= SpriteFlashFlashingFury;
         }
 
 		public void SetLevel(int level)
@@ -97,6 +103,8 @@ namespace FiveKnights
                     break;
             }
 		}
+
+        public void SetFury(bool fury) => _fury = fury;
 
         private void ModifySlashColors(bool modify)
         {
@@ -129,22 +137,16 @@ namespace FiveKnights
             }
         }
 
-		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
-		{
-            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
-			{
-                self.Play("Idle");
-                return;
-			}
-            orig(self, name);
-		}
-
         private void HealthManagerHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
-            if(hitInstance.AttackType == AttackTypes.Nail)
+            if(hitInstance.AttackType is AttackTypes.Nail or AttackTypes.NailBeam)
             {
-                hitInstance.Multiplier += damageBuff;
+                hitInstance.Multiplier += damageBuff + (_fury ? 0.75f : 0f);
             }
+            if(hitInstance.AttackType == AttackTypes.SharpShadow)
+			{
+                hitInstance.Multiplier += 2f * damageBuff;
+			}
             //Log("Multiplier is currently " + damageBuff + " to deal total damage of " + hitInstance.DamageDealt * hitInstance.Multiplier);
             orig(self, hitInstance);
         }
@@ -165,6 +167,32 @@ namespace FiveKnights
                 CancelTendrilAttack();
             }
             orig(self);
+        }
+
+		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
+		{
+            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
+			{
+                self.Play("Idle");
+                return;
+			}
+            orig(self, name);
+		}
+
+        private void SpriteFlashFlashingFury(On.SpriteFlash.orig_FlashingFury orig, SpriteFlash self)
+        {
+            self.flash(Color.black, 0.75f, 0.25f, 0.01f, 0.25f);
+            Mirror.SetField(self, "repeatFlash", true);
+        }
+
+        private void KnightHatchlingOnEnable(On.KnightHatchling.orig_OnEnable orig, KnightHatchling self)
+        {
+            orig(self);
+            if(_level == 2)
+            {
+                KnightHatchling.TypeDetails details = Mirror.GetField<KnightHatchling, KnightHatchling.TypeDetails>(self, "details");
+                Mirror.SetField(self, "details", details with { damage = details.damage * 2 });
+            }
         }
 
         private void DoVoidAttack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)

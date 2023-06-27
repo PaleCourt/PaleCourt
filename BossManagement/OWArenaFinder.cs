@@ -57,7 +57,7 @@ namespace FiveKnights.BossManagement
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
         }
 
-        private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
+		private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.DREAM_WORLD.ToString() : orig(self);
         }
@@ -303,7 +303,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Dryya;
                     PlayerData.instance.dreamReturnScene = PrevDryScene;
                     FixBlur();
-                    AddBattleGate(427.5f,new Vector3(421.925f, 99.5f));
+                    AddBattleGate(427.5f, 120f, new Vector3(421.925f, 99.5f));
                     DreamEntry();
                     AddSuperDashCancel();
                     FixPitDeath();
@@ -317,7 +317,7 @@ namespace FiveKnights.BossManagement
                     PlayerData.instance.dreamReturnScene = PrevIsmScene;
                     FixBlur();
                     //FixCameraIsma();
-                    AddBattleGate(110f,new Vector3(104.5f, 8.5f));
+                    AddBattleGate(110f, 99999f, new Vector3(104.5f, 8.5f));
                     DreamEntry();
                     FixIsmaSprites();
                     AddSuperDashCancel();
@@ -330,7 +330,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Ze;
                     PlayerData.instance.dreamReturnScene = PrevZemScene;
                     FixBlur();
-                    AddBattleGate(243.9f, new Vector2(238.4f, 107f));
+                    AddBattleGate(243.9f, 99999f, new Vector2(238.4f, 107f));
                     AddSuperDashCancel();
                     FixPitDeath();
                     DreamEntry();
@@ -344,7 +344,7 @@ namespace FiveKnights.BossManagement
                     FixHegemolArena();
                     AddSuperDashCancel();
                     FixPitDeath();
-                    AddBattleGate(426.5f, new Vector2(420.925f, 156.8f));
+                    AddBattleGate(426.5f, 99999f, new Vector2(420.925f, 156.8f));
                     DreamEntry();
                     GameManager.instance.gameObject.AddComponent<OWBossManager>();
                     break;
@@ -434,15 +434,8 @@ namespace FiveKnights.BossManagement
 
         private void AddCreditsTablets()
 		{
-            GameObject parent = GameObject.Find("Credits Tablets");
-            GameObject[] tablets = new GameObject[4]
-            {
-                parent.Find("Coding Tablet"),
-                parent.Find("Art Tablet"),
-                parent.Find("Sound Tablet"),
-                parent.Find("Playtesting Tablet")
-            };
-            foreach(GameObject tablet in tablets)
+            GameObject parent = GameObject.Find("Contributor Tablets");
+            foreach(Transform tablet in parent.transform)
 			{
                 GameObject shrine = Instantiate(FiveKnights.preloadedGO["Backer Shrine"], tablet.transform.position, Quaternion.identity);
                 Destroy(shrine.GetComponent<SpriteRenderer>());
@@ -459,8 +452,8 @@ namespace FiveKnights.BossManagement
 
                 GameObject inspectObject = shrine.Find("Active").Find("Inspect Region");
                 PlayMakerFSM inspectFSM = inspectObject.LocateMyFSM("inspect_region");
-                inspectFSM.GetFsmStringVariable("Game Text Convo").Value = tablet.name.Split(new char[] { ' ' })[0].ToUpper() + "_CONVO";
-                inspectFSM.GetFsmStringVariable("Game Text Sheet").Value = "Pale Court Credits";
+                inspectFSM.GetFsmStringVariable("Game Text Convo").Value = tablet.name.ToUpper();
+                inspectFSM.GetFsmStringVariable("Game Text Sheet").Value = "PC Contributor Tablets";
 
                 shrine.SetActive(true);
             }
@@ -558,7 +551,7 @@ namespace FiveKnights.BossManagement
             Log("Fixed renderer sorting orders");
         }
 
-        private void AddBattleGate(float x, Vector2 pos)
+        private void AddBattleGate(float x, float y, Vector2 pos)
         {
             IEnumerator WorkBattleGate()
             {
@@ -567,7 +560,8 @@ namespace FiveKnights.BossManagement
                 {
                     Destroy(i);
                 }
-            
+
+                HeroController hc = HeroController.instance;
                 GameObject battleGate = Instantiate(FiveKnights.preloadedGO["BattleGate"]);
                 battleGate.name = "opa";
                 battleGate.SetActive(true);
@@ -580,10 +574,10 @@ namespace FiveKnights.BossManagement
                 var bcGate = battleGate.GetComponent<BoxCollider2D>();
                 var audGate = battleGate.GetComponent<AudioSource>();
                 audGate.pitch = Random.Range(0.9f, 1.2f);
-                audGate.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+                audGate.outputAudioMixerGroup = hc.GetComponent<AudioSource>().outputAudioMixerGroup;
                 bcGate.enabled = false;
                 
-                yield return new WaitWhile(() => HeroController.instance.transform.position.x < x);
+                yield return new WaitUntil(() => hc.transform.position.x > x && hc.transform.position.y < y);
                 audGate.PlayOneShot(close);
                 animGate.Play("BG Close 1");
                 bcGate.enabled = true;

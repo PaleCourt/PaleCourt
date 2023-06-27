@@ -379,7 +379,10 @@ namespace FiveKnights
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 18).color.Value = color;
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 19).color.Value = color;
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 20).color.Value = color;
+                _hc.GetComponent<AbyssalBloom>().SetFury(true);
             });
+            fury.InsertMethod("Stay Furied", 4, () => _hc.GetComponent<AbyssalBloom>().SetFury(true));
+            fury.InsertMethod("Deactivate", 21, () => _hc.GetComponent<AbyssalBloom>().SetFury(false));
         }
 
         private void ModifySpellsForBloom()
