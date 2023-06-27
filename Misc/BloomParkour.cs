@@ -176,8 +176,74 @@ namespace FiveKnights
             GameObject.Destroy(breakable.Find("Particle System"));
             breakable.SetActive(true);
 
+            // Add indicator particles
+            scene.Find("frame collider (1)").layer = (int)PhysLayers.TERRAIN;
+            var iholder = GameObject.Instantiate(ABManager.AssetBundles[ABManager.Bundle.Misc].LoadAsset<GameObject>("iholder"));
+            var iherodetector = iholder.Find("iherodetector");
+            var particlerocks = GameObject.Instantiate(breakable.Find("Particle_rocks_small"), iholder.transform);
+            var irock1 = iholder.Find("irock");
+            var irock2 = iholder.Find("irock (1)");
+            var idust = GameObject.Instantiate(breakable.LocateMyFSM("breakable_wall_v2").GetAction<SpawnObjectFromGlobalPool>("Hit Up").gameObject.Value, iholder.transform);
+            iholder.SetActive(false);
+            iholder.transform.position = new Vector2(209.5f, 58.5f);
+            particlerocks.transform.position = iholder.transform.position;
+            iherodetector.transform.position = new Vector2(212, 53);
+            idust.transform.position = iholder.transform.position;
+            idust.transform.rotation = Quaternion.Euler(90, 180, 0);
+            idust.GetComponent<ParticleSystem>().gravityModifier = 10;
+            idust.SetActive(false);
+            iherodetector.AddComponent<IndicatorDetectorControl>().particlerocks = particlerocks;
+            iherodetector.GetComponent<IndicatorDetectorControl>().dust = idust;
+            irock1.AddComponent<RockControl>();
+            irock2.AddComponent<RockControl>();
+            particlerocks.SetActive(false);
+            iholder.SetActive(true);
+            if (FiveKnights.Instance.SaveSettings.IndicatorActivated)
+            {
+                iherodetector.SetActive(false);
+                irock1.transform.localPosition = FiveKnights.Instance.SaveSettings.IndicatorPosition1;
+                irock2.transform.localPosition = FiveKnights.Instance.SaveSettings.IndicatorPosition2;
+                irock1.SetActive(true);
+                irock2.SetActive(true);
+            }
+
 
         }
+        private class IndicatorDetectorControl : MonoBehaviour
+        {
+            public GameObject particlerocks;
+            public GameObject dust;
+            void OnTriggerEnter2D(Collider2D collision)
+            {
+                if (collision.gameObject.layer == (int)PhysLayers.PLAYER)
+                {
+                    Log("HERO ENTERED");
+                    gameObject.transform.parent.Find("irock").gameObject.SetActive(true);
+                    gameObject.transform.parent.Find("irock (1)").gameObject.SetActive(true);
+                    dust.SetActive(true);
+                    particlerocks.SetActive(true);
+                    particlerocks.GetComponent<ParticleSystem>().Emit(15);
+
+                    FiveKnights.Instance.SaveSettings.IndicatorActivated = true;
+                    gameObject.SetActive(false);
+                }
+            }
+        }
+        private class RockControl : MonoBehaviour
+        {
+            void OnCollisionEnter2D(Collision2D collision)
+            {
+                if (collision.gameObject.layer == (int)PhysLayers.TERRAIN)
+                {
+                    Log("Collided with " + collision.gameObject.name);
+                    if (gameObject.name == "irock (1)")
+                    { FiveKnights.Instance.SaveSettings.IndicatorPosition2 = gameObject.transform.localPosition; Log("Rock 2 position = " + FiveKnights.Instance.SaveSettings.IndicatorPosition2); }
+                    else
+                    { FiveKnights.Instance.SaveSettings.IndicatorPosition1 = gameObject.transform.localPosition; Log("Rock 1 position = " + FiveKnights.Instance.SaveSettings.IndicatorPosition1); }
+                }
+            }
+        }
+
         private static void SetupExitTerrain(UnityEngine.SceneManagement.Scene scene)
         {
             //Setup terrain for the transition
