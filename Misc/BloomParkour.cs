@@ -15,6 +15,7 @@ using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
 using FrogCore.Fsm;
 
+
 namespace FiveKnights
 {
     public static class BloomParkour
@@ -65,6 +66,8 @@ namespace FiveKnights
             if (To.name == "Parkour")
             {
                 SetupShadegates(To);
+                SetupBreakables(To);
+                FixBlur();
                 //FixHazardSpikes(To);
             }
         }
@@ -76,7 +79,7 @@ namespace FiveKnights
             foreach (string name in spikygates)
             {
                 var spikygate = scene.Find(name);
-                spikygate.GetComponent<AudioSource>().outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+                spikygate.GetComponent<AudioSource>().outputAudioMixerGroup = shadegate.GetComponent<AudioSource>().outputAudioMixerGroup;
 
                 var slasheffect = GameObject.Instantiate(shadegate.Find("Slash Effect"));
                 slasheffect.name = "Slash Effect";
@@ -133,6 +136,52 @@ namespace FiveKnights
                 particlesystem.transform.rotation = Quaternion.Euler(0, 0, 0);
                 particlesystem.SetActive(true);
             }
+        }
+        private static void SetupBreakables(UnityEngine.SceneManagement.Scene scene)
+        {
+            var breakables = scene.GetObjectsOfType<Breakable>();
+            foreach (var item in breakables)
+            {
+                Log("Found: " + item.name);
+                var go = item.gameObject;
+                var name = item.name.Split('_');
+                if (name[0] == "ruin")
+                {
+                    var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableFossil"]);
+                    newobj.transform.position = go.transform.position;
+                    newobj.transform.localScale = go.transform.localScale;
+                    newobj.transform.rotation = go.transform.rotation;                    
+                    newobj.SetActive(true);
+                    GameObject.Destroy(go);
+                }
+                if (name[0] == "tutorial")
+                {
+                    var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableClawPole"]);
+                    newobj.transform.position = go.transform.position;
+                    newobj.transform.localScale = go.transform.localScale;
+                    newobj.transform.rotation = go.transform.rotation;
+                    newobj.SetActive(true);
+                    GameObject.Destroy(go);
+                }
+            }
+            var vines = scene.GetObjectsOfType<GrassBehaviour>();
+            foreach (var item in vines)
+            {
+                Log("Found: " + item.name);
+                var go = item.gameObject;
+                var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableVines"]);
+                newobj.transform.position = go.transform.position;
+                newobj.transform.localScale = go.transform.localScale;
+                newobj.transform.rotation = go.transform.rotation;
+                newobj.SetActive(true);
+                GameObject.Destroy(go);
+            }
+        }  
+        public static IEnumerable<TComponent> GetObjectsOfType<TComponent>(this UnityEngine.SceneManagement.Scene scene) where TComponent : Component
+        {
+            return scene.GetRootGameObjects()
+                .Where(x => x.GetComponent<TComponent>() != null)
+                .Select(x => x.GetComponent<TComponent>());
         }
         private static void FixHazardSpikes(UnityEngine.SceneManagement.Scene scene)
         {
@@ -315,12 +364,31 @@ namespace FiveKnights
             tp.respawnMarker = rm.AddComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
         }
+        private static void FixBlur()
+        {
+            GameObject pref = null;
+            foreach (var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
+            {
+                var j = i.borderPrefab;
+                pref = j;
+                UnityEngine.Object.Destroy(i.gameObject);
+            }
+            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["AbyssSM"]);
+            if (pref != null)
+            {
+                o.GetComponent<SceneManager>().borderPrefab = pref;
+            }
+            o.GetComponent<SceneManager>().noLantern = true;
+            o.GetComponent<SceneManager>().darknessLevel = 1;
+            o.SetActive(true);
+        }
+      
         private static void GameManagerEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
             if (self.sceneName == "Parkour")
             {
-                self.tilemap.width = 500;
-                self.tilemap.height = 200;
+                self.tilemap.width = 5000;
+                self.tilemap.height = 5000;
 
             }
             orig(self, false);
@@ -332,7 +400,7 @@ namespace FiveKnights
             return orig(self);
         }
 
-        private static void Log(object o) => Modding.Logger.Log("[AutoSwing] " + o);
+        private static void Log(object o) => Modding.Logger.Log("[Bloom Parkour] " + o);
     }
 
 }

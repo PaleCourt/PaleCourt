@@ -269,7 +269,11 @@ namespace FiveKnights
                 // For Bloom Parkour
                 ("Deepnest_East_11", "Breakable Wall top"),
                 ("Deepnest_38", "Collapser Small"),
-                ("Abyss_10", "higher_being/shadow_gate")
+                ("Abyss_10", "higher_being/shadow_gate"),
+                ("Abyss_10", "Ruins Fossil"),
+                ("Abyss_10", "Tute Pole 2"),
+                ("Abyss_10", "hanging_cords_01"),
+                ("Abyss_10", "_SceneManager")
 
 
             };
@@ -350,6 +354,10 @@ namespace FiveKnights
             preloadedGO["BreakableCeiling"] = preloadedObjects["Deepnest_East_11"]["Breakable Wall top"];
             preloadedGO["CollapseFloor"] = preloadedObjects["Deepnest_38"]["Collapser Small"];
             preloadedGO["ShadeGate"] = preloadedObjects["Abyss_10"]["higher_being/shadow_gate"];
+            preloadedGO["BreakableFossil"] = preloadedObjects["Abyss_10"]["Ruins Fossil"];
+            preloadedGO["BreakableClawPole"] = preloadedObjects["Abyss_10"]["Tute Pole 2"];
+            preloadedGO["BreakableVines"] = preloadedObjects["Abyss_10"]["hanging_cords_01"];
+            preloadedGO["AbyssSM"] = preloadedObjects["Abyss_10"]["_SceneManager"];
             #endregion
 
             #region Journal Entries
