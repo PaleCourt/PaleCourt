@@ -73,7 +73,7 @@ namespace FiveKnights
                 pref = j;
                 UnityEngine.Object.Destroy(i.gameObject);
             }
-            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["SMTest"]);
+            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["AbyssSM"]);
             SceneManager sm = o.GetComponent<SceneManager>(); 
             if (pref != null) sm.borderPrefab = pref; 
 
@@ -98,13 +98,16 @@ namespace FiveKnights
             foreach (string name in spikygates)
             {
                 var spikygate = scene.Find(name);
+                var z = spikygate.transform.rotation.eulerAngles.z;
+
                 spikygate.GetComponent<AudioSource>().outputAudioMixerGroup = shadegate.GetComponent<AudioSource>().outputAudioMixerGroup;
 
                 var slasheffect = GameObject.Instantiate(shadegate.Find("Slash Effect"));
                 slasheffect.name = "Slash Effect";
                 slasheffect.transform.parent = spikygate.transform;
-                slasheffect.transform.position = spikygate.transform.position + new Vector3(4, 0, 0);
-                if (spikygate.transform.rotation.eulerAngles.z == 0)
+                slasheffect.transform.position = z == 0 ? spikygate.transform.position + new Vector3(3.2f, 0, 0) : spikygate.Find("shade_gate_0001_shadegate_front").transform.position;
+                slasheffect.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); 
+                if (z == 0)
                 {
                     slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
                     var slashfsm = slasheffect.LocateMyFSM("Control");
@@ -134,8 +137,10 @@ namespace FiveKnights
                 var dasheffect = GameObject.Instantiate(shadegate.Find("Dash Effect"));
                 dasheffect.name = "Dash Effect";
                 dasheffect.transform.parent = spikygate.transform;
-                dasheffect.transform.position = spikygate.transform.position + new Vector3(4, 0, 0);
-                if (spikygate.transform.rotation.eulerAngles.z == 0)
+                dasheffect.transform.position = z == 0 ? spikygate.transform.position + new Vector3(3.2f, 0, 0) : spikygate.Find("shade_gate_0001_shadegate_front").transform.position;
+                dasheffect.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); 
+
+                if (z == 0)
                 {
                     dasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
 
@@ -156,32 +161,87 @@ namespace FiveKnights
                 var particlesystem = GameObject.Instantiate(shadegate.Find("Particle System"));
                 particlesystem.name = "Particle System";
                 particlesystem.transform.parent = spikygate.transform;
-                particlesystem.transform.position = spikygate.transform.position;
-                particlesystem.transform.SetScaleX(1.4518f);
-                particlesystem.transform.rotation = Quaternion.Euler(0, 0, 0);
+                particlesystem.transform.position = z == 0 ? spikygate.transform.position + new Vector3(3.2f, 0, 0) : spikygate.Find("shade_gate_0001_shadegate_front").transform.position;
+                particlesystem.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); 
+                if (spikygate.transform.rotation.eulerAngles.z != 0)
+                { particlesystem.transform.rotation = Quaternion.Euler(0, 0, 270); }
+                else { particlesystem.transform.rotation = Quaternion.Euler(0, 0, 0); }
+                
                 particlesystem.SetActive(true);
             }
         }
-        private static void SetupBreakables(UnityEngine.SceneManagement.Scene scene)
+        private static void SetupBreakables(Scene scene)
         {
-            var breakables = scene.GetObjectsOfType<Breakable>();
-            foreach (var item in breakables)
+            /* var breakables = scene.GetObjectsOfType<BreakableObject>();
+             foreach (var item in breakables)
+             {
+                 Log("Found: " + item.name);
+                 var go = item.gameObject;
+                 var name = item.name.Split('_');
+                 if (name[0] == "ruin")
+                 {
+                     var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableFossil"]);
+                     newobj.transform.position = go.transform.position;
+                     newobj.transform.localScale = go.transform.localScale;
+                     newobj.transform.rotation = go.transform.rotation;                    
+                     newobj.SetActive(true);
+                     GameObject.Destroy(go);
+                 }
+                 if (name[0] == "tutorial")
+                 {
+                     var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableClawPole"]);
+                     newobj.transform.position = go.transform.position;
+                     newobj.transform.localScale = go.transform.localScale;
+                     newobj.transform.rotation = go.transform.rotation;
+                     newobj.SetActive(true);
+                     GameObject.Destroy(go);
+                 }
+             }
+             var vines = scene.GetObjectsOfType<GrassBehaviour>();
+             foreach (var item in vines)
+             {
+                 Log("Found: " + item.name);
+                 var go = item.gameObject;
+                 var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableVines"]);
+                 newobj.transform.position = go.transform.position;
+                 newobj.transform.localScale = go.transform.localScale;
+                 newobj.transform.rotation = go.transform.rotation;
+                 newobj.SetActive(true);
+                 GameObject.Destroy(go);
+             }*/
+
+            var breakables = scene.Find("Breakable");
+            foreach (Transform t in breakables.transform)
             {
-                Log("Found: " + item.name);
-                var go = item.gameObject;
-                var name = item.name.Split('_');
-                if (name[0] == "ruin")
+                if (t.GetComponent<BreakableObject>() != null)
                 {
-                    var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableFossil"]);
-                    newobj.transform.position = go.transform.position;
-                    newobj.transform.localScale = go.transform.localScale;
-                    newobj.transform.rotation = go.transform.rotation;                    
-                    newobj.SetActive(true);
-                    GameObject.Destroy(go);
+                    Log("Found: " + t.name);
+                    var go = t.gameObject;
+                    var name = t.name.Split('_');
+                    if (name[0] == "ruin")
+                    {
+                        var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableFossil"]);
+                        newobj.transform.position = go.transform.position;
+                        newobj.transform.localScale = go.transform.localScale;
+                        newobj.transform.rotation = go.transform.rotation;
+                        newobj.SetActive(true);
+                        GameObject.Destroy(go);
+                    }
+                    if (name[0] == "tutorial")
+                    {
+                        var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableClawPole"]);
+                        newobj.transform.position = go.transform.position;
+                        newobj.transform.localScale = go.transform.localScale;
+                        newobj.transform.rotation = go.transform.rotation;
+                        newobj.SetActive(true);
+                        GameObject.Destroy(go);
+                    }
                 }
-                if (name[0] == "tutorial")
+                if (t.GetComponent<GrassBehaviour>() != null)
                 {
-                    var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableClawPole"]);
+                    Log("Found: " + t.name);
+                    var go = t.gameObject;
+                    var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableVines"]);
                     newobj.transform.position = go.transform.position;
                     newobj.transform.localScale = go.transform.localScale;
                     newobj.transform.rotation = go.transform.rotation;
@@ -189,19 +249,7 @@ namespace FiveKnights
                     GameObject.Destroy(go);
                 }
             }
-            var vines = scene.GetObjectsOfType<GrassBehaviour>();
-            foreach (var item in vines)
-            {
-                Log("Found: " + item.name);
-                var go = item.gameObject;
-                var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableVines"]);
-                newobj.transform.position = go.transform.position;
-                newobj.transform.localScale = go.transform.localScale;
-                newobj.transform.rotation = go.transform.rotation;
-                newobj.SetActive(true);
-                GameObject.Destroy(go);
-            }
-        }  
+        }
         public static IEnumerable<TComponent> GetObjectsOfType<TComponent>(this Scene scene) where TComponent : Component
         {
             return scene.GetRootGameObjects()
@@ -210,7 +258,7 @@ namespace FiveKnights
         }
         private static void FixHazardSpikes(Scene scene)
         {
-            var spikes = scene.Find("SpikeWalls");
+            var spikes = scene.Find("Spikes");
             foreach (Transform t in spikes.transform)
             {
                 t.gameObject.layer = (int)PhysLayers.HERO_ATTACK;
