@@ -23,20 +23,11 @@ namespace FiveKnights
     {
         private static List<string> spikygates = new List<string>()
         {
-           "spiky_gate",
            "spiky_gate_1",
            "spiky_gate_2",
-           "spiky_gate_3"
-        };
-        private static List<string> hazardspikes = new List<string>()
-        {
-            "Spikepit_01",
-            "Spikewall_01",
-            "Spikewall_02",
-            "Spikewall_03",
-            "Spikes_01",
-            "Spikes_02",
-            "Spikes_03"
+           "spiky_gate_3",
+           "spiky_gate_4",
+           "spiky_gate_5"
         };
 
         public static void Hook()
@@ -52,7 +43,7 @@ namespace FiveKnights
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= ActiveSceneChanged;
         }
 
-        private static void ActiveSceneChanged(UnityEngine.SceneManagement.Scene From, UnityEngine.SceneManagement.Scene To)
+        private static void ActiveSceneChanged(Scene From, Scene To)
         {
             if (To.name == "Abyss_09")
             {
@@ -66,9 +57,10 @@ namespace FiveKnights
             }
             if (To.name == "Parkour")
             {
+                SetSceneSettings();
                 SetupShadegates(To);
                 SetupBreakables(To);
-                //FixHazardSpikes(To);
+                FixHazardSpikes(To);
             }
         }
         
@@ -100,9 +92,7 @@ namespace FiveKnights
             sm.ignorePlatformSaturationModifiers = false;
             o.SetActive(true);
         }
-
-
-        private static void SetupShadegates(UnityEngine.SceneManagement.Scene scene)
+        private static void SetupShadegates(Scene scene)
         {
             var shadegate = GameObject.Instantiate(FiveKnights.preloadedGO["ShadeGate"]);
             foreach (string name in spikygates)
@@ -114,47 +104,53 @@ namespace FiveKnights
                 slasheffect.name = "Slash Effect";
                 slasheffect.transform.parent = spikygate.transform;
                 slasheffect.transform.position = spikygate.transform.position + new Vector3(4, 0, 0);
-                slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
-                var slashfsm = slasheffect.LocateMyFSM("Control");
-                var effectS = slashfsm.GetState("Effect");
-                slashfsm.GetState("Init").GetAction<GetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
-                effectS.GetAction<CheckTargetDirection>(7).aboveEvent = slashfsm.FsmEvents[2];
-                effectS.GetAction<CheckTargetDirection>(7).belowEvent = slashfsm.FsmEvents[3];
-                effectS.GetAction<CheckTargetDirection>(7).aboveEvent = null;
-                effectS.GetAction<CheckTargetDirection>(7).aboveEvent = null;
-                effectS.GetAction<GetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
-                effectS.GetAction<GetPosition>(2).y = 0;
-                effectS.GetAction<SetPosition>(5).x = slashfsm.FindFloatVariable("Hero Y");
-                effectS.GetAction<SetPosition>(5).y = 0;
-                effectS.GetAction<SetPosition>(6).x = slashfsm.FindFloatVariable("Hero Y");
-                effectS.GetAction<SetPosition>(6).y = 0;
-                slashfsm.GetState("L").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
-                slashfsm.GetState("L").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
-                slashfsm.GetState("R").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
-                slashfsm.GetState("R").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
-                slashfsm.GetState("L").RemoveFsmAction(3);
-                slashfsm.GetState("R").GetAction<SendMessage>(3).functionCall.FunctionName = nameof(HeroController.instance.RecoilDown);
-                slashfsm.GetState("Pause").GetAction<SetPosition>(3).y = slashfsm.FindFloatVariable("Self X");
-                slashfsm.GetState("Pause").GetAction<SetPosition>(3).x = slashfsm.FindFloatVariable("Hero Y");
-                slasheffect.SetActive(true);
+                if (spikygate.transform.rotation.eulerAngles.z == 0)
+                {
+                    slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
+                    var slashfsm = slasheffect.LocateMyFSM("Control");
+                    var effectS = slashfsm.GetState("Effect");
+                    slashfsm.GetState("Init").GetAction<GetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
+                    effectS.GetAction<CheckTargetDirection>(7).aboveEvent = slashfsm.FsmEvents[2];
+                    effectS.GetAction<CheckTargetDirection>(7).belowEvent = slashfsm.FsmEvents[3];
+                    effectS.GetAction<CheckTargetDirection>(7).aboveEvent = null;
+                    effectS.GetAction<CheckTargetDirection>(7).aboveEvent = null;
+                    effectS.GetAction<GetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
+                    effectS.GetAction<GetPosition>(2).y = 0;
+                    effectS.GetAction<SetPosition>(5).x = slashfsm.FindFloatVariable("Hero Y");
+                    effectS.GetAction<SetPosition>(5).y = 0;
+                    effectS.GetAction<SetPosition>(6).x = slashfsm.FindFloatVariable("Hero Y");
+                    effectS.GetAction<SetPosition>(6).y = 0;
+                    slashfsm.GetState("L").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
+                    slashfsm.GetState("L").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
+                    slashfsm.GetState("R").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
+                    slashfsm.GetState("R").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
+                    slashfsm.GetState("L").RemoveFsmAction(3);
+                    slashfsm.GetState("R").GetAction<SendMessage>(3).functionCall.FunctionName = nameof(HeroController.instance.RecoilDown);
+                    slashfsm.GetState("Pause").GetAction<SetPosition>(3).y = slashfsm.FindFloatVariable("Self X");
+                    slashfsm.GetState("Pause").GetAction<SetPosition>(3).x = slashfsm.FindFloatVariable("Hero Y");
+                }
+                    slasheffect.SetActive(true);
 
                 var dasheffect = GameObject.Instantiate(shadegate.Find("Dash Effect"));
                 dasheffect.name = "Dash Effect";
                 dasheffect.transform.parent = spikygate.transform;
                 dasheffect.transform.position = spikygate.transform.position + new Vector3(4, 0, 0);
-                dasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
-                var dashfsm = dasheffect.LocateMyFSM("Control");
-                var effectD = dashfsm.GetState("Effect");
-                effectD.GetAction<GetPosition>(3).x = dashfsm.FindFloatVariable("Hero Y");
-                effectD.GetAction<GetPosition>(3).y = 0;
-                effectD.GetAction<SetPosition>(7).x = dashfsm.FindFloatVariable("Hero Y");
-                effectD.GetAction<SetPosition>(7).y = 0;
-                effectD.GetAction<SetPosition>(8).x = dashfsm.FindFloatVariable("Hero Y");
-                effectD.GetAction<SetPosition>(8).y = 0;
-                effectD.GetAction<SetPosition>(9).x = dashfsm.FindFloatVariable("Hero Y");
-                effectD.GetAction<SetPosition>(9).y = 0;
-                effectD.RemoveFsmAction(4);
+                if (spikygate.transform.rotation.eulerAngles.z == 0)
+                {
+                    dasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
 
+                    var dashfsm = dasheffect.LocateMyFSM("Control");
+                    var effectD = dashfsm.GetState("Effect");
+                    effectD.GetAction<GetPosition>(3).x = dashfsm.FindFloatVariable("Hero Y");
+                    effectD.GetAction<GetPosition>(3).y = 0;
+                    effectD.GetAction<SetPosition>(7).x = dashfsm.FindFloatVariable("Hero Y");
+                    effectD.GetAction<SetPosition>(7).y = 0;
+                    effectD.GetAction<SetPosition>(8).x = dashfsm.FindFloatVariable("Hero Y");
+                    effectD.GetAction<SetPosition>(8).y = 0;
+                    effectD.GetAction<SetPosition>(9).x = dashfsm.FindFloatVariable("Hero Y");
+                    effectD.GetAction<SetPosition>(9).y = 0;
+                    effectD.RemoveFsmAction(4);
+                }
                 dasheffect.SetActive(true);
 
                 var particlesystem = GameObject.Instantiate(shadegate.Find("Particle System"));
@@ -206,21 +202,25 @@ namespace FiveKnights
                 GameObject.Destroy(go);
             }
         }  
-        public static IEnumerable<TComponent> GetObjectsOfType<TComponent>(this UnityEngine.SceneManagement.Scene scene) where TComponent : Component
+        public static IEnumerable<TComponent> GetObjectsOfType<TComponent>(this Scene scene) where TComponent : Component
         {
             return scene.GetRootGameObjects()
                 .Where(x => x.GetComponent<TComponent>() != null)
                 .Select(x => x.GetComponent<TComponent>());
         }
-        private static void FixHazardSpikes(UnityEngine.SceneManagement.Scene scene)
+        private static void FixHazardSpikes(Scene scene)
         {
-            foreach (string name in hazardspikes)
+            var spikes = scene.Find("SpikeWalls");
+            foreach (Transform t in spikes.transform)
             {
-                var spikes = scene.Find(name);
-                spikes.AddComponent<Tink>();
+                t.gameObject.layer = (int)PhysLayers.HERO_ATTACK;
+                t.gameObject.AddComponent<DamageHero>().damageDealt = 1;
+                t.gameObject.GetComponent<DamageHero>().hazardType = 2;
+                t.gameObject.AddComponent<TinkEffect>().blockEffect = ABManager.AssetBundles[ABManager.Bundle.OWArenaDep].LoadAsset<GameObject>("Block Hit V2");
+                t.gameObject.AddComponent<Tink>();
             }
         }
-        private static void SetupEntranceTerrain(UnityEngine.SceneManagement.Scene scene)
+        private static void SetupEntranceTerrain(Scene scene)
         {
             //Setup terrain for the transition 
             var roofcollider = scene.Find("Roof Collider top right").GetComponent<PolygonCollider2D>();
@@ -322,7 +322,7 @@ namespace FiveKnights
             }
         }
 
-        private static void SetupExitTerrain(UnityEngine.SceneManagement.Scene scene)
+        private static void SetupExitTerrain(Scene scene)
         {
             //Setup terrain for the transition
             var colliderR = scene.Find("Roof Collider (1)").GetComponent<PolygonCollider2D>();
