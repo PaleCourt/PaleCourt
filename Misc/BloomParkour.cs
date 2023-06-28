@@ -67,6 +67,7 @@ namespace FiveKnights
             if (To.name == "Parkour")
             {
                 SetupShadegates(To);
+                SetupBreakables(To);
                 //FixHazardSpikes(To);
             }
         }
@@ -403,7 +404,7 @@ namespace FiveKnights
             orig(self, false);
         }
 
-        private static void Log(object o) => Modding.Logger.Log("[AutoSwing] " + o);
+        private static void Log(object o) => Modding.Logger.Log("[BloomParkour] " + o);
     }
 
 }
