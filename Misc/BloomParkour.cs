@@ -14,6 +14,7 @@ using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
 using FrogCore.Fsm;
+using UnityEngine.SceneManagement;
 
 namespace FiveKnights
 {
@@ -39,13 +40,13 @@ namespace FiveKnights
 
         public static void Hook()
         {
-            On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
+            //On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
         }
         public static void Unhook()
         {
-            On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
+            //On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero -= GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= ActiveSceneChanged;
         }
@@ -65,8 +66,38 @@ namespace FiveKnights
             if (To.name == "Parkour")
             {
                 SetupShadegates(To);
+                SetSceneSettings();
                 //FixHazardSpikes(To);
             }
+        }
+        
+        private static void SetSceneSettings()
+        {
+            GameObject pref = null;
+            foreach (var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
+            {
+                var j = i.borderPrefab;
+                pref = j;
+                UnityEngine.Object.Destroy(i.gameObject);
+            }
+            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["SMTest"]);
+            SceneManager sm = o.GetComponent<SceneManager>(); 
+            if (pref != null) sm.borderPrefab = pref; 
+
+            sm.noLantern = false;
+            sm.darknessLevel = 1;
+            sm.isWindy = false;
+            sm.sceneType = SceneType.GAMEPLAY;
+            sm.saturation = 0.5f;
+            sm.defaultIntensity = 0.6f;
+            sm.defaultColor = new Color(1f, 0.9117647f, 0.7794118f, 1f);
+            sm.heroLightColor = new Color(1f, 0.9472616f, 0.8529412f, 0.3843137f);
+            sm.mapZone = MapZone.ABYSS;
+            sm.noParticles = false;
+            sm.overrideParticlesWith = MapZone.NONE;
+            sm.environmentType = 0;
+            sm.ignorePlatformSaturationModifiers = false;
+            o.SetActive(true);
         }
 
 
@@ -174,7 +205,7 @@ namespace FiveKnights
             breakable.GetComponent<PersistentBoolItem>().semiPersistent = true;
             // REMOVE BEFORE RELEASE
             GameObject.Destroy(breakable.Find("Particle System"));
-            breakable.SetActive(true);
+            breakable.SetActive(true); 
 
             // Add indicator particles
             scene.Find("frame collider (1)").layer = (int)PhysLayers.TERRAIN;
@@ -300,7 +331,7 @@ namespace FiveKnights
             var tp = gate.AddComponent<TransitionPoint>();
             if (!onlyOut)
             {
-                var bc = gate.AddComponent<BoxCollider2D>();
+                var bc = gate.AddComponent<BoxCollider2D>(); 
                 bc.size = size;
                 bc.isTrigger = true;
                 tp.targetScene = toScene;
@@ -317,19 +348,13 @@ namespace FiveKnights
         }
         private static void GameManagerEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
-            if (self.sceneName == "Parkour")
+            if (self.sceneName == "Parkour") 
             {
                 self.tilemap.width = 500;
                 self.tilemap.height = 200;
 
             }
             orig(self, false);
-        }
-
-        private static string GameManagerGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
-        {
-            if (self.sceneName == "Parkour") return MapZone.ABYSS_DEEP.ToString();
-            return orig(self);
         }
 
         private static void Log(object o) => Modding.Logger.Log("[AutoSwing] " + o);
