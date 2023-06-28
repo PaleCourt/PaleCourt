@@ -74,8 +74,8 @@ namespace FiveKnights.Misc
             }
 
             _smith.transform.Find("Hands").GetComponent<Animator>().enabled = true;
-            CreateDialogue(_sheo, new Vector2(42f, 11f), "SHEO_TITLE", "SHEO_DREAM", GetSheoDialogue, false, true, 3f);
-            CreateDialogue(_smith, new Vector2(30.5f, 9.4f), "SMITH_TITLE", "SMITH_DREAM", GetSmithDialogue, false, true, 3f);
+            CreateDialogue(_sheo, new Vector2(42f, 11f), "NM_SHEO", "SHEO_DREAM", GetSheoDialogue, false, true, 3f);
+            CreateDialogue(_smith, new Vector2(30.5f, 9.4f), "NAILSMITH", "SMITH_DREAM", GetSmithDialogue, false, true, 3f);
             
             Log("Instantiate artist 2");
         }
