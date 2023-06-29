@@ -153,6 +153,8 @@ namespace FiveKnights
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
+			ModHooks.SetPlayerStringHook += ModHooks_SetPlayerString;
+			ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
@@ -191,7 +193,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.27.2023";
+        public override string GetVersion() => "6.29.2023";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -635,29 +637,29 @@ namespace FiveKnights
 			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
 		}
 
-        private object SetVariableHook(Type t, string key, object obj)
+        private object SetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                SaveSettings.CompletionIsma = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma = (BossStatue.Completion)orig;
             else if (key == "statueStateDryya")
-                SaveSettings.CompletionDryya = (BossStatue.Completion)obj;
+                SaveSettings.CompletionDryya = (BossStatue.Completion)orig;
             else if (key == "statueStateZemer")
-                SaveSettings.CompletionZemer = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer = (BossStatue.Completion)orig;
             else if (key == "statueStateZemer2")
-                SaveSettings.CompletionZemer2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer2 = (BossStatue.Completion)orig;
             else if (key == "statueStateIsma2")
-                SaveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma2 = (BossStatue.Completion)orig;
             else if (key == "statueStateHegemol")
-                SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
+                SaveSettings.CompletionHegemol = (BossStatue.Completion)orig;
             else if (key == "statueStateMawlek2")
-                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)orig;
             else if (key == "statueStateBroodingMawlek")
             {
-                var a = (BossStatue.Completion)obj;
+                var a = (BossStatue.Completion)orig;
                 a.usingAltVersion = false;
                 return a;
             }
-            return obj;
+            return orig;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
@@ -716,7 +718,7 @@ namespace FiveKnights
 
         private bool ModHooks_SetPlayerBool(string target, bool orig)
         {
-            if (target.StartsWith("gotCharm_"))
+            if(target.StartsWith("gotCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -725,7 +727,7 @@ namespace FiveKnights
                     return orig;
                 }
             }
-            if (target.StartsWith("newCharm_"))
+            if(target.StartsWith("newCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -734,7 +736,7 @@ namespace FiveKnights
                     return orig;
                 }
             }
-            if (target.StartsWith("equippedCharm_"))
+            if(target.StartsWith("equippedCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -755,6 +757,36 @@ namespace FiveKnights
                 {
                     return SaveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
                 }
+            }
+            return orig;
+        }
+
+        private string ModHooks_SetPlayerString(string target, string orig)
+        {
+            if(target == nameof(PlayerData.respawnMarkerName))
+            {
+                SaveSettings.respawnMarkerName = orig;
+                if(orig == "WhiteBench(Clone)(Clone)") return "RestBench (1)";
+            }
+            if(target == nameof(PlayerData.respawnScene))
+            {
+                SaveSettings.respawnScene = orig;
+                if(orig == "White_Palace_09") return "GG_Workshop";
+            }
+            return orig;
+        }
+
+        private string ModHooks_GetPlayerString(string target, string orig)
+        {
+            if(target == nameof(PlayerData.respawnMarkerName) && orig == "RestBench (1)" && 
+                !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)")
+            {
+                return SaveSettings.respawnMarkerName;
+            }
+            if(target == nameof(PlayerData.respawnScene) && orig == "GG_Workshop" && 
+                !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
+            {
+                return SaveSettings.respawnScene;
             }
             return orig;
         }
@@ -781,7 +813,6 @@ namespace FiveKnights
 			{
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
-                SaveSettings.HasSeenWorkshopRaised = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
                 SaveSettings.CompletionIsma.hasBeenSeen = true;
                 SaveSettings.CompletionDryya.isUnlocked = true;
@@ -802,7 +833,6 @@ namespace FiveKnights
             {
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
-                SaveSettings.HasSeenWorkshopRaised = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
                 SaveSettings.CompletionIsma.hasBeenSeen = true;
                 SaveSettings.CompletionDryya.isUnlocked = true;

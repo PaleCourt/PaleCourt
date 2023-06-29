@@ -61,7 +61,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null);
 
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevIsmScene, 3);
                 
                 Log("Done with Isma boss");
@@ -80,7 +80,7 @@ namespace FiveKnights
                 yield return new WaitWhile(() => dc != null);
                 PlayMusic(null);
                 
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevDryScene, 0);
                 Log("Done with Dryya boss");
                 Destroy(this);
@@ -109,7 +109,7 @@ namespace FiveKnights
                 hegemolCtrl.gameObject.SetActive(true);
 
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
 
                 foreach(Tram tram in UnityEngine.Object.FindObjectsOfType<Tram>())
 				{
@@ -149,7 +149,7 @@ namespace FiveKnights
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
 
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevZemScene, 1);
                 Destroy(this);
             }
@@ -233,16 +233,6 @@ namespace FiveKnights
             fsm.SetState("Fade Out");
         }
 
-        private IEnumerator ClearWhiteScreen()
-		{
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.J));
-            Log("Clearing white screen");
-            GameObject.Find("Blanker White").LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
-            HeroController.instance.EnableRenderer();
-            HeroController.instance.AcceptInput();
-            HeroController.instance.RegainControl();
-        }
-
         public static void PlayMusic(AudioClip clip)
         {
             MusicCue musicCue = ScriptableObject.CreateInstance<MusicCue>();
@@ -323,7 +313,6 @@ namespace FiveKnights
         {
             _ap?.StopMusic();
             _ap2?.StopMusic();
-            GameManager.instance.StartCoroutine(ClearWhiteScreen());
         }
 
         private void Log(object o)

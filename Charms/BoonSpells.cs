@@ -14,9 +14,6 @@ namespace FiveKnights
         private PlayMakerFSM _spellControl;
         private GameObject _audioPlayer;
 
-        private GameObject _dagger;
-        private GameObject _plume;
-
         private const float DaggerSpeed = 50f;
         private const int BlastDamage = 20;
         private const int BlastDamageUpgraded = 30;
@@ -30,8 +27,32 @@ namespace FiveKnights
             _audioPlayer = fireballCast.GetAction<AudioPlayerOneShotSingle>("Cast Right", 3).audioPlayer.Value;
 
             PlayMakerFSM _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), _hc.transform);
-            _plume = _pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value;
-            _dagger = _pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value;
+
+            if(!FiveKnights.preloadedGO.ContainsKey("Plume"))
+			{
+                GameObject plume = Instantiate(_pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value);
+                plume.SetActive(false);
+                plume.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
+                plume.tag = "Hero Spell";
+                Destroy(plume.GetComponent<DamageHero>());
+                DontDestroyOnLoad(plume);
+                FiveKnights.preloadedGO["Plume"] = plume;
+            }
+
+            if(!FiveKnights.preloadedGO.ContainsKey("BoonDagger"))
+			{
+                GameObject dagger = Instantiate(_pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value);
+                dagger.SetActive(false);
+                dagger.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
+                dagger.tag = "Hero Spell";
+                Destroy(dagger.GetComponent<DamageHero>());
+                Destroy(dagger.LocateMyFSM("Control"));
+                dagger.FindGameObjectInChildren("Dribble L").layer = 9;
+                dagger.FindGameObjectInChildren("Glow").layer = 9;
+                dagger.FindGameObjectInChildren("Beam").layer = 9;
+                DontDestroyOnLoad(dagger);
+                FiveKnights.preloadedGO["BoonDagger"] = dagger;
+            }
 
             FiveKnights.Clips["Burst"] = (AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value;
             FiveKnights.Clips["Plume Up"] = (AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Plume Up", 1).audioClip.Value;
@@ -81,25 +102,20 @@ namespace FiveKnights
             int increment = shaman ? 20 : 25;
             for(int angle = angleMin; angle <= angleMax; angle += increment)
             {
-                GameObject dagger = Instantiate(_dagger, HeroController.instance.transform.position, Quaternion.identity);
+                GameObject dagger = Instantiate(FiveKnights.preloadedGO["BoonDagger"], 
+                    HeroController.instance.transform.position, Quaternion.identity);
                 dagger.SetActive(false);
-                dagger.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
-                dagger.tag = "Hero Spell";
-                Destroy(dagger.GetComponent<DamageHero>());
-                Destroy(dagger.LocateMyFSM("Control"));
                 if(angle != angleMin) Destroy(dagger.GetComponent<AudioSource>());
-                dagger.FindGameObjectInChildren("Dribble L").layer = 9;
-                dagger.FindGameObjectInChildren("Glow").layer = 9;
-                dagger.FindGameObjectInChildren("Beam").layer = 9;
 
                 Rigidbody2D rb = dagger.GetComponent<Rigidbody2D>();
                 rb.isKinematic = true;
                 float xVel = DaggerSpeed * Mathf.Cos(Mathf.Deg2Rad * angle) * -HeroController.instance.transform.localScale.x;
                 float yVel = DaggerSpeed * Mathf.Sin(Mathf.Deg2Rad * angle);
+
+                dagger.SetActive(true);
                 rb.velocity = new Vector2(xVel, yVel);
                 dagger.AddComponent<Dagger>().upgraded = upgraded;
 
-                dagger.SetActive(true);
                 Destroy(dagger, 5f);
             }
         }
@@ -111,15 +127,11 @@ namespace FiveKnights
                 Vector2 pos = HeroController.instance.transform.position;
                 float plumeY = pos.y - 1.8f;
 
-                GameObject plumeL = Instantiate(_plume, new Vector2(pos.x - x, plumeY), Quaternion.identity);
-                plumeL.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
-                plumeL.tag = "Hero Spell";
+                GameObject plumeL = Instantiate(FiveKnights.preloadedGO["Plume"], new Vector2(pos.x - x, plumeY), Quaternion.identity);
                 plumeL.SetActive(true);
                 plumeL.AddComponent<Plume>().upgraded = upgraded;
 
-                GameObject plumeR = Instantiate(_plume, new Vector2(pos.x + x, plumeY), Quaternion.identity);
-                plumeR.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
-                plumeR.tag = "Hero Spell";
+                GameObject plumeR = Instantiate(FiveKnights.preloadedGO["Plume"], new Vector2(pos.x + x, plumeY), Quaternion.identity);
                 plumeR.SetActive(true);
                 plumeR.AddComponent<Plume>().upgraded = upgraded;
             }

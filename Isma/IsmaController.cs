@@ -278,7 +278,7 @@ namespace FiveKnights.Isma
             _waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
             _anim.Play("Bow");
-            if(!playingVoice) StartCoroutine(PlayVoice());
+            PlayVoice();
             yield return new WaitForSeconds(0.05f);
             yield return new WaitWhile(() => _anim.IsPlaying());
             yield return new WaitForSeconds(1f);
@@ -650,7 +650,7 @@ namespace FiveKnights.Isma
                 _rb.velocity = new Vector2(-20f * dir, 0f);
                 ToggleIsma(true);
                 _anim.Play("ThrowBomb", -1, 0f);
-                if(!playingVoice) StartCoroutine(PlayVoice());
+                PlayVoice();
                 yield return new WaitForEndOfFrame();
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _anim.enabled = false;
@@ -788,7 +788,7 @@ namespace FiveKnights.Isma
                 
                 arm = transform.Find("Arm2").gameObject;
                 _anim.Play("AFistAntic");
-                if(!playingVoice) StartCoroutine(PlayVoice());
+                PlayVoice();
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                 _rb.velocity = new Vector2(0f, 0f);
@@ -969,7 +969,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("GFistAntic");
-                if(!playingVoice) StartCoroutine(PlayVoice());
+                PlayVoice();
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1024,7 +1024,7 @@ namespace FiveKnights.Isma
         private IEnumerator BowWhipAttack()
         {
             float dir = -1f * FaceHero(true);
-            if(!playingVoice) StartCoroutine(PlayVoice());
+            PlayVoice();
             _anim.PlayAt("LoneDeath", 1);
             _rb.velocity = new Vector2(-dir * 17f, 32f);
             _rb.gravityScale = 1.5f;
@@ -1084,6 +1084,7 @@ namespace FiveKnights.Isma
             StartCoroutine(IdleTimer(IDLE_TIME));
         }
 
+        private bool _playingVoiceDS;
         private IEnumerator DungStrike()
         {
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -1149,7 +1150,7 @@ namespace FiveKnights.Isma
                     Log("Disabling animation");
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 1);
                     _anim.enabled = false;
-                    if(!playingVoice) StartCoroutine(PlayVoice());
+                    if(!_playingVoiceDS) StartCoroutine(DungStrikeVoice());
 
                     // Wait for the animation to reenable to hit the ball or if the ball was destroyed right when Isma went to hit it
                     yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
@@ -1219,6 +1220,14 @@ namespace FiveKnights.Isma
             }
         }
 
+        private IEnumerator DungStrikeVoice()
+		{
+            _playingVoiceDS = true;
+            PlayVoice();
+            yield return new WaitForSeconds(2f);
+            _playingVoiceDS = false;
+        }
+
         private GameObject LocateBall()
 		{
             tk2dSpriteAnimator tk = dd.GetComponent<tk2dSpriteAnimator>();
@@ -1284,7 +1293,7 @@ namespace FiveKnights.Isma
 
                 Vector2 pos = dd.transform.position;
 
-                if(!playingVoice) StartCoroutine(PlayVoice());
+                PlayVoice();
                 float side = _rbDD.velocity.x > 0f ? 1f : -1f;
                 float dir = FaceHero();
                 gameObject.transform.position = new Vector2(pos.x + side * 2f, pos.y + 0.38f);
@@ -1316,7 +1325,7 @@ namespace FiveKnights.Isma
                 _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
                 _ddFsm.SendEvent("FINISHED");
-                yield return new WaitUntil(() => setVel);
+                yield return new WaitUntil(() => setVel || _isDead);
                 _ddFsm.RemoveAction("Air Dive", 2);
                 yield return new WaitForSeconds(0.2f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
@@ -1340,7 +1349,7 @@ namespace FiveKnights.Isma
                 ToggleIsma(true);
                 _rb.velocity = new Vector2(dir * -20f, 0f);
                 _anim.Play("ThornPillarsAntic");
-                if(!playingVoice) StartCoroutine(PlayVoice());
+                PlayVoice();
                 yield return null;
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 2);
                 _rb.velocity = Vector2.zero;
@@ -1413,7 +1422,7 @@ namespace FiveKnights.Isma
             _anim.Play("AgonyLoopIntro");
             yield return null;
             yield return new WaitWhile(() => _anim.IsPlaying());
-            if(!playingVoice) StartCoroutine(PlayVoice());
+            PlayVoice();
             _anim.speed = 1.7f;
 
             yield return PerformAgony(agonyThorns, tAnim, onlyIsma ? 3 : 1);
@@ -1564,7 +1573,7 @@ namespace FiveKnights.Isma
                 Log("Victory");
                 _isDead = true;
                 preventDamage = true;
-                _healthPool = 100;
+                _healthPool = FrenzyHP;
 				EnemyHPBarImport.DisableHPBar(gameObject);
                 if(onlyIsma)
                 {
@@ -2187,15 +2196,10 @@ namespace FiveKnights.Isma
             return ((a - b) < 0 ? ((a - b) * -1) : (a - b)) <= threshold;
         }
 
-        // Special coroutine is used to avoid voice overlaps
-        private bool playingVoice = false;
-        private IEnumerator PlayVoice()
+        private void PlayVoice()
 		{
-            playingVoice = true;
             AudioClip voice = _randVoice[_rand.Next(0, _randVoice.Count)];
             this.PlayAudio(voice, 1f);
-            yield return new WaitForSeconds(voice.length);
-            playingVoice = false;
         }
 
         private IEnumerator WaitToAttack()

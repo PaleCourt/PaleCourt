@@ -83,6 +83,7 @@
             "RCC_OUTRO_1b": "That's crazy"
         },
         "Enemy Dreams": {
+            "FK_ARMOUR_DREAM_1": "The crest... The city's gates...",
             "ISMA_DREAM_1": "My blessing... to you...",
             "ISMA_DREAM_2": "To enter my grove and withstand acid blight...",
             "ISMA_DREAM_3": "Ogrim... If only we could spend a little while longer training here...",
@@ -160,6 +161,7 @@
             "ENTRY_TISO_NOTE": "<br>An arena of planned dangers and senseless spectacle... I don't understand this Colosseum's appeal. Do they not grasp the allure of true hunting? Is it the audience's presence that drives them so? Or is there a power beyond calling them to fruitless combat?"
         },
         "PC Contributor Tablets": {
+            "INTRO": "Bear witness to the power of a group united in mysterious cause.<br>With this great feat finished, they may now rest.",
             "SALEH": "See you in the abyss expansion... actually I'll just wait for Silksong<br>- Saleh",
             "HOOKNOWS": "insert_message_here<br>- HooKnows",
             "RIVERROBOT": "insert_message_here<br>- RiverRobot",
@@ -179,7 +181,7 @@
             "MOSSBAG": "insert_message_here<br>- mossbag",
             "SARART": "insert_message_here<br>- Sarart",
             "JOSEBACH": "insert_message_here<br>- JoSeBach",
-            "MANNO STONE": "It was spectacular! A battle like no other, it was very well balanced! Well... Until it started… So remember: \"Hesitation is defeat\". Where did I hear that?<br>Achou que eu ia escrever algo legal? Achou errado! E digo mais, vocês não podem errar porque errar é \"o Manno\"!<br>- Manno Stone",
+            "MANNO STONE": "It was spectacular! A battle like no other, it was very well balanced! Well... Until it started... So remember: \"Hesitation is defeat\". Where did I hear that?<br>Achou que eu ia escrever algo legal? Achou errado! E digo mais, vocês não podem errar porque errar é \"o Manno\"!<br>- Manno Stone",
             "HELENSB": "insert_message_here<br>- HelenSB",
             "AZEROD": "May Pale Court remain as one of the signs of how far hollow knight modding went.<br>- Azerod",
             "CROISSANT": "WE GOT THE TRAM!!<br>- Croissant",

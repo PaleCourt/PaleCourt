@@ -387,13 +387,13 @@ namespace FiveKnights
 
         private void ModifySpellsForBloom()
 		{
-            _spellControl.InsertMethod("Wallside?", () =>
-            {
-                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
-                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
-                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
-            }, 0);
-            _spellControl.InsertMethod("Quake Antic", () =>
+			_spellControl.InsertMethod("Wallside?", () =>
+			{
+				_hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+				_hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+				_hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+			}, 0);
+			_spellControl.InsertMethod("Quake Antic", () =>
             {
                 _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
                 _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
@@ -438,6 +438,8 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
             }
 
+            // Set this to disabled first so it can check for flukenest to override daggers
+            _hc.GetComponent<BoonSpells>().enabled = false;
             _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 
             _hc.GetComponent<AbyssalBloom>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[3];

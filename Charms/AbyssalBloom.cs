@@ -34,7 +34,7 @@ namespace FiveKnights
         private int _shadeSlashNum = 1;
         private bool playingAudio;
         private float audioCooldown = 0.2f;
-        private float damageScale => _pd.equippedCharm_16 ? 0.1f : 0.075f;
+        private float damageScale => _pd.equippedCharm_16 ? 0.075f : 0.0625f;
         private float damageBuff => damageScale * (_pd.equippedCharm_27 ? Math.Max(_pd.joniHealthBlue - _pd.healthBlue, 0) :
             (_pd.maxHealth - _pd.health)) // Extra per missing mask
             * (_level == 2 ? 1.5f : 1f); // Multiplies current buff by 1.5 when using tendrils
@@ -297,7 +297,7 @@ namespace FiveKnights
             _sideSlash.transform.localScale = Vector3.one;
             _sideSlash.SetActive(false);
 
-            AddDamageEnemies(_sideSlash, AttackDirection.normal);
+            AddDamageEnemiesFsm(_sideSlash, AttackDirection.normal);
 
             PolygonCollider2D slashPoly = _sideSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
@@ -314,6 +314,7 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
             GameObject parrySlash = Instantiate(_sideSlash, _sideSlash.transform);
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
             parrySlash.layer = (int)PhysLayers.ITEM;
 
             ShadeSlash ss = _sideSlash.AddComponent<ShadeSlash>();
@@ -365,7 +366,7 @@ namespace FiveKnights
             shadeSlash.transform.localPosition = new Vector3(0f, up ? 1.0f : -2.0f, 0f);
             shadeSlash.transform.localScale = new Vector3(2f, 2f, 2f);
 
-            AddDamageEnemies(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
+            AddDamageEnemiesFsm(shadeSlash, up ? AttackDirection.upward : AttackDirection.downward);
 
             // Create hitboxes
             PolygonCollider2D slashPoly = shadeSlash.AddComponent<PolygonCollider2D>();
@@ -397,6 +398,7 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
             GameObject parrySlash = Instantiate(shadeSlash, shadeSlash.transform);
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
             parrySlash.layer = (int)PhysLayers.ITEM;
             parrySlash.transform.localPosition = Vector3.zero;
             parrySlash.transform.localScale = Vector3.one;
@@ -443,7 +445,7 @@ namespace FiveKnights
             _wallSlash.transform.localScale = Vector3.one;
             _wallSlash.SetActive(false);
 
-            AddDamageEnemies(_wallSlash, AttackDirection.normal);
+            AddDamageEnemiesFsm(_wallSlash, AttackDirection.normal);
 
             PolygonCollider2D slashPoly = _wallSlash.AddComponent<PolygonCollider2D>();
             slashPoly.points = new[]
@@ -458,8 +460,9 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
 			GameObject parrySlash = Instantiate(_wallSlash, _wallSlash.transform);
-			parrySlash.layer = (int)PhysLayers.ITEM;
-			parrySlash.transform.localPosition = Vector3.zero;
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
+            parrySlash.layer = (int)PhysLayers.ITEM;
+            parrySlash.transform.localPosition = Vector3.zero;
 			parrySlash.transform.localScale = Vector3.one;
             parrySlash.SetActive(false);
 
@@ -492,27 +495,25 @@ namespace FiveKnights
             playingAudio = false;
         }
 
-        private void AddDamageEnemies(GameObject o, AttackDirection dir)
+        private void AddDamageEnemiesFsm(GameObject o, AttackDirection dir)
         {
-            DamageEnemies de = o.AddComponent<DamageEnemies>();
-            de.attackType = AttackTypes.Nail;
-            de.circleDirection = false;
-            de.damageDealt = _pd.GetInt(nameof(PlayerData.nailDamage));
-            de.ignoreInvuln = false;
-            de.magnitudeMult = 1f;
-            de.moveDirection = false;
-            de.specialType = SpecialTypes.None;
-
+            PlayMakerFSM tempFsm = o.AddComponent<PlayMakerFSM>();
+            PlayMakerFSM fsm = _hc.gameObject.Find("AltSlash").LocateMyFSM("damages_enemy");
+            foreach(var fi in typeof(PlayMakerFSM).GetFields(BindingFlags.Instance | BindingFlags.NonPublic |
+                                                              BindingFlags.Public))
+            {
+                fi.SetValue(tempFsm, fi.GetValue(fsm));
+            }
             switch(dir)
 			{
                 case AttackDirection.normal:
-                    de.direction = _hc.cState.facingRight ? 0f : 180f;
+                    tempFsm.GetFsmFloatVariable("direction").Value = _hc.cState.facingRight ? 0f : 180f;
                     break;
                 case AttackDirection.upward:
-                    de.direction = 90f;
+                    tempFsm.GetFsmFloatVariable("direction").Value = 90f;
                     break;
                 case AttackDirection.downward:
-                    de.direction = 270f;
+                    tempFsm.GetFsmFloatVariable("direction").Value = 270f;
                     break;
 			}
         }

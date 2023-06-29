@@ -48,10 +48,11 @@ namespace FiveKnights
         public int ZemerOWWinCount = 0;
 
         public bool AltStatueIsma;
-
         public bool AltStatueZemer;
-        
         public bool AltStatueMawlek;
+
+        public string respawnMarkerName;
+        public string respawnScene;
 
         public bool[] newCharms = new bool[] { true, true, true, true };
 
