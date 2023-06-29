@@ -21,14 +21,6 @@ namespace FiveKnights
 {
     public static class BloomParkour
     {
-        private static List<string> spikygates = new List<string>()
-        {
-           "spiky_gate_1",
-           "spiky_gate_2",
-           "spiky_gate_3",
-           "spiky_gate_4",
-           "spiky_gate_5"
-        };
 
         public static void Hook()
         {
@@ -95,9 +87,10 @@ namespace FiveKnights
         private static void SetupShadegates(Scene scene)
         {
             var shadegate = GameObject.Instantiate(FiveKnights.preloadedGO["ShadeGate"]);
-            foreach (string name in spikygates)
+            var spikygates = scene.Find("SpikyGates");
+            foreach (Transform t in spikygates.transform)
             {
-                var spikygate = scene.Find(name);
+                var spikygate = t.gameObject;
                 var z = spikygate.transform.rotation.eulerAngles.z;
 
                 spikygate.GetComponent<AudioSource>().outputAudioMixerGroup = shadegate.GetComponent<AudioSource>().outputAudioMixerGroup;
