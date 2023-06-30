@@ -1868,7 +1868,8 @@ namespace FiveKnights.Isma
             // Ogrim starts tracking her again
             Vector3 scDD2 = dd.transform.localScale;
             float side2 = Mathf.Sign(gameObject.transform.localScale.x);
-            _deathFx.RecordJournalEntry();
+            //_deathFx.RecordJournalEntry();
+            _deathFx.RecordWithoutNotes();
 
             dd.transform.localScale = new Vector3(side2 * Mathf.Abs(scDD2.x), scDD2.y, scDD2.z);
             

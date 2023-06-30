@@ -438,6 +438,7 @@ namespace FiveKnights.Tiso
             _rb.gravityScale = 1.5f;
             _rb.velocity = new Vector2(knockDir * 10f, 30f);
             PlayDeathFor(transform.gameObject);
+            FiveKnights.journalEntries["Tiso"].RecordJournalEntry();
             _anim.enabled = true;
             //StartCoroutine(PlayDeathSound());
             _anim.speed = 1f;

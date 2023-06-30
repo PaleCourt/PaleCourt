@@ -1023,7 +1023,7 @@ namespace FiveKnights.Hegemol
             CustomWP.wonLastFight = true;
 
             if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
-			_deathFx.RecordJournalEntry();
+            FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
 
 			_anim.enabled = true;
             _anim.speed = 1f;
