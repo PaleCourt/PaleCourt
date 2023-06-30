@@ -116,6 +116,17 @@ namespace FiveKnights
         public bool ZemerThirdConvo1 = false;
         public bool ZemerCharmConvo = false;
 
+        public bool WLadyKHConvo1 = false;
+        public bool WLadyKHConvo2 = false;
+        public bool WLadyMPConvo1 = false;
+        public bool WLadyMPConvo2 = false;
+        public bool WLadyBHConvo1 = false;
+        public bool WLadyBHConvo2 = false;
+        public bool WLadyVLConvo1 = false;
+        public bool WLadyVLConvo2 = false;
+        public bool WLadyAllConvo1 = false;
+        public bool WLadyAllConvo2 = false;
+
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
         public bool HasSeenWorkshopRaised = false;

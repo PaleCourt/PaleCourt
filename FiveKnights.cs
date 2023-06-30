@@ -22,6 +22,7 @@ using TMPro;
 using Vasi;
 using GetLanguageString = On.HutongGames.PlayMaker.Actions.GetLanguageString;
 using System.Collections;
+using FiveKnights.Misc;
 
 namespace FiveKnights
 {
@@ -160,6 +161,7 @@ namespace FiveKnights
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             RewardRoom.Hook();
             Credits.Hook();
+            WhiteLadyDialogue.Hook();
 
             #endregion
 

@@ -618,7 +618,7 @@ namespace FiveKnights
                         else
                         {
                             key = "RR_OGRIM_THIRD_REPEAT";
-                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk7"]);
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk7"]); 
                         }
                     }
                 }
