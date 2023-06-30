@@ -15,28 +15,44 @@ using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
 using FrogCore.Fsm;
 using UnityEngine.SceneManagement;
+using Object = UnityEngine.Object;
 
 
 namespace FiveKnights
 {
     public static class BloomParkour
     {
-
+        private static string _currScene;
+        
         public static void Hook()
         {
             //On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
+            ModHooks.DrawBlackBordersHook += ModHooksOnDrawBlackBordersHook;
         }
+
+        private static void ModHooksOnDrawBlackBordersHook(List<GameObject> obj)
+        {
+            // Remove black border
+            if (_currScene == "Parkour")
+            {
+                foreach (var border in obj) border.SetActive(false);
+            }
+        }
+
         public static void Unhook()
         {
             //On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero -= GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= ActiveSceneChanged;
+            ModHooks.DrawBlackBordersHook -= ModHooksOnDrawBlackBordersHook;
         }
 
         private static void ActiveSceneChanged(Scene From, Scene To)
         {
+            _currScene = To.name;
+            
             if (To.name == "Abyss_09")
             {
                 SetupEntranceTerrain(To);
@@ -53,22 +69,69 @@ namespace FiveKnights
                 SetupShadegates(To);
                 SetupBreakables(To);
                 FixHazardSpikes(To);
+                SetWater();
             }
         }
-        
+
+        private static void SetWater()
+        {
+            var surface = FiveKnights.preloadedGO["AbyssWater1"];
+            var wBox = FiveKnights.preloadedGO["AbyssWater2"];
+
+            Vector3[] surfacePoses =
+            {
+                new (248.1f, 31.2f, 0.004f), new (229f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
+                new (233.5f, 31.2f, 0.004f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
+            };
+
+            Vector3[] wBoxPoses =
+            {
+                new (252f, 30.5f, 0.004f), new (229.9482f, 30.5f, 0.004f)
+            };
+
+            foreach (var pos in surfacePoses)
+            {
+                var surf = Object.Instantiate(surface);
+                surf.transform.position = pos;
+                surf.SetActive(true);
+            }
+            
+            foreach (var pos in wBoxPoses)
+            {
+                var w = Object.Instantiate(wBox);
+                w.transform.position = pos;
+                w.SetActive(true);
+            }
+        }
+
         private static void SetSceneSettings()
         {
-            GameObject pref = null;
-            foreach (var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
+            if (GameObject.Find("_Effects").transform.Find("Darkness Region") != null)
             {
-                var j = i.borderPrefab;
-                pref = j;
-                UnityEngine.Object.Destroy(i.gameObject);
-            }
-            GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["AbyssSM"]);
-            SceneManager sm = o.GetComponent<SceneManager>(); 
-            if (pref != null) sm.borderPrefab = pref; 
+                var oldD = GameObject.Find("_Effects").transform.Find("Darkness Region");
+                var newD = Object.Instantiate(FiveKnights.preloadedGO["DReg"]);
+                
+                var oldBC = oldD.GetComponent<BoxCollider2D>();
+                var newBC = newD.GetComponent<BoxCollider2D>();
 
+                newBC.size = oldBC.size;
+                newBC.offset = oldBC.offset;
+
+                newD.transform.position = oldD.transform.position;
+                newD.transform.localScale = oldD.transform.localScale;
+                
+                newD.SetActive(true);
+
+                Object.Destroy(oldD);
+            }
+
+            foreach (var i in Object.FindObjectsOfType<SceneManager>())
+            {
+                Object.Destroy(i.gameObject);
+            }
+            GameObject o = Object.Instantiate(FiveKnights.preloadedGO["AbyssSM"]);
+            SceneManager sm = o.GetComponent<SceneManager>();
+            
             sm.noLantern = false;
             sm.darknessLevel = 1;
             sm.isWindy = false;
@@ -81,7 +144,7 @@ namespace FiveKnights
             sm.noParticles = false;
             sm.overrideParticlesWith = MapZone.NONE;
             sm.environmentType = 0;
-            sm.ignorePlatformSaturationModifiers = false;
+            sm.ignorePlatformSaturationModifiers = false; 
             o.SetActive(true);
         }
         private static void SetupShadegates(Scene scene)
@@ -237,8 +300,8 @@ namespace FiveKnights
                     var newobj = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableVines"]);
                     newobj.transform.position = go.transform.position;
                     newobj.transform.localScale = go.transform.localScale;
-                    newobj.transform.rotation = go.transform.rotation;
-                    newobj.SetActive(true);
+                    newobj.transform.rotation = go.transform.rotation; 
+                    newobj.SetActive(true);  
                     GameObject.Destroy(go);
                 }
             }
@@ -438,9 +501,8 @@ namespace FiveKnights
         {
             if (self.sceneName == "Parkour") 
             {
-                self.tilemap.width = 500;
-                self.tilemap.height = 200;
-
+                self.sceneWidth = self.tilemap.width = 1000;
+                self.sceneHeight = self.tilemap.height = 1000;
             }
             orig(self, false);
         }

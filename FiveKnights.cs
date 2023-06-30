@@ -273,8 +273,10 @@ namespace FiveKnights
                 ("Abyss_10", "Ruins Fossil"),
                 ("Abyss_10", "Tute Pole 2"),
                 ("Abyss_10", "hanging_cords_01"),
-                ("Abyss_10", "_SceneManager")
-
+                ("Abyss_10", "_SceneManager"),
+                ("Abyss_10", "GameObject/abyss_water_top (3)"),
+                ("Abyss_10", "Surface Water Region"),
+                ("Abyss_10", "Darkness Region")
 
             };
         }
@@ -358,6 +360,9 @@ namespace FiveKnights
             preloadedGO["BreakableClawPole"] = preloadedObjects["Abyss_10"]["Tute Pole 2"];
             preloadedGO["BreakableVines"] = preloadedObjects["Abyss_10"]["hanging_cords_01"];
             preloadedGO["AbyssSM"] = preloadedObjects["Abyss_10"]["_SceneManager"];
+            preloadedGO["AbyssWater1"] = preloadedObjects["Abyss_10"]["GameObject/abyss_water_top (3)"];
+            preloadedGO["AbyssWater2"] = preloadedObjects["Abyss_10"]["Surface Water Region"];
+            preloadedGO["DReg"] = preloadedObjects["Abyss_10"]["Darkness Region"];
             #endregion
 
             #region Journal Entries
