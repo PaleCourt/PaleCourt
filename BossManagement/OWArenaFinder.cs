@@ -122,12 +122,14 @@ namespace FiveKnights.BossManagement
                     if(PlayerData.instance.falseKnightDefeated)
                     {
                         Log("Adding dreamnail reaction to armor");
-                        GameObject armor = GameObject.Find("FK Armour").Find("Tinger");
-                        EnemyDreamnailReaction dreamNailReaction = armor.AddComponent<EnemyDreamnailReaction>();
-                        dreamNailReaction.SetConvoTitle("FK_ARMOUR_DREAM");
-                        Vasi.Mirror.SetField(dreamNailReaction, "dreamImpactPrefab",
-                            FiveKnights.preloadedGO["WhiteDef"].GetComponent<EnemyDreamnailReaction>().
-                            GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab"));
+                        GameObject dreamDialogue = Instantiate(FiveKnights.preloadedGO["Dream Dialogue"],
+                            new Vector3(36.5f, 3f, 0f), Quaternion.identity);
+                        dreamDialogue.transform.localScale = new Vector3(3f, 0.87f, 1f);
+                        dreamDialogue.SetActive(true);
+
+                        PlayMakerFSM dreamDialogueFSM = dreamDialogue.LocateMyFSM("npc_dream_dialogue");
+                        dreamDialogueFSM.GetFsmStringVariable("Convo Name").Value = "FK_ARMOUR_DREAM_PC";
+                        dreamDialogueFSM.GetFsmStringVariable("Sheet Name").Value = "Enemy Dreams";
                     }
                     break;
                 default:
@@ -664,7 +666,7 @@ namespace FiveKnights.BossManagement
 
             GameObject dreamPt = Instantiate(FiveKnights.preloadedGO["DPortal2"]);
             dreamPt.SetActive(true);
-            dreamPt.transform.position = new Vector3(pos.x + particOff.x, pos.y + particOff.y, -0.002f);
+            dreamPt.transform.position = new Vector3(pos.x + particOff.x, pos.y + particOff.y, -0.2f);
             dreamPt.transform.localScale = Vector3.one;
             dreamPt.transform.eulerAngles = Vector3.zero;
 

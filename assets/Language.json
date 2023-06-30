@@ -74,6 +74,7 @@
             "RCC_OUTRO_1b": "That's crazy"
         },
         "Enemy Dreams": {
+            "FK_ARMOUR_DREAM_PC": "The crest... The city's gates...",
             "OGRIM_GG_DREAM_1": "My King... I believe in you. I believe in Hallownest!",
             "OGRIM_GG_DREAM_2": "My devotion will never falter!",
             "OGRIM_GG_DREAM_3": "So strong...",
@@ -95,7 +96,6 @@
             "DRYYA_GG_DREAM_2": "Strike swiftly!",
             "DRYYA_GG_DREAM_3": "Straighten your back!",
             "DRYYA_GG_DREAM_4": "Watch your step!",
-            "FK_ARMOUR_DREAM_1": "The crest... The city's gates...",
             "HEG_DREAM_1": "How to protect against a plague of mind...?",
             "HEG_DREAM_2": "I'll fight to defend the City!",
             "HEG_DREAM_3": "It bears the crest, but is it worthy?",
@@ -112,10 +112,10 @@
             "ZEM_CC_DREAM_1": "Show che' Le'mer can bear this burden!",
             "ZEM_CC_DREAM_2": "Strength... in frailty...",
             "ZEM_CC_DREAM_3": "Remain strong!",
-            "TISO_GG_DREAM_1": "So it really is up for the challenge...",
-            "TISO_GG_DREAM_2": "Taste my darts!",
-            "TISO_GG_DREAM_3": "So vicious! So exciting!",
-            "TISO_GG_DREAM_4": "The glory... all mine!"
+            "TISO_DREAM_1": "So it really is up for the challenge...",
+            "TISO_DREAM_2": "Taste my darts!",
+            "TISO_DREAM_3": "So vicious! So exciting!",
+            "TISO_DREAM_4": "The glory... all mine!"
         },
         "UI": {
             "CHARM_NAME_PURITY": "Mark of Purity",
@@ -287,7 +287,8 @@
             "RR_HEGEMOL_FIRST_1_3": "This reminds me of a time I was training with Isma, ready to charge through the foliage she had created... She summoned a vine that tripped me over and has never let me forget it since.",
             "RR_HEGEMOL_FIRST_2_1": "I do admire your skill with that nail. I could never be so delicate as to handle one without breaking it.",
             "RR_HEGEMOL_FIRST_2_2": "Were I to wield a similar weapon, it would be Ze'mer's. What the smiths of her home must be capable of to produce such a massive, yet refined blade...",
-            "RR_HEGEMOL_FIRST_2_3": "Of course, nothing suits me better than my trusty mace. No need to be precise if your position doesn't call for it, and there's nothing quite like the joy of smashing your way through everything in your path. If I weren't a Knight, perhaps I would make a good mining golem, oho!",
+            "RR_HEGEMOL_FIRST_2_3": "Of course, nothing suits me better than my trusty mace. No need to be precise if your position doesn't call for it, and there's nothing quite like the joy of smashing your way through everything in your path.",
+            "RR_HEGEMOL_FIRST_2_4": "If I weren't a Knight, perhaps I would make a good mining golem, oho!",
             "RR_HEGEMOL_FIRST_REPEAT": "I suppose you will be seeing my mace on the battlefield again soon.",
             "RR_HEGEMOL_FIRST_DREAM": "My jest returns only silence... you are a strange one little knight...",
             "RR_HEGEMOL_SECOND_1_1": "I'm thoroughly impressed; you've withstood my full force and lived to tell the tale twice now. I'm often called �Mighty� Hegemol, but perhaps I ought to pass that title to you.",

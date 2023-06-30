@@ -36,7 +36,8 @@ namespace FiveKnights.Tiso
         public const float LeftX = 52f;
         public const float RightX = 69.7f;
         public const float MiddleX = 61f;
-        private const int MaxDreamAmount = 3;
+        private readonly int DreamConvoAmount = 4;
+        private readonly string DreamConvoKey = "TISO_DREAM";
         private readonly int MaxHP = BossSceneController.Instance.BossLevel > 0 ? 1400 : 1100;
         private Random _rand;
         private TisoAttacks _attacks;
@@ -67,7 +68,7 @@ namespace FiveKnights.Tiso
                 .GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             _rand = new Random();
             _dnailReac.enabled = true;
-            Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
+            Mirror.SetField(_dnailReac, "convoAmount", DreamConvoAmount);
             
             // So she gets hit by dcrest I think
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
@@ -308,7 +309,7 @@ namespace FiveKnights.Tiso
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle("TISO_DREAM");
+                _dnailReac.SetConvoTitle(DreamConvoKey);
             }
 
             orig(self);

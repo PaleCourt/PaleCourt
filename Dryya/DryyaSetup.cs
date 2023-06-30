@@ -340,7 +340,7 @@ namespace FiveKnights.Dryya
 
                 yield return new WaitWhile(() => _anim.CurrentFrame < 5);
                 _anim.ClipFps = 24;
-                PlayVoice(true);
+                PlayVoice("Alt");
                 signX = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
                 localScale = new Vector3(Mathf.Abs(localScale.x) * signX, localScale.y,
                     localScale.z);
@@ -480,18 +480,18 @@ namespace FiveKnights.Dryya
 		private void ModifyAudio()
 		{
             // Voice
-            _control.InsertMethod("Backstep 1", () => PlayVoice(false), 0);
-            _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(false), 0);
-            _control.InsertMethod("Counter Collider 1", () => PlayVoice(false), 0);
+            _control.InsertMethod("Backstep 1", () => PlayVoice(), 0);
+            _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(), 0);
+            _control.InsertMethod("Counter Collider 1", () => PlayVoice(), 0);
             //_control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
-            _control.InsertMethod("Dive", () => PlayVoice(false), 0);
-            _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice(true), 0);
-            _control.InsertMethod("Stab", () => PlayVoice(false), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayAudio("VoiceBeams" + Random.Range(1, 4)), 0);
-			_control.InsertMethod("Super Start 3", () => PlayVoice(false), 0);
-            _control.InsertMethod("Ground Stab 4", () => PlayVoice(false), 0);
-            _control.InsertMethod("Ground Air 4", () => PlayVoice(false), 0);
-            _control.InsertMethod("Air 1", () => PlayVoice(false), 0);
+            _control.InsertMethod("Dive", () => PlayVoice(), 0);
+            _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice("Alt"), 0);
+            _control.InsertMethod("Stab", () => PlayVoice(), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayAudio("Beams"), 0);
+			_control.InsertMethod("Super Start 3", () => PlayVoice(), 0);
+            _control.InsertMethod("Ground Stab 4", () => PlayVoice(), 0);
+            _control.InsertMethod("Ground Air 4", () => PlayVoice(), 0);
+            _control.InsertMethod("Air 1", () => PlayVoice(), 0);
 
             // SFX
             _control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
@@ -525,18 +525,22 @@ namespace FiveKnights.Dryya
 			_control.InsertMethod("Cheeky Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
 		}
 
-        private void PlayVoice(bool alt)
+        private void PlayVoice(string suffix = "")
 		{
-            string clip = "Voice";
-            if(alt)
+            string clip = "DryyaVoice" + suffix;
+            if(suffix == "Alt")
             {
-                clip += "Alt" + Random.Range(1, 7);
+                clip += Random.Range(1, 7);
             }
+            else if(suffix == "Beams")
+			{
+                clip += Random.Range(1, 4);
+			}
             else
             {
                 clip += Random.Range(1, 8);
             }
-            PlayAudio(clip, 1f, 1f);
+            this.PlayAudio(FiveKnights.Clips[clip]);
 		}
 
 		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)

@@ -184,6 +184,15 @@ namespace FiveKnights
             // Audio
             FiveKnights.Clips["DryyaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaMusic");
             FiveKnights.Clips["DryyaAreaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaAreaMusic");
+            string[] clips = new string[]
+            {
+                "1", "2", "3", "4", "5", "6", "7", "Alt1", "Alt2", "Alt3", "Alt4", "Alt5", "Alt6", "Beams1",
+                "Beams2", "Beams3", "Bow", "Death"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips["DryyaVoice" + name] = _soundBundle.LoadAsset<AudioClip>("DryyaVoice" + name);
+            }
 
             // Animation clips
             foreach(var c in _dryyaBundle.LoadAllAssets<AnimationClip>())
@@ -222,8 +231,8 @@ namespace FiveKnights
             {
                 "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
                 "HegJump", "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath",
-                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3", "HegemolMusic", "HegAreaMusic",
-                "HegAreaMusicIntro", "HegAreaMusicBG"
+                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3", "HegemolMusicIntro", "HegemolMusicLoop",
+                "HegAreaMusic", "HegAreaMusicIntro", "HegAreaMusicBG"
             };
             foreach(string name in clips)
             {

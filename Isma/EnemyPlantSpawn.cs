@@ -417,9 +417,6 @@ namespace FiveKnights.Isma
                 {
                     ball.AddComponent<ModifiedSpit>();
                 }
-                // Prevent hiding
-                fsm.RemoveFsmGlobalTransition("HIDE");
-                fsm.GetFsmFloatVariable("Hide Distance").Value = 0f;
 
                 if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 

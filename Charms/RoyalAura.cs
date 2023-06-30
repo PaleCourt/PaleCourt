@@ -8,8 +8,8 @@ namespace FiveKnights
 {
     public class RoyalAura : MonoBehaviour
     {
+        public GameObject dungCloud;
         private GameObject _dungTrail;
-        private GameObject _dungCloud;
 
         private PlayMakerFSM _dungControl;
         private PlayMakerFSM _dungTrailControl;
@@ -37,9 +37,9 @@ namespace FiveKnights
                 }
                 if(pool.prefab.name == "Knight Dung Cloud")
 				{
-                    _dungCloud = Instantiate(pool.prefab);
-                    _dungCloud.SetActive(false);
-                    DontDestroyOnLoad(_dungCloud);
+                    dungCloud = Instantiate(pool.prefab);
+                    dungCloud.SetActive(false);
+                    DontDestroyOnLoad(dungCloud);
 				}
             }
             _spellControl = HeroController.instance.spellControl;
@@ -52,12 +52,12 @@ namespace FiveKnights
             ParticleSystem.MainModule trailMain = trailPt.main;
             trailMain.startColor = PaleColor;
 
-            foreach(ParticleSystem cloudPt in _dungCloud.GetComponentsInChildren<ParticleSystem>(true))
+            foreach(ParticleSystem cloudPt in dungCloud.GetComponentsInChildren<ParticleSystem>(true))
 			{
                 ParticleSystem.MainModule cloudMain = cloudPt.main;
                 cloudMain.startColor = PaleColor;
             }
-            foreach(tk2dSprite sprite in _dungCloud.GetComponentsInChildren<tk2dSprite>(true))
+            foreach(tk2dSprite sprite in dungCloud.GetComponentsInChildren<tk2dSprite>(true))
 			{
                 sprite.color = Color.white;
             }
@@ -73,8 +73,8 @@ namespace FiveKnights
                 _spellControl.GetAction<SpawnObjectFromGlobalPool>(state, 0).Enabled = false;
                 _spellControl.InsertMethod(state, () =>
                 {
-                    GameObject dungCloud = Instantiate(_dungCloud, transform.position - new Vector3(0f, 0f, -0.001f), Quaternion.identity);
-                    dungCloud.SetActive(true);
+                    GameObject cloud = Instantiate(dungCloud, transform.position - new Vector3(0f, 0f, -0.001f), Quaternion.identity);
+                    cloud.SetActive(true);
 
                     // Ok this is really dumb but for some reason trying to just do it in OnEnable doesn't work and trying to use
                     // ModifyAuraColor on it doesn't work
@@ -129,7 +129,7 @@ namespace FiveKnights
             // Needed for the sound effect and impact lines
 			if(self.Fsm.GameObjectName.Contains("Dung Explosion") && self.State.Name == "Explode")
 			{
-                GameObject dungTrail = Instantiate(_dungCloud, self.Fsm.GameObject.transform.position, Quaternion.identity);
+                GameObject dungTrail = Instantiate(dungCloud, self.Fsm.GameObject.transform.position, Quaternion.identity);
                 dungTrail.SetActive(true);
                 foreach(Component comp in self.Fsm.GameObject.GetComponentsInChildren<Component>(true))
 				{
@@ -188,7 +188,7 @@ namespace FiveKnights
         private void OnDisable()
 		{
             Destroy(_dungTrail);
-            Destroy(_dungCloud);
+            Destroy(dungCloud);
 
             _dungControl.GetAction<Wait>("Emit Pause", 2).time.Value = 0.5f;
 			_dungControl.GetAction<SpawnObjectFromGlobalPoolOverTime>("Equipped", 0).Enabled = true;

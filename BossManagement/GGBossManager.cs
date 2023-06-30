@@ -25,6 +25,7 @@ namespace FiveKnights.BossManagement
         private tk2dSpriteAnimator _tk;
         public static bool alone;
         private bool HIT_FLAG;
+        private bool doneCCHitless;
         public static GGBossManager Instance;
         public Dictionary<string, AnimationClip> clips;
 
@@ -114,7 +115,6 @@ namespace FiveKnights.BossManagement
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
 			On.HealthManager.ApplyExtraDamage += HealthManagerApplyExtraDamage;
 			On.HealthManager.Die += HealthManagerDie;
-            ModHooks.BeforePlayerDeadHook += BeforePlayerDied;
             string dret = PlayerData.instance.dreamReturnScene;
             PlayerData.instance.dreamReturnScene = (dret == "Waterways_13") ? dret : "White_Palace_09";
             dret = PlayerData.instance.dreamReturnScene;
@@ -284,7 +284,9 @@ namespace FiveKnights.BossManagement
 				BossSceneController bsc = BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
 				bsc.bosses = new HealthManager[0];
 				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
-                
+
+                doneCCHitless = true;
+				On.HeroController.TakeDamage += CheckCCHitless;
                 yield return null;
 
                 // Disable the check that prevents music if it finds a BSC
@@ -494,10 +496,19 @@ namespace FiveKnights.BossManagement
             transitionFSM.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
 
             // Set win dialogue
-            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
+            if(doneCCHitless)
+			{
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "RCC_OUTRO_1a";
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "RCC_OUTRO_1b";
+            }
+            else
+			{
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
+            }
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
-            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
+            RewardRoom.doneCCHitless = doneCCHitless;
 
             // Set fields for room transition
             transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "Pale_Court_Credits";
@@ -514,11 +525,12 @@ namespace FiveKnights.BossManagement
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-		public void BeforePlayerDied()
+        private void CheckCCHitless(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
         {
-            Log("RAN");
+            doneCCHitless = false;
+            orig(self, go, damageSide, damageAmount, hazardType);
         }
-        
+
         private void HealthManagerTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.name.Contains("White Defender"))
@@ -571,23 +583,17 @@ namespace FiveKnights.BossManagement
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
         }
 
-        private void Log(object o)
-        {
-            Modding.Logger.Log("[GGBossManager] " + o);
-        }
+        private void Log(object o) => Modding.Logger.Log("[GGBossManager] " + o);
         
-        private void OnDestroy()
-        {
-            Unload();
-        }
+        private void OnDestroy() => Unload();
 
         private void Unload()
         {
-            ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.ApplyExtraDamage -= HealthManagerApplyExtraDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
+            On.HeroController.TakeDamage -= CheckCCHitless;
         }
     }
 }

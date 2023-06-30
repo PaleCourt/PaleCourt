@@ -41,6 +41,18 @@ namespace FiveKnights
                 _spellControl.InsertMethod("Focus Heal Blast", 16, BlastControlMain);
                 _spellControl.InsertMethod("Focus Heal 2 Blast", 18, BlastControlMain);
             }
+
+            foreach(var pool in ObjectPool.instance.startupPools)
+            {
+                if(pool.prefab.name == "Knight Spore Cloud")
+                {
+                    FiveKnights.preloadedGO["SporeCloud"] = pool.prefab;
+                }
+                if(pool.prefab.name == "Knight Dung Cloud")
+                {
+                    FiveKnights.preloadedGO["DungCloud"] = pool.prefab;
+                }
+            }
         }
         private void BlastControlCancel()
         {
@@ -283,15 +295,13 @@ namespace FiveKnights
         {
             Log("Called PureVesselBlastFadeIn");
             Log("Recieved GO: " + gameObject.name);
-
-
-           StartCoroutine(FadeOut());
+            
+            StartCoroutine(FadeOut());
 
             _createLine = CreateLine();
             StartCoroutine(_createLine);
-            _focusLines = Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), gameObject.transform.position, new Quaternion(0, 0, 0, 0));
+            _focusLines = Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), gameObject.transform.position, Quaternion.identity);
             _focusLines.GetComponent<tk2dSpriteAnimator>().Play("Focus Effect");
-
 
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value, 0, 1.5f);
             _blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
@@ -390,14 +400,34 @@ namespace FiveKnights
             Log("Adding DamageEnemies");
             _blast.AddComponent<DamageEnemies>();
             DamageEnemies damageEnemies = _blast.GetComponent<DamageEnemies>();
-            if(_pd.GetBool("equippedCharm_" + Charms.DeepFocus)) { damageEnemies.damageDealt = 60; }
-            else { damageEnemies.damageDealt = 30;  }
+            damageEnemies.damageDealt = _pd.GetBool("equippedCharm_" + Charms.DeepFocus) ? 60 : 30;
             damageEnemies.attackType = AttackTypes.Spell;
             damageEnemies.ignoreInvuln = false;
             damageEnemies.enabled = true;
             Log("Playing AudioClip");
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 0, 1.5f);
             Log("Audio Clip finished");
+
+            // Spawn additional things
+            if(_pd.GetBool("equippedCharm_" + Charms.SporeShroom))
+			{
+                if(_pd.GetBool("equippedCharm_" + Charms.DefendersCrest))
+				{
+                    if(FiveKnights.Instance.SaveSettings.upgradedCharm_10)
+                    {
+                        Instantiate(_hc.GetComponent<RoyalAura>().dungCloud, transform.position, Quaternion.identity).SetActive(true);
+                    }
+                    else
+                    {
+                        Instantiate(FiveKnights.preloadedGO["DungCloud"], transform.position, Quaternion.identity).SetActive(true);
+                    }
+                }
+                else
+				{
+                    Instantiate(FiveKnights.preloadedGO["SporeCloud"], transform.position, Quaternion.identity).SetActive(true);
+				}
+            }
+
             yield return new WaitForSeconds(.11f);
             blastCollider.enabled = false;
             yield return new WaitForSeconds(0.69f);

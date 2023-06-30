@@ -193,7 +193,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.29.2023";
+        public override string GetVersion() => "6.29.2023.2";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -205,6 +205,7 @@ namespace FiveKnights
                 ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
+                ("Abyss_05", "Dream Dialogue"),
                 ("GG_Failed_Champion","False Knight Dream"),
                 // The dust for when Zemer slams into walls
                 ("GG_Failed_Champion","Ceiling Dust"),
@@ -290,6 +291,7 @@ namespace FiveKnights
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
+            preloadedGO["Dream Dialogue"] = preloadedObjects["Abyss_05"]["Dream Dialogue"];
             preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
             preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
 

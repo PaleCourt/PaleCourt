@@ -138,7 +138,7 @@ namespace FiveKnights.Hegemol
 
             _dh = AddDamageToGO(gameObject, 2, false);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-            if (!OWArenaFinder.IsInOverWorld) MusicControl();
+            StartCoroutine(MusicControl());
             PlayVoiceClip("HNeutral", true, 1f);
 
             yield return new WaitForSeconds(1f);
@@ -212,10 +212,21 @@ namespace FiveKnights.Hegemol
             StartCoroutine(currAtt.Invoke());
         }
 
-        private void MusicControl()
+        private IEnumerator MusicControl()
         {
             Log("Start Music");
-            GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusic"], 1f);
+            if(OWArenaFinder.IsInOverWorld)
+			{
+                OWBossManager.PlayMusic(FiveKnights.Clips["HegemolMusicIntro"]);
+                yield return new WaitForSeconds(FiveKnights.Clips["HegemolMusicIntro"].length);
+                OWBossManager.PlayMusic(FiveKnights.Clips["HegemolMusicLoop"]);
+            }
+			else
+			{
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusicIntro"]);
+                yield return new WaitForSeconds(FiveKnights.Clips["HegemolMusicIntro"].length);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusicLoop"]);
+            }
         }
 
         private Func<IEnumerator> prevAtt2;
