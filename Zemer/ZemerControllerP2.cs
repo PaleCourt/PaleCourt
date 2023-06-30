@@ -1764,6 +1764,7 @@ namespace FiveKnights.Zemer
 
             IEnumerator Recover(bool firstDeath = false)
             {
+                PlayAudioClip("ZAudMid");
                 yield return _anim.PlayBlocking("ZRecover");
                 
                 float t = firstDeath ? RecoveryReturnFirstDelay : RecoveryReturnRestDelay;

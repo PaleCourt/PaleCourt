@@ -278,7 +278,7 @@ namespace FiveKnights.Isma
             _waitForHitStart = true;
             yield return new WaitForSeconds(0.7f);
             _anim.Play("Bow");
-            PlayVoice();
+            this.PlayAudio(FiveKnights.Clips["IsmaAudBow"], 1f);
             yield return new WaitForSeconds(0.05f);
             yield return new WaitWhile(() => _anim.IsPlaying());
             yield return new WaitForSeconds(1f);
@@ -1454,6 +1454,7 @@ namespace FiveKnights.Isma
 
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
 
+                if (j % 2 == 0 && j != 0) PlayVoice();
 
                 Animator[] anims = thorn.GetComponentsInChildren<Animator>(true);
                 Vector2 heroVel = _target.GetComponent<Rigidbody2D>().velocity;
