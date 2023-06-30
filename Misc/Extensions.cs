@@ -196,10 +196,13 @@ namespace FiveKnights
             {
                 string pd = "kills" + ReflectionHelper.GetField<EnemyDeathEffects, string>(deathEffects, "playerDataName");
                 int kills = PlayerData.instance.GetInt(pd);
-                if (kills > 0 && withoutnotes)
-                    PlayerData.instance.SetInt(pd, defaultkills);
-                else
-                    PlayerData.instance.SetInt(pd, 1);
+                if (kills > 0)
+                {
+                    if (withoutnotes)
+                        PlayerData.instance.SetInt(pd, defaultkills);
+                    else
+                        PlayerData.instance.SetInt(pd, 1);
+                }
                 deathEffects.RecordJournalEntry();
                 return kills > 0 && withoutnotes;
             }
@@ -216,10 +219,13 @@ namespace FiveKnights
             {
                 string pd = "kills" + entry.GetEntryName();
                 int kills = PlayerData.instance.GetInt(pd);
-                if (kills > 0 && withoutnotes)
-                    PlayerData.instance.SetInt(pd, defaultkills);
-                else
-                    PlayerData.instance.SetInt(pd, 1);
+                if (kills > 0)
+                {
+                    if (withoutnotes)
+                        PlayerData.instance.SetInt(pd, defaultkills);
+                    else
+                        PlayerData.instance.SetInt(pd, 1);
+                }
                 entry.RecordJournalEntry();
                 return kills > 0 && withoutnotes;
             }
