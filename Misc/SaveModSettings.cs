@@ -31,14 +31,21 @@ namespace FiveKnights
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData HegemolEntryData = new JournalHelper.JournalPlayerData
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
+            newentry = true
+        };
+        public JournalHelper.JournalPlayerData Mawlek2EntryData = new JournalHelper.JournalPlayerData
+        {
+            haskilled = false,
+            Hidden = true,
+            killsremaining = 1,
             newentry = true
         };
 

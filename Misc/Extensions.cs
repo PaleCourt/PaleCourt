@@ -8,6 +8,7 @@ using Modding;
 using UnityEngine;
 using UnityEngine.Playables;
 using Logger = Modding.Logger;
+using FrogCore;
 
 namespace FiveKnights
 {
@@ -200,6 +201,26 @@ namespace FiveKnights
                 else
                     PlayerData.instance.SetInt(pd, 1);
                 deathEffects.RecordJournalEntry();
+                return kills > 0 && withoutnotes;
+            }
+            catch(Exception e)
+            {
+                FiveKnights.Instance.Log(e);
+                return withoutnotes;
+            }
+        }
+
+        public static bool RecordWithoutNotes(this JournalHelper entry, bool withoutnotes = true, int defaultkills = 2)
+        {
+            try
+            {
+                string pd = "kills" + entry.GetEntryName();
+                int kills = PlayerData.instance.GetInt(pd);
+                if (kills > 0 && withoutnotes)
+                    PlayerData.instance.SetInt(pd, defaultkills);
+                else
+                    PlayerData.instance.SetInt(pd, 1);
+                entry.RecordJournalEntry();
                 return kills > 0 && withoutnotes;
             }
             catch(Exception e)

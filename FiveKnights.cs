@@ -375,8 +375,14 @@ namespace FiveKnights
                 note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
                 shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
             }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Tiso", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.Mawlek2EntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_TISO_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_TISO_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_TISO_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_TISO_NAME", "Journal")
+            }, "LobsterLancer", JournalHelper.EntryType.Normal, null, true, true));
             #endregion
-
             #region Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
@@ -637,6 +643,7 @@ namespace FiveKnights
 			SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
 			SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
 			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
+			SaveSettings.Mawlek2EntryData = journalEntries["Tiso"].playerData;
 		}
 
         private object SetVariableHook(Type t, string key, object orig)
@@ -857,6 +864,7 @@ namespace FiveKnights
             journalEntries["Dryya"].playerData = SaveSettings.DryyaEntryData;
             journalEntries["Hegemol"].playerData = SaveSettings.HegemolEntryData;
             journalEntries["Zemer"].playerData = SaveSettings.ZemerEntryData;
+            journalEntries["Tiso"].playerData = SaveSettings.Mawlek2EntryData;
 
             // Obtain additional preloads
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())

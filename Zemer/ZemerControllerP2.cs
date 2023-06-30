@@ -1737,7 +1737,8 @@ namespace FiveKnights.Zemer
                 {
                     _anim.enabled = false;
                     // TODO This is breaking stuff, idk yall figure it out smh
-                    _deathEff.RecordJournalEntry();
+                    //_deathEff.RecordJournalEntry();
+                    FiveKnights.journalEntries["Zemer"].RecordWithoutNotes();
 					yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
@@ -2843,7 +2844,7 @@ namespace FiveKnights.Zemer
 
             if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
-            _deathEff.RecordJournalEntry();
+            FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
 
             _isKnockingOut = true;
             float knockDir = Math.Sign(transform.position.x - HeroController.instance.transform.position.x);
