@@ -250,7 +250,7 @@ namespace FiveKnights.Dryya
 
             GameObject corpse = Instantiate(_corpse);
             corpse.SetActive(false);
-            corpse.AddComponent<DryyaCorpse>().deathClip = _control.Fsm.GetFsmObject("VoiceDeath").Value as AudioClip;
+            corpse.AddComponent<DryyaCorpse>();
             deathEffects.SetAttr("corpsePrefab", corpse);
             deathEffects.SetAttr("corpseFlingSpeed", 25.0f);
 
@@ -487,7 +487,7 @@ namespace FiveKnights.Dryya
             _control.InsertMethod("Dive", () => PlayVoice(), 0);
             _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice("Alt"), 0);
             _control.InsertMethod("Stab", () => PlayVoice(), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayAudio("Beams"), 0);
+			_control.InsertMethod("Beams Slash 1", () => PlayVoice("Beams"), 0);
 			_control.InsertMethod("Super Start 3", () => PlayVoice(), 0);
             _control.InsertMethod("Ground Stab 4", () => PlayVoice(), 0);
             _control.InsertMethod("Ground Air 4", () => PlayVoice(), 0);
