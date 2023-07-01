@@ -2024,6 +2024,8 @@ namespace FiveKnights.Zemer
             
             IEnumerator FlashAppear(Vector2 targ)
             {
+                PlayAudioClip("ZAudExplode");
+
                 GameObject heartOld = FiveKnights.preloadedGO["Heart"];
                 GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
                 GameObject whiteflashOld = FiveKnights.preloadedGO["WhiteFlashZem"];
