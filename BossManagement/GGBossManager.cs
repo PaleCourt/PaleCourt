@@ -286,7 +286,7 @@ namespace FiveKnights.BossManagement
 				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
 
                 doneCCHitless = true;
-				On.HeroController.TakeHealth += CheckCCHitless;
+				ModHooks.AfterTakeDamageHook += CheckCCHitless;
                 yield return null;
 
                 // Disable the check that prevents music if it finds a BSC
@@ -357,6 +357,13 @@ namespace FiveKnights.BossManagement
                 CCDreamExit();
             }
         }
+
+		private int CheckCCHitless(int hazardType, int damageAmount)
+		{
+            Log("Got hit in CC");
+            doneCCHitless = false;
+            return damageAmount;
+		}
 
 		private IEnumerator OgrimIsmaFight()
         {
@@ -526,12 +533,6 @@ namespace FiveKnights.BossManagement
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-        private void CheckCCHitless(On.HeroController.orig_TakeHealth orig, HeroController self, int amount)
-        {
-            doneCCHitless = false;
-            orig(self, amount);
-        }
-
         private void HealthManagerTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.name.Contains("White Defender"))
@@ -594,7 +595,7 @@ namespace FiveKnights.BossManagement
             On.HealthManager.ApplyExtraDamage -= HealthManagerApplyExtraDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
-            On.HeroController.TakeHealth -= CheckCCHitless;
+            ModHooks.AfterTakeDamageHook -= CheckCCHitless;
         }
     }
 }
