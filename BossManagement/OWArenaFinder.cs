@@ -478,7 +478,7 @@ namespace FiveKnights.BossManagement
 			{
                 GameObject shrine = Instantiate(FiveKnights.preloadedGO["Backer Shrine"], tablet.transform.position, Quaternion.identity);
                 Destroy(shrine.GetComponent<SpriteRenderer>());
-                Destroy(shrine.GetComponent<Breakable>());
+                Destroy(shrine.GetComponent<Breakable>()); 
                 Destroy(shrine.GetComponent<PersistentBoolItem>());
                 Destroy(shrine.GetComponent<BoxCollider2D>());
                 Destroy(shrine.Find("Particle_rocks_small (3)"));

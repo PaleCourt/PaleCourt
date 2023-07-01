@@ -48,7 +48,7 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 10f : 19f;
 
 
-        private readonly int Phase2HP = CustomWP.lev > 0 ? 1350 : 1200;
+        private readonly int Phase2HP = CustomWP.lev > 0 ? 1500 : 1350;
         private int DoneFrenzyAtt;
         private readonly int Phase3HP = CustomWP.lev > 0 ? 950 : 800;
 

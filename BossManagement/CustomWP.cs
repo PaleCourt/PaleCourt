@@ -381,15 +381,15 @@ namespace FiveKnights
             GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
             if(wonLastFight) GameManager.instance.OnFinishedEnteringScene += GMOnFinishedEnteringScene;
             else lev = 0;
-            wonLastFight = false;
+            wonLastFight = false; 
 
-            SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
+            SetStatue(new Vector2(81.75f, 94.15f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
-            SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(39.4f, 94.15f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRYYA_NAME", "DRYYA_DESC", "statueStateDryya");
-            SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(73.3f, 98.25f), new Vector2(-0.13f, 1.3f), new Vector2(0f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
-            SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(0f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
+            SetStatue(new Vector2(48f, 98.25f), new Vector2(-0.2f, 0.1f), new Vector2(0f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
                                         ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
 
