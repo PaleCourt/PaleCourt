@@ -64,6 +64,7 @@ namespace FiveKnights
 			_thanksParent = GameObject.Find("Thanks Parent").transform;
 			_finalParent = GameObject.Find("Final Parent").transform;
 			_creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
+			_scrolling = false;
 			FixFonts();
 			StopAudio();
 			_creditsCoro = StartCoroutine(RollCredits());
@@ -122,6 +123,8 @@ namespace FiveKnights
 
 			Log("Scroll credits");
 			_scrolling = true;
+			yield return null;
+			yield return null;
 			yield return WaitForScrollEnd();
 			_scrolling = false;
 
