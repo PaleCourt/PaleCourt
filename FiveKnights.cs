@@ -23,6 +23,9 @@ using FiveKnights.Misc;
 
 namespace FiveKnights
 {
+    // If you're digging through these files for secrets, do us
+    // a favor and keep your discoveries to yourself for at least a
+    // day to let other people enjoy the mod. Thanks.
 
     [UsedImplicitly]
     public class FiveKnights : FullSettingsMod<SaveModSettings, GlobalModSettings>
@@ -92,6 +95,8 @@ namespace FiveKnights
                         "journal_icon_isma",
                         "journal_zemer",
                         "journal_icon_zemer",
+                        "journal_tiso",
+                        "journal_icon_tiso",
                     };
                     if (biggerList.Contains(resName)) ppu = 200f / 3f;
                     // Create sprite from texture
@@ -406,7 +411,7 @@ namespace FiveKnights
                 note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
                 shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
             }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
-            journalEntries.Add("Tiso", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.Mawlek2EntryData, new JournalHelper.JournalNameStrings
+            journalEntries.Add("Tiso", new JournalHelper(SPRITES["journal_icon_tiso"], SPRITES["journal_tiso"], SaveSettings.Mawlek2EntryData, new JournalHelper.JournalNameStrings
             {
                 name = langStrings.Get("ENTRY_TISO_LONGNAME", "Journal"),
                 desc = langStrings.Get("ENTRY_TISO_DESC", "Journal"),
@@ -933,7 +938,6 @@ namespace FiveKnights
 
                 ParryTink.TinkClip = aud;
                 Tink.TinkClip = aud;
-                AbyssalTemple.NoShakeTink.TinkClip = aud;
 
                 preloadedGO["ClashTink"] = clashSndObj;
                 break;

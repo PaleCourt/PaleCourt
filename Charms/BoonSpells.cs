@@ -17,6 +17,8 @@ namespace FiveKnights
         private const float DaggerSpeed = 50f;
         private const int BlastDamage = 20;
         private const int BlastDamageUpgraded = 30;
+        private const int DaggerDamage = 13;
+        private const int DaggerDamageUpgraded = 25;
 
         private void OnEnable()
 		{
@@ -32,7 +34,7 @@ namespace FiveKnights
 			{
                 GameObject plume = Instantiate(_pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value);
                 plume.SetActive(false);
-                plume.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
+                plume.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
                 plume.tag = "Hero Spell";
                 Destroy(plume.GetComponent<DamageHero>());
                 DontDestroyOnLoad(plume);
@@ -43,7 +45,7 @@ namespace FiveKnights
 			{
                 GameObject dagger = Instantiate(_pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value);
                 dagger.SetActive(false);
-                dagger.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
+                dagger.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
                 dagger.tag = "Hero Spell";
                 Destroy(dagger.GetComponent<DamageHero>());
                 Destroy(dagger.LocateMyFSM("Control"));
@@ -114,7 +116,12 @@ namespace FiveKnights
 
                 dagger.SetActive(true);
                 rb.velocity = new Vector2(xVel, yVel);
-                dagger.AddComponent<Dagger>().upgraded = upgraded;
+
+                DamageEnemies de = dagger.AddComponent<DamageEnemies>();
+                de.damageDealt = upgraded ? DaggerDamageUpgraded : DaggerDamage;
+                de.attackType = AttackTypes.Spell;
+                de.ignoreInvuln = false;
+                de.enabled = true;
 
                 Destroy(dagger, 5f);
             }
@@ -171,7 +178,7 @@ namespace FiveKnights
         private GameObject SpawnBlast(Vector3 pos, bool upgraded)
 		{
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"], pos, Quaternion.identity);
-            blast.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
+            blast.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
             blast.tag = "Hero Spell";
             blast.SetActive(true);
             Destroy(blast.FindGameObjectInChildren("hero_damager"));

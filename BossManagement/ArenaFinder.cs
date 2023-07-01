@@ -617,35 +617,12 @@ namespace FiveKnights
 
             IEnumerator RaisePlatform()
             {
-                bool loop = true;
-                
-                if (HeroController.instance.cState.superDashing)
-                {
-                    HeroController.instance.CancelSuperDash();
-                    StartCoroutine(StopSuperDash());
-                }
-
-                IEnumerator StopSuperDash()
-                {
-                    while (loop)
-                    {
-                        HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-                        HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-                        HeroController.instance.RelinquishControl();
-                        HeroController.instance.StopAnimationControl();
-                        HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
-                        yield return null; 
-                    }
-                }
+                PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+                roarFSM.GetFsmGameObjectVariable("Roar Object").Value = gameObject;
+                roarFSM.SendEvent("ROAR ENTER");
 
                 GameObject entrance = gameObject.transform.parent.gameObject;
                 Transform parent = FiveKnights.preloadedGO["ObjRaise"].transform;
-                
-                HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-                HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-                HeroController.instance.RelinquishControl();
-                HeroController.instance.StopAnimationControl();
-                HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
                 
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = true;
                 GameObject raiseAud = Instantiate(parent.Find("Rise Audio").gameObject);
@@ -704,11 +681,9 @@ namespace FiveKnights
                 HeroController.instance.PlayAudio(impactAud.GetComponent<AudioSource>().clip);
                 
                 SpawnPlatAndCrack();
-                loop = false;
                 yield return new WaitForSeconds(0.3f);
 
-                HeroController.instance.RegainControl();
-                HeroController.instance.StartAnimationControl();
+                roarFSM.SendEvent("ROAR EXIT");
                 dust.GetComponent<ParticleSystem>().Stop();
                 dust2.GetComponent<ParticleSystem>().Stop();
 
