@@ -17,14 +17,14 @@ namespace FiveKnights
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData ZemerEntryData = new JournalHelper.JournalPlayerData
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData DryyaEntryData = new JournalHelper.JournalPlayerData
@@ -68,14 +68,6 @@ namespace FiveKnights
         public bool[] equippedCharms = new bool[] { false, false, false, false };
 
         public bool upgradedCharm_10 = false;
-
-        public int[] charmCosts = new int[]
-        {
-            Charms.charmCost_41,
-            Charms.charmCost_42,
-            Charms.charmCost_43,
-            Charms.charmCost_44,
-        };
 
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;

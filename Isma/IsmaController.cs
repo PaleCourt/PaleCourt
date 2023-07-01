@@ -109,7 +109,6 @@ namespace FiveKnights.Isma
             _hitEffects = gameObject.AddComponent<EnemyHitEffectsUninfected>();
             _hitEffects.enabled = true;
             _deathFx = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathFx.SetJournalEntry(FiveKnights.journalEntries["Isma"]);
 
             gameObject.AddComponent<Flash>();
 
@@ -621,6 +620,7 @@ namespace FiveKnights.Isma
             
             foreach (GameObject wall in new[] {wallL, wallR})
             {
+                if(wall == null) continue;
                 wall.transform.Find("FrontW").gameObject.GetComponent<Animator>().Play("WallFrontDestroy");
                 wall.transform.Find("Back").gameObject.GetComponent<Animator>().Play("WallBackDestroy");
                 wall.transform.Find("Petal").Find("P1").gameObject.GetComponent<Animator>().Play("PetalOneDest");
@@ -1730,7 +1730,7 @@ namespace FiveKnights.Isma
             }
             Coroutine c = StartCoroutine(OgrimCatchPos());
             Log("After start coroutine");
-            _deathFx.RecordJournalEntry();
+            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
             yield return new WaitWhile(() => !FastApproximately(transform.GetPositionY(), dd.transform.GetPositionY(), 1.6f) && dd.transform.GetPositionY() > 13f);
             Log("After wait while");
             if(c != null) StopCoroutine(c);
@@ -1856,6 +1856,7 @@ namespace FiveKnights.Isma
             // Isma dies
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
 			GGBossManager.Instance.PlayMusic(null, 1f);
+            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter -= TransitionToAudioSnapshotOnEnter;
             PlayDeathFor(gameObject);
             _anim.Play("Falling");
@@ -1868,8 +1869,6 @@ namespace FiveKnights.Isma
             // Ogrim starts tracking her again
             Vector3 scDD2 = dd.transform.localScale;
             float side2 = Mathf.Sign(gameObject.transform.localScale.x);
-            //_deathFx.RecordJournalEntry();
-            _deathFx.RecordWithoutNotes();
 
             dd.transform.localScale = new Vector3(side2 * Mathf.Abs(scDD2.x), scDD2.y, scDD2.z);
             
@@ -1935,7 +1934,7 @@ namespace FiveKnights.Isma
 
             // Destroy objects and award achivement
             if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
-            //FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
 
             eliminateMinions = true;
             killAllMinions = true;

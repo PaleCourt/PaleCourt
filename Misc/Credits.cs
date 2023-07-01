@@ -39,8 +39,8 @@ namespace FiveKnights
 	public class CreditsController : MonoBehaviour
 	{
 		// Values measured on a 3840 x 2400 screen
-		private readonly float ScrollSpeed = 290f * (Screen.height / 2400f);
-		private readonly float ScrollY = 17250f * (Screen.height / 2400f);
+		private readonly float ScrollSpeed = 330f * (Screen.height / 2400f);
+		private readonly float ScrollY = 17500f * (Screen.height / 2400f);
 
 		private Transform _creditsParent;
 		private Transform _scrollParent;

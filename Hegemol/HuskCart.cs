@@ -13,7 +13,7 @@ namespace FiveKnights.Hegemol
         private float newStartx = 0f;
         public float Zvalue = 0f;
         public float new_Zvalue = 0f;
-        private float xLimit = 402f;
+        private float xLimit = 407.5f;
 
         void Start()
         {

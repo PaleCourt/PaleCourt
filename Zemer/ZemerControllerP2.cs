@@ -153,7 +153,6 @@ namespace FiveKnights.Zemer
         {
             _hm.hp = Phase2HP;
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Zemer"]);
             _target = HeroController.instance.gameObject;
             
             foreach (var i in FindObjectsOfType<Rigidbody2D>(true))
@@ -1737,9 +1736,8 @@ namespace FiveKnights.Zemer
                 {
                     _anim.enabled = false;
                     // TODO This is breaking stuff, idk yall figure it out smh
-                    //_deathEff.RecordJournalEntry();
-                    FiveKnights.journalEntries["Zemer"].RecordWithoutNotes();
-					yield return new WaitForSeconds(1.75f);
+                    FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+                    yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);

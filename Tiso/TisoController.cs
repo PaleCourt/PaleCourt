@@ -169,7 +169,7 @@ namespace FiveKnights.Tiso
         private IEnumerator MusicControl()
         {
             PlayMusic(FiveKnights.Clips["TisoMusicStart"]);
-            yield return new WaitForSeconds(FiveKnights.Clips["TisoMusicStart"].length);
+            yield return new WaitForSecondsRealtime(FiveKnights.Clips["TisoMusicStart"].length);
             PlayMusic(FiveKnights.Clips["TisoMusicLoop"]);
         }
         

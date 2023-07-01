@@ -286,7 +286,7 @@ namespace FiveKnights.BossManagement
 				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
 
                 doneCCHitless = true;
-				On.HeroController.TakeDamage += CheckCCHitless;
+				On.HeroController.TakeHealth += CheckCCHitless;
                 yield return null;
 
                 // Disable the check that prevents music if it finds a BSC
@@ -399,7 +399,7 @@ namespace FiveKnights.BossManagement
             _fsm.SetState("Stun Set");
             Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 5);
 
-            // Disable his burrow and ground spikes
+            // Disable his burrow and ground spikes and his particle effect
             burrow.enabled = true;
             burrow.SendEvent("BURROW END");
             foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
@@ -415,6 +415,7 @@ namespace FiveKnights.BossManagement
                     pillar.enabled = false;
                 }
             }
+            _fsm.GetFsmGameObjectVariable("zz_Pt Dive").Value.GetComponent<ParticleSystem>().Stop();
 
             yield return new WaitWhile(() => _fsm.ActiveStateName != "Stun Land");
             _fsm.enabled = false;
@@ -525,10 +526,10 @@ namespace FiveKnights.BossManagement
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-        private void CheckCCHitless(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+        private void CheckCCHitless(On.HeroController.orig_TakeHealth orig, HeroController self, int amount)
         {
             doneCCHitless = false;
-            orig(self, go, damageSide, damageAmount, hazardType);
+            orig(self, amount);
         }
 
         private void HealthManagerTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
@@ -593,7 +594,7 @@ namespace FiveKnights.BossManagement
             On.HealthManager.ApplyExtraDamage -= HealthManagerApplyExtraDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
-            On.HeroController.TakeDamage -= CheckCCHitless;
+            On.HeroController.TakeHealth -= CheckCCHitless;
         }
     }
 }

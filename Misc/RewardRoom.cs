@@ -131,6 +131,7 @@ namespace FiveKnights
                 entrance.SetTitle("RR_ENTER_TITLE");
                 entrance.SetDreamKey("RR_ENTER_TITLE_SUB");
                 entrance.SetUp();
+                entrance.gameObject.SetActive(false);
             }
             if (arg1.name == "hidden_reward_room")
             {

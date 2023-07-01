@@ -18,9 +18,6 @@ using Random = UnityEngine.Random;
 using UnityEngine.UI;
 using FrogCore;
 using SFCore.Generics;
-using TMPro;
-using Vasi;
-using GetLanguageString = On.HutongGames.PlayMaker.Actions.GetLanguageString;
 using System.Collections;
 using FiveKnights.Misc;
 
@@ -42,6 +39,7 @@ namespace FiveKnights
         public List<int> charmIDs;
         public static Dictionary<string, JournalHelper> journalEntries = new ();
         public static readonly string[] CharmKeys = { "PURITY", "LAMENT", "BOON", "BLOOM", "HONOUR" };
+        public static readonly int[] CharmCosts = { 3, 2, 4, 5 };
         public static string OS
         {
             get
@@ -196,7 +194,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.29.2023.3";
+        public override string GetVersion() => "7.1.2023-rc.1";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -798,7 +796,7 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return SaveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
+                    return CharmCosts[charmIDs.IndexOf(charmNum)];
                 }
             }
             return orig;

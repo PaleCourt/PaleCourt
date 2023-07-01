@@ -9,8 +9,8 @@
     <Product>FiveKnights</Product>
     <Description></Description>
     <Copyright>Copyright © Hewlett-Packard 2020</Copyright>
-    <AssemblyVersion>2022.10.28.0</AssemblyVersion>
-    <FileVersion>2022.10.28.0</FileVersion>
+    <AssemblyVersion>6.30.2023.0</AssemblyVersion>
+    <FileVersion>6.30.2023.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
     <HollowKnightRefs Condition="Exists('/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/')">/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/</HollowKnightRefs>

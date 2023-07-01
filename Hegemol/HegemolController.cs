@@ -218,13 +218,13 @@ namespace FiveKnights.Hegemol
             if(OWArenaFinder.IsInOverWorld)
 			{
                 OWBossManager.PlayMusic(FiveKnights.Clips["HegemolMusicIntro"]);
-                yield return new WaitForSeconds(FiveKnights.Clips["HegemolMusicIntro"].length);
+                yield return new WaitForSecondsRealtime(FiveKnights.Clips["HegemolMusicIntro"].length);
                 OWBossManager.PlayMusic(FiveKnights.Clips["HegemolMusicLoop"]);
             }
 			else
 			{
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusicIntro"]);
-                yield return new WaitForSeconds(FiveKnights.Clips["HegemolMusicIntro"].length);
+                yield return new WaitForSecondsRealtime(FiveKnights.Clips["HegemolMusicIntro"].length);
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["HegemolMusicLoop"]);
             }
         }
