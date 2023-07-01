@@ -926,7 +926,6 @@ namespace FiveKnights
 
                 ParryTink.TinkClip = aud;
                 Tink.TinkClip = aud;
-                AbyssalTemple.NoShakeTink.TinkClip = aud;
 
                 preloadedGO["ClashTink"] = clashSndObj;
                 break;
