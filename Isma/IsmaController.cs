@@ -231,13 +231,13 @@ namespace FiveKnights.Isma
             if(OWArenaFinder.IsInOverWorld)
             {
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
-                yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
+                yield return new WaitForSecondsRealtime(FiveKnights.Clips["LoneIsmaIntro"].length);
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
             }
             else if(onlyIsma)
             {
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
-                yield return new WaitForSeconds(FiveKnights.Clips["LoneIsmaIntro"].length);
+                yield return new WaitForSecondsRealtime(FiveKnights.Clips["LoneIsmaIntro"].length);
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
             }
             else
