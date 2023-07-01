@@ -305,7 +305,8 @@ namespace FiveKnights
                 "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area",  "ZAudAtt7", "ZAudAtt8",
                 "ZAudAtt9", "ZAudAtt10", "ZAudAtt11", "ZAudAtt12", "ZAudAtt13", 
                 "ZAudAtt14", "ZAudAtt15", "ZAudAtt16",
-                "ZAudMid", "ZAudTalk1", "ZAudTalk1B", "ZAudTalk2", "ZAudTalk3", "ZAudTalk4"
+                "ZAudMid", "ZAudTalk1", "ZAudTalk1B", "ZAudTalk2", "ZAudTalk3", "ZAudTalk4",
+                "ZAudExplode"
             };
             foreach(var name in clips)
             {

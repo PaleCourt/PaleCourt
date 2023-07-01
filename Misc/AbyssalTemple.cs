@@ -99,8 +99,8 @@ namespace FiveKnights
 
             Vector3[] surfacePoses =
             {
-                new (248.1f, 31.2f, 0.004f), new (231.6483f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
-                new (233.5f, 31.2f, 0.004f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
+                new (248.1f, 31.2f, -0.196f), new (229f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
+                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
             };
 
             Vector3[] wBoxPoses =
@@ -385,7 +385,7 @@ namespace FiveKnights
         }
         internal class NoShakeTink : MonoBehaviour
         {
-            internal static AudioClip TinkClip { get; set; }
+            internal static AudioClip TinkClip = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>("sword_hit_reject");
 
             private void OnTriggerEnter2D(Collider2D other)
             {

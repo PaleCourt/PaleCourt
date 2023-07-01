@@ -88,7 +88,7 @@ public static class WhiteLadyDialogue
             }
         }
         // Has Mark of Purity
-        else if (FiveKnights.Instance.SaveSettings.equippedCharms[0])
+        if (!didDialogue && FiveKnights.Instance.SaveSettings.equippedCharms[0])
         {
             if (!FiveKnights.Instance.SaveSettings.WLadyMPConvo1)
             {
@@ -102,7 +102,7 @@ public static class WhiteLadyDialogue
             }
         }
         // Has Boon of Hallownest
-        else if (FiveKnights.Instance.SaveSettings.equippedCharms[2])
+        if (!didDialogue && FiveKnights.Instance.SaveSettings.equippedCharms[2])
         {
             if (!FiveKnights.Instance.SaveSettings.WLadyBHConvo1)
             {
@@ -116,7 +116,7 @@ public static class WhiteLadyDialogue
             }
         }
         // Has Vessel's Lament
-        else if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
+        if (!didDialogue && FiveKnights.Instance.SaveSettings.equippedCharms[1])
         {
             if (!FiveKnights.Instance.SaveSettings.WLadyVLConvo1)
             {
@@ -130,10 +130,11 @@ public static class WhiteLadyDialogue
             }
         }
         // Has ALL
-        else if (FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
-                 FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                 FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
-                 FiveKnights.Instance.SaveSettings.upgradedCharm_10 && PlayerData.instance.equippedCharm_10)
+        if (!didDialogue && 
+            FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
+            FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+            FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
+            FiveKnights.Instance.SaveSettings.upgradedCharm_10 && PlayerData.instance.equippedCharm_10)
         {
             if (!FiveKnights.Instance.SaveSettings.WLadyAllConvo1)
             {
