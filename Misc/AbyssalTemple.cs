@@ -71,7 +71,7 @@ namespace FiveKnights
         {
             Vector3[] worldPos =
             {
-                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f)
+                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f), new(227.2f, 107.4f, .1f)
             };
             foreach (Vector3 pos in worldPos)
             {
