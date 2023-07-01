@@ -149,7 +149,8 @@
             "CHARM_NAME_BLOOM": "Abyssal Bloom",
             "CHARM_DESC_BLOOM": "A dark blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>The bearer gains overwhelming power as they draw nearer to death.",
             "CHARM_NAME_HONOUR": "King's Honour",
-            "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its original state.<br><br>Surrounds the bearer in a royal and heroic aura."
+            "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its original state.<br><br>Surrounds the bearer in a royal and heroic aura.",
+            "CUSTOM_ITEM_INTROS": "Received the"
         },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
@@ -508,7 +509,8 @@
             "CHARM_NAME_BLOOM": "Retoño abismal",
             "CHARM_DESC_BLOOM": "Una flor oscura que fue maldecida para contener un poder incontrolable. Aunque la oscuridad interior esté comprimida, se retuerce de manera volátil, amenazando con liberarse.<br><br>El portador obtiene un poder abrumador cuando está cercano a la muerte.",
             "CHARM_NAME_HONOUR": "Honor del rey",
-            "CHARM_DESC_HONOUR": "Un amuleto único otorgado por el rey a su Caballero más leal. Renovado y restaurado a su estado original.<br><br>Rodea al portador en un aura real y heroica."
+            "CHARM_DESC_HONOUR": "Un amuleto único otorgado por el rey a su Caballero más leal. Renovado y restaurado a su estado original.<br><br>Rodea al portador en un aura real y heroica.",
+            "CUSTOM_ITEM_INTROS": "Has recibido"
         },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
@@ -839,7 +841,8 @@
             "CHARM_NAME_BLOOM": "Flor Abissal",
             "CHARM_DESC_BLOOM": "Uma pálida flor que foi amaldiçoada para conter um poder incontrolável. Mesmo que a escuridão interior possa estar reprimida, ela se contorce de maneira volátil, ameaçando escapar.<br><br>O portador fica mais forte à medida que se aproxima da morte, ganhando um poder esmagador.",
             "CHARM_NAME_HONOUR": "Honra do Rei",
-            "CHARM_DESC_HONOUR": "Um amuleto único concedido pelo Rei ao seu cavaleiro mais leal. Restaurado e revitalizado ao seu estado final.<br><br>Envolve o portador em uma aura real."
+            "CHARM_DESC_HONOUR": "Um amuleto único concedido pelo Rei ao seu cavaleiro mais leal. Restaurado e revitalizado ao seu estado final.<br><br>Envolve o portador em uma aura real.",
+            "CUSTOM_ITEM_INTROS": "Recebido"
         },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
