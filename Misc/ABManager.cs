@@ -22,7 +22,7 @@ namespace FiveKnights
             Credits, Misc, Charms, CharmUnlock,
             Artist,
             TisoBund,
-            BloomParkour
+            AbyssalTemple
         }
 
         private static string BundleToString(Bundle bd)
@@ -57,7 +57,7 @@ namespace FiveKnights
                 Bundle.CharmUnlock => "charmunlock",
                 Bundle.Artist => "artistsbund",
                 Bundle.TisoBund => "tisobundle",
-                Bundle.BloomParkour => "bloomparkour",
+                Bundle.AbyssalTemple => "abyssaltemple",
                 _ => ""
             };
         }

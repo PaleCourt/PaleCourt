@@ -158,7 +158,7 @@ namespace FiveKnights
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             RewardRoom.Hook();
             Credits.Hook();
-            BloomParkour.Hook();
+            AbyssalTemple.Hook();
 
             #endregion
 
@@ -266,7 +266,7 @@ namespace FiveKnights
                 // Tram
                 ("Crossroads_46", "Tram Main"),
 
-                // For Bloom Parkour
+                // For Abyssal Temple
                 ("Deepnest_East_11", "Breakable Wall top"),
                 ("Deepnest_38", "Collapser Small"),
                 ("Abyss_10", "higher_being/shadow_gate"),
@@ -276,7 +276,11 @@ namespace FiveKnights
                 ("Abyss_10", "_SceneManager"),
                 ("Abyss_10", "GameObject/abyss_water_top (3)"),
                 ("Abyss_10", "Surface Water Region"),
-                ("Abyss_10", "Darkness Region")
+                ("Abyss_10", "Darkness Region"),
+                ("Waterways_05", "Dream Gate Set Lock"),
+                ("Abyss_10", "Hollow_Shade Marker"),
+                ("Mines_28", "Soul Totem 5"),
+                ("Mines_28", "Mini_totems_0000_7")
 
             };
         }
@@ -363,6 +367,10 @@ namespace FiveKnights
             preloadedGO["AbyssWater1"] = preloadedObjects["Abyss_10"]["GameObject/abyss_water_top (3)"];
             preloadedGO["AbyssWater2"] = preloadedObjects["Abyss_10"]["Surface Water Region"];
             preloadedGO["DReg"] = preloadedObjects["Abyss_10"]["Darkness Region"];
+            preloadedGO["DreamgateLock"] = preloadedObjects["Waterways_05"]["Dream Gate Set Lock"];
+            preloadedGO["ShadeSpawn"] = preloadedObjects["Abyss_10"]["Hollow_Shade Marker"];
+            preloadedGO["SoulTotem"] = preloadedObjects["Mines_28"]["Soul Totem 5"];
+            preloadedGO["TotemBase"] = preloadedObjects["Mines_28"]["Mini_totems_0000_7"];
             #endregion
 
             #region Journal Entries
@@ -641,7 +649,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GArenaIsma);
             ABManager.Load(ABManager.Bundle.GReward);
             ABManager.Load(ABManager.Bundle.Credits);
-            ABManager.Load(ABManager.Bundle.BloomParkour);
+            ABManager.Load(ABManager.Bundle.AbyssalTemple);
 
             Log("Finished bundling");
         }
@@ -844,6 +852,7 @@ namespace FiveKnights
 
                 ParryTink.TinkClip = aud;
                 Tink.TinkClip = aud;
+                AbyssalTemple.NoShakeTink.TinkClip = aud;
 
                 preloadedGO["ClashTink"] = clashSndObj;
                 break;

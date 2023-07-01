@@ -34,12 +34,10 @@ namespace FiveKnights
         private void BloomPlacement(Scene From, Scene To)
         {
 
-            if (To.name == "Parkour")
+            if (To.name == "Abyssal_Temple")
             {
-                Log("Went to Bloom Parkour");
                 if (!FiveKnights.Instance.SaveSettings.gotCharms[3])
                 {
-                    Log("Don't have charm, placing Shiny");
                     var saveSettings = FiveKnights.Instance.SaveSettings;
 
                     GameObject bloomShiny = Instantiate(FiveKnights.preloadedGO["Shiny"]);
@@ -53,7 +51,7 @@ namespace FiveKnights
                     shiny.Find("White Wave").GetComponent<WaveEffectControl>().blackWave = true;
                     shiny.Find("White Wave").GetComponent<SpriteRenderer>().color = Color.black;
                     shiny.Find("White Wave").GetComponent<WaveEffectControl>().scaleMultiplier = .5f;
-                    bloomShiny.transform.position = new Vector3(240.4f, 34.12f, 0.061f);
+                    bloomShiny.transform.position = new Vector3(241.3f, 34.12f, -0.239f);
 
                     var shinyFsm = shiny.gameObject.LocateMyFSM("Shiny Control");
                     var shinyFsmVars = shinyFsm.FsmVariables;
@@ -72,7 +70,6 @@ namespace FiveKnights
                     shinyFsmVars.FindFsmBool("Queen Charm").Value = true;
 
                     bloomShiny.SetActive(true);
-                    Log("Shiny Placed");
                 }
             }
         }

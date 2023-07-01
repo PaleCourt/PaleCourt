@@ -20,7 +20,7 @@ using Object = UnityEngine.Object;
 
 namespace FiveKnights
 {
-    public static class BloomParkour
+    public static class AbyssalTemple
     {
         private static string _currScene;
         
@@ -30,17 +30,8 @@ namespace FiveKnights
             On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
             ModHooks.DrawBlackBordersHook += ModHooksOnDrawBlackBordersHook;
+            On.TinkEffect.Start += StopScreenshake;
         }
-
-        private static void ModHooksOnDrawBlackBordersHook(List<GameObject> obj)
-        {
-            // Remove black border
-            if (_currScene == "Parkour")
-            {
-                foreach (var border in obj) border.SetActive(false);
-            }
-        }
-
         public static void Unhook()
         {
             //On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
@@ -52,25 +43,53 @@ namespace FiveKnights
         private static void ActiveSceneChanged(Scene From, Scene To)
         {
             _currScene = To.name;
-            
+
             if (To.name == "Abyss_09")
             {
                 SetupEntranceTerrain(To);
-                CreateGateway("palecourt_top1", new Vector2(209.6533f, 60), new Vector2(4, 1), "Parkour", "entry_bot1", true, false, false, GameManager.SceneLoadVisualizations.Default);
+                CreateGateway("palecourt_top1", new Vector2(209.6533f, 60), new Vector2(4, 1), "Abyssal_Temple", "entry_bot1", true, false, false, GameManager.SceneLoadVisualizations.Default);
             }
             if (To.name == "Abyss_10")
             {
                 SetupExitTerrain(To);
-                CreateGateway("palecourt_top2", new Vector2(102.28f, 31.4f), new Vector2(4, 1), "Parkour", "entry_bot2", true, true, false, GameManager.SceneLoadVisualizations.Default);
+                CreateGateway("palecourt_top2", new Vector2(102.28f, 31.4f), new Vector2(4, 1), "Abyssal_Temple", "entry_bot2", true, true, false, GameManager.SceneLoadVisualizations.Default);
             }
-            if (To.name == "Parkour")
+            if (To.name == "Abyssal_Temple")
             {
                 SetSceneSettings();
                 SetupShadegates(To);
                 SetupBreakables(To);
                 FixHazardSpikes(To);
                 SetWater();
+                DreamgateLock();
+                ShadeSpawn();
+                SetupSoulTotems();
             }
+        }
+
+        private static void SetupSoulTotems()
+        {
+            Vector3[] worldPos =
+            {
+                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f)
+            };
+            foreach (Vector3 pos in worldPos)
+            {
+                var totem = GameObject.Instantiate(FiveKnights.preloadedGO["SoulTotem"]);
+                var totembase = GameObject.Instantiate(FiveKnights.preloadedGO["TotemBase"]);
+                totem.transform.position = pos;
+                totembase.transform.position = pos + new Vector3(0.6f, -2, -.01f);
+                totem.SetActive(true);
+                totembase.SetActive(true);
+            }
+
+        }
+
+        private static void ShadeSpawn()
+        {
+            var shademarker = GameObject.Instantiate(FiveKnights.preloadedGO["ShadeSpawn"]);
+            shademarker.transform.position = new Vector2(70.3f, 35.7f);
+            shademarker.SetActive(true);
         }
 
         private static void SetWater()
@@ -80,13 +99,13 @@ namespace FiveKnights
 
             Vector3[] surfacePoses =
             {
-                new (248.1f, 31.2f, 0.004f), new (229f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
+                new (248.1f, 31.2f, 0.004f), new (231.6483f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
                 new (233.5f, 31.2f, 0.004f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
             };
 
             Vector3[] wBoxPoses =
             {
-                new (252f, 30.5f, 0.004f), new (229.9482f, 30.5f, 0.004f)
+                new (252f, 30.5f, 0.004f), new (231.6483f, 30.5f, 0.004f)
             };
 
             foreach (var pos in surfacePoses)
@@ -103,7 +122,19 @@ namespace FiveKnights
                 w.SetActive(true);
             }
         }
+        private static void DreamgateLock()
+        {
+            var dreamlockright = GameObject.Instantiate(FiveKnights.preloadedGO["DreamgateLock"]);
+            dreamlockright.transform.localScale = new Vector3(5.9911809816f, 17, 0);
+            dreamlockright.transform.position = new Vector3(177.77f, 177.77f, 0);
+            dreamlockright.SetActive(true);
+            var dreamlockleft = GameObject.Instantiate(FiveKnights.preloadedGO["DreamgateLock"]);
+            dreamlockleft.transform.localScale = new Vector3(1.5f, 7, 0);
+            dreamlockleft.transform.position = new Vector3(54, 125.77f, 0);
+            dreamlockleft.SetActive(true);
+            
 
+        }
         private static void SetSceneSettings()
         {
             if (GameObject.Find("_Effects").transform.Find("Darkness Region") != null)
@@ -146,6 +177,14 @@ namespace FiveKnights
             sm.environmentType = 0;
             sm.ignorePlatformSaturationModifiers = false; 
             o.SetActive(true);
+        } 
+        private static void ModHooksOnDrawBlackBordersHook(List<GameObject> obj)
+        {
+            // Remove black border
+            if (_currScene == "Abyssal_Temple")
+            {
+                foreach (var border in obj) border.SetActive(false);
+            }
         }
         private static void SetupShadegates(Scene scene)
         {
@@ -158,15 +197,16 @@ namespace FiveKnights
 
                 spikygate.GetComponent<AudioSource>().outputAudioMixerGroup = shadegate.GetComponent<AudioSource>().outputAudioMixerGroup;
 
+
                 var slasheffect = GameObject.Instantiate(shadegate.Find("Slash Effect"));
                 slasheffect.name = "Slash Effect";
                 slasheffect.transform.parent = spikygate.transform;
                 slasheffect.transform.position = z == 0 ? spikygate.transform.position + new Vector3(3.2f, 0, 0) : spikygate.Find("shade_gate_0001_shadegate_front").transform.position;
-                slasheffect.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); 
+                slasheffect.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f);
+                var slashfsm = slasheffect.LocateMyFSM("Control");
                 if (z == 0)
                 {
                     slasheffect.transform.rotation = Quaternion.Euler(0, 0, 90);
-                    var slashfsm = slasheffect.LocateMyFSM("Control");
                     var effectS = slashfsm.GetState("Effect");
                     slashfsm.GetState("Init").GetAction<GetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
                     effectS.GetAction<CheckTargetDirection>(7).aboveEvent = slashfsm.FsmEvents[2];
@@ -179,6 +219,7 @@ namespace FiveKnights
                     effectS.GetAction<SetPosition>(5).y = 0;
                     effectS.GetAction<SetPosition>(6).x = slashfsm.FindFloatVariable("Hero Y");
                     effectS.GetAction<SetPosition>(6).y = 0;
+                    effectS.RemoveAction<SendEventByName>();                   
                     slashfsm.GetState("L").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
                     slashfsm.GetState("L").GetAction<SetPosition>(2).x = slashfsm.FindFloatVariable("Hero Y");
                     slashfsm.GetState("R").GetAction<SetPosition>(2).y = slashfsm.FindFloatVariable("Self X");
@@ -188,7 +229,15 @@ namespace FiveKnights
                     slashfsm.GetState("Pause").GetAction<SetPosition>(3).y = slashfsm.FindFloatVariable("Self X");
                     slashfsm.GetState("Pause").GetAction<SetPosition>(3).x = slashfsm.FindFloatVariable("Hero Y");
                 }
-                    slasheffect.SetActive(true);
+                if (spikygate.name == "spiky_gate_12_L")
+                {
+                    slashfsm.GetState("R").RemoveAction<SendMessage>();
+                }
+                if (spikygate.name == "spiky_gate_12_R")
+                {
+                    slashfsm.GetState("L").RemoveAction<SendMessage>();
+                }
+                slasheffect.SetActive(true);
 
                 var dasheffect = GameObject.Instantiate(shadegate.Find("Dash Effect"));
                 dasheffect.name = "Dash Effect";
@@ -218,7 +267,10 @@ namespace FiveKnights
                 particlesystem.name = "Particle System";
                 particlesystem.transform.parent = spikygate.transform;
                 particlesystem.transform.position = z == 0 ? spikygate.transform.position + new Vector3(3.2f, 0, 0) : spikygate.Find("shade_gate_0001_shadegate_front").transform.position;
-                particlesystem.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); 
+                if (z != 0)
+                { particlesystem.transform.SetScaleY(spikygate.Find("solid").transform.GetScaleX() * .8f); }
+                else
+                { particlesystem.transform.SetScaleX(spikygate.Find("solid").transform.GetScaleX() *.8f); }
                 if (spikygate.transform.rotation.eulerAngles.z != 0)
                 { particlesystem.transform.rotation = Quaternion.Euler(0, 0, 270); }
                 else { particlesystem.transform.rotation = Quaternion.Euler(0, 0, 0); }
@@ -321,7 +373,24 @@ namespace FiveKnights
                 t.gameObject.AddComponent<DamageHero>().damageDealt = 1;
                 t.gameObject.GetComponent<DamageHero>().hazardType = 2;
                 t.gameObject.AddComponent<TinkEffect>().blockEffect = ABManager.AssetBundles[ABManager.Bundle.OWArenaDep].LoadAsset<GameObject>("Block Hit V2");
-                t.gameObject.AddComponent<Tink>();
+                t.gameObject.AddComponent<NoShakeTink>();
+            }
+        }
+        private static void StopScreenshake(On.TinkEffect.orig_Start orig, TinkEffect self)
+        {
+            if (GameManager.instance.GetSceneNameString() != "Abyssal_Temple")
+            {
+                orig(self);
+            }
+        }
+        internal class NoShakeTink : MonoBehaviour
+        {
+            internal static AudioClip TinkClip { get; set; }
+
+            private void OnTriggerEnter2D(Collider2D other)
+            {
+                if (other.gameObject.name != "Clash Tink" && !other.gameObject.CompareTag("Nail Attack")) return;
+                this.PlayAudio(TinkClip, 1f, 0.15f);
             }
         }
         private static void SetupEntranceTerrain(Scene scene)
@@ -499,7 +568,7 @@ namespace FiveKnights
         }
         private static void GameManagerEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
-            if (self.sceneName == "Parkour") 
+            if (self.sceneName == "Abyssal_Temple") 
             {
                 self.sceneWidth = self.tilemap.width = 1000;
                 self.sceneHeight = self.tilemap.height = 1000;
@@ -507,7 +576,7 @@ namespace FiveKnights
             orig(self, false);
         }
 
-        private static void Log(object o) => Modding.Logger.Log("[BloomParkour] " + o);
+        private static void Log(object o) => Modding.Logger.Log("[AbyssalTemple] " + o);
     }
 
 }
