@@ -199,14 +199,14 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "7.1.2023-rc.1";
+        public override string GetVersion() => "1.0.0.0"; 
 
         public override List<(string, string)> GetPreloadNames()
         {
             return new List<(string, string)>
             {
                 ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
-                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime"), 
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
                 ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
