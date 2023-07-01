@@ -155,12 +155,13 @@ namespace FiveKnights
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
 			ModHooks.SetPlayerStringHook += ModHooks_SetPlayerString;
-			ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
+      ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             RewardRoom.Hook();
             Credits.Hook();
+            AbyssalTemple.Hook();
             WhiteLadyDialogue.Hook();
 
             #endregion
@@ -268,9 +269,24 @@ namespace FiveKnights
                 ("Fungus2_03", "Mushroom Turret (2)"),
                 
                 // Tram
-                ("Crossroads_46", "Tram Main")
+                ("Crossroads_46", "Tram Main"),
 
-               
+                // For Abyssal Temple
+                ("Deepnest_East_11", "Breakable Wall top"),
+                ("Deepnest_38", "Collapser Small"),
+                ("Abyss_10", "higher_being/shadow_gate"),
+                ("Abyss_10", "Ruins Fossil"),
+                ("Abyss_10", "Tute Pole 2"),
+                ("Abyss_10", "hanging_cords_01"),
+                ("Abyss_10", "_SceneManager"),
+                ("Abyss_10", "GameObject/abyss_water_top (3)"),
+                ("Abyss_10", "Surface Water Region"),
+                ("Abyss_10", "Darkness Region"),
+                ("Waterways_05", "Dream Gate Set Lock"),
+                ("Abyss_10", "Hollow_Shade Marker"),
+                ("Mines_28", "Soul Totem 5"),
+                ("Mines_28", "Mini_totems_0000_7")
+
             };
         }
 
@@ -346,10 +362,25 @@ namespace FiveKnights
 
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
             preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
-			#endregion
 
-			#region Journal Entries
-			journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            preloadedGO["BreakableCeiling"] = preloadedObjects["Deepnest_East_11"]["Breakable Wall top"];
+            preloadedGO["CollapseFloor"] = preloadedObjects["Deepnest_38"]["Collapser Small"];
+            preloadedGO["ShadeGate"] = preloadedObjects["Abyss_10"]["higher_being/shadow_gate"];
+            preloadedGO["BreakableFossil"] = preloadedObjects["Abyss_10"]["Ruins Fossil"];
+            preloadedGO["BreakableClawPole"] = preloadedObjects["Abyss_10"]["Tute Pole 2"];
+            preloadedGO["BreakableVines"] = preloadedObjects["Abyss_10"]["hanging_cords_01"];
+            preloadedGO["AbyssSM"] = preloadedObjects["Abyss_10"]["_SceneManager"];
+            preloadedGO["AbyssWater1"] = preloadedObjects["Abyss_10"]["GameObject/abyss_water_top (3)"];
+            preloadedGO["AbyssWater2"] = preloadedObjects["Abyss_10"]["Surface Water Region"];
+            preloadedGO["DReg"] = preloadedObjects["Abyss_10"]["Darkness Region"];
+            preloadedGO["DreamgateLock"] = preloadedObjects["Waterways_05"]["Dream Gate Set Lock"];
+            preloadedGO["ShadeSpawn"] = preloadedObjects["Abyss_10"]["Hollow_Shade Marker"];
+            preloadedGO["SoulTotem"] = preloadedObjects["Mines_28"]["Soul Totem 5"];
+            preloadedGO["TotemBase"] = preloadedObjects["Mines_28"]["Mini_totems_0000_7"];
+            #endregion
+
+            #region Journal Entries
+            journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
             {
                 name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
                 desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
@@ -635,6 +666,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.GArenaIsma);
             ABManager.Load(ABManager.Bundle.GReward);
             ABManager.Load(ABManager.Bundle.Credits);
+            ABManager.Load(ABManager.Bundle.AbyssalTemple);
 
             Log("Finished bundling");
         }
@@ -896,6 +928,7 @@ namespace FiveKnights
 
                 ParryTink.TinkClip = aud;
                 Tink.TinkClip = aud;
+                AbyssalTemple.NoShakeTink.TinkClip = aud;
 
                 preloadedGO["ClashTink"] = clashSndObj;
                 break;

@@ -76,7 +76,7 @@ namespace FiveKnights
             Charms.charmCost_43,
             Charms.charmCost_44,
         };
-        
+
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 
@@ -133,5 +133,8 @@ namespace FiveKnights
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
         public bool HasSeenCredits = false;
+        public bool IndicatorActivated = false;
+        public UnityEngine.Vector3 IndicatorPosition1;
+        public UnityEngine.Vector3 IndicatorPosition2;
     }
 }
