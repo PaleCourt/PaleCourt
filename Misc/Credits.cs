@@ -64,7 +64,6 @@ namespace FiveKnights
 			_thanksParent = GameObject.Find("Thanks Parent").transform;
 			_finalParent = GameObject.Find("Final Parent").transform;
 			_creditsAudio = GameObject.Find("Credits Audio").GetComponent<AudioSource>();
-			_scrolling = false;
 			FixFonts();
 			StopAudio();
 			_creditsCoro = StartCoroutine(RollCredits());
@@ -74,7 +73,14 @@ namespace FiveKnights
 		{
 			if(_scrolling)
 			{
-				_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
+				if(_scrollParent.position.y < ScrollY)
+				{
+					_scrollParent.Translate(Vector3.up * Time.deltaTime * ScrollSpeed);
+				}
+				else
+				{
+					_scrolling = false;
+				}
 			}
 		}
 
@@ -123,10 +129,7 @@ namespace FiveKnights
 
 			Log("Scroll credits");
 			_scrolling = true;
-			yield return null;
-			yield return null;
-			yield return WaitForScrollEnd();
-			_scrolling = false;
+			yield return new WaitWhile(() => _scrolling);
 
 			Log("Fade thank yous");
 			for(int i = 0; i < _thanksParent.childCount; i++)
@@ -145,27 +148,6 @@ namespace FiveKnights
 			_finalFadeCoro = StartCoroutine(Fade(_finalParent.GetChild(1).gameObject, 1f, true));
 
 			if(_returnCoro == null) StartCoroutine(ReturnFromCredits());
-		}
-		
-		public IEnumerator WaitForScrollEnd()
-		{
-			// get last scroll parent size
-			var lastSection = _scrollParent.GetChild(_scrollParent.childCount - 1);
-			// there are 2 children left and right side, get the right one
-			var lastSectionMainText = lastSection.GetChild(lastSection.childCount - 1).GetComponent<RectTransform>();
-
-			float headerSize = 100;
-			float lastSectionHeight = lastSectionMainText.sizeDelta.y + headerSize; // we can use sizeDelta.y or rect.height
-			var endingPos =
-				lastSectionHeight *
-				lastSectionMainText.lossyScale.y; // if lossyScale.y gives wrong value we can manually scale height 
-
-			const float buffer = 10;
-			Modding.Logger.Log(lastSectionMainText.transform.position.y + " " +  endingPos);
-			while (lastSectionMainText.transform.position.y < endingPos + buffer)
-			{
-				yield return null;
-			}
 		}
 
 		private IEnumerator ReturnFromCredits()
