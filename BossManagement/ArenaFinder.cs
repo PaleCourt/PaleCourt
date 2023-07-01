@@ -232,7 +232,8 @@ namespace FiveKnights
 
         private void SceneChanged(Scene from, Scene to)
         {
-            if(from.name == "White_Palace_13" && to.name == "White_Palace_09")
+            if(!(from.name is DryyaScene or HegemolScene or IsmaScene or ZemerScene or Isma2Scene or "hidden_reward_room" or 
+                "Dream_04_White_Defender" or "GG_Workshop" or "Menu_Title") && to.name == "White_Palace_09")
             {
                 CustomWP.isInGodhome = false;
                 return;
@@ -376,6 +377,9 @@ namespace FiveKnights
             {
                 StartCoroutine(AddComponent());
                 StartCoroutine(CameraFixer());
+                HeroController.instance.MaxHealth();
+                PlayerData.instance.UpdateBlueHealth();
+                HeroController.instance.ClearMPSendEvents();
                 HeroController.instance.EnterWithoutInput(true);
             }
 

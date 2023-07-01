@@ -17,14 +17,14 @@ namespace FiveKnights
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData ZemerEntryData = new JournalHelper.JournalPlayerData
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData DryyaEntryData = new JournalHelper.JournalPlayerData
@@ -69,14 +69,6 @@ namespace FiveKnights
 
         public bool upgradedCharm_10 = false;
 
-        public int[] charmCosts = new int[]
-        {
-            Charms.charmCost_41,
-            Charms.charmCost_42,
-            Charms.charmCost_43,
-            Charms.charmCost_44,
-        };
-        
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 
@@ -116,11 +108,25 @@ namespace FiveKnights
         public bool ZemerThirdConvo1 = false;
         public bool ZemerCharmConvo = false;
 
+        public bool WLadyKHConvo1 = false;
+        public bool WLadyKHConvo2 = false;
+        public bool WLadyMPConvo1 = false;
+        public bool WLadyMPConvo2 = false;
+        public bool WLadyBHConvo1 = false;
+        public bool WLadyBHConvo2 = false;
+        public bool WLadyVLConvo1 = false;
+        public bool WLadyVLConvo2 = false;
+        public bool WLadyAllConvo1 = false;
+        public bool WLadyAllConvo2 = false;
+
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
         public bool HasSeenWorkshopRaised = false;
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
         public bool HasSeenCredits = false;
+        public bool IndicatorActivated = false;
+        public UnityEngine.Vector3 IndicatorPosition1;
+        public UnityEngine.Vector3 IndicatorPosition2;
     }
 }

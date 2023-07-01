@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -59,6 +59,22 @@ namespace FiveKnights
                 Destroy(del);
             }
             
+			// Move curtain to behind a little bit to reveal Isma statue lever
+			foreach (GameObject i in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+			{
+				switch (i.name)
+				{
+					case "core_extras_0025_wp (6)":
+						i.transform.SetPositionZ(2.2f);
+						break;
+					case "core_extras_0025_wp":
+						i.transform.SetPositionZ(3.34f);
+						break;
+					default:
+						break;
+				}
+			}
+
             foreach (var i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name.Contains("new_cloud") 
                             && x.transform.position.x <= 25f))
@@ -381,7 +397,7 @@ namespace FiveKnights
             GameManager.instance.OnFinishedEnteringScene -= GMOnFinishedEnteringScene;
             if(wonLastFight) GameManager.instance.OnFinishedEnteringScene += GMOnFinishedEnteringScene;
             else lev = 0;
-            wonLastFight = false;
+            wonLastFight = false; 
 
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
                                         ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");

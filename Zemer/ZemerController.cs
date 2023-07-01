@@ -37,7 +37,7 @@ namespace FiveKnights.Zemer
         private readonly float SlamY = (OWArenaFinder.IsInOverWorld) ? 105f : 
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 6f : 25.9f;
         // HP if the fight is mystic zemer version
-        private readonly int MaxHPV2 = 500;
+        private readonly int MaxHPV2 = 400;
         private readonly int MaxHPV1 = CustomWP.lev > 0 ? 1400 : 1200;
         private readonly int DoSpinSlashPhase = CustomWP.lev > 0 ? 800 : 700;
         private bool doingIntro;

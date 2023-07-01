@@ -48,7 +48,7 @@ namespace FiveKnights.Zemer
             (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim) ? 10f : 19f;
 
 
-        private readonly int Phase2HP = CustomWP.lev > 0 ? 1350 : 1200;
+        private readonly int Phase2HP = CustomWP.lev > 0 ? 1500 : 1350;
         private int DoneFrenzyAtt;
         private readonly int Phase3HP = CustomWP.lev > 0 ? 950 : 800;
 
@@ -153,7 +153,6 @@ namespace FiveKnights.Zemer
         {
             _hm.hp = Phase2HP;
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
-            _deathEff.SetJournalEntry(FiveKnights.journalEntries["Zemer"]);
             _target = HeroController.instance.gameObject;
             
             foreach (var i in FindObjectsOfType<Rigidbody2D>(true))
@@ -1737,9 +1736,8 @@ namespace FiveKnights.Zemer
                 {
                     _anim.enabled = false;
                     // TODO This is breaking stuff, idk yall figure it out smh
-                    //_deathEff.RecordJournalEntry();
-                    FiveKnights.journalEntries["Zemer"].RecordWithoutNotes();
-					yield return new WaitForSeconds(1.75f);
+                    FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+                    yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
                     Destroy(this);
@@ -1765,6 +1763,7 @@ namespace FiveKnights.Zemer
 
             IEnumerator Recover(bool firstDeath = false)
             {
+                PlayAudioClip("ZAudMid");
                 yield return _anim.PlayBlocking("ZRecover");
                 
                 float t = firstDeath ? RecoveryReturnFirstDelay : RecoveryReturnRestDelay;

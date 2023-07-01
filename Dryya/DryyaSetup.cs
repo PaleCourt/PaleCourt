@@ -480,7 +480,7 @@ namespace FiveKnights.Dryya
 		private void ModifyAudio()
 		{
             // Voice
-            _control.InsertMethod("Backstep 1", () => PlayVoice(), 0);
+            _control.InsertMethod("Intro Land", () => this.PlayAudio(FiveKnights.Clips["DryyaVoiceBow"]), 0);
             _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(), 0);
             _control.InsertMethod("Counter Collider 1", () => PlayVoice(), 0);
             //_control.InsertMethod("Dagger Jump", () => PlayVoice(true), 0);
