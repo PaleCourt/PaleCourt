@@ -25,7 +25,6 @@ namespace FiveKnights
         
         public void Awake()
         {
-            ModHooks.LanguageGetHook += CutsceneDialogue;
             ModHooks.BeforeSceneLoadHook += SceneCheck;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += BloomPlacement;
           
@@ -133,28 +132,6 @@ namespace FiveKnights
             
         }
 
-        private string CutsceneDialogue(string key, string sheetTitle, string orig)
-        {
-            switch (key)
-            {
-                case "BLOOM_NAME":
-                    return "Abyssal Bloom";
-                case "LAMENT_NAME":
-                    return "Vessel's Lament";
-                case "PURITY_NAME":
-                    return "Mark of Purity";
-                case "BOON_NAME":
-                    return "Boon of Hallownest";
-                case "CREST_NAME":
-                    return "King's Honour";
-                case "CUSTOM_ITEM_INTROS":
-                    return "Received the";
-            }
-            
-            return orig; 
-            
-        }
-
         private void CharmCutscene(string boss)
         {
             pauseShroom = true;
@@ -170,35 +147,35 @@ namespace FiveKnights
             {
                 case "dryya":
                     charm = "PurityAppear";
-                    charmName = "PURITY_NAME";
+                    charmName = "CHARM_NAME_PURITY";
                     upDelay = 2.4f;
                     audioName = "purity_charm_get";
                     charmNumber = 0;
                     break;
                 case "zemer":
                     charm = "LamentAppear";
-                    charmName = "LAMENT_NAME";
+                    charmName = "CHARM_NAME_LAMENT";
                     upDelay = 2.4f;
                     audioName = "spell_information_merged";
                     charmNumber = 1;
                     break;
                 case "isma":
                     charm = "CrestUpgrade";
-                    charmName = "CREST_NAME";
+                    charmName = "CHARM_NAME_HONOUR";
                     audioName = "kings_honor_get";
                     upDelay = 2.8f;
             
                     break;
                 case "hegemol":
                     charm = "BoonAppear";
-                    charmName = "BOON_NAME";
+                    charmName = "CHARM_NAME_BOON";
                     upDelay = 2.4f;
                     audioName = "spell_information_merged";
                     charmNumber = 2;
                     break;
                 case "bloom" :
                     charm = "BloomGrow";
-                    charmName = "BLOOM_NAME";
+                    charmName = "CHARM_NAME_BLOOM";
                     audioName = "abyss_bloom";
                     upDelay = 2.4f;
                     charmNumber = 3;
@@ -330,7 +307,6 @@ namespace FiveKnights
         private void OnDestroy()
 		{
             Log("Destroyed AwardCharms");
-            ModHooks.LanguageGetHook -= CutsceneDialogue;
             ModHooks.BeforeSceneLoadHook -= SceneCheck;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= BloomPlacement;
         }
