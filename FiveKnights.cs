@@ -27,7 +27,7 @@ namespace FiveKnights
 {
 
     [UsedImplicitly]
-    public class FiveKnights : SaveSettingsMod<SaveModSettings>
+    public class FiveKnights : FullSettingsMod<SaveModSettings, GlobalModSettings>
     {
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
@@ -153,8 +153,8 @@ namespace FiveKnights
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
-			ModHooks.SetPlayerStringHook += ModHooks_SetPlayerString;
-			ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
+            ModHooks.SetPlayerStringHook += ModHooks_SetPlayerString;
+            ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
@@ -171,7 +171,7 @@ namespace FiveKnights
             #endregion
         }
 
-		private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
+        private void SwitchLanguage(On.Language.Language.orig_DoSwitch orig, Language.LanguageCode newLang)
         {
             orig(newLang);
             foreach (KeyValuePair<string, JournalHelper> keyValuePair in journalEntries)
@@ -344,10 +344,10 @@ namespace FiveKnights
 
             preloadedGO["SoulTwister"] = preloadedObjects["Ruins1_23"]["Mage"];
             preloadedGO["SoulEffect"] = preloadedObjects["Tutorial_01"]["_Props/Tut_tablet_top/Glows"];
-			#endregion
+            #endregion
 
-			#region Journal Entries
-			journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
+            #region Journal Entries
+            journalEntries.Add("Isma", new JournalHelper(SPRITES["journal_icon_isma"], SPRITES["journal_isma"], SaveSettings.IsmaEntryData, new JournalHelper.JournalNameStrings
             {
                 name = langStrings.Get("ENTRY_ISMA_LONGNAME", "Journal"),
                 desc = langStrings.Get("ENTRY_ISMA_DESC", "Journal"),
@@ -390,21 +390,28 @@ namespace FiveKnights
             preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
-			#endregion
+            #endregion
 
-			Instance = this;
+            Instance = this;
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("FSM"));
             GameManager.instance.StartCoroutine(WaitForTitle());
             PlantChanger();
 
-			GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
-			GSPImport.AddInfiniteChallengeReturnScenePredicate((info) =>
-				GameManager.instance.sceneName is
-					ArenaFinder.Isma2Scene or ArenaFinder.DryyaScene or ArenaFinder.ZemerScene
-					or ArenaFinder.HegemolScene or ArenaFinder.IsmaScene
-				&& info.SceneName is "White_Palace_09"
-			);
+            GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
+            GSPImport.AddInfiniteChallengeReturnScenePredicate((info) =>
+                GameManager.instance.sceneName is
+                    ArenaFinder.Isma2Scene or ArenaFinder.DryyaScene or ArenaFinder.ZemerScene
+                    or ArenaFinder.HegemolScene or ArenaFinder.IsmaScene
+                && info.SceneName is "White_Palace_09"
+            );
+
+            if (!GlobalSettings.ForcedMenuTheme)
+            {
+                GlobalSettings.ForcedMenuTheme = true;
+                var tmpStyle = MenuStyles.Instance.styles.First(x => x.styleObject.name.Contains("Pale_Court"));
+                MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
+            }
 
             Log("Initializing");
         }
@@ -639,12 +646,12 @@ namespace FiveKnights
 
         private void SaveEntries(SaveGameData data)
         {
-			SaveSettings.IsmaEntryData = journalEntries["Isma"].playerData;
-			SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
-			SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
-			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
-			SaveSettings.Mawlek2EntryData = journalEntries["Tiso"].playerData;
-		}
+            SaveSettings.IsmaEntryData = journalEntries["Isma"].playerData;
+            SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
+            SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
+            SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
+            SaveSettings.Mawlek2EntryData = journalEntries["Tiso"].playerData;
+        }
 
         private object SetVariableHook(Type t, string key, object orig)
         {
@@ -819,7 +826,7 @@ namespace FiveKnights
         {
             orig(self, permaDeath, bossRush);
             if(bossRush)
-			{
+            {
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
