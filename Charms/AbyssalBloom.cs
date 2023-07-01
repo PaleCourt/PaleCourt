@@ -30,12 +30,14 @@ namespace FiveKnights
         private GameObject _wallSlash;
 
         private int _level;
+        private bool _fury;
         private int _shadeSlashNum = 1;
         private bool playingAudio;
         private float audioCooldown = 0.2f;
-        private float damageBuff => 0.075f * (_pd.maxHealth - _pd.health) // 7.5% extra per missing mask
-            * (_level == 2 ? 1.5f : 1f) // Multiplies current buff by 1.5 when at 1 hp
-            * (_pd.equippedCharm_6 && _pd.health == 1 ? 1.75f : 1f); // Manually add the fury multiplier because otherwise it gets ignored
+        private float damageScale => _pd.equippedCharm_16 ? 0.075f : 0.0625f;
+        private float damageBuff => damageScale * (_pd.equippedCharm_27 ? Math.Max(_pd.joniHealthBlue - _pd.healthBlue, 0) :
+            (_pd.maxHealth - _pd.health)) // Extra per missing mask
+            * (_level == 2 ? 1.5f : 1f); // Multiplies current buff by 1.5 when using tendrils
 
 		private void OnEnable()
 		{
@@ -66,17 +68,9 @@ namespace FiveKnights
 			On.HeroController.CancelDownAttack += HeroControllerCancelDownAttack;
             On.HeroController.Attack += DoVoidAttack;
 			On.tk2dSpriteAnimator.Play_string += Tk2dSpriteAnimatorPlay;
+			On.KnightHatchling.OnEnable += KnightHatchlingOnEnable;
+			On.SpriteFlash.FlashingFury += SpriteFlashFlashingFury;
         }
-
-		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
-		{
-            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
-			{
-                self.Play("Idle");
-                return;
-			}
-            orig(self, name);
-		}
 
 		private void OnDisable()
 		{
@@ -86,6 +80,8 @@ namespace FiveKnights
             On.HeroController.CancelDownAttack -= HeroControllerCancelDownAttack;
             On.HeroController.Attack -= DoVoidAttack;
             On.tk2dSpriteAnimator.Play_string -= Tk2dSpriteAnimatorPlay;
+            On.KnightHatchling.OnEnable -= KnightHatchlingOnEnable;
+            On.SpriteFlash.FlashingFury -= SpriteFlashFlashingFury;
         }
 
 		public void SetLevel(int level)
@@ -107,6 +103,8 @@ namespace FiveKnights
                     break;
             }
 		}
+
+        public void SetFury(bool fury) => _fury = fury;
 
         private void ModifySlashColors(bool modify)
         {
@@ -141,10 +139,14 @@ namespace FiveKnights
 
         private void HealthManagerHit(On.HealthManager.orig_Hit orig, HealthManager self, HitInstance hitInstance)
         {
-            if(hitInstance.AttackType == AttackTypes.Nail)
+            if(hitInstance.AttackType is AttackTypes.Nail or AttackTypes.NailBeam)
             {
-                hitInstance.Multiplier += damageBuff;
+                hitInstance.Multiplier += damageBuff + (_fury ? 0.75f : 0f);
             }
+            if(hitInstance.AttackType == AttackTypes.SharpShadow)
+			{
+                hitInstance.Multiplier += 2f * damageBuff;
+			}
             //Log("Multiplier is currently " + damageBuff + " to deal total damage of " + hitInstance.DamageDealt * hitInstance.Multiplier);
             orig(self, hitInstance);
         }
@@ -167,6 +169,32 @@ namespace FiveKnights
             orig(self);
         }
 
+		private void Tk2dSpriteAnimatorPlay(On.tk2dSpriteAnimator.orig_Play_string orig, tk2dSpriteAnimator self, string name)
+		{
+            if(self.gameObject == _hc.gameObject && name == "Idle Hurt")
+			{
+                self.Play("Idle");
+                return;
+			}
+            orig(self, name);
+		}
+
+        private void SpriteFlashFlashingFury(On.SpriteFlash.orig_FlashingFury orig, SpriteFlash self)
+        {
+            self.flash(Color.black, 0.75f, 0.25f, 0.01f, 0.25f);
+            Mirror.SetField(self, "repeatFlash", true);
+        }
+
+        private void KnightHatchlingOnEnable(On.KnightHatchling.orig_OnEnable orig, KnightHatchling self)
+        {
+            orig(self);
+            if(_level == 2)
+            {
+                KnightHatchling.TypeDetails details = Mirror.GetField<KnightHatchling, KnightHatchling.TypeDetails>(self, "details");
+                Mirror.SetField(self, "details", details with { damage = details.damage * 2 });
+            }
+        }
+
         private void DoVoidAttack(On.HeroController.orig_Attack origAttack, HeroController hc, AttackDirection dir)
         {
             if(_level != 2)
@@ -179,11 +207,14 @@ namespace FiveKnights
             if(_pd.GetBool(nameof(PlayerData.equippedCharm_32)))
             {
                 Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION_CH);
+                Mirror.SetField(_hc, "attack_cooldown", _hc.ATTACK_COOLDOWN_TIME_CH);
             }
             else
             {
                 Mirror.SetField(_hc, "attackDuration", _hc.ATTACK_DURATION);
+                Mirror.SetField(_hc, "attack_cooldown", _hc.ATTACK_COOLDOWN_TIME);
             }
+            _hc.cState.recoiling = false;
 
             if(hc.cState.wallSliding)
             {
@@ -211,32 +242,40 @@ namespace FiveKnights
             }
         }
 
-        private void CancelTendrilAttack()
+        public void CancelTendrilAttack()
 		{
             Log("Canceling attack");
-            StopCoroutine(_sideSlashCoro);
+            if(_sideSlashCoro != null) StopCoroutine(_sideSlashCoro);
             Destroy(_sideSlash);
 			_knightBall.SetActive(false);
             _hc.GetComponent<MeshRenderer>().enabled = true;
-            _hc.cState.attacking = false;
+            ResetTendrilAttack();
         }
 
-        private void CancelVerticalTendrilAttack()
+        public void CancelVerticalTendrilAttack()
 		{
             Log("Canceling vertical attack");
-            StopCoroutine(_vertSlashCoro);
+            if(_vertSlashCoro != null) StopCoroutine(_vertSlashCoro);
             Destroy(_shadeSlashContainer);
             _hc.StartAnimationControl();
-            _hc.cState.attacking = false;
+            ResetTendrilAttack();
         }
 
-        private void CancelWallTendrilAttack()
+        public void CancelWallTendrilAttack()
 		{
             Log("Canceling wall attack");
-            StopCoroutine(_wallSlashCoro);
+            if(_wallSlashCoro != null) StopCoroutine(_wallSlashCoro);
             Destroy(_wallSlash);
             _hc.StartAnimationControl();
+            ResetTendrilAttack();
+        }
+
+        private void ResetTendrilAttack()
+		{
             _hc.cState.attacking = false;
+            _hc.cState.upAttacking = false;
+            _hc.cState.downAttacking = false;
+            Mirror.SetField(_hc, "attack_time", 0f);
         }
 
         private IEnumerator TendrilAttack()
@@ -275,6 +314,7 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
             GameObject parrySlash = Instantiate(_sideSlash, _sideSlash.transform);
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
             parrySlash.layer = (int)PhysLayers.ITEM;
 
             ShadeSlash ss = _sideSlash.AddComponent<ShadeSlash>();
@@ -301,8 +341,9 @@ namespace FiveKnights
         private IEnumerator VerticalTendrilAttack(bool up)
         {
             _hc.cState.attacking = true;
+            if(up) _hc.cState.upAttacking = true;
+            else _hc.cState.downAttacking = true;
 
-            Rigidbody2D rb = _hc.GetComponent<Rigidbody2D>();
             string animName = up ? "Up" : "Down";
 
             _hc.StopAnimationControl();
@@ -357,6 +398,7 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
             GameObject parrySlash = Instantiate(shadeSlash, shadeSlash.transform);
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
             parrySlash.layer = (int)PhysLayers.ITEM;
             parrySlash.transform.localPosition = Vector3.zero;
             parrySlash.transform.localScale = Vector3.one;
@@ -380,6 +422,8 @@ namespace FiveKnights
             yield return new WaitWhile(() => _hcAnim.Playing && _hcAnim.IsPlaying(animName + "Slash Void"));
             _hc.StartAnimationControl();
             _hc.cState.attacking = false;
+            if(up) _hc.cState.upAttacking = false;
+            else _hc.cState.downAttacking = false;
         }
 
         private IEnumerator WallTendrilAttack()
@@ -416,8 +460,9 @@ namespace FiveKnights
             slashPoly.isTrigger = true;
 
 			GameObject parrySlash = Instantiate(_wallSlash, _wallSlash.transform);
-			parrySlash.layer = (int)PhysLayers.ITEM;
-			parrySlash.transform.localPosition = Vector3.zero;
+            parrySlash.LocateMyFSM("damages_enemy").GetFsmIntVariable("damageDealt").Value = 0;
+            parrySlash.layer = (int)PhysLayers.ITEM;
+            parrySlash.transform.localPosition = Vector3.zero;
 			parrySlash.transform.localScale = Vector3.one;
             parrySlash.SetActive(false);
 

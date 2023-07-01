@@ -98,6 +98,31 @@ namespace FiveKnights
         private IEnumerator AwardCharm(string boss)
         {
             yield return new WaitUntil(() => HeroController.instance != null);
+
+            // Award charms now so people can skip the cutscenes if they really want
+            var settings = FiveKnights.Instance.SaveSettings;
+            if(boss == "isma")
+            {
+                PlayerData.instance.gotCharm_10 = true;
+                settings.upgradedCharm_10 = true;
+                PlayerData.instance.newCharm_10 = true;
+            }
+            else if(boss == "dryya")
+            {
+                settings.gotCharms[0] = true;
+                settings.newCharms[0] = true;
+            }
+            else if(boss == "zemer")
+            {
+                settings.gotCharms[1] = true;
+                settings.newCharms[1] = true;
+            }
+            else if(boss == "hegemol")
+            {
+                settings.gotCharms[2] = true;
+                settings.newCharms[2] = true;
+            }
+
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Prostrate Rise");
             yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
             if (!pauseShroom)
@@ -160,7 +185,7 @@ namespace FiveKnights
                 case "isma":
                     charm = "CrestUpgrade";
                     charmName = "CREST_NAME";
-                    audioName = "kings_brand_get";
+                    audioName = "kings_honor_get";
                     upDelay = 2.8f;
             
                     break;
@@ -208,9 +233,6 @@ namespace FiveKnights
 
 
             StartCoroutine(AnimCoroutine(CharmAnim, charmNumber, boss, audioName));
-
-
-
         }
 
         private void SetupUI(GameObject UI, string charmName, float upDelay)
@@ -246,12 +268,13 @@ namespace FiveKnights
             }
             else if (boss == "isma")
             {
-                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("spell_information_screen"));
+                
                 yield return new WaitForSeconds(1.5f);
                 CharmAnim.SetActive(true);
                 CharmAnim.GetComponent<SpriteRenderer>().enabled = true;
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>("new_heartpiece_puzzle_bit"));
                 yield return new WaitForSeconds(.5f);
-                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName));
+                this.PlayAudio(_charmUnlock.LoadAsset<AudioClip>(audioName), 1.5f);
             }
             else if (boss == "bloom")
             {
@@ -278,8 +301,8 @@ namespace FiveKnights
                 FiveKnights.Instance.SaveSettings.gotCharms[charmNumber] = true;
                 FiveKnights.Instance.SaveSettings.newCharms[charmNumber] = true;
             }
-            HeroController.instance.RegainControl();
             HeroController.instance.AcceptInput();
+            HeroController.instance.RegainControl();
             pauseShroom = false;
         }
 

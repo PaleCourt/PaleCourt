@@ -36,7 +36,8 @@ namespace FiveKnights.Tiso
         public const float LeftX = 52f;
         public const float RightX = 69.7f;
         public const float MiddleX = 61f;
-        private const int MaxDreamAmount = 3;
+        private readonly int DreamConvoAmount = 4;
+        private readonly string DreamConvoKey = "TISO_DREAM";
         private readonly int MaxHP = BossSceneController.Instance.BossLevel > 0 ? 1400 : 1100;
         private Random _rand;
         private TisoAttacks _attacks;
@@ -67,7 +68,7 @@ namespace FiveKnights.Tiso
                 .GetAttr<EnemyDreamnailReaction, GameObject>("dreamImpactPrefab");
             _rand = new Random();
             _dnailReac.enabled = true;
-            Mirror.SetField(_dnailReac, "convoAmount", MaxDreamAmount);
+            Mirror.SetField(_dnailReac, "convoAmount", DreamConvoAmount);
             
             // So she gets hit by dcrest I think
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
@@ -134,7 +135,7 @@ namespace FiveKnights.Tiso
             yield return new WaitForSeconds(3f);
             // Spawn him in top right of arena so he jumps down
             _sr.enabled = true;
-            _bc.enabled = true;
+            _bc.enabled = false;
             transform.position = new Vector3(MiddleX + 5f, GroundY + 14f);
             _bc.enabled = false;
             _rb.gravityScale = 1.5f;
@@ -144,7 +145,7 @@ namespace FiveKnights.Tiso
             PlayAudio(this, Clip.Spin);
             // Wait till he hits the ground
             yield return new WaitWhile(() => transform.position.y > GroundY);
-            _bc.enabled = true;
+            _bc.enabled = false;
             _rb.gravityScale = 0f;
             _rb.isKinematic = true;
             _rb.velocity = Vector2.zero;
@@ -160,6 +161,7 @@ namespace FiveKnights.Tiso
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
             _hit = false;
+            _bc.enabled = true;
             yield return new WaitSecWhile(() => !_hit, TisoAud["AudTisoRoar"].length);
             Destroy(aud.gameObject);
         }
@@ -177,7 +179,7 @@ namespace FiveKnights.Tiso
             MusicCue.MusicChannelInfo channelInfo = new MusicCue.MusicChannelInfo();
             Mirror.SetField(channelInfo, "clip", clip);
 
-            MusicCue.MusicChannelInfo[] channelInfos = new MusicCue.MusicChannelInfo[]
+            MusicCue.MusicChannelInfo[] channelInfos = 
             {
                 channelInfo, null, null, null, null, null
             };
@@ -307,7 +309,7 @@ namespace FiveKnights.Tiso
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle("TISO_DREAM");
+                _dnailReac.SetConvoTitle(DreamConvoKey);
             }
 
             orig(self);

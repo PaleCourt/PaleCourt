@@ -94,6 +94,27 @@ namespace FiveKnights
             return tc;
         }
 
+        public static void LoadIsmaSound()
+        {
+            if (FiveKnights.Clips.ContainsKey("IsmaAudAgonyShoot")) return;
+            
+            // Audio clips
+            string[] clips = 
+            {
+                "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", "IsmaAudVineGrow", "IsmaAudVineHit",
+                "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak", "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3",
+                "IsmaAudAtt4", "IsmaAudAtt5", "IsmaAudAtt6", "IsmaAudAtt7", "IsmaAudAtt8", "IsmaAudAtt9", "IsmaAudAtt10",
+                "IsmaAudBow", "IsmaAudDeath",
+                "LoneIsmaIntro", "LoneIsmaLoop", "OgrimMusic", "OgrismaMusic",
+                "IsmaAudTalk1", "IsmaAudTalk2", "IsmaAudTalk3", "IsmaAudTalk4", "IsmaAudTalk5", "IsmaAudTalk6",
+                "IsmaAudTalkBye", "IsmaAudTalkHi", "IsmaAudTalkCharm"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+        }
+        
         public static void LoadIsmaBundle()
 		{
             Log("Loading Isma bundle");
@@ -103,18 +124,7 @@ namespace FiveKnights
                 return;
             }
 
-            // Audio clips
-            string[] clips = new string[]
-            {
-                "IsmaAudAgonyShoot", "IsmaAudAgonyIntro", "IsmaAudGroundWhip", "IsmaAudSeedBomb", "IsmaAudVineGrow", "IsmaAudVineHit",
-                "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak", "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3",
-                "IsmaAudAtt4", "IsmaAudAtt5", "IsmaAudAtt6", "IsmaAudAtt7", "IsmaAudAtt8", "IsmaAudAtt9", "IsmaAudDeath",
-                "LoneIsmaIntro", "LoneIsmaLoop", "OgrimMusic", "OgrismaMusic"
-            };
-            foreach(string name in clips)
-            {
-                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
-            }
+            LoadIsmaSound();
 
             // Animation clips
             foreach(AnimationClip c in _ismaBundle.LoadAllAssets<AnimationClip>())
@@ -172,6 +182,24 @@ namespace FiveKnights
             Log("Finished loading Isma bundle");
 		}
 
+        public static void LoadDryyaSound()
+        {
+            if (FiveKnights.Clips.ContainsKey("DryyaMusic")) return;
+            
+            // Audio
+            FiveKnights.Clips["DryyaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaMusic");
+            FiveKnights.Clips["DryyaAreaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaAreaMusic");
+            string[] clips = new string[]
+            {
+                "1", "2", "3", "4", "5", "6", "7", "Alt1", "Alt2", "Alt3", "Alt4", "Alt5", "Alt6", "Beams1",
+                "Beams2", "Beams3", "Bow", "Death", "Convo2", "Convo1", "Convo3"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips["DryyaVoice" + name] = _soundBundle.LoadAsset<AudioClip>("DryyaVoice" + name);
+            }
+        }
+        
         public static void LoadDryyaBundle()
 		{
             Log("Loading Dryya bundle");
@@ -181,9 +209,7 @@ namespace FiveKnights
                 return;
             }
 
-            // Audio
-            FiveKnights.Clips["DryyaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaMusic");
-            FiveKnights.Clips["DryyaAreaMusic"] = _soundBundle.LoadAsset<AudioClip>("DryyaAreaMusic");
+            LoadDryyaSound();
 
             // Animation clips
             foreach(var c in _dryyaBundle.LoadAllAssets<AnimationClip>())
@@ -208,6 +234,24 @@ namespace FiveKnights
             Log("Finished loading Dryya bundle");
         }
 
+        public static void LoadHegemolSound()
+        {
+            if (FiveKnights.Clips.ContainsKey("HegArrive")) return;
+            
+            // Audio clips
+            string[] clips = new[]
+            {
+                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
+                "HegJump", "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath",
+                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3", "HegemolMusicIntro", "HegemolMusicLoop",
+                "HegAreaMusic", "HegAreaMusicIntro", "HegAreaMusicBG"
+            };
+            foreach(string name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+        }
+
         public static void LoadHegemolBundle()
 		{
             Log("Loading Hegemol bundle");
@@ -217,18 +261,7 @@ namespace FiveKnights
                 return;
             }
 
-            // Audio clips
-            string[] clips = new[]
-            {
-                "HegArrive", "HegAttackSwing", "HegAttackHit", "HegAttackCharge", "HegDamage", "HegDamageFinal", "HegDebris", "HegDungDebris",
-                "HegJump", "HegLand", "HegShockwave", "HNeutral1", "HNeutral2", "HNeutral3", "HCharge", "HHeavy1", "HHeavy2", "HDeath",
-                "HGrunt1", "HGrunt2", "HGrunt3", "HGrunt4", "HTired1", "HTired2", "HTired3", "HegemolMusic", "HegAreaMusic",
-                "HegAreaMusicIntro", "HegAreaMusicBG"
-            };
-            foreach(string name in clips)
-            {
-                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
-            }
+            LoadHegemolSound();
 
             // GameObjects
             FiveKnights.preloadedGO["Hegemol"] = _hegemolBundle.LoadAsset<GameObject>("Hegemol");
@@ -258,6 +291,28 @@ namespace FiveKnights
             Log("Finished loading Hegemol bundle");
         }
 
+        public static void LoadZemerSound()
+        {
+            if (FiveKnights.Clips.ContainsKey("ZP2Intro")) return;
+            
+            // Audio clips
+            string[] clips = new[]
+            {
+                "ZP2Intro","ZP1Loop", "ZAudAtt4", "ZAudP1DeathA", "ZAudP1DeathB", "ZAudP1DeathC", "ZAudP1DeathD",
+                "ZAudP1Death2", "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
+                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt6","AudBasicSlash1",
+                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
+                "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area",  "ZAudAtt7", "ZAudAtt8",
+                "ZAudAtt9", "ZAudAtt10", "ZAudAtt11", "ZAudAtt12", "ZAudAtt13", 
+                "ZAudAtt14", "ZAudAtt15", "ZAudAtt16",
+                "ZAudMid", "ZAudTalk1", "ZAudTalk1B", "ZAudTalk2", "ZAudTalk3", "ZAudTalk4"
+            };
+            foreach(var name in clips)
+            {
+                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
+            }
+        }
+
         public static void LoadZemerBundle()
 		{
             Log("Loading Zemer bundle");
@@ -267,19 +322,9 @@ namespace FiveKnights
                 return;
             }
 
-            // Audio clips
-            string[] clips = new[]
-            {
-                "ZAudP2Death2", "ZP2Intro","ZP1Loop", "ZAudP1Death", "ZAudAtt4", "ZAudP2Death1",
-                "ZAudBow", "ZAudCounter", "ZAudAtt5", "ZP1Intro", "ZAudAtt2", "ZP2Loop",
-                "ZAudLaser", "ZAudHoriz", "ZAudAtt3", "ZAudAtt1", "ZAudAtt6","AudBasicSlash1",
-                "AudBigSlash", "AudBigSlash2", "AudLand", "AudDashIntro", "AudDash", "AudBasicSlash2",
-                "breakable_wall_hit_1", "breakable_wall_hit_2", "Zem_Area"
-            };
-            foreach(var name in clips)
-            {
-                FiveKnights.Clips[name] = _soundBundle.LoadAsset<AudioClip>(name);
-            }
+            LoadZemerSound();
+            
+            
             FiveKnights.Clips["NeedleSphere"] = (AudioClip)FiveKnights.preloadedGO["HornetSphere"].LocateMyFSM("Control")
                 .GetAction<AudioPlaySimple>("Sphere A", 0).oneShotClip.Value;
 

@@ -31,14 +31,21 @@ namespace FiveKnights
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
             newentry = true
         };
         public JournalHelper.JournalPlayerData HegemolEntryData = new JournalHelper.JournalPlayerData
         {
             haskilled = false,
             Hidden = true,
-            killsremaining = 2,
+            killsremaining = 1,
+            newentry = true
+        };
+        public JournalHelper.JournalPlayerData Mawlek2EntryData = new JournalHelper.JournalPlayerData
+        {
+            haskilled = false,
+            Hidden = true,
+            killsremaining = 1,
             newentry = true
         };
 
@@ -48,10 +55,11 @@ namespace FiveKnights
         public int ZemerOWWinCount = 0;
 
         public bool AltStatueIsma;
-
         public bool AltStatueZemer;
-
         public bool AltStatueMawlek;
+
+        public string respawnMarkerName;
+        public string respawnScene;
 
         public bool[] newCharms = new bool[] { true, true, true, true };
 
@@ -72,6 +80,20 @@ namespace FiveKnights
         public bool GreetedNailsmith = false;
         public bool GreetedSheo = false;
 
+        public bool IsmaFirstConvo1 = false;
+        public bool IsmaFirstConvo2 = false;
+        public bool IsmaSecondConvo1 = false;
+        public bool IsmaSecondConvo2 = false;
+        public bool IsmaThirdConvo1 = false;
+        public bool IsmaCharmConvo = false;
+
+        public bool OgrimFirstConvo1 = false;
+        public bool OgrimFirstConvo2 = false;
+        public bool OgrimSecondConvo1 = false;
+        public bool OgrimSecondConvo2 = false;
+        public bool OgrimThirdConvo1 = false;
+        public bool OgrimCharmConvo = false;
+
         public bool DryyaFirstConvo1 = false;
         public bool DryyaFirstConvo2 = false;
         public bool DryyaSecondConvo1 = false;
@@ -80,29 +102,12 @@ namespace FiveKnights
         public bool DryyaCharmConvo = false;
         public bool DryyaOldNailConvo = false;
 
-        public bool IsmaFirstConvo1 = false;
-        public bool IsmaFirstConvo2 = false;
-        public bool IsmaSecondConvo1 = false;
-        public bool IsmaSecondConvo2 = false;
-        public bool IsmaThirdConvo1 = false;
-        public bool IsmaCharmConvo = false;
-        public bool IsmaOldNailConvo = false;
-
-        public bool OgrimFirstConvo1 = false;
-        public bool OgrimFirstConvo2 = false;
-        public bool OgrimSecondConvo1 = false;
-        public bool OgrimSecondConvo2 = false;
-        public bool OgrimThirdConvo1 = false;
-        public bool OgrimCharmConvo = false;
-        public bool OgrimOldNailConvo = false;
-
         public bool HegemolFirstConvo1 = false;
         public bool HegemolFirstConvo2 = false;
         public bool HegemolSecondConvo1 = false;
         public bool HegemolSecondConvo2 = false;
         public bool HegemolThirdConvo1 = false;
         public bool HegemolCharmConvo = false;
-        public bool HegemolOldNailConvo = false;
 
         public bool ZemerFirstConvo1 = false;
         public bool ZemerFirstConvo2 = false;
@@ -110,7 +115,17 @@ namespace FiveKnights
         public bool ZemerSecondConvo2 = false;
         public bool ZemerThirdConvo1 = false;
         public bool ZemerCharmConvo = false;
-        public bool ZemerOldNailConvo = false;
+
+        public bool WLadyKHConvo1 = false;
+        public bool WLadyKHConvo2 = false;
+        public bool WLadyMPConvo1 = false;
+        public bool WLadyMPConvo2 = false;
+        public bool WLadyBHConvo1 = false;
+        public bool WLadyBHConvo2 = false;
+        public bool WLadyVLConvo1 = false;
+        public bool WLadyVLConvo2 = false;
+        public bool WLadyAllConvo1 = false;
+        public bool WLadyAllConvo2 = false;
 
         public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
                                              CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;

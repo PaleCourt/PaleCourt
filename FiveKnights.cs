@@ -22,6 +22,7 @@ using TMPro;
 using Vasi;
 using GetLanguageString = On.HutongGames.PlayMaker.Actions.GetLanguageString;
 using System.Collections;
+using FiveKnights.Misc;
 
 namespace FiveKnights
 {
@@ -153,12 +154,15 @@ namespace FiveKnights
             ModHooks.GetPlayerBoolHook += ModHooks_GetPlayerBool;
             ModHooks.SetPlayerBoolHook += ModHooks_SetPlayerBool;
             ModHooks.GetPlayerIntHook += ModHooks_GetPlayerInt;
+			ModHooks.SetPlayerStringHook += ModHooks_SetPlayerString;
+      ModHooks.GetPlayerStringHook += ModHooks_GetPlayerString;
             On.Language.Language.DoSwitch += SwitchLanguage;
             ModHooks.LanguageGetHook += LangGet;
             On.AudioManager.ApplyMusicCue += LoadPaleCourtMenuMusic;
             RewardRoom.Hook();
             Credits.Hook();
             AbyssalTemple.Hook();
+            WhiteLadyDialogue.Hook();
 
             #endregion
 
@@ -192,7 +196,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "6.21.2023-2";
+        public override string GetVersion() => "6.29.2023.3";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -204,6 +208,7 @@ namespace FiveKnights
                 ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
                 ("Abyss_05","Dusk Knight/Idle Pt"),
+                ("Abyss_05", "Dream Dialogue"),
                 ("GG_Failed_Champion","False Knight Dream"),
                 // The dust for when Zemer slams into walls
                 ("GG_Failed_Champion","Ceiling Dust"),
@@ -304,6 +309,7 @@ namespace FiveKnights
             preloadedGO["Statue"] = preloadedObjects["GG_Workshop"]["GG_Statue_ElderHu"];
             preloadedGO["DPortal"] = preloadedObjects["Abyss_05"]["Dusk Knight/Dream Enter 2"];
             preloadedGO["DPortal2"] = preloadedObjects["Abyss_05"]["Dusk Knight/Idle Pt"];
+            preloadedGO["Dream Dialogue"] = preloadedObjects["Abyss_05"]["Dream Dialogue"];
             preloadedGO["StatueMed"] = preloadedObjects["GG_Workshop"]["GG_Statue_TraitorLord"];
             preloadedGO["Bench"] = preloadedObjects["White_Palace_01"]["WhiteBench"];
 
@@ -402,8 +408,14 @@ namespace FiveKnights
                 note = langStrings.Get("ENTRY_ZEM_NOTE", "Journal"),
                 shortname = langStrings.Get("ENTRY_ZEM_NAME", "Journal")
             }, "WhiteDefender", JournalHelper.EntryType.Dream, null, true, true));
+            journalEntries.Add("Tiso", new JournalHelper(SPRITES["journal_icon_zemer"], SPRITES["journal_zemer"], SaveSettings.Mawlek2EntryData, new JournalHelper.JournalNameStrings
+            {
+                name = langStrings.Get("ENTRY_TISO_LONGNAME", "Journal"),
+                desc = langStrings.Get("ENTRY_TISO_DESC", "Journal"),
+                note = langStrings.Get("ENTRY_TISO_NOTE", "Journal"),
+                shortname = langStrings.Get("ENTRY_TISO_NAME", "Journal")
+            }, "LobsterLancer", JournalHelper.EntryType.Normal, null, true, true));
             #endregion
-
             #region Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
@@ -420,7 +432,12 @@ namespace FiveKnights
             PlantChanger();
 
 			GSPImport.AddFastDashPredicate((prev, next) => next.name == "White_Palace_09" && prev.name != "White_Palace_13");
-			// GSPImport.AddInfiniteChallengeReturnScenePredicate((info) => info.SceneName is "White_Palace_09");
+			GSPImport.AddInfiniteChallengeReturnScenePredicate((info) =>
+				GameManager.instance.sceneName is
+					ArenaFinder.Isma2Scene or ArenaFinder.DryyaScene or ArenaFinder.ZemerScene
+					or ArenaFinder.HegemolScene or ArenaFinder.IsmaScene
+				&& info.SceneName is "White_Palace_09"
+			);
 
             Log("Initializing");
         }
@@ -660,25 +677,32 @@ namespace FiveKnights
 			SaveSettings.DryyaEntryData = journalEntries["Dryya"].playerData;
 			SaveSettings.HegemolEntryData = journalEntries["Hegemol"].playerData;
 			SaveSettings.ZemerEntryData = journalEntries["Zemer"].playerData;
+			SaveSettings.Mawlek2EntryData = journalEntries["Tiso"].playerData;
 		}
 
-        private object SetVariableHook(Type t, string key, object obj)
+        private object SetVariableHook(Type t, string key, object orig)
         {
             if (key == "statueStateIsma")
-                SaveSettings.CompletionIsma = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma = (BossStatue.Completion)orig;
             else if (key == "statueStateDryya")
-                SaveSettings.CompletionDryya = (BossStatue.Completion)obj;
+                SaveSettings.CompletionDryya = (BossStatue.Completion)orig;
             else if (key == "statueStateZemer")
-                SaveSettings.CompletionZemer = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer = (BossStatue.Completion)orig;
             else if (key == "statueStateZemer2")
-                SaveSettings.CompletionZemer2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionZemer2 = (BossStatue.Completion)orig;
             else if (key == "statueStateIsma2")
-                SaveSettings.CompletionIsma2 = (BossStatue.Completion)obj;
+                SaveSettings.CompletionIsma2 = (BossStatue.Completion)orig;
             else if (key == "statueStateHegemol")
-                SaveSettings.CompletionHegemol = (BossStatue.Completion)obj;
+                SaveSettings.CompletionHegemol = (BossStatue.Completion)orig;
             else if (key == "statueStateMawlek2")
-                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)obj;
-            return obj;
+                SaveSettings.CompletionMawlek2 = (BossStatue.Completion)orig;
+            else if (key == "statueStateBroodingMawlek")
+            {
+                var a = (BossStatue.Completion)orig;
+                a.usingAltVersion = false;
+                return a;
+            }
+            return orig;
         }
 
         private object GetVariableHook(Type t, string key, object orig)
@@ -697,6 +721,12 @@ namespace FiveKnights
                 return SaveSettings.CompletionHegemol;
             if (key == "statueStateMawlek2")
                 return SaveSettings.CompletionMawlek2;
+            if (key == "statueStateBroodingMawlek")
+            {
+                var a = (BossStatue.Completion)orig;
+                a.usingAltVersion = SaveSettings.AltStatueMawlek;
+                return a;
+            }
             return orig;
         }
 
@@ -731,7 +761,7 @@ namespace FiveKnights
 
         private bool ModHooks_SetPlayerBool(string target, bool orig)
         {
-            if (target.StartsWith("gotCharm_"))
+            if(target.StartsWith("gotCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -740,7 +770,7 @@ namespace FiveKnights
                     return orig;
                 }
             }
-            if (target.StartsWith("newCharm_"))
+            if(target.StartsWith("newCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -749,7 +779,7 @@ namespace FiveKnights
                     return orig;
                 }
             }
-            if (target.StartsWith("equippedCharm_"))
+            if(target.StartsWith("equippedCharm_"))
             {
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
@@ -770,6 +800,36 @@ namespace FiveKnights
                 {
                     return SaveSettings.charmCosts[charmIDs.IndexOf(charmNum)];
                 }
+            }
+            return orig;
+        }
+
+        private string ModHooks_SetPlayerString(string target, string orig)
+        {
+            if(target == nameof(PlayerData.respawnMarkerName))
+            {
+                SaveSettings.respawnMarkerName = orig;
+                if(orig == "WhiteBench(Clone)(Clone)") return "RestBench (1)";
+            }
+            if(target == nameof(PlayerData.respawnScene))
+            {
+                SaveSettings.respawnScene = orig;
+                if(orig == "White_Palace_09") return "GG_Workshop";
+            }
+            return orig;
+        }
+
+        private string ModHooks_GetPlayerString(string target, string orig)
+        {
+            if(target == nameof(PlayerData.respawnMarkerName) && orig == "RestBench (1)" && 
+                !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)")
+            {
+                return SaveSettings.respawnMarkerName;
+            }
+            if(target == nameof(PlayerData.respawnScene) && orig == "GG_Workshop" && 
+                !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
+            {
+                return SaveSettings.respawnScene;
             }
             return orig;
         }
@@ -796,7 +856,6 @@ namespace FiveKnights
 			{
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
-                SaveSettings.HasSeenWorkshopRaised = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
                 SaveSettings.CompletionIsma.hasBeenSeen = true;
                 SaveSettings.CompletionDryya.isUnlocked = true;
@@ -813,6 +872,22 @@ namespace FiveKnights
 
         private void StartGame()
         {
+            if(PlayerData.instance.bossRushMode && !SaveSettings.HasSeenWorkshopRaised)
+            {
+                SaveSettings.gotCharms = new bool[] { true, true, true, true };
+                SaveSettings.upgradedCharm_10 = true;
+                SaveSettings.CompletionIsma.isUnlocked = true;
+                SaveSettings.CompletionIsma.hasBeenSeen = true;
+                SaveSettings.CompletionDryya.isUnlocked = true;
+                SaveSettings.CompletionDryya.hasBeenSeen = true;
+                SaveSettings.CompletionZemer.isUnlocked = true;
+                SaveSettings.CompletionZemer.hasBeenSeen = true;
+                SaveSettings.CompletionHegemol.isUnlocked = true;
+                SaveSettings.CompletionHegemol.hasBeenSeen = true;
+                SaveSettings.CompletionMawlek2.isUnlocked = true;
+                SaveSettings.CompletionMawlek2.hasBeenSeen = true;
+            }
+
             GameManager.instance.gameObject.AddComponent<ArenaFinder>();
             GameManager.instance.gameObject.AddComponent<TisoFinder>();
             GameManager.instance.gameObject.AddComponent<OWArenaFinder>();
@@ -823,6 +898,7 @@ namespace FiveKnights
             journalEntries["Dryya"].playerData = SaveSettings.DryyaEntryData;
             journalEntries["Hegemol"].playerData = SaveSettings.HegemolEntryData;
             journalEntries["Zemer"].playerData = SaveSettings.ZemerEntryData;
+            journalEntries["Tiso"].playerData = SaveSettings.Mawlek2EntryData;
 
             // Obtain additional preloads
             foreach (GameObject i in Resources.FindObjectsOfTypeAll<GameObject>())

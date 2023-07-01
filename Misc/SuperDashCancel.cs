@@ -7,7 +7,6 @@ namespace FiveKnights.Misc
         private void OnTriggerEnter2D(Collider2D other)
         {
             HeroController.instance.CancelSuperDash();
-            Destroy(this);
         }
     }
 }

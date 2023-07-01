@@ -41,6 +41,18 @@ namespace FiveKnights
                 _spellControl.InsertMethod("Focus Heal Blast", 16, BlastControlMain);
                 _spellControl.InsertMethod("Focus Heal 2 Blast", 18, BlastControlMain);
             }
+
+            foreach(var pool in ObjectPool.instance.startupPools)
+            {
+                if(pool.prefab.name == "Knight Spore Cloud")
+                {
+                    FiveKnights.preloadedGO["SporeCloud"] = pool.prefab;
+                }
+                if(pool.prefab.name == "Knight Dung Cloud")
+                {
+                    FiveKnights.preloadedGO["DungCloud"] = pool.prefab;
+                }
+            }
         }
         private void BlastControlCancel()
         {
@@ -91,11 +103,7 @@ namespace FiveKnights
                 try
                 {
                     enemy.GetComponent<Afflicted>().StopCoroutine(enemy.GetComponent<Afflicted>()._createLine);
-                    if (enemy.GetComponent<Afflicted>(). _line != null)
-                    {
-                        Destroy(enemy.GetComponent<Afflicted>()._line);
-                    }
-                    Log("Removed line");
+                    Log("Stopped Line Coroutine");
                 }
                 catch (NullReferenceException e) { Log("Couldn't stop create line couroutine"); }
                 try
@@ -141,19 +149,23 @@ namespace FiveKnights
         }
         private void BlastControlMain()
         {
+            List<int> nullenemies = new List<int>();
             foreach (GameObject enemy in markedEnemies)
             {
                 Log("Start Coroutine: Blast");
                 var index = markedEnemies.IndexOf(enemy);
                 if (enemy == null || !enemy.active)
                 {
-                    markedEnemies.RemoveAt(index);
-                    Log("Removed null or inactive entity");
+                    nullenemies.Add(index);
+                    Log("Item was null, continuing");
                     continue;
                 }
                 /*enemy.GetComponent<Afflicted>().*/StartCoroutine(enemy.GetComponent<Afflicted>().PureVesselBlast());
             }
-
+            foreach (int i in nullenemies)
+            {
+                markedEnemies.RemoveAt(i);
+            }
         }
         private void OnDisable()
         {
@@ -257,6 +269,11 @@ namespace FiveKnights
                 SoulEffect = new GameObject();
                 Start();
             }
+            if (_focusLines != null && _pd.GetBool("equippedCharm_" + Charms.ShapeOfUnn))
+            {  _focusLines.transform.position = gameObject.transform.position;}
+            if (_blast != null && _pd.GetBool("equippedCharm_" + Charms.ShapeOfUnn))
+            { _blast.transform.position = gameObject.transform.position; }
+
         }
         public IEnumerator FadeOut()
         {
@@ -278,18 +295,16 @@ namespace FiveKnights
         {
             Log("Called PureVesselBlastFadeIn");
             Log("Recieved GO: " + gameObject.name);
+            
+            StartCoroutine(FadeOut());
 
-
-           StartCoroutine(FadeOut());
-
-            _createLine = CreateLine(gameObject, gameObject.transform.position);
+            _createLine = CreateLine();
             StartCoroutine(_createLine);
-            _focusLines = Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), gameObject.transform.position, new Quaternion(0, 0, 0, 0));
+            _focusLines = Instantiate(_hc.gameObject.Find("Focus Effects").Find("Lines Anim"), gameObject.transform.position, Quaternion.identity);
             _focusLines.GetComponent<tk2dSpriteAnimator>().Play("Focus Effect");
 
-
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Charge", 2).audioClip.Value, 0, 1.5f);
-            _blast = Instantiate(FiveKnights.preloadedGO["Blast"]); 
+            _blast = Instantiate(FiveKnights.preloadedGO["Blast"]);
             _blast.transform.position += gameObject.transform.position;
             _blast.SetActive(true);
             Destroy(_blast.FindGameObjectInChildren("hero_damager"));
@@ -318,7 +333,7 @@ namespace FiveKnights
             Log("Fade in finished");
         }
 
-        public IEnumerator CreateLine(GameObject enemy, Vector3 enemypos)
+        public IEnumerator CreateLine()
         {
             var wait = 1f;
             if (_pd.GetBool("equippedCharm_" + Charms.QuickFocus))
@@ -331,7 +346,7 @@ namespace FiveKnights
             }
             yield return new WaitForSeconds(wait - .2f);
             var heropos = _hc.transform.position - new Vector3(0, 1, 0);
-
+            var enemypos = gameObject.transform.position;
             var linepos = Vector3.Lerp(heropos, enemypos, .5f);
 
             float num = heropos.y - enemypos.y;
@@ -346,12 +361,13 @@ namespace FiveKnights
             _line = Instantiate(FiveKnights.preloadedGO["SoulTwister"].LocateMyFSM("Mage").GetAction<CreateObject>("Tele Line").gameObject.Value, linepos, new Quaternion(0, 0, 0, 0));
             _line.transform.SetRotationZ(lineangle);
             _line.transform.localScale = new Vector3(linesize, 1, 1);
-            _line.GetComponent<ParticleSystem>().loop = true;
+            // _line.GetComponent<ParticleSystem>().loop = true;
             _line.GetComponent<ParticleSystem>().startSize = .35f;
+            _line.GetComponent<ParticleSystem>().emissionRate = 3000;
+            _line.GetComponent<ParticleSystem>().startLifetime = .75f;
             _line.GetComponent<ParticleSystem>().Emit(0);
             _line.SetActive(true);
             _line.GetComponent<ParticleSystem>().Play();
-            yield return new WaitForSeconds(.075f);
             _line.GetComponent<ParticleSystem>().loop = false;
         }
         public IEnumerator PureVesselBlast()
@@ -384,22 +400,49 @@ namespace FiveKnights
             Log("Adding DamageEnemies");
             _blast.AddComponent<DamageEnemies>();
             DamageEnemies damageEnemies = _blast.GetComponent<DamageEnemies>();
-            damageEnemies.damageDealt = 30;
+            damageEnemies.damageDealt = _pd.GetBool("equippedCharm_" + Charms.DeepFocus) ? 60 : 30;
             damageEnemies.attackType = AttackTypes.Spell;
             damageEnemies.ignoreInvuln = false;
             damageEnemies.enabled = true;
             Log("Playing AudioClip");
             this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 0, 1.5f);
             Log("Audio Clip finished");
+
+            // Spawn additional things
+            if(_pd.GetBool("equippedCharm_" + Charms.SporeShroom))
+			{
+                if(_pd.GetBool("equippedCharm_" + Charms.DefendersCrest))
+				{
+                    if(FiveKnights.Instance.SaveSettings.upgradedCharm_10)
+                    {
+                        Instantiate(_hc.GetComponent<RoyalAura>().dungCloud, transform.position, Quaternion.identity).SetActive(true);
+                    }
+                    else
+                    {
+                        Instantiate(FiveKnights.preloadedGO["DungCloud"], transform.position, Quaternion.identity).SetActive(true);
+                    }
+                }
+                else
+				{
+                    Instantiate(FiveKnights.preloadedGO["SporeCloud"], transform.position, Quaternion.identity).SetActive(true);
+				}
+            }
+
             yield return new WaitForSeconds(.11f);
             blastCollider.enabled = false;
             yield return new WaitForSeconds(0.69f);
 
             Destroy(_blast);
-            Destroy(_focusLines);           
-            LamentControl.markedEnemies.RemoveAt(LamentControl.markedEnemies.IndexOf(gameObject));
+            Destroy(_focusLines);
             Log("Blast Finished");
-            Destroy(gameObject.GetComponent<Afflicted>());
+            try
+            {
+                LamentControl.markedEnemies.RemoveAt(LamentControl.markedEnemies.IndexOf(gameObject));
+                Destroy(gameObject.GetComponent<Afflicted>());
+            }
+            catch (NullReferenceException e) { }
+            
+           
             
         }
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][LamentControl] " + message);

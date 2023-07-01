@@ -29,20 +29,14 @@ namespace FiveKnights
 
         private bool CancelNailArts(On.HeroController.orig_CanNailCharge orig, HeroController self)
         {
-           /* if (PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .17f || !PlayerData.instance.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .21f)
-            {
-                return false;
-            }
-            else
-            {*/
-                return orig(self);
-            //}
+            return false;
         }
 
         private void OnDisable()
         {
             On.HeroController.CanNailCharge -= CancelNailArts;
         }
+
         private void Update()
         {
             if (HeroController.instance.vertical_input > Mathf.Epsilon) { attackDir = AttackDirection.upward; }

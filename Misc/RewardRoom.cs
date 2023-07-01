@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using FiveKnights.Misc;
@@ -18,6 +19,8 @@ namespace FiveKnights
 {
     public static class RewardRoom
     {
+        public static bool doneCCHitless;
+
         private static LanguageCtrl langCtrl;
         private static Animator dryyaAnim;
         private static Animator ogrimAnim;
@@ -37,8 +40,8 @@ namespace FiveKnights
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
         }
 
-		public static void UnHook()
-        {   
+		public static void Unhook()
+        {
             ModHooks.LanguageGetHook -= LangGet;
             On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero -= GameManagerEnterHero;
@@ -64,6 +67,17 @@ namespace FiveKnights
         {
             if(self.sceneName == "hidden_reward_room")
             {
+                BossLoader.LoadHegemolSound();
+                BossLoader.LoadIsmaBundle();
+                BossLoader.LoadZemerBundle();
+                BossLoader.LoadDryyaBundle();
+
+                for (int i = 1; i < 8; i++)
+                {
+                    var name = "DTalk" + i;
+                    FiveKnights.Clips[name] = ABManager.AssetBundles[ABManager.Bundle.Sound].LoadAsset<AudioClip>(name);
+                }
+                
                 self.tilemap.width = 500;
                 self.tilemap.height = 200;
                 CreateGateway("door1", new Vector2(266f, 131f), Vector2.zero,
@@ -77,6 +91,25 @@ namespace FiveKnights
                 hegemolAnim = GameObject.Find("Hegemol").GetComponent<Animator>();
                 zemerAnim = GameObject.Find("Zemer").GetComponent<Animator>();
                 if(zemerAnim != null) zemerAnimCoro = GameManager.instance.StartCoroutine(ZemerAnimControl());
+
+                if(doneCCHitless)
+				{
+                    GameObject[] knights = new GameObject[]
+                    {
+                        GameObject.Find("Dryya"),
+                        GameObject.Find("Ogrim"),
+                        GameObject.Find("Isma"),
+                        GameObject.Find("Hegemol"),
+                        GameObject.Find("Zemer"),
+                    };
+                    foreach(GameObject knight in knights)
+					{
+                        foreach(SpriteRenderer sr in knight.GetComponentsInChildren<SpriteRenderer>(true))
+						{
+                            sr.enabled = false;
+						}
+					}
+				}
 
                 if(!FiveKnights.Clips.ContainsKey("Pale Court") || FiveKnights.Clips["Pale Court"] == null)
                 {
@@ -134,18 +167,18 @@ namespace FiveKnights
                 dryya.transform.position = new Vector3(293.38f, 129.67f, 0f);
                 dryya.transform.Find("Prompt Marker").position = new Vector3(293.78f, 134.9f, 0.2f);
                 dryya.DialogueSelector = DryyaDialogue;
-                dryya.GetComponent<MeshRenderer>().enabled = false;
+                dryya.GetComponent<MeshRenderer>().enabled = doneCCHitless;
                 dryya.SetTitle("RR_DRYYA_TITLE");
-                dryya.SetDreamKey("RR_DRYYA_TITLE_SUB");
+                dryya.SetDreamKey(GetDreamKey("DRYYA"));
                 dryya.SetUp();
 
                 DialogueNPC ogrim = DialogueNPC.CreateInstance();
                 ogrim.transform.position = new Vector3(297.35f, 129.0865f, 0f);
                 ogrim.transform.Find("Prompt Marker").position = new Vector3(297.75f, 133f, 0.2f);
                 ogrim.DialogueSelector = OgrimDialogue;
-                ogrim.GetComponent<MeshRenderer>().enabled = false;
+                ogrim.GetComponent<MeshRenderer>().enabled = doneCCHitless;
                 ogrim.SetTitle("RR_OGRIM_TITLE");
-                ogrim.SetDreamKey("RR_OGRIM_TITLE_SUB");
+                ogrim.SetDreamKey(GetDreamKey("OGRIM"));
                 ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
                 ogrim.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 ogrim.SetUp();
@@ -154,18 +187,18 @@ namespace FiveKnights
                 isma.transform.position = new Vector3(300.79f, 129.0865f, 0f);
                 isma.transform.Find("Prompt Marker").position = new Vector3(300.79f, 132.1f, 0.2f);
                 isma.DialogueSelector = IsmaDialogue;
-                isma.GetComponent<MeshRenderer>().enabled = false;
+                isma.GetComponent<MeshRenderer>().enabled = doneCCHitless;
                 isma.SetTitle("RR_ISMA_TITLE");
-                isma.SetDreamKey("RR_ISMA_TITLE_SUB");
+                isma.SetDreamKey(GetDreamKey("ISMA"));
                 isma.SetUp();
 
                 DialogueNPC hegemol = DialogueNPC.CreateInstance();
                 hegemol.transform.position = new Vector3(305.08f, 129.38f, 0f);
                 hegemol.transform.Find("Prompt Marker").position = new Vector3(305.68f, 135f, 0.2f);
                 hegemol.DialogueSelector = HegemolDialogue;
-                hegemol.GetComponent<MeshRenderer>().enabled = false;
+                hegemol.GetComponent<MeshRenderer>().enabled = doneCCHitless;
                 hegemol.SetTitle("RR_HEGEMOL_TITLE");
-                hegemol.SetDreamKey("RR_HEGEMOL_TITLE_SUB");
+                hegemol.SetDreamKey(GetDreamKey("HEGEMOL"));
                 hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
                 hegemol.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 hegemol.SetUp();
@@ -174,9 +207,9 @@ namespace FiveKnights
                 zemer.transform.position = new Vector3(311.03f, 129.0576f, 0f);
                 zemer.transform.Find("Prompt Marker").position = new Vector3(310.53f, 134.97f, 0.2f);
                 zemer.DialogueSelector = ZemerDialogue;
-                zemer.GetComponent<MeshRenderer>().enabled = false;
+                zemer.GetComponent<MeshRenderer>().enabled = doneCCHitless;
                 zemer.SetTitle("RR_ZEMER_TITLE");
-                zemer.SetDreamKey("RR_ZEMER_TITLE_SUB");
+                zemer.SetDreamKey(GetDreamKey("ZEMER"));
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 zemer.SetUp();
@@ -279,6 +312,7 @@ namespace FiveKnights
         private static IEnumerator DebugLoadRR()
         {
             yield return new WaitForSeconds(1f);
+            doneCCHitless = false;
             HeroController.instance.EnterWithoutInput(true);
             GameManager.instance.BeginSceneTransition(new GameManager.SceneLoadInfo
             {
@@ -289,6 +323,16 @@ namespace FiveKnights
                 EntryDelay = 0,
                 HeroLeaveDirection = GatePosition.door
             });
+        }
+
+        private static string GetDreamKey(string name)
+		{
+            if(FiveKnights.Instance.SaveSettings.ChampionsCallClears <= 0) return "RR_DRYYA_CHEATER";
+
+            string number = "THIRD";
+            if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 1) number = "FIRST";
+            else if(FiveKnights.Instance.SaveSettings.ChampionsCallClears == 2) number = "SECOND";
+            return string.Format("RR_{0}_{1}_DREAM", name, number);
         }
 
         private static DialogueOptions EntranceDialogue(DialogueCallbackOptions prev)
@@ -313,29 +357,34 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.DryyaFirstConvo1)
                     {
                         key = "RR_DRYYA_FIRST_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo1"]);
                         FiveKnights.Instance.SaveSettings.DryyaFirstConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.DryyaFirstConvo2)
                     {
                         key = "RR_DRYYA_FIRST_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                         FiveKnights.Instance.SaveSettings.DryyaFirstConvo2 = true;
                     }
                     else
 					{
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
                         }
                         else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
                             !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
                         {
                             key = "RR_DRYYA_OLDNAIL_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo3"]);
                             key = "RR_DRYYA_FIRST_REPEAT";
                         }
                     }
@@ -345,29 +394,34 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.DryyaSecondConvo1)
                     {
                         key = "RR_DRYYA_SECOND_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo1"]);
                         FiveKnights.Instance.SaveSettings.DryyaSecondConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.DryyaSecondConvo2)
                     {
                         key = "RR_DRYYA_SECOND_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                         FiveKnights.Instance.SaveSettings.DryyaSecondConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
                         }
                         else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
                             !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
                         {
                             key = "RR_DRYYA_OLDNAIL_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo3"]);
                             key = "RR_DRYYA_SECOND_REPEAT";
                         }
                     }
@@ -377,24 +431,28 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.DryyaThirdConvo1)
                     {
                         key = "RR_DRYYA_THIRD_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo1"]);
                         FiveKnights.Instance.SaveSettings.DryyaThirdConvo1 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
                             key = "RR_DRYYA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaCharmConvo = true;
                         }
                         else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
                             !FiveKnights.Instance.SaveSettings.DryyaOldNailConvo)
                         {
                             key = "RR_DRYYA_OLDNAIL_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo2"]);
                             FiveKnights.Instance.SaveSettings.DryyaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DryyaVoiceConvo3"]);
                             key = "RR_DRYYA_THIRD_REPEAT";
                         }
                     }
@@ -424,13 +482,14 @@ namespace FiveKnights
                     return new() { Key = "RR_DRYYA_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_FIRST_2_2":
                     return new() { Key = "RR_DRYYA_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_DRYYA_FIRST_2_3":
+                    return new() { Key = "RR_DRYYA_FIRST_2_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_SECOND_1_1":
                     return new() { Key = "RR_DRYYA_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_SECOND_1_2":
                     return new() { Key = "RR_DRYYA_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_SECOND_2_1":
-                    if(PlayerData.instance.nailSmithUpgrades == 0) return new() { Key = "RR_DRYYA_SECOND_2_2_ALT", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-                    return new() { Key = "RR_DRYYA_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                    return new() { Key = PlayerData.instance.nailSmithUpgrades != 4 ? "RR_DRYYA_SECOND_2_2_ALT" : "RR_DRYYA_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_SECOND_2_2":
                     return new() { Key = "RR_DRYYA_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_DRYYA_SECOND_2_2_ALT":
@@ -484,30 +543,28 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.OgrimFirstConvo1)
                     {
                         key = "RR_OGRIM_FIRST_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk1"]);
                         FiveKnights.Instance.SaveSettings.OgrimFirstConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.OgrimFirstConvo2)
                     {
                         key = "RR_OGRIM_FIRST_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk2"]);
                         FiveKnights.Instance.SaveSettings.OgrimFirstConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk5"]);
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
-                        {
-                            key = "RR_OGRIM_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
                         }
                         else
                         {
                             key = "RR_OGRIM_FIRST_REPEAT";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk7"]);
                         }
                     }
                 }
@@ -517,29 +574,27 @@ namespace FiveKnights
                     {
                         key = "RR_OGRIM_SECOND_1_1";
                         FiveKnights.Instance.SaveSettings.OgrimSecondConvo1 = true;
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk3"]);
                     }
                     else if(!FiveKnights.Instance.SaveSettings.OgrimSecondConvo2)
                     {
                         key = "RR_OGRIM_SECOND_2_1";
                         FiveKnights.Instance.SaveSettings.OgrimSecondConvo2 = true;
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk4"]);
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
-                        {
-                            key = "RR_OGRIM_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk5"]);
                         }
                         else
                         {
                             key = "RR_OGRIM_SECOND_REPEAT";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk7"]);
                         }
                     }
                 }
@@ -549,24 +604,21 @@ namespace FiveKnights
                     {
                         key = "RR_OGRIM_THIRD_1_1";
                         FiveKnights.Instance.SaveSettings.OgrimThirdConvo1 = true;
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk6"]);
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.OgrimCharmConvo)
                         {
                             key = "RR_OGRIM_CHARM_1";
                             FiveKnights.Instance.SaveSettings.OgrimCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.OgrimOldNailConvo)
-                        {
-                            key = "RR_OGRIM_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.OgrimOldNailConvo = true;
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk5"]);
                         }
                         else
                         {
                             key = "RR_OGRIM_THIRD_REPEAT";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["DTalk7"]); 
                         }
                     }
                 }
@@ -638,29 +690,27 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.IsmaFirstConvo1)
                     {
                         key = "RR_ISMA_FIRST_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkHi"]);
                         FiveKnights.Instance.SaveSettings.IsmaFirstConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.IsmaFirstConvo2)
                     {
                         key = "RR_ISMA_FIRST_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalk1"]);
                         FiveKnights.Instance.SaveSettings.IsmaFirstConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkCharm"]);
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
-                        {
-                            key = "RR_ISMA_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkBye"]);
                             key = "RR_ISMA_FIRST_REPEAT";
                         }
                     }
@@ -670,29 +720,27 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.IsmaSecondConvo1)
                     {
                         key = "RR_ISMA_SECOND_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalk3"]);
                         FiveKnights.Instance.SaveSettings.IsmaSecondConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.IsmaSecondConvo2)
                     {
                         key = "RR_ISMA_SECOND_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalk5"]);
                         FiveKnights.Instance.SaveSettings.IsmaSecondConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkCharm"]);
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
-                        {
-                            key = "RR_ISMA_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkBye"]);
                             key = "RR_ISMA_SECOND_REPEAT";
                         }
                     }
@@ -702,24 +750,21 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.IsmaThirdConvo1)
                     {
                         key = "RR_ISMA_THIRD_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalk6"]);
                         FiveKnights.Instance.SaveSettings.IsmaThirdConvo1 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
+                        if(PlayerData.instance.equippedCharm_10 && FiveKnights.Instance.SaveSettings.upgradedCharm_10 &&
+                           !FiveKnights.Instance.SaveSettings.IsmaCharmConvo)
                         {
                             key = "RR_ISMA_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkCharm"]);
                             FiveKnights.Instance.SaveSettings.IsmaCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.IsmaOldNailConvo)
-                        {
-                            key = "RR_ISMA_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.IsmaOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["IsmaAudTalkBye"]);
                             key = "RR_ISMA_THIRD_REPEAT";
                         }
                     }
@@ -792,29 +837,27 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.HegemolFirstConvo1)
                     {
                         key = "RR_HEGEMOL_FIRST_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral1"]);
                         FiveKnights.Instance.SaveSettings.HegemolFirstConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.HegemolFirstConvo2)
                     {
                         key = "RR_HEGEMOL_FIRST_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral2"]);
                         FiveKnights.Instance.SaveSettings.HegemolFirstConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
                             !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
                             key = "RR_HEGEMOL_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral2"]);
                             FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
-                        {
-                            key = "RR_HEGEMOL_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral3"]);
                             key = "RR_HEGEMOL_FIRST_REPEAT";
                         }
                     }
@@ -824,29 +867,27 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.HegemolSecondConvo1)
                     {
                         key = "RR_HEGEMOL_SECOND_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral1"]);
                         FiveKnights.Instance.SaveSettings.HegemolSecondConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.HegemolSecondConvo2)
                     {
                         key = "RR_HEGEMOL_SECOND_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral2"]);
                         FiveKnights.Instance.SaveSettings.HegemolSecondConvo2 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
+                           !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
                             key = "RR_HEGEMOL_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral2"]);
                             FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
-                        {
-                            key = "RR_HEGEMOL_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral3"]);
                             key = "RR_HEGEMOL_SECOND_REPEAT";
                         }
                     }
@@ -856,24 +897,21 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.HegemolThirdConvo1)
                     {
                         key = "RR_HEGEMOL_THIRD_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral1"]);
                         FiveKnights.Instance.SaveSettings.HegemolThirdConvo1 = true;
                     }
                     else
                     {
-                        if(FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
-                            !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
+                        if(FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
+                           !FiveKnights.Instance.SaveSettings.HegemolCharmConvo)
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral2"]);
                             key = "RR_HEGEMOL_CHARM_1";
                             FiveKnights.Instance.SaveSettings.HegemolCharmConvo = true;
                         }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.HegemolOldNailConvo)
-                        {
-                            key = "RR_HEGEMOL_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.HegemolOldNailConvo = true;
-                        }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["HNeutral3"]);
                             key = "RR_HEGEMOL_THIRD_REPEAT";
                         }
                     }
@@ -901,10 +939,14 @@ namespace FiveKnights
                     return new() { Key = "RR_HEGEMOL_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_FIRST_2_2":
                     return new() { Key = "RR_HEGEMOL_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_FIRST_2_3":
+                    return new() { Key = "RR_HEGEMOL_FIRST_2_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_SECOND_1_1":
                     return new() { Key = "RR_HEGEMOL_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_SECOND_1_2":
                     return new() { Key = "RR_HEGEMOL_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_HEGEMOL_SECOND_1_3":
+                    return new() { Key = "RR_HEGEMOL_SECOND_1_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_SECOND_2_1":
                     return new() { Key = "RR_HEGEMOL_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_SECOND_2_2":
@@ -915,10 +957,6 @@ namespace FiveKnights
                     return new() { Key = "RR_HEGEMOL_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_HEGEMOL_CHARM_2":
                     return new() { Key = "RR_HEGEMOL_CHARM_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-                case "RR_HEGEMOL_OLDNAIL_1":
-                    return new() { Key = "RR_HEGEMOL_OLDNAIL_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
-                case "RR_HEGEMOL_OLDNAIL_2":
-                    return new() { Key = "RR_HEGEMOL_OLDNAIL_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 default:
                     return new() { Continue = false, Wait = StopAnimHegemol() };
             }
@@ -951,11 +989,13 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo1)
                     {
                         key = "RR_ZEMER_FIRST_1_1";
-                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo1 = true;
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk2"]);
+                        FiveKnights.Instance.SaveSettings.ZemerFirstConvo1 = true; 
                     }
                     else if(!FiveKnights.Instance.SaveSettings.ZemerFirstConvo2)
                     {
                         key = "RR_ZEMER_FIRST_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk1"]);
                         FiveKnights.Instance.SaveSettings.ZemerFirstConvo2 = true;
                     }
                     else
@@ -964,16 +1004,12 @@ namespace FiveKnights
                             !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
                         {
                             key = "RR_ZEMER_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk3"]);
                             FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
-                        {
-                            key = "RR_ZEMER_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk4"]);
                             key = "RR_ZEMER_FIRST_REPEAT";
                         }
                     }
@@ -983,11 +1019,13 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.ZemerSecondConvo1)
                     {
                         key = "RR_ZEMER_SECOND_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk1B"]);
                         FiveKnights.Instance.SaveSettings.ZemerSecondConvo1 = true;
                     }
                     else if(!FiveKnights.Instance.SaveSettings.ZemerSecondConvo2)
                     {
                         key = "RR_ZEMER_SECOND_2_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk2"]);
                         FiveKnights.Instance.SaveSettings.ZemerSecondConvo2 = true;
                     }
                     else
@@ -996,16 +1034,12 @@ namespace FiveKnights
                             !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
                         {
                             key = "RR_ZEMER_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk3"]);
                             FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
-                        {
-                            key = "RR_ZEMER_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk4"]);
                             key = "RR_ZEMER_SECOND_REPEAT";
                         }
                     }
@@ -1015,6 +1049,7 @@ namespace FiveKnights
                     if(!FiveKnights.Instance.SaveSettings.ZemerThirdConvo1)
                     {
                         key = "RR_ZEMER_THIRD_1_1";
+                        HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk1"]);
                         FiveKnights.Instance.SaveSettings.ZemerThirdConvo1 = true;
                     }
                     else
@@ -1023,16 +1058,12 @@ namespace FiveKnights
                             !FiveKnights.Instance.SaveSettings.ZemerCharmConvo)
                         {
                             key = "RR_ZEMER_CHARM_1";
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk3"]);
                             FiveKnights.Instance.SaveSettings.ZemerCharmConvo = true;
-                        }
-                        else if(PlayerData.instance.GetInt(nameof(PlayerData.nailSmithUpgrades)) == 0 &&
-                            !FiveKnights.Instance.SaveSettings.ZemerOldNailConvo)
-                        {
-                            key = "RR_ZEMER_OLDNAIL_1";
-                            FiveKnights.Instance.SaveSettings.ZemerOldNailConvo = true;
                         }
                         else
                         {
+                            HeroController.instance.PlayAudio(FiveKnights.Clips["ZAudTalk4"]);
                             key = "RR_ZEMER_THIRD_REPEAT";
                         }
                     }
@@ -1060,10 +1091,14 @@ namespace FiveKnights
                     return new() { Key = "RR_ZEMER_FIRST_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_FIRST_2_2":
                     return new() { Key = "RR_ZEMER_FIRST_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_FIRST_2_3":
+                    return new() { Key = "RR_ZEMER_FIRST_2_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_SECOND_1_1":
                     return new() { Key = "RR_ZEMER_SECOND_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_SECOND_1_2":
                     return new() { Key = "RR_ZEMER_SECOND_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_SECOND_1_3":
+                    return new() { Key = "RR_ZEMER_SECOND_1_4", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_SECOND_2_1":
                     return new() { Key = "RR_ZEMER_SECOND_2_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_SECOND_2_2":

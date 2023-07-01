@@ -25,6 +25,7 @@ namespace FiveKnights.BossManagement
         private tk2dSpriteAnimator _tk;
         public static bool alone;
         private bool HIT_FLAG;
+        private bool doneCCHitless;
         public static GGBossManager Instance;
         public Dictionary<string, AnimationClip> clips;
 
@@ -114,7 +115,6 @@ namespace FiveKnights.BossManagement
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
 			On.HealthManager.ApplyExtraDamage += HealthManagerApplyExtraDamage;
 			On.HealthManager.Die += HealthManagerDie;
-            ModHooks.BeforePlayerDeadHook += BeforePlayerDied;
             string dret = PlayerData.instance.dreamReturnScene;
             PlayerData.instance.dreamReturnScene = (dret == "Waterways_13") ? dret : "White_Palace_09";
             dret = PlayerData.instance.dreamReturnScene;
@@ -136,13 +136,15 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
+
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ogrim)
@@ -159,13 +161,14 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
 
 				Destroy(this);
             }
@@ -182,17 +185,18 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionDryya = (BossStatue.Completion) box;
-                }
-                yield return new WaitForSeconds(5.0f);
 
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+					yield return new WaitForSeconds(5.0f);
 
-                yield return null;
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					yield return null;
+				}
 
                 Destroy(this);
             }
@@ -210,17 +214,20 @@ namespace FiveKnights.BossManagement
                     var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionHegemol = (BossStatue.Completion) box;
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
+
                 Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Ze || CustomWP.boss == CustomWP.Boss.Mystic)
             {
+                ZemerController.WaitForTChild = false;
                 BossLoader.LoadZemerBundle();
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 yield return null;
@@ -253,13 +260,14 @@ namespace FiveKnights.BossManagement
                         fi.SetValue(box, true);
                         FiveKnights.Instance.SaveSettings.CompletionZemer2 = (BossStatue.Completion) box;
                     }
-                }
-                var bsc = BossSceneController.Instance;
-                GameObject transition = Instantiate(bsc.transitionPrefab);
-                PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-                transitionsFSM.SetState("Out Statue");
-                yield return new WaitForSeconds(1.0f);
-                bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+
+					var bsc = BossSceneController.Instance;
+					GameObject transition = Instantiate(bsc.transitionPrefab);
+					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+					transitionsFSM.SetState("Out Statue");
+					yield return new WaitForSeconds(1.0f);
+					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+				}
 
                 Destroy(this);
             }
@@ -276,9 +284,13 @@ namespace FiveKnights.BossManagement
 				BossSceneController bsc = BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
 				bsc.bosses = new HealthManager[0];
 				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
-                
+
+                doneCCHitless = true;
+				On.HeroController.TakeDamage += CheckCCHitless;
                 yield return null;
 
+                // Disable the check that prevents music if it finds a BSC
+                _fsm.RemoveAction("Music", 0);
                 yield return OgrimIsmaFight();
 
                 yield return new WaitForSeconds(1.5f);
@@ -363,16 +375,17 @@ namespace FiveKnights.BossManagement
             _fsm = dd.LocateMyFSM("Dung Defender");
             _tk = dd.GetComponent<tk2dSpriteAnimator>();
             alone = false;
-            _hm.hp = 950;
+            _hm.hp = 351;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
+			EnemyHPBarImport.RefreshHPBar(dd);
             yield return new WaitForSeconds(1f);
 
             // Begin fight
             GameCameras.instance.cameraFadeFSM.Fsm.SetState("FadeIn");
             PlayMakerFSM burrow = GameObject.Find("Burrow Effect").LocateMyFSM("Burrow Effect");
 
-            yield return new WaitWhile(() => _hm.hp > 600);
+            yield return new WaitWhile(() => _hm.hp > 1);
             HIT_FLAG = false;
 
             // Transition to phase 2
@@ -446,6 +459,12 @@ namespace FiveKnights.BossManagement
 
         private void CCDreamExit()
 		{
+            foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
+            {
+                hcFSM.SendEvent("FSM CANCEL");
+            }
+            HeroController.instance.AffectedByGravity(true);
+            HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();
             PlayerData.instance.disablePause = true;
             GameObject dreamPts = GameObject.Find("Dream Exit Particle Field");
@@ -477,10 +496,19 @@ namespace FiveKnights.BossManagement
             transitionFSM.ChangeTransition("Outro Msg 1b", "CONVO_FINISH", "New Scene");
 
             // Set win dialogue
-            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
+            if(doneCCHitless)
+			{
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "RCC_OUTRO_1a";
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "RCC_OUTRO_1b";
+            }
+            else
+			{
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
+                transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
+            }
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
-            transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
+            RewardRoom.doneCCHitless = doneCCHitless;
 
             // Set fields for room transition
             transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "Pale_Court_Credits";
@@ -497,11 +525,12 @@ namespace FiveKnights.BossManagement
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 
-		public void BeforePlayerDied()
+        private void CheckCCHitless(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
         {
-            Log("RAN");
+            doneCCHitless = false;
+            orig(self, go, damageSide, damageAmount, hazardType);
         }
-        
+
         private void HealthManagerTakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
             if (self.name.Contains("White Defender"))
@@ -554,23 +583,17 @@ namespace FiveKnights.BossManagement
             GameManager.instance.AudioManager.ApplyMusicCue(musicCue, 0, 0, false);
         }
 
-        private void Log(object o)
-        {
-            Modding.Logger.Log("[GGBossManager] " + o);
-        }
+        private void Log(object o) => Modding.Logger.Log("[GGBossManager] " + o);
         
-        private void OnDestroy()
-        {
-            Unload();
-        }
+        private void OnDestroy() => Unload();
 
         private void Unload()
         {
-            ModHooks.BeforePlayerDeadHook -= BeforePlayerDied;
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.ApplyExtraDamage -= HealthManagerApplyExtraDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
+            On.HeroController.TakeDamage -= CheckCCHitless;
         }
     }
 }

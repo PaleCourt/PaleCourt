@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -109,7 +109,7 @@ namespace FiveKnights.Isma
         {
             string stopState = "Idle Anim";
             yield return new WaitUntil(() => _hasP2GulkaInit);
-            while (fsm1.gameObject != null && fsm2.gameObject != null)
+            while (fsm1 != null && fsm2 != null)
             {
                 fsm1.enabled = fsm2.enabled = true;
                 fsm1.SetState("Shoot Antic"); fsm2.SetState("Shoot Antic");
@@ -417,8 +417,6 @@ namespace FiveKnights.Isma
                 {
                     ball.AddComponent<ModifiedSpit>();
                 }
-                // Prevent hiding
-                fsm.RemoveFsmGlobalTransition("HIDE");
 
                 if(!isPhase2) fsm.GetAction<Wait>("Idle Anim", 1).time.Value = 1.1f;
 
@@ -456,15 +454,8 @@ namespace FiveKnights.Isma
             private void Update()
             {
                 if (!IsmaController.killAllMinions) return;
-                Destroy(gameObject);
-            }
-
-            private void OnDestroy()
-            {
-                if (hm != null)
-                {
-                    hm.Die(new float?(0f), AttackTypes.Nail, true);
-                }
+				hm.Die(new float?(0f), AttackTypes.Nail, true);
+				Destroy(gameObject);
             }
 
             // Recreation of DropThroughFloor from the Corpse MonoBehaviour

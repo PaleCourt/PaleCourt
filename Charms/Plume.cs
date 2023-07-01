@@ -17,8 +17,6 @@ namespace FiveKnights
         {
             transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
 
-            Destroy(GetComponent<DamageHero>());
-
             if (!IsGrounded()) Destroy(gameObject);
 
             _fsm = gameObject.LocateMyFSM("FSM");

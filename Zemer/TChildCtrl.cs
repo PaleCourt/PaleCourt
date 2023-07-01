@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SFCore.Utils;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,11 +106,9 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
 
             OWBossManager.PlayMusic(null);
-            HeroController.instance.GetComponent<tk2dSpriteAnimator>().Play("Roar Lock");
-            HeroController.instance.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
-            HeroController.instance.RelinquishControl();
-            HeroController.instance.StopAnimationControl();
-            HeroController.instance.GetComponent<Rigidbody2D>().Sleep();
+            PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+            roarFSM.GetFsmGameObjectVariable("Roar Object").Value = gameObject;
+            roarFSM.SendEvent("ROAR ENTER");
         }
 
         private IEnumerator TPAway()
@@ -122,7 +121,7 @@ namespace FiveKnights.Zemer
         private IEnumerator LeaveAndReturn()
         {
             _hm.IsInvincible = true;
-            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
+            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 253f);
             
             yield return new WaitForSeconds(1.5f);
             yield return Leave(true);
@@ -139,8 +138,8 @@ namespace FiveKnights.Zemer
             {
                 [-2] = (0, 252),
                 [-1] = (252, 258),
-                [0] = (258, 262),
-                [1] = (262, 500)
+                [0] = (258, 264),
+                [1] = (264, 500)
             };
             
             // What from to go to if going from left to right
@@ -208,9 +207,8 @@ namespace FiveKnights.Zemer
             if(unfreezeH)
             {
                 helpZemer = true;
-                HeroController.instance.GetComponent<Rigidbody2D>().WakeUp();
-                HeroController.instance.RegainControl();
-                HeroController.instance.StartAnimationControl();
+                PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");
+                roarFSM.SendEvent("ROAR EXIT");
             }
             
             _rb.velocity = new Vector2(10f, 0f);

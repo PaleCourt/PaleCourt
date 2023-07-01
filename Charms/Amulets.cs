@@ -94,9 +94,10 @@ namespace FiveKnights
             _hc.gameObject.AddComponent<AbyssalBloom>().enabled = false;
             _hc.gameObject.AddComponent<CheckBloomStage>().enabled = true;
             AddVoidAttacks(_hc);
-            ModifyFuryForAbyssalBloom();
+            ModifyFuryForBloom();
+            ModifySpellsForBloom();
 
-            //  FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
+            // FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
 
             /*FiveKnights.Instance.SaveSettings.gotCharms[0] = true;
             FiveKnights.Instance.SaveSettings.gotCharms[1] = true;
@@ -367,7 +368,7 @@ namespace FiveKnights
             }
         }
 
-        private void ModifyFuryForAbyssalBloom()
+        private void ModifyFuryForBloom()
         {
             PlayMakerFSM fury = _hc.gameObject.FindGameObjectInChildren("Charm Effects").LocateMyFSM("Fury");
             Log("Fury Color: " + fury.GetAction<Tk2dSpriteSetColor>("Activate", 17).color.Value);
@@ -378,7 +379,32 @@ namespace FiveKnights
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 18).color.Value = color;
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 19).color.Value = color;
                 fury.GetAction<Tk2dSpriteSetColor>("Activate", 20).color.Value = color;
+                _hc.GetComponent<AbyssalBloom>().SetFury(true);
             });
+            fury.InsertMethod("Stay Furied", 4, () => _hc.GetComponent<AbyssalBloom>().SetFury(true));
+            fury.InsertMethod("Deactivate", 21, () => _hc.GetComponent<AbyssalBloom>().SetFury(false));
+        }
+
+        private void ModifySpellsForBloom()
+		{
+			_spellControl.InsertMethod("Wallside?", () =>
+			{
+				_hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+				_hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+				_hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+			}, 0);
+			_spellControl.InsertMethod("Quake Antic", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
+            _spellControl.InsertMethod("Level Check 3", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
         }
 
         private void CharmUpdate(PlayerData playerData, HeroController hc)
@@ -412,6 +438,8 @@ namespace FiveKnights
                 _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
             }
 
+            // Set this to disabled first so it can check for flukenest to override daggers
+            _hc.GetComponent<BoonSpells>().enabled = false;
             _hc.GetComponent<BoonSpells>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[2];
 
             _hc.GetComponent<AbyssalBloom>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[3];
@@ -453,43 +481,47 @@ namespace FiveKnights
 
         private IEnumerator PureVesselBlast()
         {
-            Log("Pure Vessel Blast");
-            _blastKnight.layer = 17;
-            Animator anim = _blastKnight.GetComponent<Animator>();
-            anim.speed = 1;
-            int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
-            anim.PlayInFixedTime(hash, -1, 0.8f);
-
-            Log("Adding CircleCollider2D");
-            CircleCollider2D blastCollider = _blastKnight.AddComponent<CircleCollider2D>();
-            blastCollider.radius = 2.5f;
-            if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
+            if (_blastKnight != null)
             {
-                blastCollider.radius *= 2.5f;
-            }
-            else
-            {
-                blastCollider.radius *= 1.5f;
-            }
+                Log("Pure Vessel Blast");
+                _blastKnight.layer = 17;
+                Animator anim = _blastKnight.GetComponent<Animator>();
+                anim.speed = 1;
+                int hash = anim.GetCurrentAnimatorStateInfo(0).fullPathHash;
+                anim.PlayInFixedTime(hash, -1, 0.8f);
 
-            blastCollider.offset = Vector3.down;
-            blastCollider.isTrigger = true;
-            Log("Adding DebugColliders");
-            //_blast.AddComponent<DebugColliders>();
-            Log("Adding DamageEnemies");
-            _blastKnight.AddComponent<DamageEnemies>();
-            DamageEnemies damageEnemies = _blastKnight.GetComponent<DamageEnemies>();
-            damageEnemies.damageDealt = 40;
-            damageEnemies.attackType = AttackTypes.Spell;
-            damageEnemies.ignoreInvuln = false;
-            damageEnemies.enabled = true;
-            Log("Playing AudioClip");
-            this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f, 1.5f);
-            Log("Audio Clip finished");
-            yield return new WaitForSeconds(.11f);
-            blastCollider.enabled = false;
-            yield return new WaitForSeconds(0.69f);
-            Destroy(_blastKnight);
+                Log("Adding CircleCollider2D");
+                CircleCollider2D blastCollider = _blastKnight.AddComponent<CircleCollider2D>();
+                blastCollider.radius = 2.5f;
+                if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
+                {
+                    blastCollider.radius *= 2.5f;
+                }
+                else
+                {
+                    blastCollider.radius *= 1.5f;
+                }
+
+                blastCollider.offset = Vector3.down;
+                blastCollider.isTrigger = true;
+                Log("Adding DebugColliders");
+                //_blast.AddComponent<DebugColliders>();
+                Log("Adding DamageEnemies");
+                _blastKnight.AddComponent<DamageEnemies>();
+                DamageEnemies damageEnemies = _blastKnight.GetComponent<DamageEnemies>();
+                if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus)) { damageEnemies.damageDealt = 80; }
+                else { damageEnemies.damageDealt = 40; }
+                damageEnemies.attackType = AttackTypes.Spell;
+                damageEnemies.ignoreInvuln = false;
+                damageEnemies.enabled = true;
+                Log("Playing AudioClip");
+                this.PlayAudio((AudioClip)_pvControl.GetAction<AudioPlayerOneShotSingle>("Focus Burst", 8).audioClip.Value, 1.5f);
+                Log("Audio Clip finished");
+                yield return new WaitForSeconds(.11f);
+                blastCollider.enabled = false;
+                yield return new WaitForSeconds(0.69f);
+                Destroy(_blastKnight);
+            }         
         }
 
         private void CancelBlast()

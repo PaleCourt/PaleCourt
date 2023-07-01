@@ -74,8 +74,8 @@ namespace FiveKnights.Misc
             }
 
             _smith.transform.Find("Hands").GetComponent<Animator>().enabled = true;
-            CreateDialogue(_sheo,  new Vector2(42f, 11f),"SHEO_TITLE", "SHEO_DREAM", GetSheoDialogue, false, true, 3f);
-            CreateDialogue(_smith, new Vector2(30.5f, 9.4f), "SMITH_TITLE", "SMITH_DREAM", GetSmithDialogue, false, true, 3f);
+            CreateDialogue(_sheo, new Vector2(42f, 11f), "NM_SHEO", "SHEO_DREAM", GetSheoDialogue, false, true, 3f);
+            CreateDialogue(_smith, new Vector2(30.5f, 9.4f), "NAILSMITH", "SMITH_DREAM", GetSmithDialogue, false, true, 3f);
             
             Log("Instantiate artist 2");
         }
@@ -107,8 +107,9 @@ namespace FiveKnights.Misc
         {
             if (!prev.Continue)
             {
+                string finalDialogue = FiveKnights.Instance.SaveSettings.GreetedSheo ? "SHEO_PC_3" : "SHEO_PC_1";
                 return new ()
-                    { Key = "SHEO_PC_1", Sheet = "Minor NPC", Type = DialogueType.Normal, Wait=PlayAnimSheo(), Continue = true };
+                    { Key = finalDialogue, Sheet = "Minor NPC", Type = DialogueType.Normal, Wait=PlayAnimSheo(), Continue = true };
             }
             switch (prev.Key)
             {
@@ -133,6 +134,7 @@ namespace FiveKnights.Misc
             
             IEnumerator StopAnimSheo()
             {
+                FiveKnights.Instance.SaveSettings.GreetedSheo = true;
                 Animator anim = _sheo.GetComponent<Animator>();
                 anim.enabled = true;
                 anim.Play("SheoStopTalk", -1, 0f);
@@ -144,8 +146,9 @@ namespace FiveKnights.Misc
         {
             if (!prev.Continue)
             {
+                string finalDialogue = FiveKnights.Instance.SaveSettings.GreetedNailsmith ? "SMITH_PC_3" : "SMITH_PC_1";
                 return new ()
-                    { Key = "SMITH_PC_1", Sheet = "Minor NPC", Type = DialogueType.Normal, Wait=PlayAnimSmith(), Continue = true };
+                    { Key = finalDialogue, Sheet = "Minor NPC", Type = DialogueType.Normal, Wait=PlayAnimSmith(), Continue = true };
             }
             switch (prev.Key)
             {
@@ -169,6 +172,7 @@ namespace FiveKnights.Misc
             
             IEnumerator StopAnimSmith()
             {
+                FiveKnights.Instance.SaveSettings.GreetedNailsmith = true;
                 yield return null;
                 _smith.transform.Find("Hands").GetComponent<Animator>().enabled = true;
                 Animator anim = _smith.GetComponent<Animator>();
@@ -181,20 +185,18 @@ namespace FiveKnights.Misc
             Log("Loading Artist Bundle");
             if (FiveKnights.preloadedGO.TryGetValue("Artist", out var go) && go != null)
             {
-                Log("Already Loaded Artist");
-                return;
+                Log("Already Loaded Artist so will destroy it");
+                Destroy(go);
             }
 
             AssetBundle ab = ABManager.AssetBundles[ABManager.Bundle.Artist];
             foreach (var c in ab.LoadAllAssets<AnimationClip>())
             {
-                Log($"Name of anim adding is {c.name}");
                 FiveKnights.AnimClips[c.name] = c;
             }
 
             foreach (var c in ab.LoadAllAssets<AudioClip>())
             {
-                Log($"Name of audio adding is {c.name}");
                 _clips[c.name] = c;
             }
 

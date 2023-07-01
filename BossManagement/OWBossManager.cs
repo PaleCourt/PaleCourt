@@ -58,13 +58,10 @@ namespace FiveKnights
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
                 ic.onlyIsma = true;
                 ic.gameObject.SetActive(true);
-                // PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
-                /*yield return new WaitSecWhile(() => ic != null, FiveKnights.Clips["LoneIsmaIntro"].length);
-                PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);*/
                 yield return new WaitWhile(() => ic != null);
                 PlayMusic(null);
 
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevIsmScene, 3);
                 
                 Log("Done with Isma boss");
@@ -76,13 +73,14 @@ namespace FiveKnights
                 DryyaSetup dc = BossLoader.CreateDryya();
                 dc.gameObject.SetActive(false);
                 PlayMusic(FiveKnights.Clips["DryyaAreaMusic"]);
-                yield return new WaitWhile(() => HeroController.instance.transform.position.x < 427.5f);
+                HeroController hc = HeroController.instance;
+                yield return new WaitUntil(() => hc.transform.position.x > 427.5f && hc.transform.position.y < 120f);
                 PlayMusic(null);
                 dc.gameObject.SetActive(true);
                 yield return new WaitWhile(() => dc != null);
                 PlayMusic(null);
                 
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevDryScene, 0);
                 Log("Done with Dryya boss");
                 Destroy(this);
@@ -107,11 +105,10 @@ namespace FiveKnights
                 yield return new WaitForSeconds(FiveKnights.Clips["HegAreaMusicIntro"].length);
                 PlayMusic(FiveKnights.Clips["HegAreaMusic"]);
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 427f);
-                PlayMusic(FiveKnights.Clips["HegemolMusic"]);
                 hegemolCtrl.gameObject.SetActive(true);
 
                 yield return new WaitWhile(() => hegemolCtrl != null);
-                yield return new WaitForSeconds(1.0f);
+                yield return new WaitForSeconds(3f);
 
                 foreach(Tram tram in UnityEngine.Object.FindObjectsOfType<Tram>())
 				{
@@ -136,12 +133,11 @@ namespace FiveKnights
                 tChild.zemer = zem;
 
                 yield return null;
-
+                
                 yield return new WaitWhile(() => !tChild.helpZemer);
                 
                 ZemerController.WaitForTChild = false;
                 zem.GetComponent<HealthManager>().IsInvincible = false;
-
                 yield return new WaitWhile(() => zc != null);
                 if (zem == null)
                 {
@@ -152,7 +148,7 @@ namespace FiveKnights
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
                 yield return new WaitWhile(() => zc2 != null);
 
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(3f);
                 WinRoutine(OWArenaFinder.PrevZemScene, 1);
                 Destroy(this);
             }
@@ -194,6 +190,12 @@ namespace FiveKnights
                     else msgKey = "ISMA_OUTRO_5";
                     break;
             }
+            foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
+			{
+                hcFSM.SendEvent("FSM CANCEL");
+			}
+            HeroController.instance.AffectedByGravity(true);
+            HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();
             PlayerData.instance.disablePause = true;
             GameObject dreambye = GameObject.Find("Dream Exit Particle Field");
@@ -228,16 +230,6 @@ namespace FiveKnights
             HeroController.instance.EnterWithoutInput(true);
             HeroController.instance.MaxHealth();
             fsm.SetState("Fade Out");
-            GameManager.instance.StartCoroutine(ClearWhiteScreen());
-        }
-
-        private IEnumerator ClearWhiteScreen()
-		{
-            yield return new WaitUntil(() => Input.GetKeyDown(KeyCode.J));
-            Log("Clearing white screen");
-            GameObject.Find("Blanker White").LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
-            HeroController.instance.EnableRenderer();
-            HeroController.instance.AcceptInput();
         }
 
         public static void PlayMusic(AudioClip clip)

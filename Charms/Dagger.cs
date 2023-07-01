@@ -4,7 +4,7 @@ namespace FiveKnights
 {
     public class Dagger : MonoBehaviour
     {
-        private int damage => upgraded ? 15 : 8;
+        private int damage => upgraded ? 25 : 13;
         public bool upgraded;
 
         private void OnTriggerEnter2D(Collider2D collider)
