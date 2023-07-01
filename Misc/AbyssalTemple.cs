@@ -421,9 +421,6 @@ namespace FiveKnights
             var breakable = GameObject.Instantiate(FiveKnights.preloadedGO["BreakableCeiling"]);
             breakable.transform.position = new Vector3(209.5f, 59, 0);
             breakable.transform.localScale = new Vector3(1, 1, 1);
-            // REMOVE BEFORE RELEASE
-            breakable.GetComponent<PersistentBoolItem>().semiPersistent = true;
-            // REMOVE BEFORE RELEASE
             GameObject.Destroy(breakable.Find("Particle System"));
             breakable.SetActive(true); 
 
@@ -535,9 +532,6 @@ namespace FiveKnights
             // Add collapsing floor
             var collapser = GameObject.Instantiate(FiveKnights.preloadedGO["CollapseFloor"]);
             collapser.transform.position = new Vector3(99.58f, 28.5f);
-            // REMOVE BEFORE RELEASE
-            collapser.GetComponent<PersistentBoolItem>().semiPersistent = true;
-            // REMOVE BEFORE RELEASE
             GameObject.Destroy(collapser.Find("floor1"));
             GameObject.Destroy(collapser.Find("floor2"));
             collapser.gameObject.SetActive(true);
