@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -111,6 +111,7 @@ namespace FiveKnights.Zemer
             AssignFields();
 
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
              doingIntro = false;
              // For some reason setting the _bc to false here in the OW arena results in Zemer's hitbox never activating
              // after so I've had to do this ugly thing

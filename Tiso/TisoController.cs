@@ -103,6 +103,7 @@ namespace FiveKnights.Tiso
             AssignFields();
 
             _hm.hp = MaxHP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
             gameObject.layer = (int) PhysLayers.ENEMIES;
         }
 
