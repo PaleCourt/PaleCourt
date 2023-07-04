@@ -79,6 +79,11 @@ namespace FiveKnights
                 var totembase = GameObject.Instantiate(FiveKnights.preloadedGO["TotemBase"]);
                 totem.transform.position = pos;
                 totembase.transform.position = pos + new Vector3(0.6f, -2, -.01f);
+                var totemfsm = totem.LocateMyFSM("soul_totem");
+                totemfsm.SetAttr("fsmTemplate", (FsmTemplate)null);
+                totemfsm.GetAction<SetIntValue>("Reset").intValue = int.MaxValue;
+                totemfsm.GetAction<SetIntValue>("Reset?").intValue = int.MaxValue;
+
                 totem.SetActive(true);
                 totembase.SetActive(true);
             }
