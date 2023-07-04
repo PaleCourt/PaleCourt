@@ -142,17 +142,18 @@ namespace FiveKnights
         
         private void IncrementSpeed(On.HealthManager.orig_TakeDamage orig, HealthManager self, HitInstance hitInstance)
         {
-            if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
+           if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
             {
                 float damageDealt = hitInstance.DamageDealt;
                 damageDealt *= .8f;
                 hitInstance.DamageDealt = Mathf.RoundToInt(damageDealt);
+                if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
+                {
+                    ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
+                }
             }
             orig(self, hitInstance);
-            if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
-            {
-                ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
-            }            
+                    
             if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
             {
                
