@@ -226,7 +226,7 @@ namespace FiveKnights.Zemer
                 yield return new WaitSecWhile(() => !isHit, IdleDelay);
                 
                 /*float sig = Mathf.Sign(transform.localScale.x);
-                yield return RageCombo(sig, true);
+                yield return SweepDash();
                 yield return null;
                 continue;*/
 
@@ -424,13 +424,16 @@ namespace FiveKnights.Zemer
                 Vector2 hero = _target.transform.position;
                 
                 // If player is too close dodge back or if too close to wall as well dash forward
-                if (hero.x.Within(transform.position.x, 10f))
+                if (hero.x.Within(transform.position.x, 12f))
                 {
                     // Too close to wall
                     if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
                     {
-                        Log("DOING DASH");
                         yield return Dash();
+                        if (_target.transform.position.x.Within(transform.position.x, 12f))
+                        {
+                            yield return Dodge();
+                        }
                     }
                     else
                     {
@@ -451,7 +454,34 @@ namespace FiveKnights.Zemer
                 _anim.enabled = true;
                 yield return _anim.WaitToFrame(3); 
 
+                
+                
+                
+                
+                Transform center = transform.Find("ZNailB").Find("Center");
                 rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
+                // Predict where it will hit, if it is too high, lower the y until it's not
+                var maskLayer = LayerMask.LayerToName(8);
+                var rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
+                    new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
+
+                float nailRealPosOffset = -Mathf.Sign(Mathf.Cos(rot)) * 6;
+                
+                // Check if nail will land too close to Ze'mer
+                // Note mystic is more complicated because she can throw in the air
+                
+                while (Vector2.Distance(center.position, rc.point + new Vector2(nailRealPosOffset, 0f)) < 10f)
+                {
+                    Log("Too close to zem");
+                    hero += new Vector2(0f, 1f);
+                    Log(hero);
+                    rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
+                    rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
+                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
+                }
+                Log($"Putting nail to {rc.point.x  + nailRealPosOffset}");
+                
+                
                 float rotArm = rot + (dir > 0 ? Mathf.PI : 0f);
 
                 GameObject arm = transform.Find("NailHand").gameObject;
@@ -913,8 +943,9 @@ namespace FiveKnights.Zemer
         //Only in phase 3
         private IEnumerator DoubleFancy()
         {
-            IEnumerator BackIn(float dir)
+            IEnumerator BackIn()
             {
+                float dir = Mathf.Sign(_target.transform.position.x - MIDDLE);
                 float x = dir > 0 ? LeftX + 11f : RightX - 11f;
                 float tarX = dir > 0 ? LeftX + 6f : RightX - 6f;
 
@@ -990,49 +1021,49 @@ namespace FiveKnights.Zemer
                 _anim.Play("ZDash");
                 transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
 
-                
+
                 yield return _anim.WaitToFrame(4);
                 
                 _anim.enabled = false;
                 
-                yield return new WaitForSeconds(DashDelay-0.8f);
+                yield return new WaitForSeconds(DashDelay);
                 PlayAudioClip("ZAudHoriz");
                 
                 _anim.enabled = true;
                 
                 yield return _anim.WaitToFrame(5);
                 
+                
                 PlayAudioClip("AudDashIntro");
-                
                 yield return _anim.WaitToFrame(6);
-
-                _anim.enabled = false;
-                _rb.velocity = new Vector2(-dir * DashXVel, 0f);
-                
                 PlayAudioClip("AudDash");
+                _anim.speed = 2f;
+                _rb.velocity = new Vector2(-dir * DashXVel, 0f);
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                _anim.speed = 1f;
+                _anim.enabled = false;
                 
                 if (-dir > 0)
                 {
                     yield return new WaitWhile(() => 
-                        transform.GetPositionX() < RightX - 12f);
+                        transform.GetPositionX() < RightX - 5f);
                 }
                 else
                 {
                     yield return new WaitWhile(() => 
-                        transform.GetPositionX() > LeftX + 12f);
+                        transform.GetPositionX() > LeftX + 5f);
                 }
-                _anim.enabled = true;
-                yield return _anim.WaitToFrame(7);
+                
                 _rb.velocity = Vector2.zero;
+                
+                _anim.enabled = true;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
                 transform.position = new Vector3(transform.position.x, GroundY, transform.position.z);
             }
-
-            float heroFromMid = Mathf.Sign(_target.transform.position.x - MIDDLE);
-
+            
             yield return LeaveTemp(-FaceHero(), GenericReturnDelay);
-            yield return BackIn(heroFromMid);
+            yield return BackIn();
             yield return FancyOne();
             yield return DashOtherSide();
             yield return FancyOne();
@@ -1125,15 +1156,17 @@ namespace FiveKnights.Zemer
                 {
                     float heroX = _target.transform.position.x;
                     float zemY = transform.position.y;
-                    float offsetRand = _rand.Next(-3, 3);
+                    float offsetRand = _rand.Next(-1, 3);
+                    // extended offset for when player is on wall
+                    const float extOffset = 10f;
 
                     if (heroX.Within(LeftX, 7f))
                     {
-                        transform.position = new Vector3(heroX + baseDist + offsetRand, zemY);
+                        transform.position = new Vector3(heroX + baseDist + offsetRand + extOffset, zemY);
                     }
                     else if (heroX.Within(RightX, 7f))
                     {
-                        transform.position = new Vector3(heroX - baseDist - offsetRand, zemY);
+                        transform.position = new Vector3(heroX - baseDist - offsetRand - extOffset, zemY);
                     }
                     else
                     {
@@ -1149,8 +1182,19 @@ namespace FiveKnights.Zemer
                     
                     float signX = FaceHero();
 
-                    Spring(true, transform.position, 1.5f);
-                    ToggleZemer(true);
+                   
+
+                    if (i == 0)
+                    {
+                        Spring(true, transform.position, 1.2f);
+                        yield return new WaitForSeconds(0.25f);
+                        ToggleZemer(true);
+                    }
+                    else
+                    {
+                        Spring(true, transform.position, 1.5f);
+                        ToggleZemer(true);
+                    }
 
                     Log("Doing special dash");
                     PlayAudioClip("AudDash");
@@ -1432,7 +1476,8 @@ namespace FiveKnights.Zemer
             {
                 float dir = FaceHero();
                 transform.Find("HyperCut").gameObject.SetActive(true);
-                _anim.Play("ZDash");
+                _anim.enabled = true;
+                _anim.Play("ZDash", -1, 0f);
                 transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
 
                 

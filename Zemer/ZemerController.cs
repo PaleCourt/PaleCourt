@@ -300,7 +300,7 @@ namespace FiveKnights.Zemer
                         yield return new WaitWhile(() => _countering);
                         Log("Done Counter");
                     }
-                    else if (r < 4)
+                    else if (r < 2)
                     {
                         counterCount = 0;
                         Log("Doing Special Dodge");
@@ -319,17 +319,7 @@ namespace FiveKnights.Zemer
                         }
                         Log("Done Special Dodge");
                     }
-                    else
-                    {
-                        Log("Doing Counter");
-                        ZemerCounter();
-                        _countering = true;
-                        yield return new WaitWhile(() => _countering);
-                        Log("Done Counter");
-                    }
                 }
-
-                yield return null;
                 
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
@@ -479,8 +469,9 @@ namespace FiveKnights.Zemer
                     {
                         bool goingRight = signX > 0;
                         float newXPos = transform.GetPositionX();
-                        bool dontStop = goingRight ? xPos + displacement > newXPos : xPos + displacement < newXPos;
-                        return !_rb.velocity.x.Within(0f, 0.05f) && dontStop;
+                        bool hasNotReachedEnd = goingRight ? xPos + displacement > newXPos : xPos + displacement < newXPos;
+                        bool isCloseToPlayer = _target.transform.position.x.Within(newXPos, 3f);
+                        return !_rb.velocity.x.Within(0f, 0.05f) && hasNotReachedEnd && !isCloseToPlayer;
                     }
                 );
                 _anim.speed = 1f;
@@ -945,13 +936,16 @@ namespace FiveKnights.Zemer
                 Vector2 hero = _target.transform.position;
                 
                 // If player is too close dodge back or if too close to wall as well dash forward
-                if (hero.x.Within(transform.position.x, 10f))
+                if (hero.x.Within(transform.position.x, 12f))
                 {
                     // Too close to wall
                     if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
                     {
-                        Log("DOING DASH");
                         yield return Dash();
+                        if (_target.transform.position.x.Within(transform.position.x, 12f))
+                        {
+                            yield return Dodge();
+                        }
                     }
                     else
                     {
@@ -970,25 +964,41 @@ namespace FiveKnights.Zemer
                 dir = FaceHero();
                 yield return FlashRepeat(hero, ThrowDelay / 2f);
                 _anim.enabled = true;
-                yield return _anim.WaitToFrame(3); 
+                yield return _anim.WaitToFrame(3);
 
-                rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
-                
+                Transform center = transform.Find("ZNailB").Find("Center");
+                rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
                 // Predict where it will hit, if it is too high, lower the y until it's not
                 var maskLayer = LayerMask.LayerToName(8);
-                var rc = Physics2D.Raycast(transform.Find("ZNailB").position,
-                    new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
-                    LayerMask.GetMask(maskLayer));
+                var rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
+                    new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
                 while (rc.point.y > GroundY + 3.2f)
                 {
                     hero -= new Vector2(0f, 1f);
-                    rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
-                    rc = Physics2D.Raycast(transform.Find("ZNailB").position,
-                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
-                        LayerMask.GetMask(maskLayer));
+                    rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
+                    rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
+                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
                 }
+
+                float nailRealPosOffset = -Mathf.Sign(Mathf.Cos(rot)) * 6;
                 
+                // Check if nail will land too close to Ze'mer
+                // Note mystic is more complicated because she can throw in the air
                 
+                while (center.position.x.Within(rc.point.x + nailRealPosOffset, 10f))
+                {
+                    Log("Too close to zem");
+                    hero += new Vector2(-dir, 0f);
+                    Log(hero);
+                    rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
+                    /*rc = Physics2D.Raycast(center.position,
+                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
+                        LayerMask.GetMask(maskLayer));*/
+                    rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
+                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
+                }
+                Log($"Putting nail to {rc.point.x  + nailRealPosOffset}");
+
                 float rotArm = rot + (dir > 0 ? Mathf.PI : 0f);
                 
                 GameObject arm = transform.Find("NailHand").gameObject;
@@ -1019,7 +1029,7 @@ namespace FiveKnights.Zemer
                 // TODO might want to readjust speed
                 parRB.velocity = new Vector2(Mathf.Cos(rot) * NailSpeed, Mathf.Sin(rot) * NailSpeed);
                 nailPar.AddComponent<ExtraNailBndCheck>();
-                yield return new WaitForSeconds(0.01f);
+                //yield return new WaitForSeconds(0.01f);
 
                 var cc = nailPar.transform.Find("ZNailC").gameObject.AddComponent<CollisionCheck>();
                 cc.Freeze = true;
@@ -1092,7 +1102,7 @@ namespace FiveKnights.Zemer
                     transform.position -= new Vector3(LeaveOffset.x, 0f);
                     yield return _anim.WaitToFrame(2);
                     _anim.speed = 1f;
-                    Log($"Nail ended at {nail.transform.position}");
+                    Log($"Nail ended at {nail.transform.Find("Center").position}");
                     Destroy(nail);
                 }
                 else
@@ -1109,7 +1119,7 @@ namespace FiveKnights.Zemer
                     transform.position += new Vector3(LeaveOffset.x, 0f);
                     yield return _anim.WaitToFrame(2);
                     _anim.speed = 1f;
-                    Log($"Nail ended at {nail.transform.position}");
+                    Log($"Nail ended at {nail.transform.Find("Center").position}");
                     Destroy(nail);
                 }
 
