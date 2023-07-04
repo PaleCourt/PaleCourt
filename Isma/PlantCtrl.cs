@@ -1,4 +1,4 @@
-﻿using HutongGames.PlayMaker.Actions;
+using HutongGames.PlayMaker.Actions;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +38,7 @@ namespace FiveKnights.Isma
             gameObject.AddComponent<Flash>();
             gameObject.AddComponent<ExtraDamageable>();
             _hm.hp = PLANTHP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
             Mirror.SetField(_hm, "enemyType", 3);
 
             gameObject.SetActive(true);

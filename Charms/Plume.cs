@@ -33,14 +33,14 @@ namespace FiveKnights
             damageEnemies.ignoreInvuln = false;
             damageEnemies.attackType = AttackTypes.Spell;
             damageEnemies.direction = 2;
-            damageEnemies.damageDealt = upgraded ? 5 : 3;
+            damageEnemies.damageDealt = PlayerData.instance.equippedCharm_19 ? 11 : 7;
         }
 
         private IEnumerator AnimControl()
         {
             yield return new WaitForSeconds(0.1f);
             gameObject.GetComponent<tk2dSpriteAnimator>().enabled = false;
-            yield return new WaitForSeconds(PlayerData.instance.equippedCharm_19 ? 0.5f : 0.3f);
+            yield return new WaitForSeconds(upgraded ? 0.7f : 0.4f);
             gameObject.GetComponent<tk2dSpriteAnimator>().enabled = true;
         }
 

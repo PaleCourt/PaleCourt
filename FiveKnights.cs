@@ -199,7 +199,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "1.0.0.0"; 
+        public override string GetVersion() => "1.0.0.1"; 
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -864,6 +864,7 @@ namespace FiveKnights
             orig(self, permaDeath, bossRush);
             if(bossRush)
             {
+                SaveSettings.GodseekerSave = true;
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
@@ -884,6 +885,7 @@ namespace FiveKnights
         {
             if(PlayerData.instance.bossRushMode && !SaveSettings.HasSeenWorkshopRaised)
             {
+                SaveSettings.GodseekerSave = true;
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;

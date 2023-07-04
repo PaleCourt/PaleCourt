@@ -131,17 +131,17 @@ public static class WhiteLadyDialogue
         }
         // Has ALL
         if (!didDialogue && 
-            FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
+            FiveKnights.Instance.SaveSettings.equippedCharms[0] && 
             FiveKnights.Instance.SaveSettings.equippedCharms[1] &&
             FiveKnights.Instance.SaveSettings.equippedCharms[2] &&
-            FiveKnights.Instance.SaveSettings.upgradedCharm_10 && PlayerData.instance.equippedCharm_10)
+            FiveKnights.Instance.SaveSettings.upgradedCharm_10 && PlayerData.instance.equippedCharm_10) 
         {
-            if (!FiveKnights.Instance.SaveSettings.WLadyAllConvo1)
+            if (!FiveKnights.Instance.SaveSettings.WLadyAllConvo1) 
             {
                 didDialogue = FiveKnights.Instance.SaveSettings.WLadyAllConvo1 = true;
                 dialogue.StartConversation("WL_ALL_1", Sheet);
             }
-            else if (!FiveKnights.Instance.SaveSettings.WLadyAllConvo2)
+            else if (!FiveKnights.Instance.SaveSettings.WLadyAllConvo2) 
             {
                 didDialogue = FiveKnights.Instance.SaveSettings.WLadyAllConvo2 = true;
                 dialogue.StartConversation("WL_ALL_2", Sheet);

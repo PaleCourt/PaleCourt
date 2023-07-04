@@ -139,6 +139,19 @@
             "CHARM_NAME_HONOUR": "King's Honour",
             "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its original state.<br><br>Surrounds the bearer in a royal and heroic aura."
         },
+        "Prompts": {
+            "CHARM_NAME_PURITY": "Mark of Purity",
+            "CHARM_DESC_PURITY": "The Vessel was gifted a Pure Nail forged through arcane means as a reflection of itself. This Charm embodies the echoes of that ancient craftsmanship.<br><br>Hold ATTACK to concentrate and swing the nail in a frenzy. Gradually increases the bearer's rate of attack as they land nail strikes in quick succession.",
+            "CHARM_NAME_LAMENT": "Vessel's Lament",
+            "CHARM_DESC_LAMENT": "Contains the hardships and grievances forced upon the chained Vessel. Energy desperately seeps out from within the constraints.<br><br>Focus to twist the SOUL of enemies marked by the nail and unleash devastating blasts of energy upon them.",
+            "CHARM_NAME_BOON": "Boon of Hallownest",
+            "CHARM_DESC_BOON": "The Pale Wyrm's beacon shines brightly through this Charm. The blessing bestowed upon the land known as Hallownest was able to elevate the lesser bugs that resided in the domain.<br><br>Transforms all spells to take on a purified form.",
+            "CHARM_NAME_BLOOM": "Abyssal Bloom",
+            "CHARM_DESC_BLOOM": "A dark blossom that was cursed to restrain an uncontrollable power. Even though the darkness within may be repressed, it writhes in a volatile manner threatening to break free.<br><br>The bearer gains overwhelming power as they draw nearer to death.",
+            "CHARM_NAME_HONOUR": "King's Honour",
+            "CHARM_DESC_HONOUR": "Unique charm bestowed by the King to his most loyal knight. Refurbished and restored to its original state.<br><br>Surrounds the bearer in a royal and heroic aura.",
+            "CUSTOM_ITEM_INTROS": "Received the"
+        },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
             "ENTRY_ISMA_LONGNAME": "Kindly Isma",
@@ -178,7 +191,7 @@
             "HUNTHUSSLE": "ROCK AND STONE. Thanks to zaliant for letting me playtest this great mod!<br>- HuntHussle (Playtesting)",
             "JOSEBACH": "Mamma mamma, guarda: sono in tivù! Per me è stato un grandissimo onore aver contribuito a questo progetto, per quanto io sia tra gli ultimi arrivati.<page>Spero di aver dato veramente il massimo tra playtesting, testi e traduzione perché, cazzo, i Cinque Grandi Cavalieri e noi ce lo meritiamo! Grazie per tutte le risate, sudate, incazzature e le notti insonni che abbiamo trascorso insieme.<page>You're fantastic and determined and truly inspiring (and I'm positive I won't be the only one thinking that). Vi voglio un sacco bene e sono così tanto fiera di voi e di tutti noi, non potete immaginare.<page>In bocca al lupo e in culo alla balena, statemi bene. Un abbraccio, Ada- Ah, emh, jsb<br>- JoSeBach (Writing, Translation)",
             "KNIGHTMERE": "It's been wonderful working on something with you all. Even though my activity in HK's community isn't what it used to be, I'm very happy to see this project flourish and be a part of it.<page>Also hi zaliant.<br>- Knightmere (Playtesting)",
-            "MANNO STONE": "It was spectacular! A battle like no other, it was very well balanced! Well... Until it started... So remember: \"Hesitation is defeat\".<br>Where did I hear that?<page>Achou que eu ia escrever algo legal? Achou errado! E digo mais, vocês não podem errar porque errar é .\"o Manno.\"!<br>- Manno Stone (Writing, Translation)",
+            "MANNO STONE": "It was spectacular! A battle like no other, it was very well balanced! Well... Until it started... So remember: \"Hesitation is defeat\".<br>Where did I hear that?<page>Achou que eu ia escrever algo legal? Achou errado! E digo mais, vocês não podem errar porque errar é \"o Manno\"!<br>- Manno Stone (Writing, Translation)",
             "RIVERROBOT": "\"A temple buried, a forgotten doom... The darkness writhes, contained, controlled... To protect, to restrain... A wrathful Bloom...\"<br>- RiverRobot (Programming)",
             "ROCKETFIRE20": "Thank you all for the laughs, the highs and the lows, the heartwarming moments, and the fun. Most importantly, thank you Emu, for introducing me to this game. I owe this all to you.<page>I cannot express how much I respect and appreciate you all for the hard work to get this mod out after so long. Now, I can't wait to see what Silksong has to offer, what secrets it holds and what heights we can bring it to.<page>See you all then!<br>- RocketFire20 (Playtesting)",
             "SFGRENADE": "With the mod complete, what next challenges await? What will we strive towards? Will we wander the heights of Pharloom? The depths of the Abyss?<page>Time will tell, and time we took for this mod to be polished for you. Have fun with the Pale Court!<br>- SFGrenade (Programming)",
@@ -485,6 +498,19 @@
             "CHARM_DESC_BLOOM": "Una flor oscura que fue maldecida para contener un poder incontrolable. Aunque la oscuridad interior esté comprimida, se retuerce de manera volátil, amenazando con liberarse.<br><br>El portador obtiene un poder abrumador cuando está cercano a la muerte.",
             "CHARM_NAME_HONOUR": "Honor del rey",
             "CHARM_DESC_HONOUR": "Un amuleto único otorgado por el rey a su Caballero más leal. Renovado y restaurado a su estado original.<br><br>Rodea al portador en un aura real y heroica."
+        },
+        "Prompts": {
+            "CHARM_NAME_PURITY": "Marca de pureza",
+            "CHARM_DESC_PURITY": "Al Receptáculo se le otorgó un Aguijón puro forjado por métodos arcanos como un reflejo de sí mismo. Este amuleto personifica el eco de aquella artesanía arcaica.<br><br>Mantén ATACAR para concentrarte y blandir la espada frenéticamente. Aumenta de forma gradual la velocidad de ataque del portador a medida que asesta golpes sucesivamente.",
+            "CHARM_NAME_LAMENT": "Lamento del Receptáculo",
+            "CHARM_DESC_LAMENT": "Contiene las adversidades e injusticias que se le impusieron al Receptáculo encadenado. La energía se filtra desesperada por salir de las ataduras.<br><br>Al concentrar retuerce el ALMA de los enemigos marcados por el aguijón y libera devastadoras descargas de energía sobre ellos.",
+            "CHARM_NAME_BOON": "Bendición de Hallownest",
+            "CHARM_DESC_BOON": "La guía del Pálido Wyrm brilla con fuerza en este amuleto. La bendición conferida a la tierra conocida como Hallownest logró elevar a los insectos inferiores que residían en su dominio.<br><br>Transforma todos los hechizos para que adquieran una apariencia purificada.",
+            "CHARM_NAME_BLOOM": "Retoño abismal",
+            "CHARM_DESC_BLOOM": "Una flor oscura que fue maldecida para contener un poder incontrolable. Aunque la oscuridad interior esté comprimida, se retuerce de manera volátil, amenazando con liberarse.<br><br>El portador obtiene un poder abrumador cuando está cercano a la muerte.",
+            "CHARM_NAME_HONOUR": "Honor del rey",
+            "CHARM_DESC_HONOUR": "Un amuleto único otorgado por el rey a su Caballero más leal. Renovado y restaurado a su estado original.<br><br>Rodea al portador en un aura real y heroica.",
+            "CUSTOM_ITEM_INTROS": "Has recibido"
         },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",
@@ -804,6 +830,19 @@
             "CHARM_DESC_BLOOM": "Uma pálida flor que foi amaldiçoada para conter um poder incontrolável. Mesmo que a escuridão interior possa estar reprimida, ela se contorce de maneira volátil, ameaçando escapar.<br><br>O portador fica mais forte à medida que se aproxima da morte, ganhando um poder esmagador.",
             "CHARM_NAME_HONOUR": "Honra do Rei",
             "CHARM_DESC_HONOUR": "Um amuleto único concedido pelo Rei ao seu cavaleiro mais leal. Restaurado e revitalizado ao seu estado final.<br><br>Envolve o portador em uma aura real."
+        },
+        "Prompts": {
+            "CHARM_NAME_PURITY": "Marca da Pureza",
+            "CHARM_DESC_PURITY": "O Receptáculo foi presenteado com um Ferrão Puro forjado por meios arcanos como um reflexo de si mesmo. Este Amuleto incorpora os ecos daquela antiga e esquecida arte.<br><br>Mantenha pressionado Ataque para se concentrar e balançar o ferrão em um verdadeiro frenesi. Aumenta gradualmente a velocidade de ataque do portador à medida que ele desfere golpes de ferrão rapidamente.",
+            "CHARM_NAME_LAMENT": "Lamento do Receptáculo",
+            "CHARM_DESC_LAMENT": "Contém as dificuldades e queixas impostas ao Vessel acorrentado. A energia escapa desesperadamente de dentro das limitações.<br><br>Ao focar ALMA, libera uma explosão devastadora de energia.",
+            "CHARM_NAME_BOON": "Benção de Hallownest",
+            "CHARM_DESC_BOON": "O brilho do Rei Pálido brilha intensamente através deste amuleto. A bênção e o poder concedidos à terra conhecida como Hallownest foram capazes de elevar os insetos menores que residiam no domínio.<br><br>Transforma todas as magias, fazendo com que assumam uma forma purificada.",
+            "CHARM_NAME_BLOOM": "Flor Abissal",
+            "CHARM_DESC_BLOOM": "Uma pálida flor que foi amaldiçoada para conter um poder incontrolável. Mesmo que a escuridão interior possa estar reprimida, ela se contorce de maneira volátil, ameaçando escapar.<br><br>O portador fica mais forte à medida que se aproxima da morte, ganhando um poder esmagador.",
+            "CHARM_NAME_HONOUR": "Honra do Rei",
+            "CHARM_DESC_HONOUR": "Um amuleto único concedido pelo Rei ao seu cavaleiro mais leal. Restaurado e revitalizado ao seu estado final.<br><br>Envolve o portador em uma aura real.",
+            "CUSTOM_ITEM_INTROS": "Recebido"
         },
         "Journal": {
             "ENTRY_ISMA_NAME": "Isma",

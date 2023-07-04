@@ -94,9 +94,6 @@ namespace FiveKnights.Hegemol
             _deathFx = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             _deathFx.enabled = true;
 
-            // Dummy value so that HP bar hopefully works correctly
-            _hm.hp = Phase3HP;
-
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnRecieveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
 			On.HealthManager.Die += HealthManagerDie;

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,6 +152,7 @@ namespace FiveKnights.Zemer
         private IEnumerator Start()
         {
             _hm.hp = Phase2HP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             _target = HeroController.instance.gameObject;
             

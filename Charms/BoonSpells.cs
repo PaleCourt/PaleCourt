@@ -15,10 +15,8 @@ namespace FiveKnights
         private GameObject _audioPlayer;
 
         private const float DaggerSpeed = 50f;
-        private const int BlastDamage = 20;
-        private const int BlastDamageUpgraded = 30;
-        private const int DaggerDamage = 13;
-        private const int DaggerDamageUpgraded = 25;
+        private const int BlastDamage = 35;
+        private const int BlastDamageShaman = 45;
 
         private void OnEnable()
 		{
@@ -34,7 +32,7 @@ namespace FiveKnights
 			{
                 GameObject plume = Instantiate(_pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value);
                 plume.SetActive(false);
-                plume.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
+                plume.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
                 plume.tag = "Hero Spell";
                 Destroy(plume.GetComponent<DamageHero>());
                 DontDestroyOnLoad(plume);
@@ -45,7 +43,7 @@ namespace FiveKnights
 			{
                 GameObject dagger = Instantiate(_pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value);
                 dagger.SetActive(false);
-                dagger.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
+                dagger.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
                 dagger.tag = "Hero Spell";
                 Destroy(dagger.GetComponent<DamageHero>());
                 Destroy(dagger.LocateMyFSM("Control"));
@@ -117,11 +115,7 @@ namespace FiveKnights
                 dagger.SetActive(true);
                 rb.velocity = new Vector2(xVel, yVel);
 
-                DamageEnemies de = dagger.AddComponent<DamageEnemies>();
-                de.damageDealt = upgraded ? DaggerDamageUpgraded : DaggerDamage;
-                de.attackType = AttackTypes.Spell;
-                de.ignoreInvuln = false;
-                de.enabled = true;
+                dagger.AddComponent<Dagger>().upgraded = upgraded;
 
                 Destroy(dagger, 5f);
             }
@@ -149,36 +143,48 @@ namespace FiveKnights
 		{
             List<GameObject> blasts = new List<GameObject>();
 
+            // Enemy iframes last 0.15s, 
             IEnumerator CastBlastsCoro()
             {
                 blasts.Add(SpawnBlast(HeroController.instance.transform.position + Vector3.up * 4f, upgraded));
-                yield return new WaitForSeconds(0.1f);
+                yield return new WaitForSeconds(0.2f);
 
-                for(int i = 0; i < (upgraded ? 3 : 2) + (PlayerData.instance.equippedCharm_19 ? 1 : 0); i++)
+                for(int i = 0; i < (upgraded ? 3 : 1); i++)
                 {
                     blasts.Add(SpawnBlast(HeroController.instance.transform.position + 
-                        Vector3.up * Random.Range(4, 12) + Vector3.right * Random.Range(-6, 6), upgraded));
-                    yield return new WaitForSeconds(0.1f);
+                        Vector3.up * Random.Range(2, 8) + Vector3.right * Random.Range(-3, 3), upgraded));
+                    yield return new WaitForSeconds(0.2f);
                 }
             }
-            IEnumerator DestroyBlastsCoro()
+			IEnumerator DisableColliderCoro()
+			{
+				yield return new WaitForSeconds(0.15f);
+
+				for(int i = 0; i < blasts.Count; i++)
+				{
+					Destroy(blasts[i].GetComponent<CircleCollider2D>());
+					yield return new WaitForSeconds(0.2f);
+				}
+			}
+			IEnumerator DestroyBlastsCoro()
 			{
                 yield return new WaitForSeconds(0.5f);
 
-                foreach(GameObject blast in blasts)
-                {
-                    Destroy(blast);
-                    yield return new WaitForSeconds(0.1f);
+                for(int i = 0; i < blasts.Count; i++)
+				{
+                    Destroy(blasts[i]);
+                    yield return new WaitForSeconds(0.2f);
                 }
             }
             StartCoroutine(CastBlastsCoro());
-            StartCoroutine(DestroyBlastsCoro());
+			StartCoroutine(DisableColliderCoro());
+			StartCoroutine(DestroyBlastsCoro());
         }
 
         private GameObject SpawnBlast(Vector3 pos, bool upgraded)
 		{
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"], pos, Quaternion.identity);
-            blast.layer = (int)GlobalEnums.PhysLayers.DEFAULT;
+            blast.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
             blast.tag = "Hero Spell";
             blast.SetActive(true);
             Destroy(blast.FindGameObjectInChildren("hero_damager"));
@@ -193,7 +199,7 @@ namespace FiveKnights
             col.isTrigger = true;
 
             DamageEnemies de = blast.AddComponent<DamageEnemies>();
-            de.damageDealt = upgraded ? BlastDamageUpgraded : BlastDamage;
+            de.damageDealt = PlayerData.instance.equippedCharm_19 ? BlastDamageShaman : BlastDamage;
             de.attackType = AttackTypes.Spell;
             de.ignoreInvuln = false;
             de.enabled = true;
