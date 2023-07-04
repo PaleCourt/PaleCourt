@@ -104,8 +104,8 @@ namespace FiveKnights
 
             Vector3[] surfacePoses =
             {
-                new (248.1f, 31.2f, -0.196f), new (229f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
-                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
+                new (248.1f, 31.2f, -0.396f), new (229f, 31.2f, -0.396f), new (232f, 31.2f,-0.396f),
+                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, -0.396f), new (251.9309f, 31.2f, -0.396f),
             };
 
             Vector3[] wBoxPoses =

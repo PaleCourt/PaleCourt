@@ -50,7 +50,7 @@ namespace FiveKnights
                     shiny.Find("White Wave").GetComponent<WaveEffectControl>().blackWave = true;
                     shiny.Find("White Wave").GetComponent<SpriteRenderer>().color = Color.black;
                     shiny.Find("White Wave").GetComponent<WaveEffectControl>().scaleMultiplier = .5f;
-                    bloomShiny.transform.position = new Vector3(241.3f, 34.12f, -0.239f);
+                    bloomShiny.transform.position = new Vector3(241.3f, 34.12f, .004f);
 
                     var shinyFsm = shiny.gameObject.LocateMyFSM("Shiny Control");
                     var shinyFsmVars = shinyFsm.FsmVariables;
