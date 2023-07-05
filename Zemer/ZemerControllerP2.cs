@@ -1486,9 +1486,16 @@ namespace FiveKnights.Zemer
                 yield return _anim.WaitToFrame(4);
                 
                 _anim.enabled = false;
-                float totalDelay = 0.3f;
                 
-                yield return new WaitForSeconds(0.3f); 
+                float totalDelay = 0.3f;
+
+                StartCoroutine(FlashRepeat(transform.position, 0.15f));
+                yield return new WaitForSeconds(totalDelay / 3f); 
+                StartCoroutine(FlashRepeat(transform.position, 0.1f));
+                yield return new WaitForSeconds(totalDelay / 3f); 
+                StartCoroutine(FlashRepeat(transform.position, 0.05f));
+                yield return new WaitForSeconds(totalDelay / 3f); 
+                
                 PlayAudioClip("ZAudHoriz");
                 
                 _anim.enabled = true;

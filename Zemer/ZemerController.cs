@@ -975,7 +975,7 @@ namespace FiveKnights.Zemer
                     new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
                 while (rc.point.y > GroundY + 3.2f)
                 {
-                    hero -= new Vector2(0f, 1f);
+                    hero -= new Vector2(0f, 1f); 
                     rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
                     rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
                         new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
