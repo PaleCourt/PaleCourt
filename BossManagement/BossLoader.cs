@@ -105,7 +105,7 @@ namespace FiveKnights
                 "IsmaAudWallGrow", "IsmaAudWallHit", "IsmaAudDungHit", "IsmaAudDungBreak", "IsmaAudAtt1", "IsmaAudAtt2", "IsmaAudAtt3",
                 "IsmaAudAtt4", "IsmaAudAtt5", "IsmaAudAtt6", "IsmaAudAtt7", "IsmaAudAtt8", "IsmaAudAtt9", "IsmaAudAtt10",
                 "IsmaAudBow", "IsmaAudDeath",
-                "LoneIsmaIntro", "LoneIsmaLoop", "OgrimMusic", "OgrismaMusic",
+                "LoneIsmaIntro", "LoneIsmaLoop", "OgrimMusic", "OgrismaMusic", "IsmaAreaMusic",
                 "IsmaAudTalk1", "IsmaAudTalk2", "IsmaAudTalk3", "IsmaAudTalk4", "IsmaAudTalk5", "IsmaAudTalk6",
                 "IsmaAudTalkBye", "IsmaAudTalkHi", "IsmaAudTalkCharm"
             };
