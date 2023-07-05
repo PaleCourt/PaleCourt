@@ -53,9 +53,10 @@ namespace FiveKnights.Hegemol
         private GameObject _hitter;
         private GameObject _traitorSlam;
 
+        private Coroutine _musicCoro;
+
         private bool _attacking;
         private bool _usingGroundPunch = false;
-
         private bool _grounded;
 
         private void Awake()
@@ -93,6 +94,8 @@ namespace FiveKnights.Hegemol
             _hitFx.enabled = true;
             _deathFx = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
             _deathFx.enabled = true;
+
+            _hm.hp = Phase1HP;
 
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnRecieveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -135,7 +138,7 @@ namespace FiveKnights.Hegemol
 
             _dh = AddDamageToGO(gameObject, 2, false);
             GameCameras.instance.cameraShakeFSM.SendEvent("AverageShake");
-            StartCoroutine(MusicControl());
+            _musicCoro = GameManager.instance.StartCoroutine(MusicControl());
             PlayVoiceClip("HNeutral", true, 1f);
 
             yield return new WaitForSeconds(1f);
@@ -1014,6 +1017,8 @@ namespace FiveKnights.Hegemol
         private IEnumerator Die()
         {
             Log("Hegemol Death");
+
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
 
             if(OWArenaFinder.IsInOverWorld) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
