@@ -404,6 +404,8 @@ namespace FiveKnights.Tiso
 
         private void OnDestroy()
         {
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
+
             On.HealthManager.TakeDamage -= HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnReceiveDreamImpact;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
