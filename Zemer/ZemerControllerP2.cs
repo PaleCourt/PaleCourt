@@ -470,6 +470,7 @@ namespace FiveKnights.Zemer
                 
                 // Check if nail will land too close to Ze'mer
                 // Note mystic is more complicated because she can throw in the air
+                //
                 
                 while (Vector2.Distance(center.position, rc.point + new Vector2(nailRealPosOffset, 0f)) < 10f)
                 {
