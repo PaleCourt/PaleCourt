@@ -422,8 +422,6 @@ namespace FiveKnights
             #region Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
-            //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
-            preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
             #endregion

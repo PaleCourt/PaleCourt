@@ -1166,6 +1166,8 @@ namespace FiveKnights.Hegemol
 
         private void OnDestroy()
         {
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
+
             On.EnemyDreamnailReaction.RecieveDreamImpact -= OnRecieveDreamImpact;
             On.HealthManager.TakeDamage -= OnTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;

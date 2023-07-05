@@ -2223,6 +2223,8 @@ namespace FiveKnights.Isma
 
         private void OnDestroy()
         {
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
+
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;
