@@ -47,7 +47,7 @@ namespace FiveKnights
         {
             get
             {
-                return SystemInfo.operatingSystemFamily switch
+                return SystemInfo.operatingSystemFamily switch 
                 {
                     OperatingSystemFamily.Windows => "win",
                     //OperatingSystemFamily.Linux => "lin",

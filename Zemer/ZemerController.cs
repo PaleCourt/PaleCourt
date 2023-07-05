@@ -381,9 +381,9 @@ namespace FiveKnights.Zemer
                         }
                         else if (rand == 1)
                         {
-                            Log("Doing Slam");
-                            yield return ZemerSlam();
-                            Log("Done Slam");
+                            Log("Doing Slam"); 
+                            yield return ZemerSlam(); 
+                            Log("Done Slam"); //
                         }
                         else if (isPhase2 && rand == 2)
                         {
