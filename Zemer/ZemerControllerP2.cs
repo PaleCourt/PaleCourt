@@ -453,12 +453,8 @@ namespace FiveKnights.Zemer
                 dir = FaceHero();
                 yield return FlashRepeat(hero, ThrowDelay / 2f, true);
                 _anim.enabled = true;
-                yield return _anim.WaitToFrame(3); 
+                yield return _anim.WaitToFrame(3);
 
-                
-                
-                
-                
                 Transform center = transform.Find("ZNailB").Find("Center");
                 rot = GetAngleTo(transform.Find("ZNailB").position,  hero) * Mathf.Deg2Rad;
                 // Predict where it will hit, if it is too high, lower the y until it's not
@@ -471,15 +467,14 @@ namespace FiveKnights.Zemer
                 // Check if nail will land too close to Ze'mer
                 // Note mystic is more complicated because she can throw in the air
                 //
-                
-                while (Vector2.Distance(center.position, rc.point + new Vector2(nailRealPosOffset, 0f)) < 10f)
+                int i = 0;
+                while (i < 10 && Vector2.Distance(center.position, rc.point + new Vector2(nailRealPosOffset, 0f)) < 10f)
                 {
-                    Log("Too close to zem");
                     hero += new Vector2(0f, 1f);
-                    Log(hero);
                     rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
                     rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
                         new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
+                    i++;
                 }
                 Log($"Putting nail to {rc.point.x  + nailRealPosOffset}");
                 

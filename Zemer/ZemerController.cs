@@ -794,7 +794,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
                 transform.Find("HyperCut").gameObject.SetActive(false);
 
-                _anim.Play("ZDash");
+                _anim.Play("ZDash", -1, 0f);
                 transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
                 yield return _anim.WaitToFrame(4);
                 
@@ -942,15 +942,21 @@ namespace FiveKnights.Zemer
                     // Too close to wall
                     if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
                     {
+                        Log("Dash for nail launch");
                         yield return Dash();
+                        Log("Done Dash for nail launch");
                         if (_target.transform.position.x.Within(transform.position.x, 12f))
                         {
+                            Log("Dodge for nail launch");
                             yield return Dodge();
+                            Log("Done Dodge for nail launch");
                         }
                     }
                     else
                     {
+                        Log("Just dodge for nail launch");
                         yield return Dodge();
+                        Log("Done Just dodge for nail launch");
                     }
                 }
                 
@@ -985,19 +991,17 @@ namespace FiveKnights.Zemer
                 
                 // Check if nail will land too close to Ze'mer
                 // Note mystic is more complicated because she can throw in the air
-                
-                while (center.position.x.Within(rc.point.x + nailRealPosOffset, 10f))
+
+                int i = 0;
+                while (i < 10 && center.position.x.Within(rc.point.x + nailRealPosOffset, 10f))
                 {
-                    Log("Too close to zem");
                     hero += new Vector2(-dir, 0f);
-                    Log(hero);
                     rot = GetAngleTo(center.position,  hero) * Mathf.Deg2Rad;
-                    /*rc = Physics2D.Raycast(center.position,
-                        new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity,
-                        LayerMask.GetMask(maskLayer));*/
                     rc = Physics2D.BoxCast(center.position, new Vector2(1f, 1f), 0f,
                         new Vector2(Mathf.Cos(rot), Mathf.Sin(rot)), Mathf.Infinity, LayerMask.GetMask(maskLayer));
+                    i++;
                 }
+                
                 Log($"Putting nail to {rc.point.x  + nailRealPosOffset}");
 
                 float rotArm = rot + (dir > 0 ? Mathf.PI : 0f);
