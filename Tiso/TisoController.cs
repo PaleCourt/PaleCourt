@@ -43,6 +43,7 @@ namespace FiveKnights.Tiso
         private TisoAttacks _attacks;
         // Flag that is set to true when Tiso is hit, reset before using
         private bool _hit;
+        private Coroutine _musicCoro;
 
         public Dictionary<Func<IEnumerator>, int> Rep;
         private Dictionary<Func<IEnumerator>, int> _max;
@@ -154,10 +155,10 @@ namespace FiveKnights.Tiso
             PlayAudio(this, Clip.Land);
             // Play intro and wait a bit in the part where he shows off his shield
             yield return _anim.PlayToEnd("TisoLand");
-            
+
             // Play Music
-            StartCoroutine(MusicControl());
-                
+            _musicCoro = GameManager.instance.StartCoroutine(MusicControl());
+
             _anim.Play("TisoRoar");
             AudioSource aud = PlayAudio(this, Clip.Roar);
             DoTitle();
@@ -297,6 +298,7 @@ namespace FiveKnights.Tiso
                     _hasDied = true;
                     _bc.enabled = false;
                     StopAllCoroutines();
+                    if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
                     StartCoroutine(_attacks.Death());
                     // Die method here
                 }
