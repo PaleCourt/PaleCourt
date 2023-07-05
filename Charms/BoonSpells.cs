@@ -143,7 +143,7 @@ namespace FiveKnights
 		{
             List<GameObject> blasts = new List<GameObject>();
 
-            // Enemy iframes last 0.15s, 
+            // Enemy iframes last 0.2s
             IEnumerator CastBlastsCoro()
             {
                 blasts.Add(SpawnBlast(HeroController.instance.transform.position + Vector3.up * 4f, upgraded));
@@ -152,7 +152,7 @@ namespace FiveKnights
                 for(int i = 0; i < (upgraded ? 3 : 1); i++)
                 {
                     blasts.Add(SpawnBlast(HeroController.instance.transform.position + 
-                        Vector3.up * Random.Range(2, 8) + Vector3.right * Random.Range(-3, 3), upgraded));
+                        Vector3.up * Random.Range(4, 10) + Vector3.right * Random.Range(-3, 3), upgraded));
                     yield return new WaitForSeconds(0.2f);
                 }
             }

@@ -53,6 +53,8 @@ namespace FiveKnights
                 GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
                 GameObject ogrim = GameObject.Find("Ogrim");
                 yield return new WaitWhile(() => HeroController.instance == null);
+                PlayMusic(FiveKnights.Clips["IsmaAreaMusic"]);
+
                 yield return new WaitWhile(()=> HeroController.instance.transform.position.x < 110.5f);
                 IsmaController ic = BossLoader.CreateIsma(true);
                 ogrim.AddComponent<OgrimBG>().target = ic.transform;
