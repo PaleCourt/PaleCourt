@@ -129,6 +129,7 @@ namespace FiveKnights
         public bool HasSeenWorkshopRaised = false;
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
+        public bool ChampionsCallHitless = false;
         public bool HasSeenCredits = false;
         public bool IndicatorActivated = false;
         public UnityEngine.Vector3 IndicatorPosition1;

@@ -517,6 +517,7 @@ namespace FiveKnights.BossManagement
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[1].stringValue = "Speech";
             transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[1].stringValue = "Speech";
             RewardRoom.doneCCHitless = doneCCHitless;
+            if(doneCCHitless) FiveKnights.Instance.SaveSettings.ChampionsCallHitless = true;
 
             // Set fields for room transition
             transitionFSM.GetAction<BeginSceneTransition>("New Scene", 6).sceneName = "Pale_Court_Credits";
