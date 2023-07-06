@@ -280,8 +280,7 @@ namespace FiveKnights.Zemer
                 Log("[Setting Attacks]");
                 Vector2 posZem = transform.position;
                 Vector2 posH = _target.transform.position;
-                bool isPhase2 = _hm.hp < DoSpinSlashPhase;
-
+                
                 //If the player is close
                 if (posH.y > GroundY + 3f && (posH.x <= LeftX + 1f || posH.x >= RightX - 1))
                 {
@@ -307,8 +306,7 @@ namespace FiveKnights.Zemer
                         Log("Doing Special Dodge");
                         yield return Dodge();
                         Log("Done Special Dodge's Dodge");
-                        var lst = new List<Func<IEnumerator>> { FancyAttack, null, null};
-                        if (isPhase2) lst = new List<Func<IEnumerator>> { FancyAttack, NailLaunch };
+                        var lst = new List<Func<IEnumerator>> { FancyAttack, NailLaunch, null };
                         Log("Choosing Attack");
                         var att = MiscMethods.ChooseAttack(lst, rep, max);
                         Log("Done Choosing Attack");
@@ -324,14 +322,9 @@ namespace FiveKnights.Zemer
                 
                 List<Func<IEnumerator>> attLst = new List<Func<IEnumerator>>
                 {
-                    Dash, Attack1Base, Attack1Base, AerialAttack, ZemerSlam
+                    Dash, Attack1Base, Attack1Base, AerialAttack, ZemerSlam, NailLaunch
                 };
 
-                if (isPhase2)
-                {
-                    attLst.Add(NailLaunch);
-                }
-                
                 Log("Choosing Attack");
                 Func<IEnumerator> currAtt = MiscMethods.ChooseAttack(attLst, rep, max);
                 Log("Done Choosing Attack");
@@ -340,7 +333,7 @@ namespace FiveKnights.Zemer
                 yield return currAtt();
                 Log("Done " + currAtt.Method.Name);
 
-                if (isPhase2 && (currAtt == ZemerSlam || currAtt == Dash) && rep[NailLaunch] < max[NailLaunch] &&
+                if ((currAtt == ZemerSlam || currAtt == Dash) && rep[NailLaunch] < max[NailLaunch] &&
                     Random.Range(0, 2) == 0)
                 {
                     rep[NailLaunch]++;
@@ -350,11 +343,10 @@ namespace FiveKnights.Zemer
                 }
                 else if (currAtt == Attack1Base)
                 {
-                    List<Func<IEnumerator>> lst2 = new List<Func<IEnumerator>>{ FancyAttack, Attack1Complete, null };
-                    if (isPhase2) lst2 = new List<Func<IEnumerator>> { FancyAttack, FancyAttack, Attack1Complete };
+                    List<Func<IEnumerator>> lst2 = new List<Func<IEnumerator>> { FancyAttack, FancyAttack, Attack1Complete };
                     if (FastApproximately(transform.position.x, _target.transform.position.x, 7f))
                     {
-                        lst2 = (isPhase2) ? new List<Func<IEnumerator>> {Attack1Complete} : new List<Func<IEnumerator>> {Attack1Complete, null};
+                        lst2 =  new List<Func<IEnumerator>> {Attack1Complete};
                     }
                     
                     Log("Choosing Attack");
@@ -370,7 +362,7 @@ namespace FiveKnights.Zemer
 
                     if (currAtt == FancyAttack)
                     {
-                        int rand = _rand.Next(0, isPhase2 ? 4 : 3);
+                        int rand = _rand.Next(0, 4);
                         if (rand == 0)
                         {
                             Log("Doing Special Fancy Attack");
@@ -385,7 +377,7 @@ namespace FiveKnights.Zemer
                             yield return ZemerSlam(); 
                             Log("Done Slam"); //
                         }
-                        else if (isPhase2 && rand == 2)
+                        else if (rand == 2)
                         {
                             Log("Doing NailLaunch");
                             yield return NailLaunch();
