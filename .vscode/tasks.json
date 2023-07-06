@@ -1,0 +1,68 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Copy Base Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity/AssetBundles/StandaloneWindows"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy DryyaHeg Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneWindows"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy Godhome Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneWindows"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy Misc Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Misc/AssetBundles/StandaloneWindows"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy All Assetbundles",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Copy Godhome Assetbundles",
+                "Copy DryyaHeg Assetbundles",
+                "Copy Base Assetbundles",
+                "Copy Misc Assetbundles",
+            ],
+            "group": "build"
+        },
+    ]
+}
