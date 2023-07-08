@@ -71,7 +71,7 @@ namespace FiveKnights
         {
             Vector3[] worldPos =
             {
-                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f)
+                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f), new(227.2f, 107.4f, .1f)
             };
             foreach (Vector3 pos in worldPos)
             {
@@ -79,6 +79,11 @@ namespace FiveKnights
                 var totembase = GameObject.Instantiate(FiveKnights.preloadedGO["TotemBase"]);
                 totem.transform.position = pos;
                 totembase.transform.position = pos + new Vector3(0.6f, -2, -.01f);
+                var totemfsm = totem.LocateMyFSM("soul_totem");
+                totemfsm.SetAttr("fsmTemplate", (FsmTemplate)null);
+                totemfsm.GetAction<SetIntValue>("Reset").intValue = int.MaxValue;
+                totemfsm.GetAction<SetIntValue>("Reset?").intValue = int.MaxValue;
+
                 totem.SetActive(true);
                 totembase.SetActive(true);
             }
@@ -99,8 +104,8 @@ namespace FiveKnights
 
             Vector3[] surfacePoses =
             {
-                new (248.1f, 31.2f, -0.196f), new (229f, 31.2f, 0.004f), new (232f, 31.2f, 0.004f),
-                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, 0.004f), new (251.9309f, 31.2f, 0.004f),
+                new (248.1f, 31.2f, -0.396f), new (229f, 31.2f, -0.396f), new (232f, 31.2f,-0.396f),
+                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, -0.396f), new (251.9309f, 31.2f, -0.396f),
             };
 
             Vector3[] wBoxPoses =

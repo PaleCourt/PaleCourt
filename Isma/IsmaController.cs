@@ -69,6 +69,7 @@ namespace FiveKnights.Isma
         private bool _isIsmaHitLast;
         private bool _usingThornPillars;
         private bool _ogrimEvaded;
+        private Coroutine _musicCoro;
         private Coroutine _wallsCoro;
 
         public static float offsetTime;
@@ -228,6 +229,19 @@ namespace FiveKnights.Isma
             }
 
 			StartCoroutine("Start2");
+            if(!OWArenaFinder.IsInOverWorld && !onlyIsma)
+			{
+                yield return new WaitForSeconds(1f);
+                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["OgrismaMusic"], 1f);
+            }
+            else
+			{
+                _musicCoro = GameManager.instance.StartCoroutine(MusicControl());
+            }
+        }
+
+        private IEnumerator MusicControl()
+		{
             if(OWArenaFinder.IsInOverWorld)
             {
                 OWBossManager.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
@@ -239,11 +253,6 @@ namespace FiveKnights.Isma
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaIntro"]);
                 yield return new WaitForSecondsRealtime(FiveKnights.Clips["LoneIsmaIntro"].length);
                 GGBossManager.Instance.PlayMusic(FiveKnights.Clips["LoneIsmaLoop"]);
-            }
-            else
-			{
-                yield return new WaitForSeconds(1f);
-                GGBossManager.Instance.PlayMusic(FiveKnights.Clips["OgrismaMusic"], 1f);
             }
         }
 
@@ -1693,6 +1702,7 @@ namespace FiveKnights.Isma
             if(dd.transform.GetPositionY() < 9.1f) dd.transform.position = new Vector2(dd.transform.GetPositionX(), 9.1f);
 
             // Ogrim gets stunned and launched
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
             GGBossManager.Instance.PlayMusic(null, 1f);
             dd.layer = gameObject.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _ddFsm.SetState("Stun Set");
@@ -1855,6 +1865,7 @@ namespace FiveKnights.Isma
 
             // Isma dies
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
 			GGBossManager.Instance.PlayMusic(null, 1f);
             FiveKnights.journalEntries["Isma"].RecordJournalEntry();
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter -= TransitionToAudioSnapshotOnEnter;
@@ -1951,6 +1962,7 @@ namespace FiveKnights.Isma
             float dir = FaceHero(true);
             _anim.enabled = true;
             yield return null;
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
             if (!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             else OWBossManager.PlayMusic(null);
             PlayDeathFor(gameObject);
@@ -2211,6 +2223,8 @@ namespace FiveKnights.Isma
 
         private void OnDestroy()
         {
+            if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
+
             On.HealthManager.TakeDamage -= HealthManagerTakeDamage;
             On.HealthManager.Die -= HealthManagerDie;
             On.SpellFluke.DoDamage -= SpellFlukeOnDoDamage;

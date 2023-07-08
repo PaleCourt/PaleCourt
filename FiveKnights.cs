@@ -47,7 +47,7 @@ namespace FiveKnights
         {
             get
             {
-                return SystemInfo.operatingSystemFamily switch
+                return SystemInfo.operatingSystemFamily switch 
                 {
                     OperatingSystemFamily.Windows => "win",
                     //OperatingSystemFamily.Linux => "lin",
@@ -199,14 +199,14 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "7.1.2023-rc.1";
+        public override string GetVersion() => "1.0.0.4";
 
         public override List<(string, string)> GetPreloadNames()
         {
             return new List<(string, string)>
             {
                 ("GG_Hive_Knight", "Battle Scene/Hive Knight/Slash 1"),
-                ("GG_Hollow_Knight", "Battle Scene/HK Prime"),
+                ("GG_Hollow_Knight", "Battle Scene/HK Prime"), 
                 ("GG_Hollow_Knight", "Battle Scene/HK Prime/Counter Flash"),
                 ("GG_Hollow_Knight", "Battle Scene/Focus Blasts/HK Prime Blast/Blast"),
                 ("Abyss_05", "Dusk Knight/Dream Enter 2"),
@@ -422,8 +422,6 @@ namespace FiveKnights
             #region Charms
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
-            //preloadedGO["Royal Aura"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("Royal Aura");
-            preloadedGO["Crest Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("CrestAnim");
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
             #endregion
@@ -865,6 +863,7 @@ namespace FiveKnights
             orig(self, permaDeath, bossRush);
             if(bossRush)
             {
+                SaveSettings.GodseekerSave = true;
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;
@@ -885,6 +884,7 @@ namespace FiveKnights
         {
             if(PlayerData.instance.bossRushMode && !SaveSettings.HasSeenWorkshopRaised)
             {
+                SaveSettings.GodseekerSave = true;
                 SaveSettings.gotCharms = new bool[] { true, true, true, true };
                 SaveSettings.upgradedCharm_10 = true;
                 SaveSettings.CompletionIsma.isUnlocked = true;

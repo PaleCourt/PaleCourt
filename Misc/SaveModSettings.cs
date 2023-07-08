@@ -119,11 +119,17 @@ namespace FiveKnights
         public bool WLadyAllConvo1 = false;
         public bool WLadyAllConvo2 = false;
 
-        public bool UnlockedChampionsCall => CompletionIsma.isUnlocked && CompletionDryya.isUnlocked &&
-                                             CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked;
+        public bool GodseekerSave = false;
+        public bool UnlockedChampionsCall => GodseekerSave ? ((CompletionIsma.completedTier1 || CompletionIsma.completedTier2) && 
+                                             (CompletionDryya.completedTier1 || CompletionDryya.completedTier2) &&
+                                             (CompletionHegemol.completedTier1 || CompletionHegemol.completedTier2) &&
+                                             (CompletionZemer.completedTier1 || CompletionZemer.completedTier2)) :
+                                             (CompletionIsma.isUnlocked && CompletionDryya.isUnlocked && 
+                                             CompletionHegemol.isUnlocked && CompletionZemer.isUnlocked);
         public bool HasSeenWorkshopRaised = false;
         public bool SeenChampionsCall = false;
         public int ChampionsCallClears = 0;
+        public bool ChampionsCallHitless = false;
         public bool HasSeenCredits = false;
         public bool IndicatorActivated = false;
         public UnityEngine.Vector3 IndicatorPosition1;

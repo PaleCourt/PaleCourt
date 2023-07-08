@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -217,6 +217,7 @@ namespace FiveKnights.Dryya
             _hm = gameObject.AddComponent<HealthManager>();
             _hm.enabled = false;
             _hm.hp = MaxHP;
+			EnemyHPBarImport.RefreshHPBar(gameObject);
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
 

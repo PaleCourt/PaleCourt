@@ -495,7 +495,7 @@ namespace FiveKnights
                 blastCollider.radius = 2.5f;
                 if (_pd.GetBool("equippedCharm_" + Charms.DeepFocus))
                 {
-                    blastCollider.radius *= 2.5f;
+                    blastCollider.radius = 3.5f;
                 }
                 else
                 {
