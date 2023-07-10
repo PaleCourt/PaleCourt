@@ -28,7 +28,7 @@ namespace FiveKnights
     // day to let other people enjoy the mod. Thanks.
 
     [UsedImplicitly]
-    public class FiveKnights : FullSettingsMod<SaveModSettings, GlobalModSettings>
+    public class FiveKnights : FullSettingsMod<SaveModSettings, GlobalModSettings> 
     {
         private int paleCourtLogoId = -1;
         public static bool isDebug = true;
@@ -285,11 +285,17 @@ namespace FiveKnights
                 ("Abyss_10", "GameObject/abyss_water_top (3)"),
                 ("Abyss_10", "Surface Water Region"),
                 ("Abyss_10", "Darkness Region"),
-                ("Waterways_05", "Dream Gate Set Lock"),
+                ("Waterways_05", "Dream Gate Set Lock"), 
                 ("Abyss_10", "Hollow_Shade Marker"),
                 ("Mines_28", "Soul Totem 5"),
-                ("Mines_28", "Mini_totems_0000_7")
-
+                ("Mines_28", "Mini_totems_0000_7"),
+                
+                // For radiant reward
+                ("Room_Final_Boss_Atrium", "Glow Response floor_ring large1 (1)"),
+                ("Room_Final_Boss_Atrium", "Glow Response floor_ring large2 (1)"),
+                ("Room_Final_Boss_Atrium", "Glow Response floor_ring small (11)"),
+                ("Room_Final_Boss_Atrium", "_SceneManager"),
+                ("Cliffs_01", "wind system 2")
             };
         }
 
@@ -380,6 +386,11 @@ namespace FiveKnights
             preloadedGO["ShadeSpawn"] = preloadedObjects["Abyss_10"]["Hollow_Shade Marker"];
             preloadedGO["SoulTotem"] = preloadedObjects["Mines_28"]["Soul Totem 5"];
             preloadedGO["TotemBase"] = preloadedObjects["Mines_28"]["Mini_totems_0000_7"];
+            preloadedGO["GlowLarge1"] = preloadedObjects["Room_Final_Boss_Atrium"]["Glow Response floor_ring large1 (1)"];
+            preloadedGO["GlowLarge2"] = preloadedObjects["Room_Final_Boss_Atrium"]["Glow Response floor_ring large2 (1)"];
+            preloadedGO["GlowSmall"] = preloadedObjects["Room_Final_Boss_Atrium"]["Glow Response floor_ring small (11)"];
+            preloadedGO["BossSM"] = preloadedObjects["Room_Final_Boss_Atrium"]["_SceneManager"];
+            preloadedGO["Wind"] = preloadedObjects["Cliffs_01"]["wind system 2"];
             #endregion
 
             #region Journal Entries
@@ -674,6 +685,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaI);
             ABManager.Load(ABManager.Bundle.GArenaIsma);
             ABManager.Load(ABManager.Bundle.GReward);
+            ABManager.Load(ABManager.Bundle.RadiantReward);
             ABManager.Load(ABManager.Bundle.Credits);
             ABManager.Load(ABManager.Bundle.AbyssalTemple);
 

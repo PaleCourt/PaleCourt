@@ -291,9 +291,15 @@ namespace FiveKnights.BossManagement
 
                 // Disable the check that prevents music if it finds a BSC
                 _fsm.RemoveAction("Music", 0);
+
+
+                yield return new WaitWhile(() => !Input.GetKey(KeyCode.R));
+                CCDreamExit();
+                yield break;
+                
                 yield return OgrimIsmaFight();
 
-                yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(3.5f); //1.5
                 
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
@@ -310,7 +316,7 @@ namespace FiveKnights.BossManagement
 
 				yield return new WaitWhile(() => dc != null);
 
-				yield return new WaitForSeconds(3.5f);
+				yield return new WaitForSeconds(5.5f); // 3.5
 
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
@@ -332,7 +338,7 @@ namespace FiveKnights.BossManagement
                 HegemolController hegemolCtrl = BossLoader.CreateHegemol();
                 yield return new WaitWhile(() => hegemolCtrl != null);
 
-				yield return new WaitForSeconds(1.5f);
+				yield return new WaitForSeconds(3.5f); // 1.5
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = BossLoader.CreateZemer();

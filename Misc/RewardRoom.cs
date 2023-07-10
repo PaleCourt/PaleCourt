@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -14,6 +15,7 @@ using UnityEngine.Audio;
 using GlobalEnums;
 using HutongGames.PlayMaker.Actions;
 using Logger = Modding.Logger;
+using Object = UnityEngine.Object;
 
 namespace FiveKnights
 {
@@ -29,6 +31,7 @@ namespace FiveKnights
         private static Animator zemerAnim;
 
         private static Coroutine zemerAnimCoro;
+        private const string RadiantRoom = "Radiant_Reward";
 
         public static void Hook()
         {
@@ -40,7 +43,7 @@ namespace FiveKnights
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
         }
 
-		public static void Unhook()
+        public static void Unhook()
         {
             ModHooks.LanguageGetHook -= LangGet;
             On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
@@ -60,6 +63,7 @@ namespace FiveKnights
         private static string GameManagerGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             if(self.sceneName == "hidden_reward_room") return MapZone.DREAM_WORLD.ToString();
+            if(self.sceneName == RadiantRoom) return MapZone.FINAL_BOSS.ToString();
             return orig(self);
         }
 
@@ -117,6 +121,46 @@ namespace FiveKnights
                     FiveKnights.Clips["Pale Court"] = snd.LoadAsset<AudioClip>("Pale Court");
                 }
                 PlayMusic(FiveKnights.Clips["Pale Court"]);
+            }
+            else if (self.sceneName == RadiantRoom)
+            {
+                self.tilemap.width = 500;
+                self.tilemap.height = 200;
+                CreateGateway("door1", new Vector2(118.88f, 6.63f), Vector2.zero,
+                    null, null, true, false, true,
+                    GameManager.SceneLoadVisualizations.Dream);
+                GameCameras.instance.hudCamera.gameObject.transform.Find("Blanker White").gameObject.LocateMyFSM("Blanker Control").SendEvent("FADE OUT");
+
+                foreach (var i in Object.FindObjectsOfType<BoxCollider2D>().Where(x => x.name.Contains("Glow Response")))
+                {
+                    if (i.name.Contains("large1"))
+                    {
+                        Logger.Log("Did 1");
+                        var newRing = Object.Instantiate(FiveKnights.preloadedGO["GlowLarge1"]);
+                        newRing.SetActive(true);
+                        newRing.transform.position = i.transform.position;
+                        newRing.transform.localScale = i.transform.localScale;
+                        Object.Destroy(i.gameObject);
+                    }
+                    else if (i.name.Contains("large2")) 
+                    {
+                        Logger.Log("Did 2");
+                        var newRing = Object.Instantiate(FiveKnights.preloadedGO["GlowLarge2"]);
+                        newRing.SetActive(true);
+                        newRing.transform.position = i.transform.position;
+                        newRing.transform.localScale = i.transform.localScale;
+                        Object.Destroy(i.gameObject);
+                    }
+                    else if (i.name.Contains("small"))
+                    {
+                        Logger.Log("Did 3");
+                        var newRing = Object.Instantiate(FiveKnights.preloadedGO["GlowSmall"]);
+                        newRing.SetActive(true);
+                        newRing.transform.position = i.transform.position;
+                        newRing.transform.localScale = i.transform.localScale;
+                        Object.Destroy(i.gameObject);
+                    }
+                }
             }
             orig(self, false);
         }
@@ -214,6 +258,26 @@ namespace FiveKnights
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Left").Value = true;
                 zemer.gameObject.LocateMyFSM("npc_control").GetFsmBoolVariable("Hero Always Right").Value = false;
                 zemer.SetUp();
+            }
+            if (arg1.name == RadiantRoom)
+            {
+                foreach(var i in UnityEngine.Object.FindObjectsOfType<SceneManager>())
+                {
+                    Object.Destroy(i.gameObject);
+                }
+                GameObject o = UnityEngine.Object.Instantiate(FiveKnights.preloadedGO["BossSM"]);
+                o.GetComponent<SceneManager>().noLantern = true;
+                o.GetComponent<SceneManager>().darknessLevel = 1;
+                o.SetActive(true);
+                
+                DreamEntry();
+
+                var wind = Object.Instantiate(FiveKnights.preloadedGO["Wind"]);
+                wind.transform.position = new Vector3(100f, 7f);
+                var fsm = wind.LocateMyFSM("FSM");
+                fsm.FindFsmFloatVariable("X Max").Value = 100f;
+                fsm.FindFsmFloatVariable("X Min").Value = 100f;
+                wind.SetActive(true);
             }
         }
 
