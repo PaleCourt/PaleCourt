@@ -57,10 +57,10 @@
             "label": "Copy All Assetbundles",
             "dependsOrder": "sequence",
             "dependsOn": [
+                "Copy Misc Assetbundles",
                 "Copy Godhome Assetbundles",
                 "Copy DryyaHeg Assetbundles",
                 "Copy Base Assetbundles",
-                "Copy Misc Assetbundles",
             ],
             "group": "build"
         },
