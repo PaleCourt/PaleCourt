@@ -62,7 +62,9 @@ namespace FiveKnights
         {
             //On.GameCameras.Awake += (orig, self) => self.gameObject.AddComponent<PostProcessing>();
             
-            #region Load Embedded Images
+            #region Load Language & Embedded Images
+
+            langStrings = new LanguageCtrl();
 
             int ind = 0;
             Assembly asm = Assembly.GetExecutingAssembly();
@@ -145,9 +147,7 @@ namespace FiveKnights
 
             #endregion
 
-            #region Language & Hooks
-
-            langStrings = new LanguageCtrl();
+            #region Hooks
 
             ModHooks.BeforeSavegameSaveHook += SaveEntries;
             ModHooks.SetPlayerVariableHook += SetVariableHook;
