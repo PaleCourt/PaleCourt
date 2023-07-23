@@ -349,7 +349,6 @@ namespace FiveKnights
             nailArts.RemoveAction<ActivateGameObject>("G Slash Void");
 
             nailArts.Log();
-            nailArts.MakeLog(true);
 
             StartCoroutine(ResetVoidNarts(new GameObject[] { cycloneSlashVoid, dashSlashVoid, greatSlashVoid }));
         }
