@@ -61,7 +61,7 @@ namespace FiveKnights
             //On.SceneManager.Start += SceneManagerOnStart;
             On.BossStatueLever.OnTriggerEnter2D += BossStatueLever_OnTriggerEnter2D2;
             On.GameManager.BeginSceneTransition += GameManager_BeginSceneTransition;
-			On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
+            On.BossChallengeUI.LoadBoss_int_bool += BossChallengeUI_LoadBoss_int_bool;
             On.BossSceneController.Awake += BossSceneController_Awake;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
             On.HeroController.CanInteract += HeroCanInteract;
@@ -84,23 +84,23 @@ namespace FiveKnights
         }
         
         private void BossChallengeUI_LoadBoss_int_bool(On.BossChallengeUI.orig_LoadBoss_int_bool orig, BossChallengeUI self, int level, bool doHideAnim)
-		{
-			lastBossLevel = level;
+        {
+            lastBossLevel = level;
             lastBossStatue = Mirror.GetField<BossChallengeUI, BossStatue>(self, "bossStatue");
             orig(self, level, doHideAnim);
-		}
+        }
 
-		private void BossSceneController_Awake(On.BossSceneController.orig_Awake orig, BossSceneController self)
-		{
-			if(BossSceneController.SetupEvent == null)
-			{
-				Log("BSC SetupEvent is null");
-				BossSceneController.SetupEvent = delegate (BossSceneController self)
-				{
-					self.BossLevel = lastBossLevel;
-					self.DreamReturnEvent = "DREAM RETURN";
-					self.OnBossesDead += delegate ()
-					{
+        private void BossSceneController_Awake(On.BossSceneController.orig_Awake orig, BossSceneController self)
+        {
+            if(BossSceneController.SetupEvent == null)
+            {
+                Log("BSC SetupEvent is null");
+                BossSceneController.SetupEvent = delegate (BossSceneController self)
+                {
+                    self.BossLevel = lastBossLevel;
+                    self.DreamReturnEvent = "DREAM RETURN";
+                    self.OnBossesDead += delegate ()
+                    {
                         string fieldName = lastBossStatue.UsingDreamVersion ? lastBossStatue.dreamStatueStatePD : lastBossStatue.statueStatePD;
                         BossStatue.Completion playerDataVariable = GameManager.instance.GetPlayerDataVariable<BossStatue.Completion>(fieldName);
                         switch(lastBossLevel)
@@ -120,14 +120,14 @@ namespace FiveKnights
                             lastBossStatue.UsingDreamVersion ? lastBossStatue.dreamStatueStatePD : lastBossStatue.statueStatePD);
                         GameManager.instance.playerData.SetInt("bossStatueTargetLevel", lastBossLevel);
                     };
-					self.OnBossSceneComplete += delegate ()
-					{
-						self.DoDreamReturn();
-					};
-				};
-			}
-			orig(self);
-		}
+                    self.OnBossSceneComplete += delegate ()
+                    {
+                        self.DoDreamReturn();
+                    };
+                };
+            }
+            orig(self);
+        }
 
         private void GameManager_BeginSceneTransition(On.GameManager.orig_BeginSceneTransition orig, GameManager self, GameManager.SceneLoadInfo info)
         {
@@ -169,7 +169,7 @@ namespace FiveKnights
             orig(self, info);
         }
 
-		private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+        private void BossStatueLever_OnTriggerEnter2D2(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             Vector2 pos = HeroController.instance.transform.position;
             if (pos.x > 49f && pos.x < 62.2f && pos.y > 35f && collision.tag == "Nail Attack")
@@ -331,15 +331,15 @@ namespace FiveKnights
                         Log("Changed the hero's pos");
                     }
                     Log("Done trans in dream thing");
-					while(GameObject.Find("Godseeker Crowd") == null) yield return null;
-					GameObject oldGS = GameObject.Find("Godseeker Crowd");
-					GameObject newGS = Instantiate(FiveKnights.preloadedGO["Godseeker"]);
-					newGS.SetActive(true);
-					newGS.transform.position = oldGS.transform.position;
-					Destroy(oldGS);
+                    while(GameObject.Find("Godseeker Crowd") == null) yield return null;
+                    GameObject oldGS = GameObject.Find("Godseeker Crowd");
+                    GameObject newGS = Instantiate(FiveKnights.preloadedGO["Godseeker"]);
+                    newGS.SetActive(true);
+                    newGS.transform.position = oldGS.transform.position;
+                    Destroy(oldGS);
                     GameObject.Find("GG_Arena_Prefab").GetComponent<AudioSource>().outputAudioMixerGroup = 
                         HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
-				}
+                }
                 Log("Done dream entry");
             }
 

@@ -95,7 +95,7 @@ public class Tram : MonoBehaviour
     }
 
     public void FadeAudio()
-	{
+    {
         IEnumerator Fade()
         {
             float changeCounter = 0f;

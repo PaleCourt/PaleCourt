@@ -28,7 +28,7 @@ namespace FiveKnights
         }
 
         private void Start()
-		{
+        {
             DamageEnemies damageEnemies = gameObject.AddComponent<DamageEnemies>();
             damageEnemies.ignoreInvuln = false;
             damageEnemies.attackType = AttackTypes.Spell;

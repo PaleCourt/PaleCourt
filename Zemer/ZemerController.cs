@@ -111,7 +111,7 @@ namespace FiveKnights.Zemer
             AssignFields();
 
             _hm.hp = CustomWP.boss == CustomWP.Boss.Ze ? MaxHPV1 : MaxHPV2;
-			EnemyHPBarImport.RefreshHPBar(gameObject);
+            EnemyHPBarImport.RefreshHPBar(gameObject);
              doingIntro = false;
              // For some reason setting the _bc to false here in the OW arena results in Zemer's hitbox never activating
              // after so I've had to do this ugly thing
@@ -166,10 +166,10 @@ namespace FiveKnights.Zemer
             yield return new WaitWhile(() => !(_target = HeroController.instance.gameObject));
             Destroy(GameObject.Find("Bounds Cage"));
             Destroy(GameObject.Find("World Edge v2"));
-			if(!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
-			else yield return new WaitForSeconds(1.7f);
+            if(!GGBossManager.alone && !OWArenaFinder.IsInOverWorld) StartCoroutine(SilLeave());
+            else yield return new WaitForSeconds(1.7f);
 
-			gameObject.SetActive(true); 
+            gameObject.SetActive(true); 
 
             gameObject.transform.position = gameObject.transform.position = new Vector2(RightX - 10f, GroundY + 0.5f);
             

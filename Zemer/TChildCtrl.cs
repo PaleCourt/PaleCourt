@@ -101,7 +101,7 @@ namespace FiveKnights.Zemer
         }
 
         private IEnumerator FreezePlayer()
-		{
+        {
             // Stops player until she leaves
             yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
 

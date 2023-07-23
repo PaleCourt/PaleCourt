@@ -268,8 +268,8 @@ namespace FiveKnights
             _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
             //foreach(NailSlash nailslash in nailSlashes)
             //{
-            //	nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
-            //	if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
+            //    nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
+            //    if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
             //}
 
             if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)

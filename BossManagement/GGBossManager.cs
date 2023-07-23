@@ -91,12 +91,12 @@ namespace FiveKnights.BossManagement
             // set damage level
             if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
             {
-				// TODO UNCOMMENT
-				BossSceneController.Instance.BossLevel = CustomWP.lev;
-			}
+                // TODO UNCOMMENT
+                BossSceneController.Instance.BossLevel = CustomWP.lev;
+            }
             
             Instance = this;
-			ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
+            ReflectionHelper.SetProperty(GameManager.instance, nameof(GameManager.sm), Object.FindObjectOfType<SceneManager>());
 
             dd = Instantiate(FiveKnights.preloadedGO["WhiteDef"]);
             dd.SetActive(false);
@@ -113,8 +113,8 @@ namespace FiveKnights.BossManagement
             alone = true;
             Unload();
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
-			On.HealthManager.ApplyExtraDamage += HealthManagerApplyExtraDamage;
-			On.HealthManager.Die += HealthManagerDie;
+            On.HealthManager.ApplyExtraDamage += HealthManagerApplyExtraDamage;
+            On.HealthManager.Die += HealthManagerDie;
             string dret = PlayerData.instance.dreamReturnScene;
             PlayerData.instance.dreamReturnScene = (dret == "Waterways_13") ? dret : "White_Palace_09";
             dret = PlayerData.instance.dreamReturnScene;
@@ -137,13 +137,13 @@ namespace FiveKnights.BossManagement
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma = (BossStatue.Completion) box;
 
-					var bsc = BossSceneController.Instance;
-					GameObject transition = Instantiate(bsc.transitionPrefab);
-					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-					transitionsFSM.SetState("Out Statue");
-					yield return new WaitForSeconds(1.0f);
-					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-				}
+                    var bsc = BossSceneController.Instance;
+                    GameObject transition = Instantiate(bsc.transitionPrefab);
+                    PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                    transitionsFSM.SetState("Out Statue");
+                    yield return new WaitForSeconds(1.0f);
+                    bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                }
 
                 Destroy(this);
             }
@@ -162,15 +162,15 @@ namespace FiveKnights.BossManagement
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
 
-					var bsc = BossSceneController.Instance;
-					GameObject transition = Instantiate(bsc.transitionPrefab);
-					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-					transitionsFSM.SetState("Out Statue");
-					yield return new WaitForSeconds(1.0f);
-					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-				}
+                    var bsc = BossSceneController.Instance;
+                    GameObject transition = Instantiate(bsc.transitionPrefab);
+                    PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                    transitionsFSM.SetState("Out Statue");
+                    yield return new WaitForSeconds(1.0f);
+                    bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                }
 
-				Destroy(this);
+                Destroy(this);
             }
             else if (CustomWP.boss == CustomWP.Boss.Dryya)
             {
@@ -186,17 +186,17 @@ namespace FiveKnights.BossManagement
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionDryya = (BossStatue.Completion) box;
 
-					yield return new WaitForSeconds(5.0f);
+                    yield return new WaitForSeconds(5.0f);
 
-					var bsc = BossSceneController.Instance;
-					GameObject transition = Instantiate(bsc.transitionPrefab);
-					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-					transitionsFSM.SetState("Out Statue");
-					yield return new WaitForSeconds(1.0f);
-					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                    var bsc = BossSceneController.Instance;
+                    GameObject transition = Instantiate(bsc.transitionPrefab);
+                    PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                    transitionsFSM.SetState("Out Statue");
+                    yield return new WaitForSeconds(1.0f);
+                    bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
 
-					yield return null;
-				}
+                    yield return null;
+                }
 
                 Destroy(this);
             }
@@ -215,13 +215,13 @@ namespace FiveKnights.BossManagement
                     fi.SetValue(box, true);
                     FiveKnights.Instance.SaveSettings.CompletionHegemol = (BossStatue.Completion) box;
 
-					var bsc = BossSceneController.Instance;
-					GameObject transition = Instantiate(bsc.transitionPrefab);
-					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-					transitionsFSM.SetState("Out Statue");
-					yield return new WaitForSeconds(1.0f);
-					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-				}
+                    var bsc = BossSceneController.Instance;
+                    GameObject transition = Instantiate(bsc.transitionPrefab);
+                    PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                    transitionsFSM.SetState("Out Statue");
+                    yield return new WaitForSeconds(1.0f);
+                    bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                }
 
                 Destroy(this);
             }
@@ -261,13 +261,13 @@ namespace FiveKnights.BossManagement
                         FiveKnights.Instance.SaveSettings.CompletionZemer2 = (BossStatue.Completion) box;
                     }
 
-					var bsc = BossSceneController.Instance;
-					GameObject transition = Instantiate(bsc.transitionPrefab);
-					PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
-					transitionsFSM.SetState("Out Statue");
-					yield return new WaitForSeconds(1.0f);
-					bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
-				}
+                    var bsc = BossSceneController.Instance;
+                    GameObject transition = Instantiate(bsc.transitionPrefab);
+                    PlayMakerFSM transitionsFSM = transition.LocateMyFSM("Transitions");
+                    transitionsFSM.SetState("Out Statue");
+                    yield return new WaitForSeconds(1.0f);
+                    bsc.gameObject.LocateMyFSM("Dream Return").SendEvent("DREAM RETURN");
+                }
 
                 Destroy(this);
             }
@@ -279,14 +279,14 @@ namespace FiveKnights.BossManagement
                 BossLoader.LoadHegemolBundle();
                 BossLoader.LoadZemerBundle();
 
-				GameObject bscDummy = new("BSC Dummy");
-				bscDummy.SetActive(false);
-				BossSceneController bsc = BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
-				bsc.bosses = new HealthManager[0];
-				ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
+                GameObject bscDummy = new("BSC Dummy");
+                bscDummy.SetActive(false);
+                BossSceneController bsc = BossSceneController.Instance = bscDummy.AddComponent<BossSceneController>();
+                bsc.bosses = new HealthManager[0];
+                ReflectionHelper.SetProperty(bsc, nameof(BossSceneController.BossHealthLookup), new Dictionary<HealthManager, BossSceneController.BossHealthDetails>());
 
                 doneCCHitless = true;
-				ModHooks.AfterTakeDamageHook += CheckCCHitless;
+                ModHooks.AfterTakeDamageHook += CheckCCHitless;
                 yield return null;
 
                 // Disable the check that prevents music if it finds a BSC
@@ -298,8 +298,8 @@ namespace FiveKnights.BossManagement
                 GameObject dryyaSilhouette = GameObject.Find("Silhouette Dryya");
                 SpriteRenderer sr = dryyaSilhouette.GetComponent<SpriteRenderer>();
                 dryyaSilhouette.transform.localScale *= 1.2f;
-				DryyaSetup dc = BossLoader.CreateDryya();
-				sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
+                DryyaSetup dc = BossLoader.CreateDryya();
+                sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_1"];
                 yield return new WaitForSeconds(0.1f);
                 sr.sprite = ArenaFinder.Sprites["Dryya_Silhouette_2"];
                 yield return new WaitForSeconds(0.1f);
@@ -308,9 +308,9 @@ namespace FiveKnights.BossManagement
                 Destroy(dryyaSilhouette);
                 yield return new WaitForSeconds(0.5f);
 
-				yield return new WaitWhile(() => dc != null);
+                yield return new WaitWhile(() => dc != null);
 
-				yield return new WaitForSeconds(3.5f);
+                yield return new WaitForSeconds(3.5f);
 
                 GameObject hegSil = GameObject.Find("Silhouette Hegemol");
                 SpriteRenderer sr2 = hegSil.GetComponent<SpriteRenderer>();
@@ -332,7 +332,7 @@ namespace FiveKnights.BossManagement
                 HegemolController hegemolCtrl = BossLoader.CreateHegemol();
                 yield return new WaitWhile(() => hegemolCtrl != null);
 
-				yield return new WaitForSeconds(1.5f);
+                yield return new WaitForSeconds(1.5f);
 
                 // Silhouette is handled in Zemer code now
                 ZemerController zc = BossLoader.CreateZemer();
@@ -358,17 +358,17 @@ namespace FiveKnights.BossManagement
             }
         }
 
-		private int CheckCCHitless(int hazardType, int damageAmount)
-		{
+        private int CheckCCHitless(int hazardType, int damageAmount)
+        {
             Log("Got hit in CC");
             doneCCHitless = false;
             return damageAmount;
-		}
+        }
 
-		private IEnumerator OgrimIsmaFight()
+        private IEnumerator OgrimIsmaFight()
         {
             // This is to prevent Ogrim from dealing 2 masks of damage with certain attacks, which happens for...some reason
-			On.HeroController.TakeDamage += HeroControllerTakeDamage;
+            On.HeroController.TakeDamage += HeroControllerTakeDamage;
 
             // Set variables and edit FSM
             dd = GameObject.Find("White Defender");
@@ -385,7 +385,7 @@ namespace FiveKnights.BossManagement
             _hm.hp = 351;
             _fsm.GetAction<Wait>("Rage Roar", 9).time = 1.5f;
             _fsm.FsmVariables.FindFsmBool("Raged").Value = true;
-			EnemyHPBarImport.RefreshHPBar(dd);
+            EnemyHPBarImport.RefreshHPBar(dd);
             yield return new WaitForSeconds(1f);
 
             // Begin fight
@@ -396,12 +396,12 @@ namespace FiveKnights.BossManagement
             HIT_FLAG = false;
 
             // Transition to phase 2
-			yield return new WaitWhile(() => !HIT_FLAG);
+            yield return new WaitWhile(() => !HIT_FLAG);
             
             FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
             PlayMusic(null, 1f);
             if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
-			PlayerData.instance.isInvincible = true;
+            PlayerData.instance.isInvincible = true;
             dd.layer = (int)GlobalEnums.PhysLayers.CORPSE;
             _fsm.SetState("Stun Set");
             Vasi.Mirror.SetField(dreamNailReaction, "convoAmount", 5);
@@ -410,7 +410,7 @@ namespace FiveKnights.BossManagement
             burrow.enabled = true;
             burrow.SendEvent("BURROW END");
             foreach(PlayMakerFSM pillar in dd.Find("Slam Pillars").GetComponentsInChildren<PlayMakerFSM>())
-			{
+            {
                 if(pillar.ActiveStateName == "Up" || pillar.ActiveStateName == "Hit")
                 {
                     pillar.gameObject.GetComponent<MeshRenderer>().enabled = false;
@@ -418,7 +418,7 @@ namespace FiveKnights.BossManagement
                     pillar.FsmVariables.FindFsmGameObject("Chunks").Value.GetComponent<ParticleSystem>().Play();
                 }
                 else
-				{
+                {
                     pillar.enabled = false;
                 }
             }
@@ -442,7 +442,7 @@ namespace FiveKnights.BossManagement
 
             // After Isma falls down
             yield return new WaitWhile(() => !ic.introDone);
-			_fsm.enabled = true;
+            _fsm.enabled = true;
             _fsm.SetState("Stun Recover");
             dd.layer = (int)GlobalEnums.PhysLayers.ENEMIES;
             yield return null;
@@ -466,7 +466,7 @@ namespace FiveKnights.BossManagement
         }
 
         private void CCDreamExit()
-		{
+        {
             foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
             {
                 hcFSM.SendEvent("FSM CANCEL");
@@ -505,12 +505,12 @@ namespace FiveKnights.BossManagement
 
             // Set win dialogue
             if(doneCCHitless)
-			{
+            {
                 transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "RCC_OUTRO_1a";
                 transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "RCC_OUTRO_1b";
             }
             else
-			{
+            {
                 transitionFSM.GetAction<CallMethodProper>("Outro Msg 1a", 0).parameters[0].stringValue = "CC_OUTRO_1a";
                 transitionFSM.GetAction<CallMethodProper>("Outro Msg 1b", 0).parameters[0].stringValue = "CC_OUTRO_1b";
             }
@@ -529,8 +529,8 @@ namespace FiveKnights.BossManagement
             Destroy(this);
         }
 
-		private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
-		{
+        private void HeroControllerTakeDamage(On.HeroController.orig_TakeDamage orig, HeroController self, GameObject go, GlobalEnums.CollisionSide damageSide, int damageAmount, int hazardType)
+        {
             orig(self, go, damageSide, damageAmount > 1 ? 1 : damageAmount, hazardType);
         }
 

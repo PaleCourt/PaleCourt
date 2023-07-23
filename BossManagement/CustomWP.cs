@@ -59,21 +59,21 @@ namespace FiveKnights
                 Destroy(del);
             }
             
-			// Move curtain to behind a little bit to reveal Isma statue lever
-			foreach (GameObject i in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
-			{
-				switch (i.name)
-				{
-					case "core_extras_0025_wp (6)":
-						i.transform.SetPositionZ(2.2f);
-						break;
-					case "core_extras_0025_wp":
-						i.transform.SetPositionZ(3.34f);
-						break;
-					default:
-						break;
-				}
-			}
+            // Move curtain to behind a little bit to reveal Isma statue lever
+            foreach (GameObject i in UnityEngine.SceneManagement.SceneManager.GetActiveScene().GetRootGameObjects())
+            {
+                switch (i.name)
+                {
+                    case "core_extras_0025_wp (6)":
+                        i.transform.SetPositionZ(2.2f);
+                        break;
+                    case "core_extras_0025_wp":
+                        i.transform.SetPositionZ(3.34f);
+                        break;
+                    default:
+                        break;
+                }
+            }
 
             foreach (var i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name.Contains("new_cloud") 
@@ -82,25 +82,25 @@ namespace FiveKnights
                 Destroy(i);
             }
 
-			Material[] blurPlaneMaterials = new Material[1];
-			blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
-			blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
-			blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
-			blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
-			blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
-			blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
-			blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
-			blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
-			blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
-			Log("Look for blur!");
+            Material[] blurPlaneMaterials = new Material[1];
+            blurPlaneMaterials[0] = new Material(Shader.Find("UI/Blur/UIBlur"));
+            blurPlaneMaterials[0].SetColor(Shader.PropertyToID("_TintColor"), new Color(1.0f, 1.0f, 1.0f, 0.0f));
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Size"), 53.7f);
+            blurPlaneMaterials[0].SetFloat(Shader.PropertyToID("_Vibrancy"), 0.2f);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilComp"), 8);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_Stencil"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilOp"), 0);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilWriteMask"), 255);
+            blurPlaneMaterials[0].SetInt(Shader.PropertyToID("_StencilReadMask"), 255);
+            Log("Look for blur!");
             foreach(var i in FindObjectsOfType<GameObject>()
                 .Where(x => x.name == "BlurPlane"))
             {
                 Log("Found blur!");
                 i.SetActive(false);
-				i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
-				i.SetActive(true);
-			}
+                i.GetComponent<MeshRenderer>().materials = blurPlaneMaterials;
+                i.SetActive(true);
+            }
 
             GameObject cameraLock = GameObject.Find("CameraLockArea (2)");
             if(cameraLock != null)
@@ -117,13 +117,13 @@ namespace FiveKnights
             /*StartCoroutine(DebugMyThing());*/
         }
 
-		private void CameraControllerUpdateTarget(On.CameraController.orig_UpdateTargetDestinationDelta orig, CameraController self)
-		{
+        private void CameraControllerUpdateTarget(On.CameraController.orig_UpdateTargetDestinationDelta orig, CameraController self)
+        {
             self.lookOffset = 0f;
             orig(self);
-		}
+        }
 
-		/*private IEnumerator DebugMyThing()
+        /*private IEnumerator DebugMyThing()
         {
             GameObject heartOld = FiveKnights.preloadedGO["Heart"];
             GameObject startCircle = heartOld.transform.Find("Appear Trail").gameObject;
@@ -164,7 +164,7 @@ namespace FiveKnights
             }
         }*/
 
-		private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
+        private void GameManager_EnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additiveGateSearch)
         {
             if (self.sceneName == "White_Palace_09")
             {
@@ -272,9 +272,9 @@ namespace FiveKnights
                 PlayerData.instance.disablePause = false;
                 PlayMakerFSM textYN = GameObject.Find("Text YN").LocateMyFSM("Dialogue Page Control");
                 GameObject.Find("DialogueManager").LocateMyFSM("Box Open YN").SendEvent("BOX DOWN YN");
-				PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
-				pm.SendEvent("FADE OUT");
-				yield return new WaitForSeconds(0.5f);
+                PlayMakerFSM pm = GameCameras.instance.tk2dCam.gameObject.LocateMyFSM("CameraFade");
+                pm.SendEvent("FADE OUT");
+                yield return new WaitForSeconds(0.5f);
                 boss = Boss.All;
                 ArenaFinder.defeats = PlayerData.instance.whiteDefenderDefeats;
                 PlayerData.instance.whiteDefenderDefeats = 0;
@@ -300,7 +300,7 @@ namespace FiveKnights
             FiveKnights.preloadedGO["ThroneCovered"].SetActive(!FiveKnights.Instance.SaveSettings.UnlockedChampionsCall || !FiveKnights.Instance.SaveSettings.SeenChampionsCall);
         }
 
-		private void HubRemove()
+        private void HubRemove()
         {
             foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x => x != null && x.name.Contains("SceneBorder"))) Destroy(i);
             string[] arr = { "Breakable Wall Waterways", "black_fader","White_Palace_throne_room_top_0000_2", "White_Palace_throne_room_top_0001_1",
@@ -409,7 +409,7 @@ namespace FiveKnights
                                         ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
 
-		private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
+        private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
         {
             if(collision.tag != "Nail Attack") return;
             string namePD = self.gameObject.transform.parent.parent.GetComponent<BossStatue>().statueStatePD;
@@ -449,9 +449,9 @@ namespace FiveKnights
         }
 
         private void CallMethodProperOnEnter(On.HutongGames.PlayMaker.Actions.CallMethodProper.orig_OnEnter orig, CallMethodProper self)
-		{
+        {
             if(self.Fsm.Name == "inspect_region" && self.Fsm.GameObject.name == "Inspect_Locked" && self.State.Name == "Read")
-			{
+            {
                 BossStatue bs = self.Fsm.GameObject.transform.parent.gameObject.GetComponent<BossStatue>();
                 switch(bs.bossScene.sceneName)
                 {
@@ -470,18 +470,18 @@ namespace FiveKnights
                 }
             }
             orig(self);
-		}
+        }
 
         private void GMOnFinishedEnteringScene() => DoWinEffect();
 
         private void DoWinEffect()
-		{
+        {
             GameObject plaque = null;
             switch(prevBoss)
             {
                 case Boss.Isma:
                     if(FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked)
-					{
+                    {
                         plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Left");
                     }
                     else plaque = GameObject.Find("GG_Statue_Isma").Find("Base").Find("Plaque").Find("Plaque_Trophy_Centre");
@@ -554,12 +554,12 @@ namespace FiveKnights
                     break;
                 case "ZEM_NAME":
                     if(FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked)
-					{
+                    {
                         bs.statueStatePD = state;
                         bs.StatueState = FiveKnights.Instance.SaveSettings.CompletionZemer;
-					}
+                    }
                     if(FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked)
-					{
+                    {
                         SetStatue2(statue, sceneName, "statueStateZemer2", "ZEM2_NAME", "ZEM2_DESC");
                         bs.DreamStatueState = FiveKnights.Instance.SaveSettings.CompletionZemer2;
                         bs.SetDreamVersion(FiveKnights.Instance.SaveSettings.AltStatueZemer, false, false);

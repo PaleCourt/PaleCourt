@@ -35,11 +35,11 @@ namespace FiveKnights
             _sr.material = FiveKnights.Materials["flash"];
             On.HealthManager.TakeDamage += HealthManagerTakeDamage;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
-			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
-			On.EnemyDreamnailReaction.RecieveDreamImpact += EnemyDreamnailReactionRecieveDreamImpact;
+            On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
+            On.EnemyDreamnailReaction.RecieveDreamImpact += EnemyDreamnailReactionRecieveDreamImpact;
         }
 
-		private void ResetValues(Color color, float amount, float timeUp, float stayTime, float timeDown)
+        private void ResetValues(Color color, float amount, float timeUp, float stayTime, float timeDown)
         {
             _sr.material.SetColor(FlashColor, color);
             this.amount = amount;
@@ -101,9 +101,9 @@ namespace FiveKnights
         }
 
         public void FlashFocusHeal()
-		{
+        {
             ResetValues(Color.white, 0.85f, 0.01f, 0.01f, 0.35f);
-		}
+        }
 
         public void FlashArmoured()
         {
@@ -111,17 +111,17 @@ namespace FiveKnights
         }
 
         public void FlashDungQuick()
-		{
+        {
             ResetValues(new Color(0.45f, 0.27f, 0f), 0.75f, 0.001f, 0.05f, 0.1f);
-		}
+        }
 
         public void FlashSporeQuick()
-		{
+        {
             ResetValues(new Color(0.95f, 0.9f, 0.15f), 0.75f, 0.001f, 0.05f, 0.1f);
-		}
+        }
 
         public void FlashDreamImpact()
-		{
+        {
             ResetValues(Color.white, 0.9f, 0.01f, 0.25f, 0.75f);
         }
 
@@ -158,10 +158,10 @@ namespace FiveKnights
         private void EnemyDreamnailReactionRecieveDreamImpact(On.EnemyDreamnailReaction.orig_RecieveDreamImpact orig, EnemyDreamnailReaction self)
         {
             orig(self);
-			if(self.gameObject == gameObject)
-			{
+            if(self.gameObject == gameObject)
+            {
                 FlashDreamImpact();
-			}
+            }
         }
 
         private void OnDestroy()
@@ -173,8 +173,8 @@ namespace FiveKnights
         }
 
         private void Log(object o)
-		{
+        {
             Modding.Logger.Log("[Flash] " + o);
-		}
+        }
     }
 }

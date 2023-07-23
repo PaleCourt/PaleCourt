@@ -63,8 +63,8 @@ namespace FiveKnights.Dryya
             gameObject.SetActive(true);
             gameObject.layer = 11;
 
-			#region Colliders
-			_corpse = gameObject.FindGameObjectInChildren("Corpse Dryya");
+            #region Colliders
+            _corpse = gameObject.FindGameObjectInChildren("Corpse Dryya");
             _diveShockwave = gameObject.FindGameObjectInChildren("Dive Shockwave");
             _slash1Collider1 = gameObject.FindGameObjectInChildren("Slash 1 Collider 1");
             _slash1Collider2 = gameObject.FindGameObjectInChildren("Slash 1 Collider 2");
@@ -136,12 +136,12 @@ namespace FiveKnights.Dryya
             ModifyBeams();
             // Make sure Dryya stays inbounds
             ModifySuper();
-			// Play audio clips at the right times
-			ModifyAudio();
+            // Play audio clips at the right times
+            ModifyAudio();
             // Modify dagger throw
             ModifyDaggers();
 
-			GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
+            GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             _hm.OnDeath += DeathHandler;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.HealthManager.TakeDamage += OnTakeDamage;
@@ -196,7 +196,7 @@ namespace FiveKnights.Dryya
         {
             orig(self, hitInstance);
             if(self.gameObject.name.Contains("Dryya"))
-			{
+            {
                 _spriteFlash.flashFocusHeal();
             }
         }
@@ -217,7 +217,7 @@ namespace FiveKnights.Dryya
             _hm = gameObject.AddComponent<HealthManager>();
             _hm.enabled = false;
             _hm.hp = MaxHP;
-			EnemyHPBarImport.RefreshHPBar(gameObject);
+            EnemyHPBarImport.RefreshHPBar(gameObject);
 
             _spriteFlash = gameObject.AddComponent<SpriteFlash>();
 
@@ -437,11 +437,11 @@ namespace FiveKnights.Dryya
         }
 
         private IEnumerator ActivateBeams()
-		{
+        {
             foreach(ElegyBeam elegy in _elegyBeams)
             {
                 if(elegy != null)
-				{
+                {
                     elegy.activate = true;
                     PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
                 }
@@ -450,7 +450,7 @@ namespace FiveKnights.Dryya
         }
 
         private IEnumerator ActivateSingleBeam(ElegyBeam elegy)
-		{
+        {
             yield return new WaitForSeconds(0.5f);
             if(elegy == null) yield break;
             elegy.activate = true;
@@ -478,8 +478,8 @@ namespace FiveKnights.Dryya
             }
         }
 
-		private void ModifyAudio()
-		{
+        private void ModifyAudio()
+        {
             // Voice
             _control.InsertMethod("Intro Land", () => this.PlayAudio(FiveKnights.Clips["DryyaVoiceBow"]), 0);
             _control.InsertMethod("Cheeky Collider 1", () => PlayVoice(), 0);
@@ -488,64 +488,64 @@ namespace FiveKnights.Dryya
             _control.InsertMethod("Dive", () => PlayVoice(), 0);
             _control.InsertMethod("Slash 1 Collider 1", () => PlayVoice("Alt"), 0);
             _control.InsertMethod("Stab", () => PlayVoice(), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayVoice("Beams"), 0);
-			_control.InsertMethod("Super Start 3", () => PlayVoice(), 0);
+            _control.InsertMethod("Beams Slash 1", () => PlayVoice("Beams"), 0);
+            _control.InsertMethod("Super Start 3", () => PlayVoice(), 0);
             _control.InsertMethod("Ground Stab 4", () => PlayVoice(), 0);
             _control.InsertMethod("Ground Air 4", () => PlayVoice(), 0);
             _control.InsertMethod("Air 1", () => PlayVoice(), 0);
 
             // SFX
             _control.InsertMethod("Counter Stance", () => PlayAudio("Counter"), 0);
-			_control.InsertMethod("Countered", () => PlayAudio("Counter"), 0);
-			//_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
-			_control.InsertMethod("Stab", () => PlayAudio("Dash"), 0);
-			_control.InsertMethod("Ground Stab 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Ground Air 11", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Super 18", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Air 1", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Ground Air 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Dive", () => PlayAudio("Dive"), 0);
-			_control.InsertMethod("Dive Land Heavy", () => PlayAudio("Dive Land Hard"), 0);
-			_control.InsertMethod("Dive Land Light", () => PlayAudio("Dive Land Soft"), 0);
-			_control.InsertMethod("Dive Jump", () => PlayAudio("Jump"), 0);
-			_control.InsertMethod("Ground Stab 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
-			//_control.InsertMethod("Dagger Jump", () => PlayAudio("Jump"), 0);
-			_control.InsertMethod("Ground Air 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Evade Recover", () => PlayAudio("Land"), 0);
-			_control.InsertMethod("Super 15", () => PlayAudio("Land", 0.85f, 1.15f), 0);
-			//_control.InsertMethod("Dagger End", () => PlayAudio("Land"), 0);
-			_control.InsertMethod("Counter Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Beams Slash 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Beams Slash 2", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Beams Slash 3", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Beams Slash 4", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Beams Slash 5", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Slash 1 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Slash 2 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Slash 3 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-			_control.InsertMethod("Cheeky Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
-		}
+            _control.InsertMethod("Countered", () => PlayAudio("Counter"), 0);
+            //_control.InsertMethod("Dagger Throw", () => PlayAudio("Dagger Throw"), 0);
+            _control.InsertMethod("Stab", () => PlayAudio("Dash"), 0);
+            _control.InsertMethod("Ground Stab 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Ground Air 11", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Super 18", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Air 1", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Ground Air 4", () => PlayAudio("Dash Light", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Dive", () => PlayAudio("Dive"), 0);
+            _control.InsertMethod("Dive Land Heavy", () => PlayAudio("Dive Land Hard"), 0);
+            _control.InsertMethod("Dive Land Light", () => PlayAudio("Dive Land Soft"), 0);
+            _control.InsertMethod("Dive Jump", () => PlayAudio("Jump"), 0);
+            _control.InsertMethod("Ground Stab 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
+            //_control.InsertMethod("Dagger Jump", () => PlayAudio("Jump"), 0);
+            _control.InsertMethod("Ground Air 7", () => PlayAudio("Jump", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Evade Recover", () => PlayAudio("Land"), 0);
+            _control.InsertMethod("Super 15", () => PlayAudio("Land", 0.85f, 1.15f), 0);
+            //_control.InsertMethod("Dagger End", () => PlayAudio("Land"), 0);
+            _control.InsertMethod("Counter Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Beams Slash 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Beams Slash 2", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Beams Slash 3", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Beams Slash 4", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Beams Slash 5", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Slash 1 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Slash 2 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Slash 3 Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+            _control.InsertMethod("Cheeky Collider 1", () => PlayAudio("Slash 1 Clip", 0.85f, 1.15f), 0);
+        }
 
         private void PlayVoice(string suffix = "")
-		{
+        {
             string clip = "DryyaVoice" + suffix;
             if(suffix == "Alt")
             {
                 clip += Random.Range(1, 7);
             }
             else if(suffix == "Beams")
-			{
+            {
                 clip += Random.Range(1, 4);
-			}
+            }
             else
             {
                 clip += Random.Range(1, 8);
             }
             this.PlayAudio(FiveKnights.Clips[clip]);
-		}
+        }
 
-		private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)
-		{
+        private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)
+        {
             AudioClip audioClip = _control.Fsm.GetFsmObject(clip).Value as AudioClip;
             this.PlayAudio(audioClip, volume, maxPitch - minPitch);
         }
@@ -558,7 +558,7 @@ namespace FiveKnights.Dryya
         }
 
         private void Log(object o)
-		{
+        {
             if(!FiveKnights.isDebug) return;
             Modding.Logger.Log("[Dryya] " + o);
         }

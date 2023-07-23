@@ -51,13 +51,24 @@ namespace FiveKnights.BossManagement
         private void Start()
         {
             Instance = this;
-            USceneManager.activeSceneChanged += USceneManagerOnactiveSceneChanged;
+            USceneManager.activeSceneChanged += USceneManagerOnActiveSceneChanged;
+            USceneManager.sceneLoaded += USceneManagerOnSceneLoaded;
             On.GameManager.EnterHero += GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo += GameManagerOnRefreshTilemapInfo;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
         }
 
-		private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
+        private void USceneManagerOnActiveSceneChanged(Scene fromScene, Scene toScene)
+        {
+            ChangeSceneForArenas(toScene);
+        }
+
+        private void USceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            ChangeSceneForArenas(scene);
+        }
+
+        private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
             return _currScene is ZemerScene or DryyaScene or IsmaScene or HegemolScene ? MapZone.DREAM_WORLD.ToString() : orig(self);
         }
@@ -139,9 +150,9 @@ namespace FiveKnights.BossManagement
                             null, null, false, false, true, 
                             GameManager.SceneLoadVisualizations.Dream);
                         if(_prevScene == DryyaScene && HeroController.instance.controlReqlinquished)
-						{
+                        {
                             ClearWhiteScreen();
-						}
+                        }
                     }
                     else if (self.sceneName == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
                     {
@@ -328,10 +339,9 @@ namespace FiveKnights.BossManagement
             }
         }
 
-        private void USceneManagerOnactiveSceneChanged(Scene arg0, Scene arg1)
+        private void ChangeSceneForArenas(Scene sceneToChange)
         {
-            _currScene = arg1.name;
-            _prevScene = arg0.name;
+            _currScene = sceneToChange.name;
 
             StartCoroutine(ShaderFixer());
             
@@ -425,14 +435,14 @@ namespace FiveKnights.BossManagement
             tp.alwaysEnterLeft = left;
             tp.alwaysEnterRight = right;
             GameObject rm = new GameObject("Hazard Respawn Marker");
-			rm.transform.parent = gate.transform;
+            rm.transform.parent = gate.transform;
             rm.tag = "RespawnPoint";
             rm.transform.SetPosition2D(pos);
             tp.respawnMarker = rm.AddComponent<HazardRespawnMarker>();
             tp.sceneLoadVisualization = vis;
-		}
+        }
 
-		private void FixBlur()
+        private void FixBlur()
         {
             GameObject pref = null;
             foreach (var i in FindObjectsOfType<SceneManager>())
@@ -452,14 +462,14 @@ namespace FiveKnights.BossManagement
         }
 
         private void FixDryyaSpikes()
-		{
+        {
             GameObject[] spikes = new GameObject[]
             {
                 GameObject.Find("ruind_bridge_roof_02spikes"),
                 GameObject.Find("ruind_bridge_roof_01").Find("ruind_bridge_roof_spike")
             };
             foreach(GameObject spike in spikes)
-			{
+            {
                 spike.layer = (int)PhysLayers.INTERACTIVE_OBJECT;
                 spike.AddComponent<Pogoable>();
                 spike.AddComponent<Tink>();
@@ -469,13 +479,13 @@ namespace FiveKnights.BossManagement
                 dh.shadowDashHazard = true;
                 dh.hazardType = 2;
             }
-		}
+        }
 
         private void AddContributorTablets()
-		{
+        {
             GameObject parent = GameObject.Find("Contributor Tablets");
             foreach(Transform tablet in parent.transform)
-			{
+            {
                 GameObject shrine = Instantiate(FiveKnights.preloadedGO["Backer Shrine"], tablet.transform.position, Quaternion.identity);
                 Destroy(shrine.GetComponent<SpriteRenderer>());
                 Destroy(shrine.GetComponent<Breakable>()); 
@@ -527,7 +537,7 @@ namespace FiveKnights.BossManagement
 
         private void FixIsmaSprites()
         {
-			foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x=> x.name.Contains("_white")))
+            foreach(var i in FindObjectsOfType<SpriteRenderer>().Where(x=> x.name.Contains("_white")))
             {
                 i.material.shader = Shader.Find("Sprites/Default");
             }
@@ -541,18 +551,21 @@ namespace FiveKnights.BossManagement
                 .Where(x => x.name == "Dream Fall Catcher"))
             {
                 GameObject newDeath = Instantiate(FiveKnights.preloadedGO["DreamFall"]);
+                newDeath.SetActive(false);
                 BoxCollider2D newBott = newDeath.GetComponentInChildren<BoxCollider2D>();
                 BoxCollider2D oldBott = i.GetComponentInChildren<BoxCollider2D>();
                 newDeath.transform.position = i.transform.position;
                 newBott.size = oldBott.size;
                 newBott.offset = oldBott.offset;
                 newBott.transform.position = oldBott.transform.position;
-                newDeath.SetActive(true);
-                newBott.gameObject.SetActive(true);
                 var fsm = newDeath.LocateMyFSM("Control");
+                fsm.SetState("Pause");
                 fsm.GetAction<FloatCompare>("Detect", 1).float2 = 
                     newDeath.transform.GetPositionY() + newBott.size.y;
+                Log($"Changing detect floor to {fsm.GetAction<FloatCompare>("Detect", 1).float2.Value}");
+                fsm.MakeLog();
                 Destroy(i);
+                newDeath.SetActive(true);
 
             }
 
@@ -587,13 +600,13 @@ namespace FiveKnights.BossManagement
             Log("Fixed floor");
 
             foreach(Renderer renderer in FindObjectsOfType<Renderer>())
-			{
+            {
                 if(renderer.gameObject.name.Contains("dream particles") ||
                     renderer.gameObject.name.Contains("Dream Exit Particle Field"))
-				{
+                {
                     renderer.sortingOrder = 1;
-				}
-			}
+                }
+            }
             Log("Fixed renderer sorting orders");
         }
 
@@ -679,7 +692,8 @@ namespace FiveKnights.BossManagement
         private void OnDestroy()
         {
             Log("Destroyed OWArenaFinder");
-            USceneManager.activeSceneChanged -= USceneManagerOnactiveSceneChanged;
+            USceneManager.activeSceneChanged -= USceneManagerOnActiveSceneChanged;
+            USceneManager.sceneLoaded -= USceneManagerOnSceneLoaded;
             On.GameManager.EnterHero -= GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo -= GameManagerOnRefreshTilemapInfo;
             On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;

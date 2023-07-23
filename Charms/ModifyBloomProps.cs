@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace FiveKnights
 {
-	public class ModifyBloomProps : MonoBehaviour
-	{
+    public class ModifyBloomProps : MonoBehaviour
+    {
         private const float ATTACK_COOLDOWN_TIME = 0.41f;
         private const float ATTACK_COOLDOWN_TIME_CH = 0.25f;
         private const float ATTACK_DURATION = 0.36f;
@@ -23,8 +23,8 @@ namespace FiveKnights
 
         private HeroController _hc => HeroController.instance;
 
-		public void ModifyPropsL1()
-		{
+        public void ModifyPropsL1()
+        {
             //_hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_TIME / MULTIPLIER_L1;
             //_hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_TIME_CH / MULTIPLIER_L1;
             //_hc.ATTACK_DURATION = ATTACK_DURATION / MULTIPLIER_L1;
@@ -38,8 +38,8 @@ namespace FiveKnights
             _hc.RUN_SPEED_CH_COMBO = RUN_SPEED_CH_COMBO * MULTIPLIER_L1;
         }
 
-		public void ModifyPropsL2()
-		{
+        public void ModifyPropsL2()
+        {
             //_hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_TIME / MULTIPLIER_L2;
             //_hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_TIME_CH /MULTIPLIER_L2;
             //_hc.ATTACK_DURATION = ATTACK_DURATION / MULTIPLIER_L2;
@@ -53,7 +53,7 @@ namespace FiveKnights
             _hc.RUN_SPEED_CH_COMBO = RUN_SPEED_CH_COMBO * MULTIPLIER_L2;
         }
 
-		public void ResetProps()
+        public void ResetProps()
         {
             //_hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_TIME;
             //_hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_TIME_CH;

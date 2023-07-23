@@ -152,7 +152,7 @@ namespace FiveKnights.Zemer
         private IEnumerator Start()
         {
             _hm.hp = Phase2HP;
-			EnemyHPBarImport.RefreshHPBar(gameObject);
+            EnemyHPBarImport.RefreshHPBar(gameObject);
             _deathEff = _dd.GetComponent<EnemyDeathEffectsUninfected>();
             _target = HeroController.instance.gameObject;
             
@@ -964,12 +964,12 @@ namespace FiveKnights.Zemer
 
                 // Scuffed workaround for CC just to make it work for now
                 if(CustomWP.boss != CustomWP.Boss.All && CustomWP.boss != CustomWP.Boss.Ogrim)
-				{
+                {
                     _rb.velocity = new Vector2(55f * Mathf.Cos(rot), 55f * Mathf.Sin(rot));
                 }
                 else _rb.velocity = new Vector2(55f * Mathf.Cos(rot), -Mathf.Abs(55f * Mathf.Sin(rot)));
 
-				yield return _anim.PlayBlockingWhile("Z1ZipIn", () => transform.position.y > GroundY - 0.95f);
+                yield return _anim.PlayBlockingWhile("Z1ZipIn", () => transform.position.y > GroundY - 0.95f);
 
                 transform.position = new Vector3(transform.position.x, GroundY - 0.95f);
 

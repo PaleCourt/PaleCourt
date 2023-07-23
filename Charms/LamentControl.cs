@@ -410,9 +410,9 @@ namespace FiveKnights
 
             // Spawn additional things
             if(_pd.GetBool("equippedCharm_" + Charms.SporeShroom))
-			{
+            {
                 if(_pd.GetBool("equippedCharm_" + Charms.DefendersCrest))
-				{
+                {
                     if(FiveKnights.Instance.SaveSettings.upgradedCharm_10)
                     {
                         Instantiate(_hc.GetComponent<RoyalAura>().dungCloud, transform.position, Quaternion.identity).SetActive(true);
@@ -423,9 +423,9 @@ namespace FiveKnights
                     }
                 }
                 else
-				{
+                {
                     Instantiate(FiveKnights.preloadedGO["SporeCloud"], transform.position, Quaternion.identity).SetActive(true);
-				}
+                }
             }
 
             yield return new WaitForSeconds(.11f);

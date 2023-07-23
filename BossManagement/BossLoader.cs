@@ -42,14 +42,14 @@ namespace FiveKnights
             Vector2 pos = OWArenaFinder.IsInOverWorld ? new Vector2(457.6f, 112.5f) : 
                 (CustomWP.boss == CustomWP.Boss.All ? new Vector2(91f, 25.5f) : new Vector2(90f, 25f));
             GameObject dryya = GameObject.Instantiate(FiveKnights.preloadedGO["Dryya2"], pos, Quaternion.identity);
-			IEnumerator DryyaIntro()
-			{
+            IEnumerator DryyaIntro()
+            {
                 BoxCollider2D bc = dryya.GetComponent<BoxCollider2D>();
-				bc.enabled = false;
-				while(dryya.transform.position.y > (OWArenaFinder.IsInOverWorld ? 103f : 20f))
-					yield return new WaitForFixedUpdate();
-				bc.enabled = true;
-			}
+                bc.enabled = false;
+                while(dryya.transform.position.y > (OWArenaFinder.IsInOverWorld ? 103f : 20f))
+                    yield return new WaitForFixedUpdate();
+                bc.enabled = true;
+            }
             GameManager.instance.StartCoroutine(DryyaIntro());
             dryya.AddComponent<DryyaSetup>();
 
@@ -82,7 +82,7 @@ namespace FiveKnights
         }
 
         public static TisoController CreateTiso()
-		{
+        {
             Log("Creating Tiso");
 
             GameObject tiso = GameObject.Instantiate(FiveKnights.preloadedGO["Tiso"]);
@@ -116,7 +116,7 @@ namespace FiveKnights
         }
         
         public static void LoadIsmaBundle()
-		{
+        {
             Log("Loading Isma bundle");
             if(FiveKnights.preloadedGO.TryGetValue("Isma", out var go) && go != null)
             {
@@ -180,7 +180,7 @@ namespace FiveKnights
             #endregion
 
             Log("Finished loading Isma bundle");
-		}
+        }
 
         public static void LoadDryyaSound()
         {
@@ -201,7 +201,7 @@ namespace FiveKnights
         }
         
         public static void LoadDryyaBundle()
-		{
+        {
             Log("Loading Dryya bundle");
             if(FiveKnights.preloadedGO.TryGetValue("Dryya2", out var go) && go != null)
             {
@@ -253,7 +253,7 @@ namespace FiveKnights
         }
 
         public static void LoadHegemolBundle()
-		{
+        {
             Log("Loading Hegemol bundle");
             if(FiveKnights.preloadedGO.TryGetValue("Hegemol", out var go) && go != null)
             {
@@ -315,7 +315,7 @@ namespace FiveKnights
         }
 
         public static void LoadZemerBundle()
-		{
+        {
             Log("Loading Zemer bundle");
             if(FiveKnights.preloadedGO.TryGetValue("Zemer", out var go) && go != null)
             {
@@ -456,7 +456,7 @@ namespace FiveKnights
         }
 
         public static void LoadTisoBundle()
-		{
+        {
             Log("Loading Tiso bundle");
             if(FiveKnights.preloadedGO.TryGetValue("Tiso", out var go) && go != null)
             {
@@ -491,6 +491,6 @@ namespace FiveKnights
             Log("Finished loading Tiso bundle");
         }
 
-		private static void Log(object o) => Modding.Logger.Log("[FiveKnights][BossLoader] " + o);
+        private static void Log(object o) => Modding.Logger.Log("[FiveKnights][BossLoader] " + o);
     }
 }

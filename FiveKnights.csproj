@@ -263,6 +263,6 @@
     <EmbeddedResource Include="assets\Vessels_Lament.png" />
     <EmbeddedResource Include="assets\acid_a.png" />
     <EmbeddedResource Include="assets\acid_b.png" />
-	<EmbeddedResource Include="StreamingAssets\*" />
+    <EmbeddedResource Include="StreamingAssets\*" />
   </ItemGroup>
 </Project>

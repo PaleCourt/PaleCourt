@@ -16,7 +16,7 @@ namespace FiveKnights.Isma
         }
 
         private void Start()
-		{
+        {
             Log("Start following Isma");
             _anim.Play("IdleLeft");
             lookingRight = false;
@@ -26,7 +26,7 @@ namespace FiveKnights.Isma
         private IEnumerator FollowIsma()
         {
             while(target != null)
-			{
+            {
                 if(lookingRight && target.position.x < transform.position.x)
                 {
                     yield return _anim.PlayBlocking("LookLeft");
@@ -39,10 +39,10 @@ namespace FiveKnights.Isma
                     _anim.Play("IdleRight");
                     lookingRight = true;
                 }
-				else
-				{
+                else
+                {
                     yield return null;
-				}
+                }
             }
         }
 
