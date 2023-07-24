@@ -144,13 +144,7 @@ namespace FiveKnights
         {
            if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
             {
-                float damageDealt = hitInstance.DamageDealt;
-                damageDealt *= .8f;
-                hitInstance.DamageDealt = Mathf.RoundToInt(damageDealt);
-                if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
-                {
-                    ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
-                }
+                hitInstance.Multiplier *= .8f;
             }
             orig(self, hitInstance);
                     
@@ -167,6 +161,10 @@ namespace FiveKnights
                     _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
                     _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
 
+                }
+                if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
+                {
+                    ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
                 }
 
                 if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)     

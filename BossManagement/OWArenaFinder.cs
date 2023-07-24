@@ -52,7 +52,7 @@ namespace FiveKnights.BossManagement
         {
             Instance = this;
             USceneManager.activeSceneChanged += USceneManagerOnActiveSceneChanged;
-            USceneManager.sceneLoaded += USceneManagerOnSceneLoaded;
+            //USceneManager.sceneLoaded += USceneManagerOnSceneLoaded;
             On.GameManager.EnterHero += GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo += GameManagerOnRefreshTilemapInfo;
             On.GameManager.GetCurrentMapZone += GameManagerOnGetCurrentMapZone;
@@ -63,10 +63,10 @@ namespace FiveKnights.BossManagement
             ChangeSceneForArenas(toScene);
         }
 
-        private void USceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
-        {
-            ChangeSceneForArenas(scene);
-        }
+        //private void USceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
+        //{
+           // ChangeSceneForArenas(scene);
+        //}
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
@@ -693,7 +693,7 @@ namespace FiveKnights.BossManagement
         {
             Log("Destroyed OWArenaFinder");
             USceneManager.activeSceneChanged -= USceneManagerOnActiveSceneChanged;
-            USceneManager.sceneLoaded -= USceneManagerOnSceneLoaded;
+            //USceneManager.sceneLoaded -= USceneManagerOnSceneLoaded;
             On.GameManager.EnterHero -= GameManagerOnEnterHero;
             On.GameManager.RefreshTilemapInfo -= GameManagerOnRefreshTilemapInfo;
             On.GameManager.GetCurrentMapZone -= GameManagerOnGetCurrentMapZone;
