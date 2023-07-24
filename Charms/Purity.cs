@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
-    public class PurityTimer : MonoBehaviour
+    public class Purity : MonoBehaviour
     {
         private float timer = 0;
         private bool timerRunning = false;
@@ -59,6 +59,7 @@ namespace FiveKnights
             On.HeroController.CanCast += FixCast;
             ModHooks.AfterTakeDamageHook += ResetSpeed;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += Dummy;
+            On.HeroController.CanNailCharge += CancelNailArts;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
@@ -71,13 +72,15 @@ namespace FiveKnights
         private void OnDisable()
         {
             On.HealthManager.TakeDamage -= IncrementSpeed;
-           // ModHooks.CharmUpdateHook -= SetDuration;
-           // On.NailSlash.SetMantis -= CancelMantis;
-           // On.NailSlash.SetLongnail -= CancelLongnail;
+            // ModHooks.CharmUpdateHook -= SetDuration;
+            ModHooks.CharmUpdateHook -= Duration;
+            // On.NailSlash.SetMantis -= CancelMantis;           
+            // On.NailSlash.SetLongnail -= CancelLongnail;
             On.HeroController.CanDoubleJump -= FixDoubleJump;
             On.HeroController.CanCast -= FixCast;
             ModHooks.AfterTakeDamageHook -= ResetSpeed;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= Dummy;
+            On.HeroController.CanNailCharge -= CancelNailArts;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_DEFAULT;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_DEFAULT_32;
@@ -87,6 +90,18 @@ namespace FiveKnights
 
         private void Update()
         {
+            // Autoswing
+            if (InputHandler.Instance.inputActions.attack.IsPressed)
+            {
+                {
+                    if (ReflectionHelper.CallMethod<HeroController, bool>(_hc, "CanAttack"))
+                    {
+                        ReflectionHelper.CallMethod<HeroController>(_hc, "DoAttack");
+                    }
+                }
+            }
+
+            // Reset timer
             if (timerRunning)
             {
                 timer += Time.deltaTime;
@@ -295,6 +310,10 @@ namespace FiveKnights
             }
 
 
+        }
+        private bool CancelNailArts(On.HeroController.orig_CanNailCharge orig, HeroController self)
+        {
+            return false;
         }
         private bool FixCast(On.HeroController.orig_CanCast orig, HeroController self)
         {

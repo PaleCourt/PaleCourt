@@ -79,8 +79,7 @@ namespace FiveKnights
             _hc.gameObject.AddComponent<RoyalAura>().enabled = false;
 
             // Mark of Purity
-            _hc.gameObject.AddComponent<PurityTimer>().enabled = false;
-            _hc.gameObject.AddComponent<AutoSwing>().enabled = false;
+            _hc.gameObject.AddComponent<Purity>().enabled = false;
 
             // Boon of Hallownest
             _hc.gameObject.AddComponent<BoonSpells>().enabled = false;
@@ -418,8 +417,7 @@ namespace FiveKnights
             _hc.GetComponent<RoyalAura>().enabled = 
                 playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10;
 
-            _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
-            _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
+            _hc.GetComponent<Purity>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
 
             _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
