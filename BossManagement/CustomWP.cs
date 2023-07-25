@@ -343,16 +343,26 @@ namespace FiveKnights
         {
             DontDestroyOnLoad(GameManager.instance);
 
-            string title = self.transform.Find("Panel").Find("BossName_Text").GetComponent<Text>().text;
-            foreach(Boss b in Enum.GetValues(typeof(Boss)))
+            var statue = ReflectionHelper.GetFieldInfo(typeof(BossChallengeUI), "bossStatue").GetValue(self);
+            Log(statue);
+            var b = statue.ToString().Split(' ')[0].Split('_');
+            Log(b[2]);
+            boss = b[2] switch
             {
-                if(title.Contains(b.ToString()))
-                {
-                    boss = b;
-                    if(b != Boss.Isma) break;
-                    if(b != Boss.Ze) break;
-                }
-            }
+                "Dryya" => Boss.Dryya,
+                "Zemer" => FiveKnights.Instance.SaveSettings.AltStatueZemer ? Boss.Mystic : Boss.Ze,
+                "Isma" => FiveKnights.Instance.SaveSettings.AltStatueIsma ? Boss.Ogrim : Boss.Isma,
+                "Hegemol" => Boss.Hegemol
+            };
+           // foreach (Boss b in Enum.GetValues(typeof(Boss)))
+           // {
+            //    if(title.Contains(b.ToString()))
+            //    {
+             //       boss = b;
+              //      if(b != Boss.Isma) break;
+             //       if(b != Boss.Ze) break;
+            //   }
+          //  }
             lev = level;
             orig(self, level, doHideAnim);
         }
