@@ -2818,7 +2818,7 @@ namespace FiveKnights.Zemer
             {
                 StartCoroutine(FlashWhite());
                 Instantiate(_dnailEff, transform.position, Quaternion.identity);
-                _dnailReac.SetConvoTitle("ZEM_GG_DREAM");
+                _dnailReac.SetConvoTitle("ZEM_CC_DREAM");
             }
 
             orig(self);

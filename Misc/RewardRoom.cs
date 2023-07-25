@@ -1106,6 +1106,8 @@ namespace FiveKnights
                     return new() { Key = "RR_ZEMER_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_THIRD_1_1":
                     return new() { Key = "RR_ZEMER_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_THIRD_1_2":
+                    return new() { Key = "RR_ZEMER_THIRD_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_CHARM_1":
                     return new() { Key = "RR_ZEMER_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_CHARM_2":

@@ -62,7 +62,7 @@ namespace FiveKnights.Zemer
         private readonly Vector3 LeaveOffset = new Vector3(1.5f, 1.5f);
         private readonly int DreamConvoAmount = 3;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" :
-            ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? "ZEM_GG_DREAM" : "ZEM_CC_DREAM");
+            ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? "ZEM_GG_DREAM" : "ZEM_GG_DREAM");
 
         private void Awake()
         {
