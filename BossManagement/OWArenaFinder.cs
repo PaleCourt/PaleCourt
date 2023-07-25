@@ -60,12 +60,13 @@ namespace FiveKnights.BossManagement
 
         private void USceneManagerOnActiveSceneChanged(Scene fromScene, Scene toScene)
         {
-            ChangeSceneForArenas(toScene);
+            _prevScene = fromScene.name;
+            ChangeSceneForArenas(toScene);           
         }
 
         //private void USceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
         //{
-           // ChangeSceneForArenas(scene);
+        // ChangeSceneForArenas(scene);
         //}
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
@@ -147,9 +148,9 @@ namespace FiveKnights.BossManagement
                     if (self.sceneName == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(40.5f, 94.4f), Vector2.zero, // 39.2f, 94.4f
-                            null, null, false, false, true, 
+                            null, null, false, false, true,
                             GameManager.SceneLoadVisualizations.Dream);
-                        if(_prevScene == DryyaScene && HeroController.instance.controlReqlinquished)
+                        if (_prevScene == DryyaScene && HeroController.instance.controlReqlinquished)
                         {
                             ClearWhiteScreen();
                         }
