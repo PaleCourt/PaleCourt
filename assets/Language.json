@@ -373,7 +373,7 @@
       "Credits Parent-Writing-Body 1": "Writing",
       "Credits Parent-Writing-Body 2": "JoSeBach    Chaktis    FoldingPapers<br>HooKnows    RocketFire20    Saleh",
       "Credits Parent-Translation-Body 1": "Translation",
-      "Credits Parent-Translation-Body 2": "Portuguese - Manno Stone<br>Spanish- HelenSB, MEBI<br>French - Azerod, Gauthier<br>Italian - JoSeBach<br>Chinese - Whisky",
+      "Credits Parent-Translation-Body 2": "Portuguese - Manno Stone<br>Spanish - HelenSB, MEBI<br>French - Azerod, Wangha, Anika<br>Italian - JoSeBach<br>Chinese - Whisky<br>Russian - Alu, mirilivn, Strag, nimdac<br>Japanese - sawayoshi, place_b",
       "Credits Parent-Main Playtesters-Body 1": "Main Playtesters",
       "Credits Parent-Main Playtesters-Body 2": "Croissant    Zaliant    JoSeBach    FoldingPapers<br>Chaktis    RocketFire20    HuntHussle    General Milky<br>Knightmere    Manno Stone    Erie",
       "Scroll Parent-Additional Playtesters": "Additional Playtesters",
@@ -382,17 +382,17 @@
       "Scroll Parent-Kindly Isma-Body Left": "Programming<br><br><br><br>Art<br><br><br>Music<br><br><br>Voice<br><br>Playtesting",
       "Scroll Parent-Kindly Isma-Body Right": "Saleh<br>HooKnows<br>TheGreatGallus<br><br>MEBI<br>Chaktis<br><br>FoldingPapers<br>Gauthier<br><br>Rotten Legacy<br><br>Croissant<br>JoSeBach<br>FoldingPapers<br>HuntHussle",
       "Scroll Parent-Fierce Dryya": "Fierce Dryya",
-      "Scroll Parent-Fierce Dryya-Body Left": "Programming<br><br><br><br><br>Art<br><br><br>Music<br><br><br>Voice<br><br>Playtesting",
-      "Scroll Parent-Fierce Dryya-Body Right": "HooKnows<br>Jngo102<br>RedFrog<br>Saleh<br><br>MEBI<br>Chaktis<br><br>CarsonComposes<br>FoldingPapers<br><br>Sarart<br><br>Croissant<br>JoSeBach<br>FoldingPapers<br>HuntHussle",
+      "Scroll Parent-Fierce Dryya-Body Left": "Programming<br><br><br><br><br>Art<br><br><br><br>Music<br><br><br>Voice<br><br>Playtesting",
+      "Scroll Parent-Fierce Dryya-Body Right": "HooKnows<br>Jngo102<br>RedFrog<br>Saleh<br><br>MEBI<br>Chaktis<br>FoldingPapers<br><br>CarsonComposes<br>FoldingPapers<br><br>Sarart<br><br>Croissant<br>JoSeBach<br>FoldingPapers<br>HuntHussle",
       "Scroll Parent-Mighty Hegemol": "Mighty Hegemol",
-      "Scroll Parent-Mighty Hegemol-Body Left": "Programming<br><br><br><br>Art<br><br><br>Music<br><br><br>Voice<br><br>Playtesting",
-      "Scroll Parent-Mighty Hegemol-Body Right": "HooKnows<br>RedFrog<br>Link459<br><br>MEBI<br>Chaktis<br><br>Gauthier<br>Zaliant<br><br>mossbag<br><br>Croissant<br>JoSeBach<br>FoldingPapers",
+      "Scroll Parent-Mighty Hegemol-Body Left": "Programming<br><br><br><br>Art<br><br><br>Music<br><br><br><br>Voice<br><br>Playtesting",
+      "Scroll Parent-Mighty Hegemol-Body Right": "HooKnows<br>RedFrog<br>Link459<br><br>MEBI<br>Chaktis<br><br>Gauthier<br>Zaliant<br>Cavatina<br><br>mossbag<br><br>Croissant<br>JoSeBach<br>FoldingPapers",
       "Scroll Parent-Mysterious Ze'mer": "Mysterious Ze'mer",
       "Scroll Parent-Mysterious Ze'mer-Body Left": "Programming<br><br>Art<br><br><br>Music<br><br><br>Voice<br><br>Playtesting",
       "Scroll Parent-Mysterious Ze'mer-Body Right": "Saleh<br><br>MEBI<br>Chaktis<br><br>Zaliant<br>FoldingPapers<br><br>SovereignElise<br><br>Croissant<br>JoSeBach<br>Knightmere<br>FoldingPapers<br>Zaliant<br>HuntHussle<br>Manno Stone",
       "Scroll Parent-Charms": "Charms",
-      "Scroll Parent-Charms-Body Left": "Programming<br><br><br><br><br><br><br>Art<br><br><br>Playtesting",
-      "Scroll Parent-Charms-Body Right": "RiverRobot<br>HooKnows<br>Saleh<br>Jngo102<br>SFGrenade<br>RedFrog<br><br>MEBI<br>KitsuneMedia<br><br>Croissant<br>JoSeBach<br>HelenSB<br>General Milky",
+      "Scroll Parent-Charms-Body Left": "Programming<br><br><br><br><br><br><br>Art<br><br><br><br>Playtesting",
+      "Scroll Parent-Charms-Body Right": "RiverRobot<br>HooKnows<br>Saleh<br>Jngo102<br>SFGrenade<br>RedFrog<br><br>MEBI<br>Chaktis<br>KitsuneMedia<br><br>Croissant<br>JoSeBach<br>HelenSB<br>General Milky",
       "Scroll Parent-...Tiso?": "...Tiso?",
       "Scroll Parent-...Tiso?-Body Left": "Programming<br><br>Art<br><br><br>Music<br><br><br>Playtesting",
       "Scroll Parent-...Tiso?-Body Right": "Saleh<br><br>MEBI<br>Chaktis<br><br>Gauthier<br>MAT<br><br>Croissant<br>JoSeBach",
@@ -1486,7 +1486,6 @@
       "RR_ZEMER_CHEATER": "去るがいい！この地にずる賢いものは不要！それか仮NPCを使っているかだ。"
     }
   },
-
   "KO": {},
   "PT": {
     "Achievements": {
