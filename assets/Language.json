@@ -2753,8 +2753,7 @@
             "Credits Parent-Writing-Body 1": "Писательство",
             "Credits Parent-Writing-Body 2": "JoSeBach    Chaktis    FoldingPapers<br>HooKnows    RocketFire20    Saleh",
             "Credits Parent-Translation-Body 1": "Перевод",
-            // todo: need translation
-            "Credits Parent-Translation-Body 2": "Portuguese - Manno Stone<br>Spanish - HelenSB, MEBI<br>French - Azerod, Wangha, Anika<br>Italian - JoSeBach<br>Chinese - Whisky<br>Russian - Alu, mirilivn, Strag, nimdac<br>Japanese - sawayoshi, place_b",
+            "Credits Parent-Translation-Body 2": "Португальский - Manno Stone<br>Испанский - HelenSB, MEBI<br>Французский - Azerod, Wangha, Anika<br>Итальянский - JoSeBach<br>Китайский - Whisky<br>Русский - Alu, mirilivn, Strag, nimdac<br>Японский - sawayoshi, place_b",
             "Credits Parent-Main Playtesters-Body 1": "Исполнительные тестировщики",
             "Credits Parent-Main Playtesters-Body 2": "Croissant    Zaliant    JoSeBach    FoldingPapers<br>Chaktis    RocketFire20    HuntHussle    General Milky<br>Knightmere    Manno Stone    Erie",
             "Scroll Parent-Additional Playtesters": "Дополнительное тестирование",
@@ -2781,8 +2780,7 @@
             "Thanks Parent-Special Thanks-Body 2": "Team Cherry<br>Hollow Knight Modding Community<br>Hollow Knight Discord<br>Mulhima (Я украл его код для титров)<br>Risto The Chicken",
             "Thanks Parent-Special Thanks 2": "И тебе, за игру.",
             "Final Parent-Final Message": "Спасибо всем, кто ждал выход Бледной Свиты все эти годы. Это, конечно, было нелегко, но мы справились, и даже успели еще до выхода Шелка и Песни! Спасибо за улыбки, поддержку, шумиху и все остальное, что так подталкивало нас продолжать труд, даже когда финишная черта казалась такой далекой. Это была большая честь для нас.",
-            // todo: this
-            "Final Parent-Prompt": "Press jump to continue"
+            "Final Parent-Prompt": "Нажмите кнопку прыжка, чтобы продолжить"
         }
     },
     "ZH": {}
