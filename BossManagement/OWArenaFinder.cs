@@ -609,6 +609,11 @@ namespace FiveKnights.BossManagement
                 }
             }
             Log("Fixed renderer sorting orders");
+            foreach (var aud in FindObjectsOfType<AudioSource>())
+            {
+                if (aud.outputAudioMixerGroup != null) continue;
+                aud.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+            }
         }
 
         private void AddBattleGate(float x, float y, Vector2 pos)
