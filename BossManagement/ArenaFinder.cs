@@ -463,6 +463,7 @@ namespace FiveKnights
             {
                 if (i.name == "GG_Statue_Isma") FiveKnights.preloadedGO["GG_Statue_Isma"] = i;
                 else if (i.name == "IsmaOgrimStatue") FiveKnights.preloadedGO["IsmaOgrimStatue"] = i;
+                else if (i.name == "IsmaOgrimStatue_Silver") FiveKnights.preloadedGO["IsmaOgrimStatue_Silver"] = i;
                 else if (i.name == "Shockwave") FiveKnights.preloadedGO["WaveShad"] = i;
                 
                 if (i.GetComponent<SpriteRenderer>() == null)

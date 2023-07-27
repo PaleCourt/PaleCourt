@@ -410,13 +410,13 @@ namespace FiveKnights
             wonLastFight = false; 
 
             SetStatue(new Vector2(81.75f, 94.75f), new Vector2(0.5f, 0.1f), new Vector2(0f,-0.5f), FiveKnights.preloadedGO["Statue"],
-                                        ArenaFinder.IsmaScene, FiveKnights.SPRITES["Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
+                                        ArenaFinder.IsmaScene, FiveKnights.SPRITES[FiveKnights.Instance.SaveSettings.CompletionIsma.completedTier3 ? "Isma_Silver" : "Isma"], "ISMA_NAME", "ISMA_DESC", "statueStateIsma");
             SetStatue(new Vector2(39.4f, 94.75f), new Vector2(-0.25f, -0.75f), new Vector2(0f, -1f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES["Dryya"], "DRYYA_NAME", "DRYYA_DESC", "statueStateDryya");
+                                        ArenaFinder.DryyaScene, FiveKnights.SPRITES[FiveKnights.Instance.SaveSettings.CompletionDryya.completedTier3 ? "Dryya_Silver" : "Dryya"], "DRYYA_NAME", "DRYYA_DESC", "statueStateDryya");
             SetStatue(new Vector2(73.3f, 98.75f), new Vector2(-0.13f, 1.3f), new Vector2(0f, -1.7f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.ZemerScene, FiveKnights.SPRITES["Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
+                                        ArenaFinder.ZemerScene, FiveKnights.SPRITES[FiveKnights.Instance.SaveSettings.CompletionZemer.completedTier3 ? "Zemer_Silver" : "Zemer"], "ZEM_NAME", "ZEM_DESC", "statueStateZemer");
             SetStatue(new Vector2(48f, 98.75f), new Vector2(-0.2f, 0.1f), new Vector2(0f, -0.8f), FiveKnights.preloadedGO["StatueMed"],
-                                        ArenaFinder.HegemolScene, FiveKnights.SPRITES["Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
+                                        ArenaFinder.HegemolScene, FiveKnights.SPRITES[FiveKnights.Instance.SaveSettings.CompletionHegemol.completedTier3 ? "Hegemol_Silver" : "Hegemol"], "HEG_NAME", "HEG_DESC", "statueStateHegemol");
         }
 
         private void BossStatueLever_OnTriggerEnter2D(On.BossStatueLever.orig_OnTriggerEnter2D orig, BossStatueLever self, Collider2D collision)
@@ -631,9 +631,15 @@ namespace FiveKnights
                 if (state.Contains("Isma"))
                 {
                     GameObject fake2 = Instantiate(FiveKnights.preloadedGO["IsmaOgrimStatue"], statue.transform);
+                    GameObject fake2silver = Instantiate(FiveKnights.preloadedGO["IsmaOgrimStatue_Silver"], statue.transform);
+                    fake2silver.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale / 1.15f;
+                    fake2silver.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
+                    fake2silver.SetActive(false);
                     fake2.transform.localScale = appearance.transform.Find("GG_statues_0006_5").localScale / 1.15f;
                     fake2.transform.position = appearance.transform.Find("GG_statues_0006_5").position;
-                    sc._fakeStatAlt2 = fake2;
+                    fake2.SetActive(false);
+                    (FiveKnights.Instance.SaveSettings.CompletionIsma2.completedTier3 ? fake2silver : fake2).SetActive(true);
+                    sc._fakeStatAlt2 = FiveKnights.Instance.SaveSettings.CompletionIsma2.completedTier3 ? fake2silver : fake2;
                 }
                 sc._fakeStatAlt = fakeStat;
                 if (state.Contains("Isma")) StatueControls["Isma"] = sc;

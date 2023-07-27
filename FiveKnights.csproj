@@ -234,6 +234,10 @@
     <EmbeddedResource Include="assets\Dryya.png" />
     <EmbeddedResource Include="assets\Zemer.png" />
     <EmbeddedResource Include="assets\Hegemol.png" />
+	<EmbeddedResource Include="assets\Dryya_Silver.png" />
+	<EmbeddedResource Include="assets\Isma_Silver.png" />
+    <EmbeddedResource Include="assets\Zemer_Silver.png" />
+	<EmbeddedResource Include="assets\Hegemol_Silver.png" />
     <EmbeddedResource Include="assets\mace.png" />
     <EmbeddedResource Include="assets\Language.json" />
     <EmbeddedResource Include="assets\ach_dryya.png" />
@@ -262,7 +266,7 @@
     <EmbeddedResource Include="assets\Mark_of_Purity.png" />
     <EmbeddedResource Include="assets\Vessels_Lament.png" />
     <EmbeddedResource Include="assets\acid_a.png" />
-    <EmbeddedResource Include="assets\acid_b.png" />
+	<EmbeddedResource Include="assets\acid_b.png" />
     <EmbeddedResource Include="StreamingAssets\*" />
   </ItemGroup>
 </Project>
