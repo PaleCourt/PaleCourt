@@ -841,8 +841,7 @@ namespace FiveKnights.Isma
                 foreach (var i in tentArm.transform.GetComponentsInChildren<PolygonCollider2D>(true))
                 {
                     i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
-                }
-                this.PlayAudio(FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
+                }              
 
                 Animator tentAnim = tentArm.GetComponent<Animator>();
                 tentAnim.speed = 1.9f;
