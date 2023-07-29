@@ -837,11 +837,12 @@ namespace FiveKnights.Isma
                 yield return new WaitUntil(() => _anim.GetCurrentFrame() >= 1);
                 arm.SetActive(true);
                 tentArm.SetActive(true);
-                tentArm.AddComponent<AFistFlash>();
-                foreach(var i in tentArm.transform.GetComponentsInChildren<PolygonCollider2D>(true))
+                //tentArm.AddComponent<AFistFlash>();
+                foreach (var i in tentArm.transform.GetComponentsInChildren<PolygonCollider2D>(true))
                 {
                     i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
                 }
+                this.PlayAudio(FiveKnights.Clips["IsmaAudGroundWhip"], 1f);
 
                 Animator tentAnim = tentArm.GetComponent<Animator>();
                 tentAnim.speed = 1.9f;
@@ -992,7 +993,7 @@ namespace FiveKnights.Isma
                 whip.transform.position = oldWhip.transform.position;
                 whip.transform.localScale = oldWhip.transform.lossyScale;
                 whip.SetActive(true);
-                whip.AddComponent<WhipFlash>();
+                //whip.AddComponent<WhipFlash>();
                 foreach(var i in whip.transform.GetComponentsInChildren<PolygonCollider2D>(true))
                 {
                     i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
@@ -1059,7 +1060,7 @@ namespace FiveKnights.Isma
             whip.transform.position = oldWhip.transform.position;
             whip.transform.localScale = oldWhip.transform.lossyScale;
             whip.SetActive(true);
-            whip.AddComponent<WhipFlash>();
+            //whip.AddComponent<WhipFlash>();
             foreach(var i in whip.transform.GetComponentsInChildren<PolygonCollider2D>(true))
             {
                 i.gameObject.AddComponent<PlantHitFx>().hitSound = FiveKnights.Clips["IsmaAudVineHit"];
