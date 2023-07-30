@@ -238,7 +238,7 @@ namespace FiveKnights
 
         public static AudioSource PlayAudio(this MonoBehaviour mb, AudioClip clip, float volume = 1f,
             float pitchVariation = 0f, Transform posOverride = null, Func<bool> destroyWhen = null)
-		{
+        {
             GameObject audioPlayer = new GameObject("Audio Player", typeof(AudioSource), typeof(AutoDestroy));
             audioPlayer.transform.position = posOverride == null ? mb.transform.position : posOverride.position;
             

@@ -71,18 +71,22 @@ namespace FiveKnights
         {
             Vector3[] worldPos =
             {
-                new(76.1418f, 86.4f, .1f), new(198, 114.4f, .1f), new(227.2f, 107.4f, .1f)
+                new(76.4f, 86.6f, .03f), new(198.4582f, 114.6f, .03f), new(227.6582f, 107.6f, .03f), new(106.6582f, 27.4f, 0.03f)
             };
             foreach (Vector3 pos in worldPos)
             {
                 var totem = GameObject.Instantiate(FiveKnights.preloadedGO["SoulTotem"]);
                 var totembase = GameObject.Instantiate(FiveKnights.preloadedGO["TotemBase"]);
                 totem.transform.position = pos;
-                totembase.transform.position = pos + new Vector3(0.6f, -2, -.01f);
+                totem.transform.localScale = new Vector3(-1, 1, 1);
+                totembase.transform.position = pos + new Vector3(0.2f, -2.1f, -.002f);
                 var totemfsm = totem.LocateMyFSM("soul_totem");
                 totemfsm.SetAttr("fsmTemplate", (FsmTemplate)null);
                 totemfsm.GetAction<SetIntValue>("Reset").intValue = int.MaxValue;
                 totemfsm.GetAction<SetIntValue>("Reset?").intValue = int.MaxValue;
+                totem.GetComponent<SpriteRenderer>().sprite = ABManager.AssetBundles[ABManager.Bundle.Misc].LoadAsset<Sprite>("inf_totem_a");
+                totem.Find("Dimmer").GetComponent<SpriteRenderer>().sprite = ABManager.AssetBundles[ABManager.Bundle.Misc].LoadAsset<Sprite>("inf_totem_b");
+                totem.Find("Glower").GetComponent<SpriteRenderer>().sprite = ABManager.AssetBundles[ABManager.Bundle.Misc].LoadAsset<Sprite>("inf_totem_c");
 
                 totem.SetActive(true);
                 totembase.SetActive(true);
@@ -104,13 +108,12 @@ namespace FiveKnights
 
             Vector3[] surfacePoses =
             {
-                new (248.1f, 31.2f, -0.396f), new (229f, 31.2f, -0.396f), new (232f, 31.2f,-0.396f),
-                new (234.5f, 31.2f, -0.396f), new (251f, 31.2f, -0.396f), new (251.9309f, 31.2f, -0.396f),
+                new (229.9012f, 31.14f, -0.396f), new (246.7236f, 31.14f, -0.396f)
             };
 
             Vector3[] wBoxPoses =
             {
-                new (252f, 30.5f, 0.004f), new (231.6483f, 30.5f, 0.004f)
+                new (252f, 30.45f, 0.004f), new (231.6483f, 30.45f, 0.004f)
             };
 
             foreach (var pos in surfacePoses)
@@ -130,13 +133,13 @@ namespace FiveKnights
         private static void DreamgateLock()
         {
             var dreamlockright = GameObject.Instantiate(FiveKnights.preloadedGO["DreamgateLock"]);
-            dreamlockright.transform.localScale = new Vector3(5.9911809816f, 17, 0);
-            dreamlockright.transform.position = new Vector3(177.77f, 177.77f, 0);
+            dreamlockright.transform.localScale = new Vector3(7.3875f, 7.6309f, 0);
+            dreamlockright.transform.position = new Vector3(158.8776f, 117.579f, 0);
             dreamlockright.SetActive(true);
-            var dreamlockleft = GameObject.Instantiate(FiveKnights.preloadedGO["DreamgateLock"]);
+            /*var dreamlockleft = GameObject.Instantiate(FiveKnights.preloadedGO["DreamgateLock"]);
             dreamlockleft.transform.localScale = new Vector3(1.5f, 7, 0);
             dreamlockleft.transform.position = new Vector3(54, 125.77f, 0);
-            dreamlockleft.SetActive(true);
+            dreamlockleft.SetActive(true);*/
             
 
         }

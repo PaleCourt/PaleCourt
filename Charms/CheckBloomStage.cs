@@ -6,20 +6,20 @@ using GlobalEnums;
 
 namespace FiveKnights
 {
-	public class CheckBloomStage : MonoBehaviour
-	{
+    public class CheckBloomStage : MonoBehaviour
+    {
         private HeroController _hc => HeroController.instance;
         private AbyssalBloom _bloom;
 
-		private void Awake()
-		{
+        private void Awake()
+        {
             _bloom = _hc.GetComponent<AbyssalBloom>();
 
-			ModHooks.CharmUpdateHook += CharmUpdateHook;
-			On.HeroController.TakeDamage += HeroControllerTakeDamage;
-			On.HeroController.AddHealth += HeroControllerAddHealth;
-			On.HeroController.MaxHealth += HeroControllerMaxHealth;
-		}
+            ModHooks.CharmUpdateHook += CharmUpdateHook;
+            On.HeroController.TakeDamage += HeroControllerTakeDamage;
+            On.HeroController.AddHealth += HeroControllerAddHealth;
+            On.HeroController.MaxHealth += HeroControllerMaxHealth;
+        }
 
         private void CharmUpdateHook(PlayerData data, HeroController hc) => CheckStage();
 
@@ -44,7 +44,7 @@ namespace FiveKnights
         }
 
         private void CheckStage()
-		{
+        {
             if(!FiveKnights.Instance.SaveSettings.equippedCharms[3])
             {
                 _bloom.SetLevel(0);
@@ -68,7 +68,7 @@ namespace FiveKnights
         }
 
         private void OnDestroy()
-		{
+        {
             ModHooks.CharmUpdateHook -= CharmUpdateHook;
             On.HeroController.TakeDamage -= HeroControllerTakeDamage;
             On.HeroController.AddHealth -= HeroControllerAddHealth;
@@ -76,5 +76,5 @@ namespace FiveKnights
         }
 
         private void Log(object o) => Modding.Logger.Log("[FiveKnights][CheckBloomStage] " + o);
-	}
+    }
 }

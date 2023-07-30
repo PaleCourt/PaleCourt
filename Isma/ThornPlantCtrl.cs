@@ -48,11 +48,11 @@ namespace FiveKnights.Isma
             _anim.Play("ThornPlantGrow");
             _ap.Clip = FiveKnights.Clips["IsmaAudAgonyIntro"];
             _ap.DoPlayRandomClip();
-			yield return _anim.WaitToFrame(3);
+            yield return _anim.WaitToFrame(3);
             _anim.enabled = false;
 
-			yield return new WaitForSeconds(secondWave ? 0.3f : 0.5f);
-			_anim.enabled = true;
+            yield return new WaitForSeconds(secondWave ? 0.3f : 0.5f);
+            _anim.enabled = true;
             _ap.Clip = FiveKnights.Clips["IsmaAudAgonyShoot"];
             _ap.DoPlayRandomClip();
             yield return _anim.WaitToFrame(5);

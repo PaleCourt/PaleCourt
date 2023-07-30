@@ -36,11 +36,11 @@ namespace FiveKnights
                     DontDestroyOnLoad(_dungTrail);
                 }
                 if(pool.prefab.name == "Knight Dung Cloud")
-				{
+                {
                     dungCloud = Instantiate(pool.prefab);
                     dungCloud.SetActive(false);
                     DontDestroyOnLoad(dungCloud);
-				}
+                }
             }
             _spellControl = HeroController.instance.spellControl;
 
@@ -53,12 +53,12 @@ namespace FiveKnights
             trailMain.startColor = PaleColor;
 
             foreach(ParticleSystem cloudPt in dungCloud.GetComponentsInChildren<ParticleSystem>(true))
-			{
+            {
                 ParticleSystem.MainModule cloudMain = cloudPt.main;
                 cloudMain.startColor = PaleColor;
             }
             foreach(tk2dSprite sprite in dungCloud.GetComponentsInChildren<tk2dSprite>(true))
-			{
+            {
                 sprite.color = Color.white;
             }
 
@@ -68,7 +68,7 @@ namespace FiveKnights
 
             // Add custom dung cloud spawn
             foreach(string state in new []{ "Dung Cloud", "Dung Cloud 2" })
-			{
+            {
                 if(_spellControl == null) break;
                 _spellControl.GetAction<SpawnObjectFromGlobalPool>(state, 0).Enabled = false;
                 _spellControl.InsertMethod(state, () =>
@@ -85,22 +85,22 @@ namespace FiveKnights
                 }, 1);
             }
 
-			On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
-			On.ExtraDamageable.GetDamageOfType += ExtraDamageableGetDamageOfType;
-			On.SpriteFlash.flashDungQuick += SpriteFlashFlashDungQuick;
-			On.KnightHatchling.OnEnable += KnightHatchlingOnEnable;
-			On.HutongGames.PlayMaker.Actions.ActivateAllChildren.OnEnter += ActivateAllChildrenOnEnter;
-			On.HutongGames.PlayMaker.Actions.Tk2dPlayAnimation.OnEnter += Tk2dPlayAnimationOnEnter;
-		}
+            On.ExtraDamageable.RecieveExtraDamage += ExtraDamageableRecieveExtraDamage;
+            On.ExtraDamageable.GetDamageOfType += ExtraDamageableGetDamageOfType;
+            On.SpriteFlash.flashDungQuick += SpriteFlashFlashDungQuick;
+            On.KnightHatchling.OnEnable += KnightHatchlingOnEnable;
+            On.HutongGames.PlayMaker.Actions.ActivateAllChildren.OnEnter += ActivateAllChildrenOnEnter;
+            On.HutongGames.PlayMaker.Actions.Tk2dPlayAnimation.OnEnter += Tk2dPlayAnimationOnEnter;
+        }
 
-		private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
-		{
-			if(extraDamageType == ExtraDamageTypes.Dung || extraDamageType == ExtraDamageTypes.Dung2)
-			{
+        private void ExtraDamageableRecieveExtraDamage(On.ExtraDamageable.orig_RecieveExtraDamage orig, ExtraDamageable self, ExtraDamageTypes extraDamageType)
+        {
+            if(extraDamageType == ExtraDamageTypes.Dung || extraDamageType == ExtraDamageTypes.Dung2)
+            {
                 if(!self.gameObject.GetComponent<RoyalAuraSpread>()) self.gameObject.AddComponent<RoyalAuraSpread>();
-			}
+            }
             orig(self, extraDamageType);
-		}
+        }
 
         private int ExtraDamageableGetDamageOfType(On.ExtraDamageable.orig_GetDamageOfType orig, ExtraDamageTypes extraDamageTypes)
         {
@@ -116,23 +116,23 @@ namespace FiveKnights
             self.flashArmoured();
         }
 
-		private void KnightHatchlingOnEnable(On.KnightHatchling.orig_OnEnable orig, KnightHatchling self)
-		{
+        private void KnightHatchlingOnEnable(On.KnightHatchling.orig_OnEnable orig, KnightHatchling self)
+        {
             orig(self);
             Vasi.Mirror.SetField(self, "details", self.normalDetails with { damage = self.dungDetails.damage, dung = true, spatterColor = Color.white });
             ParticleSystem.MainModule main = self.dungPt.main;
             main.startColor = PaleColor;
-		}
+        }
 
         private void ActivateAllChildrenOnEnter(On.HutongGames.PlayMaker.Actions.ActivateAllChildren.orig_OnEnter orig, ActivateAllChildren self)
-		{
+        {
             // Needed for the sound effect and impact lines
-			if(self.Fsm.GameObjectName.Contains("Dung Explosion") && self.State.Name == "Explode")
-			{
+            if(self.Fsm.GameObjectName.Contains("Dung Explosion") && self.State.Name == "Explode")
+            {
                 GameObject dungTrail = Instantiate(dungCloud, self.Fsm.GameObject.transform.position, Quaternion.identity);
                 dungTrail.SetActive(true);
                 foreach(Component comp in self.Fsm.GameObject.GetComponentsInChildren<Component>(true))
-				{
+                {
                     if(!comp.gameObject.name.Contains("Impact"))
                     {
                         Destroy(comp.gameObject);
@@ -141,13 +141,13 @@ namespace FiveKnights
                     {
                         comp.gameObject.GetComponent<tk2dSprite>().color = Color.white;
                     }
-				}
+                }
             }
             orig(self);
-		}
-		
+        }
+        
         private void Tk2dPlayAnimationOnEnter(On.HutongGames.PlayMaker.Actions.Tk2dPlayAnimation.orig_OnEnter orig, Tk2dPlayAnimation self)
-		{
+        {
             if(self.Fsm.GameObjectName.Contains("Spell Fluke Dung") && self.State.Name == "Init" && self.clipName.Value == "Dung Air")
             {
                 PlayMakerFSM flukeFSM = self.Fsm.FsmComponent;
@@ -173,25 +173,25 @@ namespace FiveKnights
         }
 
         private void Update()
-		{
+        {
             _timer += Time.deltaTime;
             if(_timer > _frequency)
-			{
+            {
                 _timer = 0f;
                 GameObject dungTrail = Instantiate(_dungTrail, HeroController.instance.transform.position, Quaternion.identity);
                 dungTrail.transform.localScale *= 2f;
                 dungTrail.transform.SetPositionZ(0.01f);
                 dungTrail.SetActive(true);
-			}
-		}
+            }
+        }
 
         private void OnDisable()
-		{
+        {
             Destroy(_dungTrail);
             Destroy(dungCloud);
 
             _dungControl.GetAction<Wait>("Emit Pause", 2).time.Value = 0.5f;
-			_dungControl.GetAction<SpawnObjectFromGlobalPoolOverTime>("Equipped", 0).Enabled = true;
+            _dungControl.GetAction<SpawnObjectFromGlobalPoolOverTime>("Equipped", 0).Enabled = true;
 
             foreach(string state in new[] { "Dung Cloud", "Dung Cloud 2" })
             {

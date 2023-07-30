@@ -62,7 +62,9 @@ namespace FiveKnights
         {
             //On.GameCameras.Awake += (orig, self) => self.gameObject.AddComponent<PostProcessing>();
             
-            #region Load Embedded Images
+            #region Load Language & Embedded Images
+
+            langStrings = new LanguageCtrl();
 
             int ind = 0;
             Assembly asm = Assembly.GetExecutingAssembly();
@@ -145,9 +147,7 @@ namespace FiveKnights
 
             #endregion
 
-            #region Language & Hooks
-
-            langStrings = new LanguageCtrl();
+            #region Hooks
 
             ModHooks.BeforeSavegameSaveHook += SaveEntries;
             ModHooks.SetPlayerVariableHook += SetVariableHook;
@@ -282,7 +282,7 @@ namespace FiveKnights
                 ("Abyss_10", "Tute Pole 2"),
                 ("Abyss_10", "hanging_cords_01"),
                 ("Abyss_10", "_SceneManager"),
-                ("Abyss_10", "GameObject/abyss_water_top (3)"),
+                ("Abyss_09", "abyss_black-water/abyss_water_top (3)"),
                 ("Abyss_10", "Surface Water Region"),
                 ("Abyss_10", "Darkness Region"),
                 ("Waterways_05", "Dream Gate Set Lock"),
@@ -373,7 +373,7 @@ namespace FiveKnights
             preloadedGO["BreakableClawPole"] = preloadedObjects["Abyss_10"]["Tute Pole 2"];
             preloadedGO["BreakableVines"] = preloadedObjects["Abyss_10"]["hanging_cords_01"];
             preloadedGO["AbyssSM"] = preloadedObjects["Abyss_10"]["_SceneManager"];
-            preloadedGO["AbyssWater1"] = preloadedObjects["Abyss_10"]["GameObject/abyss_water_top (3)"];
+            preloadedGO["AbyssWater1"] = preloadedObjects["Abyss_09"]["abyss_black-water/abyss_water_top (3)"];
             preloadedGO["AbyssWater2"] = preloadedObjects["Abyss_10"]["Surface Water Region"];
             preloadedGO["DReg"] = preloadedObjects["Abyss_10"]["Darkness Region"];
             preloadedGO["DreamgateLock"] = preloadedObjects["Waterways_05"]["Dream Gate Set Lock"];

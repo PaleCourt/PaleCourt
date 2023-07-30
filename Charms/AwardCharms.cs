@@ -305,7 +305,7 @@ namespace FiveKnights
         }
 
         private void OnDestroy()
-		{
+        {
             Log("Destroyed AwardCharms");
             ModHooks.BeforeSceneLoadHook -= SceneCheck;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= BloomPlacement;

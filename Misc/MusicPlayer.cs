@@ -49,7 +49,7 @@ namespace FiveKnights
             );
 
             if(Loop)
-			{
+            {
                 audio = audioPlayer.GetComponent<AudioSource>();
                 audio.clip = Clip;
                 audio.pitch = Random.Range(MinPitch, MaxPitch);
@@ -57,8 +57,8 @@ namespace FiveKnights
                 audio.loop = Loop;
                 audio.Play();
             }
-			else
-			{
+            else
+            {
                 audio = audioPlayer.GetComponent<AudioSource>();
                 audio.clip = null;
                 audio.pitch = Random.Range(MinPitch, MaxPitch);

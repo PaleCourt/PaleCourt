@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29503.13
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FiveKnights", "FiveKnights.csproj", "{3E523348-F88B-481B-95AB-11CB077C46B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FiveKnights", "FiveKnights.csproj", "{3E523348-F88B-481B-95AB-11CB077C46B8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,6 +20,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {CC202338-A45C-4169-9DE9-5BC71CCC0E16}
+		        SolutionGuid = {CC202338-A45C-4169-9DE9-5BC71CCC0E16}
+		SolutionGuid = {BF4085B5-A0EF-4C07-8ABA-F36F6985F3FC}
 	EndGlobalSection
 EndGlobal

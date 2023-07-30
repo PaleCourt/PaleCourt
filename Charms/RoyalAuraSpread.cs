@@ -14,7 +14,7 @@ namespace FiveKnights
         private ParticleSystem _dungPt;
 
         private void Awake()
-		{
+        {
             foreach(var pool in ObjectPool.instance.startupPools)
             {
                 if(pool.prefab.name == "Knight Dung Trail")
@@ -36,7 +36,7 @@ namespace FiveKnights
         private IEnumerator StartCooldown()
         {
             for(int i = 0; i < _repeat; i++)
-			{
+            {
                 HealthManager hm = gameObject.GetComponent<HealthManager>();
                 if(hm.hp <= 0 || hm.isDead) break;
 
@@ -52,11 +52,11 @@ namespace FiveKnights
         }
 
         private void OnDestroy()
-		{
+        {
             Destroy(_dungTrail);
 
             StopAllCoroutines();
-		}
+        }
 
         private void Log(object message) => Modding.Logger.Log("[FiveKnights][Royal Aura Spread] " + message);
     }

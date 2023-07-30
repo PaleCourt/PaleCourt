@@ -240,7 +240,7 @@ namespace FiveKnights.Isma
                     StartCoroutine(PillarDeath(0f));
                 };
                 if(!OWArenaFinder.IsInOverWorld && (transform.position.x < 60.3f || transform.position.x > 90.6f))
-				{
+                {
                     GetComponent<HealthManager>().SendDeathEvent();
                 }
                 StartCoroutine(PillarDeath(15f));
@@ -311,7 +311,7 @@ namespace FiveKnights.Isma
                 };
             }
 
-			private IEnumerator Start()
+            private IEnumerator Start()
             {
                 initFool.SetActive(true);
                 hm.IsInvincible = true;
@@ -404,8 +404,8 @@ namespace FiveKnights.Isma
                 initGulka.SetActive(true);
                 Animator anim = initGulka.GetComponent<Animator>();
                 float rot = pos.x > MIDDLE ? 90f : -90f;
-				initGulka.transform.SetPosition2D(pos.x > MIDDLE ? RIGHT + 0.19f : LEFT - 0.19f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
-				initGulka.transform.localScale *= 1.4f;
+                initGulka.transform.SetPosition2D(pos.x > MIDDLE ? RIGHT + 0.19f : LEFT - 0.19f, pos.y); // I think MIDDLE isn't geting reset between Godhome and Overworld
+                initGulka.transform.localScale *= 1.4f;
                 initGulka.transform.SetRotation2D(rot);
                 MeshRenderer mesh = finalGulka.GetComponent<MeshRenderer>();
                 Destroy(finalGulka.GetComponent<SetZ>());
@@ -454,13 +454,13 @@ namespace FiveKnights.Isma
             private void Update()
             {
                 if (!IsmaController.killAllMinions) return;
-				hm.Die(new float?(0f), AttackTypes.Nail, true);
-				Destroy(gameObject);
+                hm.Die(new float?(0f), AttackTypes.Nail, true);
+                Destroy(gameObject);
             }
 
             // Recreation of DropThroughFloor from the Corpse MonoBehaviour
             private IEnumerator CorpseDropThroughFloor()
-			{
+            {
                 yield return null;
                 GameObject corpse = GameObject.Find("Corpse Plant Turret(Clone)");
                 corpse.name = "Corpse Plant Turret that will fall through the floor soon";

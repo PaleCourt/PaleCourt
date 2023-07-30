@@ -8,8 +8,8 @@ using HutongGames.PlayMaker.Actions;
 
 namespace FiveKnights
 {
-	public class BoonSpells : MonoBehaviour
-	{
+    public class BoonSpells : MonoBehaviour
+    {
         private HeroController _hc = HeroController.instance;
         private PlayMakerFSM _spellControl;
         private GameObject _audioPlayer;
@@ -19,7 +19,7 @@ namespace FiveKnights
         private const int BlastDamageShaman = 45;
 
         private void OnEnable()
-		{
+        {
             _spellControl = _hc.spellControl;
 
             GameObject fireballParent = _spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
@@ -29,7 +29,7 @@ namespace FiveKnights
             PlayMakerFSM _pvControl = Instantiate(FiveKnights.preloadedGO["PV"].LocateMyFSM("Control"), _hc.transform);
 
             if(!FiveKnights.preloadedGO.ContainsKey("Plume"))
-			{
+            {
                 GameObject plume = Instantiate(_pvControl.GetAction<SpawnObjectFromGlobalPool>("Plume Gen", 0).gameObject.Value);
                 plume.SetActive(false);
                 plume.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
@@ -40,7 +40,7 @@ namespace FiveKnights
             }
 
             if(!FiveKnights.preloadedGO.ContainsKey("BoonDagger"))
-			{
+            {
                 GameObject dagger = Instantiate(_pvControl.GetAction<FlingObjectsFromGlobalPoolTime>("SmallShot LowHigh").gameObject.Value);
                 dagger.SetActive(false);
                 dagger.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
@@ -61,12 +61,12 @@ namespace FiveKnights
         }
 
         private void OnDisable()
-		{
+        {
             ModifySpellFSM(false);
-		}
+        }
 
-		private void ModifySpellFSM(bool enabled)
-		{
+        private void ModifySpellFSM(bool enabled)
+        {
             if(enabled)
             {
                 _spellControl.ChangeTransition("Level Check 3", "LEVEL 1", "Scream Antic1 Blasts");
@@ -95,7 +95,7 @@ namespace FiveKnights
         }
 
         public void CastDaggers(bool upgraded)
-		{
+        {
             bool shaman = PlayerData.instance.equippedCharm_19;
             int angleMin = shaman ? -30 : -25;
             int angleMax = shaman ? 30 : 25;
@@ -140,7 +140,7 @@ namespace FiveKnights
         }
 
         public void CastBlasts(bool upgraded)
-		{
+        {
             List<GameObject> blasts = new List<GameObject>();
 
             // Enemy iframes last 0.2s
@@ -156,33 +156,33 @@ namespace FiveKnights
                     yield return new WaitForSeconds(0.2f);
                 }
             }
-			IEnumerator DisableColliderCoro()
-			{
-				yield return new WaitForSeconds(0.15f);
+            IEnumerator DisableColliderCoro()
+            {
+                yield return new WaitForSeconds(0.15f);
 
-				for(int i = 0; i < blasts.Count; i++)
-				{
-					Destroy(blasts[i].GetComponent<CircleCollider2D>());
-					yield return new WaitForSeconds(0.2f);
-				}
-			}
-			IEnumerator DestroyBlastsCoro()
-			{
+                for(int i = 0; i < blasts.Count; i++)
+                {
+                    Destroy(blasts[i].GetComponent<CircleCollider2D>());
+                    yield return new WaitForSeconds(0.2f);
+                }
+            }
+            IEnumerator DestroyBlastsCoro()
+            {
                 yield return new WaitForSeconds(0.5f);
 
                 for(int i = 0; i < blasts.Count; i++)
-				{
+                {
                     Destroy(blasts[i]);
                     yield return new WaitForSeconds(0.2f);
                 }
             }
             StartCoroutine(CastBlastsCoro());
-			StartCoroutine(DisableColliderCoro());
-			StartCoroutine(DestroyBlastsCoro());
+            StartCoroutine(DisableColliderCoro());
+            StartCoroutine(DestroyBlastsCoro());
         }
 
         private GameObject SpawnBlast(Vector3 pos, bool upgraded)
-		{
+        {
             GameObject blast = Instantiate(FiveKnights.preloadedGO["Blast"], pos, Quaternion.identity);
             blast.layer = (int)GlobalEnums.PhysLayers.HERO_ATTACK;
             blast.tag = "Hero Spell";
@@ -209,7 +209,7 @@ namespace FiveKnights
         }
 
         private void PlayAudio(string clip, float minPitch = 1f, float maxPitch = 1f, float volume = 1f, float delay = 0f)
-		{
+        {
             IEnumerator Play()
             {
                 AudioClip audioClip = FiveKnights.Clips[clip];
@@ -225,5 +225,5 @@ namespace FiveKnights
             }
             GameManager.instance.StartCoroutine(Play());
         }
-	}
+    }
 }

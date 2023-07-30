@@ -29,7 +29,7 @@ namespace FiveKnights.Isma
             transform.position -= new Vector3(0f, 0.2f, 0f);
         }
 
-		private IEnumerator Start()
+        private IEnumerator Start()
         {
             yield return null;
 
@@ -38,7 +38,7 @@ namespace FiveKnights.Isma
             gameObject.AddComponent<Flash>();
             gameObject.AddComponent<ExtraDamageable>();
             _hm.hp = PLANTHP;
-			EnemyHPBarImport.RefreshHPBar(gameObject);
+            EnemyHPBarImport.RefreshHPBar(gameObject);
             Mirror.SetField(_hm, "enemyType", 3);
 
             gameObject.SetActive(true);
@@ -51,8 +51,8 @@ namespace FiveKnights.Isma
             _anim.enabled = true;
             this.PlayAudio(FiveKnights.Clips["IsmaAudVineGrow"]);
             yield return new WaitWhile(() => _anim.IsPlaying());
-			_bc.isTrigger = false;
-			_sp.colliderEnabled = true;
+            _bc.isTrigger = false;
+            _sp.colliderEnabled = true;
 
             GameObject bnc = new GameObject("PillarPogo")
             {

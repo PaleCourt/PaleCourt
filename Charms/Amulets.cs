@@ -79,8 +79,7 @@ namespace FiveKnights
             _hc.gameObject.AddComponent<RoyalAura>().enabled = false;
 
             // Mark of Purity
-            _hc.gameObject.AddComponent<PurityTimer>().enabled = false;
-            _hc.gameObject.AddComponent<AutoSwing>().enabled = false;
+            _hc.gameObject.AddComponent<Purity>().enabled = false;
 
             // Boon of Hallownest
             _hc.gameObject.AddComponent<BoonSpells>().enabled = false;
@@ -305,23 +304,23 @@ namespace FiveKnights
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("Dash Slash Void").clipName = "NA Dash Slash Void";
             nailArts.GetAction<Tk2dPlayAnimationWithEvents>("G Slash Void").clipName = "NA Big Slash Void";
 
-			//// Insert testing methods for testing states
-			//nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
-			//{
-			//	nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
-			//});
-			//nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
-			//{
-			//	nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
-			//});
-			//nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
-			//{
-			//	Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
-			//	nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
-			//});
+            //// Insert testing methods for testing states
+            //nailArts.InsertMethod("Bloom Activated CSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Cyclone Start Void" : "Cyclone Start");
+            //});
+            //nailArts.InsertMethod("Bloom Activated DSlash?", 0, () =>
+            //{
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "Dash Slash Void" : "Dash Slash");
+            //});
+            //nailArts.InsertMethod("Bloom Activated GSlash?", 0, () =>
+            //{
+            //    Log($"PureAmulets.Settings.equippedCharm_44: {FiveKnights.Instance.SaveSettings.equippedCharms[3]}, health: {_pd.health <= 10}");
+            //    nailArts.SetState(FiveKnights.Instance.SaveSettings.equippedCharms[3] && _pd.health <= 10 ? "G Slash Void" : "G Slash");
+            //});
 
-			// Insert activation and deactivation of void nail arts
-			nailArts.InsertMethod("Activate Slash Void", 0, () =>
+            // Insert activation and deactivation of void nail arts
+            nailArts.InsertMethod("Activate Slash Void", 0, () =>
             {
                 cycloneSlashVoid.SetActive(true);
                 cycloneSlashVoid.GetComponent<tk2dSpriteAnimator>().Play("Cyclone Slash Effect Void");
@@ -349,18 +348,17 @@ namespace FiveKnights
             nailArts.RemoveAction<ActivateGameObject>("G Slash Void");
 
             nailArts.Log();
-            nailArts.MakeLog(true);
 
             StartCoroutine(ResetVoidNarts(new GameObject[] { cycloneSlashVoid, dashSlashVoid, greatSlashVoid }));
         }
 
         private IEnumerator ResetVoidNarts(GameObject[] narts)
-		{
+        {
             // This is necessary because otherwise the very first void nail art will always be a normal one
             foreach(GameObject nart in narts)
-			{
+            {
                 nart.SetActive(true);
-			}
+            }
             yield return new WaitForEndOfFrame();
             foreach(GameObject nart in narts)
             {
@@ -386,14 +384,14 @@ namespace FiveKnights
         }
 
         private void ModifySpellsForBloom()
-		{
-			_spellControl.InsertMethod("Wallside?", () =>
-			{
-				_hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
-				_hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
-				_hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
-			}, 0);
-			_spellControl.InsertMethod("Quake Antic", () =>
+        {
+            _spellControl.InsertMethod("Wallside?", () =>
+            {
+                _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
+                _hc.GetComponent<AbyssalBloom>().CancelWallTendrilAttack();
+            }, 0);
+            _spellControl.InsertMethod("Quake Antic", () =>
             {
                 _hc.GetComponent<AbyssalBloom>().CancelTendrilAttack();
                 _hc.GetComponent<AbyssalBloom>().CancelVerticalTendrilAttack();
@@ -411,16 +409,15 @@ namespace FiveKnights
         {
             Log("Amulets Charm Update");
             if(!_activated)
-			{
+            {
                 Log("Amulets Start not run yet, exiting Charm Update");
                 return;
-			}
+            }
 
             _hc.GetComponent<RoyalAura>().enabled = 
                 playerData.GetBool("equippedCharm_" + Charms.DefendersCrest) && FiveKnights.Instance.SaveSettings.upgradedCharm_10;
 
-            _hc.GetComponent<PurityTimer>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
-            _hc.GetComponent<AutoSwing>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
+            _hc.GetComponent<Purity>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[0];
 
             _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])

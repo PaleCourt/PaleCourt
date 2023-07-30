@@ -15,7 +15,7 @@ using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
-    public class PurityTimer : MonoBehaviour
+    public class Purity : MonoBehaviour
     {
         private float timer = 0;
         private bool timerRunning = false;
@@ -59,6 +59,7 @@ namespace FiveKnights
             On.HeroController.CanCast += FixCast;
             ModHooks.AfterTakeDamageHook += ResetSpeed;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += Dummy;
+            On.HeroController.CanNailCharge += CancelNailArts;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_44;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_44_32;
@@ -71,13 +72,15 @@ namespace FiveKnights
         private void OnDisable()
         {
             On.HealthManager.TakeDamage -= IncrementSpeed;
-           // ModHooks.CharmUpdateHook -= SetDuration;
-           // On.NailSlash.SetMantis -= CancelMantis;
-           // On.NailSlash.SetLongnail -= CancelLongnail;
+            // ModHooks.CharmUpdateHook -= SetDuration;
+            ModHooks.CharmUpdateHook -= Duration;
+            // On.NailSlash.SetMantis -= CancelMantis;           
+            // On.NailSlash.SetLongnail -= CancelLongnail;
             On.HeroController.CanDoubleJump -= FixDoubleJump;
             On.HeroController.CanCast -= FixCast;
             ModHooks.AfterTakeDamageHook -= ResetSpeed;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged -= Dummy;
+            On.HeroController.CanNailCharge -= CancelNailArts;
 
             _hc.ATTACK_COOLDOWN_TIME = ATTACK_COOLDOWN_DEFAULT;
             _hc.ATTACK_COOLDOWN_TIME_CH = ATTACK_COOLDOWN_DEFAULT_32;
@@ -87,6 +90,18 @@ namespace FiveKnights
 
         private void Update()
         {
+            // Autoswing
+            if (InputHandler.Instance.inputActions.attack.IsPressed)
+            {
+                {
+                    if (ReflectionHelper.CallMethod<HeroController, bool>(_hc, "CanAttack"))
+                    {
+                        ReflectionHelper.CallMethod<HeroController>(_hc, "DoAttack");
+                    }
+                }
+            }
+
+            // Reset timer
             if (timerRunning)
             {
                 timer += Time.deltaTime;
@@ -144,13 +159,7 @@ namespace FiveKnights
         {
            if (hitInstance.AttackType == AttackTypes.Nail || hitInstance.AttackType == AttackTypes.NailBeam)
             {
-                float damageDealt = hitInstance.DamageDealt;
-                damageDealt *= .8f;
-                hitInstance.DamageDealt = Mathf.RoundToInt(damageDealt);
-                if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
-                {
-                    ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
-                }
+                hitInstance.Multiplier *= .8f;
             }
             orig(self, hitInstance);
                     
@@ -167,6 +176,10 @@ namespace FiveKnights
                     _hc.ATTACK_DURATION -= (ATTACK_COOLDOWN_44 - COOLDOWN_CAP_44) / 9;
                     _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
 
+                }
+                if (_hc.ATTACK_COOLDOWN_TIME_CH <= .17f)
+                {
+                    ReflectionHelper.SetField<HealthManager, float>(self, "evasionByHitRemaining", 0.1f);
                 }
 
                 if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)     
@@ -268,8 +281,8 @@ namespace FiveKnights
             _hc.ATTACK_DURATION_CH -= (ATTACK_COOLDOWN_44_32 - COOLDOWN_CAP_44_32) / 11;
             //foreach(NailSlash nailslash in nailSlashes)
             //{
-            //	nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
-            //	if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
+            //    nailslash.GetComponent<AudioSource>().pitch += _pd.equippedCharm_32 ? .08f : .04f;
+            //    if(nailslash.GetComponent<AudioSource>().pitch >= 1.2f) nailslash.GetComponent<AudioSource>().pitch = 1.4f;
             //}
 
             if (!_pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME <= .18f && !audioMax || _pd.equippedCharm_32 && _hc.ATTACK_COOLDOWN_TIME_CH <= .14f && !audioMax)
@@ -297,6 +310,10 @@ namespace FiveKnights
             }
 
 
+        }
+        private bool CancelNailArts(On.HeroController.orig_CanNailCharge orig, HeroController self)
+        {
+            return false;
         }
         private bool FixCast(On.HeroController.orig_CanCast orig, HeroController self)
         {

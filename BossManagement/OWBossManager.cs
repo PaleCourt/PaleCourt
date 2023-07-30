@@ -113,9 +113,9 @@ namespace FiveKnights
                 yield return new WaitForSeconds(3f);
 
                 foreach(Tram tram in UnityEngine.Object.FindObjectsOfType<Tram>())
-				{
+                {
                     tram.FadeAudio();
-				}
+                }
 
                 WinRoutine(OWArenaFinder.PrevHegScene, 2);
                 Log("Done with Heg, transitioning out");
@@ -161,8 +161,8 @@ namespace FiveKnights
             if(GameManager.instance.GetComponent<AwardCharms>()) GameManager.instance.GetComponent<AwardCharms>().bossWin[index] = true;
             string msgKey = "placeholder key aaaaaaaa";
             int wins;
-			switch(index)
-			{
+            switch(index)
+            {
                 case 0:
                     FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
                     FiveKnights.Instance.SaveSettings.DryyaOWWinCount++;
@@ -193,9 +193,9 @@ namespace FiveKnights
                     break;
             }
             foreach(PlayMakerFSM hcFSM in HeroController.instance.gameObject.GetComponentsInChildren<PlayMakerFSM>())
-			{
+            {
                 hcFSM.SendEvent("FSM CANCEL");
-			}
+            }
             HeroController.instance.AffectedByGravity(true);
             HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();

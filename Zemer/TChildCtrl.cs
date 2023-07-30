@@ -101,9 +101,9 @@ namespace FiveKnights.Zemer
         }
 
         private IEnumerator FreezePlayer()
-		{
+        {
             // Stops player until she leaves
-            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 256f);
+            yield return new WaitWhile(() => HeroController.instance.transform.position.x < 253f);
 
             OWBossManager.PlayMusic(null);
             PlayMakerFSM roarFSM = HeroController.instance.gameObject.LocateMyFSM("Roar Lock");

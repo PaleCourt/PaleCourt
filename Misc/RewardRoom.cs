@@ -35,12 +35,12 @@ namespace FiveKnights
             langCtrl = new LanguageCtrl();
 
             ModHooks.LanguageGetHook += LangGet;
-			On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
+            On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
             On.GameManager.EnterHero += GameManagerEnterHero;
             UnityEngine.SceneManagement.SceneManager.activeSceneChanged += ActiveSceneChanged;
         }
 
-		public static void Unhook()
+        public static void Unhook()
         {
             ModHooks.LanguageGetHook -= LangGet;
             On.GameManager.GetCurrentMapZone -= GameManagerGetCurrentMapZone;
@@ -93,7 +93,7 @@ namespace FiveKnights
                 if(zemerAnim != null) zemerAnimCoro = GameManager.instance.StartCoroutine(ZemerAnimControl());
 
                 if(doneCCHitless)
-				{
+                {
                     GameObject[] knights = new GameObject[]
                     {
                         GameObject.Find("Dryya"),
@@ -103,13 +103,13 @@ namespace FiveKnights
                         GameObject.Find("Zemer"),
                     };
                     foreach(GameObject knight in knights)
-					{
+                    {
                         foreach(SpriteRenderer sr in knight.GetComponentsInChildren<SpriteRenderer>(true))
-						{
+                        {
                             sr.enabled = false;
-						}
-					}
-				}
+                        }
+                    }
+                }
 
                 if(!FiveKnights.Clips.ContainsKey("Pale Court") || FiveKnights.Clips["Pale Court"] == null)
                 {
@@ -327,7 +327,7 @@ namespace FiveKnights
         }
 
         private static string GetDreamKey(string name)
-		{
+        {
             if(FiveKnights.Instance.SaveSettings.ChampionsCallClears <= 0) return "RR_DRYYA_CHEATER";
 
             string number = "THIRD";
@@ -368,7 +368,7 @@ namespace FiveKnights
                         FiveKnights.Instance.SaveSettings.DryyaFirstConvo2 = true;
                     }
                     else
-					{
+                    {
                         if(FiveKnights.Instance.SaveSettings.equippedCharms[0] &&
                             !FiveKnights.Instance.SaveSettings.DryyaCharmConvo)
                         {
@@ -459,7 +459,7 @@ namespace FiveKnights
                     }
                 }
                 else
-				{
+                {
                     key = "RR_DRYYA_CHEATER";
                 }
                 return new()
@@ -516,7 +516,7 @@ namespace FiveKnights
                     dryyaAnim.Play("TalkLeft");
                 }
                 else
-				{
+                {
                     yield return dryyaAnim.PlayBlocking("TurnRight");
                     dryyaAnim.Play("TalkRight");
                 }
@@ -1106,6 +1106,8 @@ namespace FiveKnights
                     return new() { Key = "RR_ZEMER_SECOND_2_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_THIRD_1_1":
                     return new() { Key = "RR_ZEMER_THIRD_1_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
+                case "RR_ZEMER_THIRD_1_2":
+                    return new() { Key = "RR_ZEMER_THIRD_1_3", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_CHARM_1":
                     return new() { Key = "RR_ZEMER_CHARM_2", Sheet = "Reward Room", Type = DialogueType.Normal, Continue = true };
                 case "RR_ZEMER_CHARM_2":
@@ -1124,17 +1126,17 @@ namespace FiveKnights
 
                 // Logic for how to return to the base idle position
                 if(zemerAnim.IsPlaying("IdleAlt"))
-				{
+                {
                     zemerAnim.Play("IdleFromAlt");
                     yield return null;
                     yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
                 }
                 else if(zemerAnim.IsPlaying("IdleFromAlt"))
-				{
+                {
                     yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
-				}
+                }
                 else if(zemerAnim.IsPlaying("IdleToAlt"))
-				{
+                {
                     yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleToAlt"));
                     zemerAnim.Play("IdleFromAlt");
                     yield return null;
@@ -1154,9 +1156,9 @@ namespace FiveKnights
         }
 
         private static IEnumerator ZemerAnimControl()
-		{
+        {
             while(zemerAnim != null)
-			{
+            {
                 yield return new WaitForSeconds(3f);
                 zemerAnim.Play("IdleToAlt");
                 yield return null;
@@ -1168,6 +1170,6 @@ namespace FiveKnights
                 yield return new WaitWhile(() => zemerAnim.IsPlaying("IdleFromAlt"));
                 zemerAnim.Play("Idle");
             }
-		}
+        }
     }
 }

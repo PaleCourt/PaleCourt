@@ -16,7 +16,7 @@ namespace FiveKnights.Isma
         public float RightX = 85f;
         
         private void Awake()
-		{
+        {
             gameObject.name = "IsmaHitBall";
             gameObject.transform.localScale *= 1.4f;
             gameObject.layer = 11;
@@ -27,7 +27,7 @@ namespace FiveKnights.Isma
         }
 
         private void Start()
-		{
+        {
             PlayMakerFSM spellControl = HeroController.instance.gameObject.LocateMyFSM("Spell Control");
             GameObject fireballParent = spellControl.GetAction<SpawnObjectFromGlobalPool>("Fireball 2", 3).gameObject.Value;
             PlayMakerFSM fireballCast = fireballParent.LocateMyFSM("Fireball Cast");
@@ -49,7 +49,7 @@ namespace FiveKnights.Isma
             {
                 if(EnemyPlantSpawn.PillarCount < EnemyPlantSpawn.MAX_PILLAR && 
                     transform.position.x > LeftX && transform.position.x < RightX && !usingThornPillars)
-				{
+                {
                     _ap.Clip = FiveKnights.Clips["IsmaAudDungBreak"];
                     _ap.DoPlayRandomClip();
                     GameObject pillar = Instantiate(FiveKnights.preloadedGO["Plant"]);
