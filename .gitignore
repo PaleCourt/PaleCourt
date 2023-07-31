@@ -3,6 +3,7 @@
 StreamingAssets/*
 StreamingAssetsWin/
 StreamingAssetsMac/
+StreamingAssetsLin/
 # User-specific files
 *.suo
 *.user

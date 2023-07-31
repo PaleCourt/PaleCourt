@@ -234,12 +234,12 @@ namespace FiveKnights.Zemer
 
         private void Update()
         {
-            if (transform.GetPositionX() > (RightX - 1.3f) && _rb.velocity.x > 0f)
+            if (transform.GetPositionX() > (RightX - 3f) && _rb.velocity.x > 0f)
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
 
-            if (transform.GetPositionX() < (LeftX + 1.3f) && _rb.velocity.x < 0f)
+            if (transform.GetPositionX() < (LeftX + 3f) && _rb.velocity.x < 0f)
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
@@ -794,49 +794,47 @@ namespace FiveKnights.Zemer
                 transform.Find("HyperCut").gameObject.SetActive(false);
                 _anim.Play("ZDash", -1, 0f);
                 transform.position = new Vector3(transform.position.x, GroundY + 0.3f, transform.position.z);
-                // Dash from a crouch if too close to wall
 
-                //if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
-                //{
-                //    _anim.WaitToFrame(2);
-                //    _anim.PlayAt("ZDash", 5);
-                //}
-                //else
-                
-                // Backwards Antic
-                yield return _anim.WaitToFrame(1);
-                _anim.speed = 1.10f;
-                yield return _anim.WaitToFrame(2);
-                PlayAudioClip("Zem_Backdash");
-                _rb.velocity = new Vector2(dir * 35, 0f);
-                //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                //_rb.velocity = new Vector2(dir * 35, -4f);
-                yield return _anim.WaitToFrame(4);
-                _anim.speed = 1;
-                _rb.velocity = Vector2.zero;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
-                
-                
+                int subOneFrameOnEdges = 0;
+                if (transform.position.x < LeftX + 5f || transform.position.x > RightX - 5f)
+                {
+                    // Dash from a crouch if too close to wall
+                    subOneFrameOnEdges = 1;
+                    _anim.speed = 1.1f;
+                    _anim.Play("ZDash2", -1, 0f);
+                    _anim.speed = 1f;
+                }
+                else
+                {
+                    // Backwards Antic
+                    yield return _anim.WaitToFrame(1);
+                    _anim.speed = 1.1f;
+                    yield return _anim.WaitToFrame(2);
+                    PlayAudioClip("Zem_Backdash");
+                    _rb.velocity = new Vector2(dir * 35, 0f);
+                    //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                    //_rb.velocity = new Vector2(dir * 35, -4f);
+                    yield return _anim.WaitToFrame(4);
+                    _anim.speed = 1;
+                    _rb.velocity = Vector2.zero;
+                }
 
-                //_anim.enabled = false;
-                yield return _anim.WaitToFrame(7);
+                yield return _anim.WaitToFrame(7 - subOneFrameOnEdges);
                 PlayAudioClip("ZemBladeShine");
-                yield return _anim.WaitToFrame(11);//WaitForSeconds(DashDelay);             
-                //_anim.enabled = true;
-                //yield return _anim.WaitToFrame(5);
+                yield return _anim.WaitToFrame(11 - subOneFrameOnEdges);
                 PlayAudioClip("AudDashIntro");
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 13);
+                yield return _anim.WaitToFrame(13 - subOneFrameOnEdges);
                 PlayAudioClip("ZAudHoriz");
                 PlayAudioClip("AudDash");
                 _anim.speed = 1.5f; //2f
                 _rb.velocity = new Vector2(-dir * DashSpeed, 0f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 14);
+                yield return _anim.WaitToFrame(14 - subOneFrameOnEdges);
                 transform.position = new Vector3(transform.position.x, GroundY - 0.5f, transform.position.z);
                 _anim.enabled = false;
                 _anim.speed = 1f;
                 yield return new WaitForSeconds(0.15f);
                 _anim.enabled = true;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 16);
+                yield return _anim.WaitToFrame(16 - subOneFrameOnEdges);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
