@@ -1021,28 +1021,23 @@ namespace FiveKnights.Zemer
             {
                 float dir = Mathf.Sign(transform.localScale.x);
                 transform.Find("HyperCut").gameObject.SetActive(false);
-                _anim.Play("ZDashOld");
-                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+                _anim.Play("ZDash2", -1, 0f);
+                transform.position = new Vector3(transform.position.x, GroundY + 0.3f, transform.position.z);
 
 
-                yield return _anim.WaitToFrame(4);
-                
-                _anim.enabled = false;
-                
-                yield return new WaitForSeconds(DashDelay);
-                PlayAudioClip("ZAudHoriz");
-                
-                _anim.enabled = true;
-                
-                yield return _anim.WaitToFrame(5);
-                
-                
-                PlayAudioClip("AudDashIntro");
+                _anim.speed = 1.5f;
+
                 yield return _anim.WaitToFrame(6);
+                PlayAudioClip("ZemBladeShine");
+                yield return _anim.WaitToFrame(10);
+                PlayAudioClip("ZAudHoriz");
+                yield return _anim.WaitToFrame(11);
+                PlayAudioClip("AudDashIntro");
+                yield return _anim.WaitToFrame(12);
                 PlayAudioClip("AudDash");
-                _anim.speed = 2f;
                 _rb.velocity = new Vector2(-dir * DashXVel, 0f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                yield return _anim.WaitToFrame(13);
+                transform.position = new Vector3(transform.position.x, GroundY - 0.5f, transform.position.z);
                 _anim.speed = 1f;
                 _anim.enabled = false;
                 

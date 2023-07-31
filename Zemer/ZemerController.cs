@@ -804,19 +804,19 @@ namespace FiveKnights.Zemer
                 //else
                 
                 // Backwards Antic
-                {
-                    yield return _anim.WaitToFrame(1);
-                    _anim.speed = 1.10f;
-                    yield return _anim.WaitToFrame(2);
-                    PlayAudioClip("Zem_Backdash");
-                    _rb.velocity = new Vector2(dir * 35, 4f);
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
-                    _rb.velocity = new Vector2(dir * 35, -4f);
-                    yield return _anim.WaitToFrame(4);
-                    _anim.speed = 1;
-                    yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
-                    _rb.velocity = Vector2.zero;
-                }
+                yield return _anim.WaitToFrame(1);
+                _anim.speed = 1.10f;
+                yield return _anim.WaitToFrame(2);
+                PlayAudioClip("Zem_Backdash");
+                _rb.velocity = new Vector2(dir * 35, 0f);
+                //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                //_rb.velocity = new Vector2(dir * 35, -4f);
+                yield return _anim.WaitToFrame(4);
+                _anim.speed = 1;
+                _rb.velocity = Vector2.zero;
+                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
+                
+                
 
                 //_anim.enabled = false;
                 yield return _anim.WaitToFrame(7);
@@ -827,11 +827,11 @@ namespace FiveKnights.Zemer
                 PlayAudioClip("AudDashIntro");
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 13);
                 PlayAudioClip("ZAudHoriz");
-                yield return _anim.WaitToFrame(11);
                 PlayAudioClip("AudDash");
-                _anim.speed = 2f;
+                _anim.speed = 1.5f; //2f
                 _rb.velocity = new Vector2(-dir * DashSpeed, 0f);
                 yield return new WaitWhile(() => _anim.GetCurrentFrame() < 14);
+                transform.position = new Vector3(transform.position.x, GroundY - 0.5f, transform.position.z);
                 _anim.enabled = false;
                 _anim.speed = 1f;
                 yield return new WaitForSeconds(0.15f);
