@@ -10,6 +10,7 @@ using FrogCore.Ext;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
+using Vasi;
 using Random = UnityEngine.Random;
 using SendRandomEventV3 = On.HutongGames.PlayMaker.Actions.SendRandomEventV3;
 
@@ -140,6 +141,8 @@ namespace FiveKnights.Dryya
             ModifyAudio();
             // Modify dagger throw
             ModifyDaggers();
+            // Add Knockout
+            AddKnockout();
 
             GameCameras.instance.cameraShakeFSM.FsmVariables.FindFsmBool("RumblingMed").Value = false;
             _hm.OnDeath += DeathHandler;
@@ -197,7 +200,14 @@ namespace FiveKnights.Dryya
             orig(self, hitInstance);
             if(self.gameObject.name.Contains("Dryya"))
             {
+                _hits++;
                 _spriteFlash.flashFocusHeal();
+                if (!_isKnockingOut && _hits > _maxHits)
+                {
+                    _maxHits += 1;
+                    StopAllCoroutines();
+                    _control.SetState("Knockout");
+                }
             }
         }
 
@@ -318,9 +328,119 @@ namespace FiveKnights.Dryya
             }
         }
 
+        private int _hits;
+        private int _maxHits;
+        private bool _isKnockingOut;
+
+        private void AddKnockout()
+        {
+            _hits = 0;
+            _maxHits = 3;
+            var state = _control.AddState("Knockout");
+            state.AddCoroutine(Knockout);
+
+            IEnumerator Knockout()
+            {
+                foreach (Transform c in transform.Find("Colliders")) c.gameObject.SetActive(false);
+                _bc.enabled = false;
+
+                List<GameObject> cols =
+                    (from Transform child in transform.Find("KnockOutCollider") select child.gameObject).ToList();
+
+                foreach (var i in cols)
+                {
+                    i.AddComponent<DebugColliders>();
+                }
+
+                _isKnockingOut = true;
+                _rb.velocity = Vector2.zero;
+                var localScale = transform.localScale;
+                var signX = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
+                transform.localScale = new Vector3(Mathf.Abs(localScale.x) * signX, localScale.y,
+                    localScale.z);
+                
+                _rb.gravityScale = 1.5f;
+                _rb.velocity = new Vector2(signX * 15f, 20f);
+                PlayDeathFor(gameObject); 
+                
+                _anim.Play("Knockout");
+                
+                // frame 0
+                cols[0].SetActive(true);
+                
+                yield return null;
+                yield return new WaitWhile(() => _anim.CurrentFrame < 1);
+                _anim.SetFrame(0);
+                _anim.Pause();
+                yield return new WaitWhile(() => _rb.velocity.y > 0);
+                _anim.Resume();
+                yield return new WaitWhile(() => _anim.CurrentFrame < 2);
+                // frame 1
+                _anim.SetFrame(1);
+                cols[0].SetActive(false);
+                cols[1].SetActive(true);
+                
+                _anim.Pause();
+                yield return new WaitWhile(() => transform.position.y > GroundY - 2f);
+
+                // frame 2
+                _anim.SetFrame(2);
+                cols[1].SetActive(false);
+                cols[2].SetActive(true);
+                
+                _rb.gravityScale = 0f;
+                transform.position = new Vector3(transform.position.x, GroundY - 2f);
+                _rb.velocity = new Vector2(signX * 3f, 0f);
+                yield return new WaitForSeconds(0.15f);
+                _rb.velocity = Vector2.zero;
+                yield return new WaitForSeconds(0.4f);
+                _anim.Resume();
+                yield return new WaitWhile(() => _anim.CurrentFrame < 5);
+                
+                // frame 5
+                _anim.SetFrame(5);
+                cols[2].SetActive(false);
+                cols[3].SetActive(true);
+                
+                yield return new WaitWhile(() => _anim.CurrentFrame < 6);
+                
+                // frame 6
+                _anim.SetFrame(6);
+                cols[3].SetActive(false);
+                cols[4].SetActive(true);
+                
+                yield return new WaitWhile(() => _anim.CurrentFrame < 7);
+                _hits = 0;
+                _isKnockingOut = false;
+                cols[4].SetActive(false);
+                _bc.enabled = true;
+
+                transform.Find("Colliders").Find("Stab Antic").gameObject.SetActive(true);
+                _control.FindFloatVariable("Stab Speed Crt").Value = -signX * 39;
+                
+                _control.SetState("Stab");
+            }
+            
+            void PlayDeathFor(GameObject go)
+            {
+                EnemyDeathEffectsUninfected _deathEff = FiveKnights.preloadedGO["WD"].GetComponent<EnemyDeathEffectsUninfected>();
+                GameObject eff1 = Instantiate(_deathEff.uninfectedDeathPt);
+                GameObject eff2 = Instantiate(_deathEff.whiteWave);
+
+                eff1.SetActive(true);
+                eff2.SetActive(true);
+
+                eff1.transform.position = eff2.transform.position = go.transform.position;
+
+                _deathEff.EmitSound();
+
+                GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+            }
+        }
+
         private void ModifyDaggers()
         {
-            Vasi.FsmUtil.AddCoroutine(_control.GetState("Dagger Throw"), DaggerThrow);
+            _control.GetState("Dagger Throw").AddCoroutine(DaggerThrow);
             
             IEnumerator DaggerThrow()
             {

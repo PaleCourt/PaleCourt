@@ -30,7 +30,7 @@ namespace FiveKnights.Zemer
         private DamageHero _dh;
         private EnemyHitEffectsUninfected _hitEffects;
         private EnemyDeathEffectsUninfected _deathEff;
-        private GameObject _target;
+        private GameObject _target; 
         private ParticleSystem grass;
         private string[] _commonAtt;
         private List<GameObject> _destroyAtEnd;
@@ -179,7 +179,7 @@ namespace FiveKnights.Zemer
                 && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZKnocked") 
                 && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZThrow2B")) return; 
 
-            if (transform.GetPositionX() > RightX - 3f && _rb.velocity.x > 0f)
+            if (transform.GetPositionX() > RightX - 3f && _rb.velocity.x > 0f) 
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
