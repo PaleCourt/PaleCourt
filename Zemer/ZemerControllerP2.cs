@@ -16,10 +16,10 @@ namespace FiveKnights.Zemer
 {
     public class ZemerControllerP2 : MonoBehaviour
     {
-        private HealthManager _hm;
+        private HealthManager _hm; 
         private BoxCollider2D _bc;
         private SpriteRenderer _sr;
-        private EnemyDreamnailReaction _dnailReac;
+        private EnemyDreamnailReaction _dnailReac; 
         private GameObject _dd;
         private GameObject[] traitorSlam;
         private int traitorSlamIndex;
@@ -177,14 +177,14 @@ namespace FiveKnights.Zemer
 
             if ((_bc == null || !_bc.enabled) 
                 && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZKnocked") 
-                && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZThrow2B")) return;
+                && !_anim.GetCurrentAnimatorStateInfo(0).IsName("ZThrow2B")) return; 
 
-            if (transform.GetPositionX() > RightX - 1.3f && _rb.velocity.x > 0f)
+            if (transform.GetPositionX() > RightX - 3f && _rb.velocity.x > 0f)
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
 
-            if (transform.GetPositionX() < LeftX + 1.3f && _rb.velocity.x < 0f)
+            if (transform.GetPositionX() < LeftX + 3f && _rb.velocity.x < 0f)
             {
                 _rb.velocity = new Vector2(0f, _rb.velocity.y);
             }
@@ -260,13 +260,18 @@ namespace FiveKnights.Zemer
                     else
                     {
                         counterCount = 0;
-                        Log("Doing Special Dodge");
-                        yield return Dodge();
-                        Log("End Special Dodge's Dodge");
                         var lst = new List<Func<IEnumerator>> {Dash, FancyAttack, NailLaunch, null};
                         Log("Choosing Attack");
                         var att = MiscMethods.ChooseAttack(lst, rep, max);
                         Log("Done Choosing Attack");
+                        if (att == FancyAttack) rep[AerialAttack] = 2;
+                        if (att != Dash)
+                        {
+                            Log("Doing Special Dodge");
+                            yield return Dodge();
+                            rep[Dash] = 2;
+                            Log("End Special Dodge's Dodge");
+                        }                       
                         if (att != null)
                         {
                             Log("Doing " + att.Method.Name);
@@ -303,7 +308,8 @@ namespace FiveKnights.Zemer
                     Log("Doing " + currAtt.Method.Name);
                     yield return currAtt();
                     Log("Done " + currAtt.Method.Name);
-                    
+                    if (currAtt == DoubleFancy || currAtt == FancyAttack) rep[AerialAttack] = 2;
+
                     if ((currAtt == ZemerSlam || currAtt == Dash) && rep[NailLaunch] < max[NailLaunch] &&
                         UnityEngine.Random.Range(0, 2) == 0)
                     {
@@ -429,7 +435,7 @@ namespace FiveKnights.Zemer
                 {
                     // Too close to wall
                     if (transform.position.x < LeftX + 6f || transform.position.x > RightX - 6f)
-                    {
+                    {                      
                         yield return Dash();
                         if (_target.transform.position.x.Within(transform.position.x, 12f))
                         {
@@ -1015,28 +1021,23 @@ namespace FiveKnights.Zemer
             {
                 float dir = Mathf.Sign(transform.localScale.x);
                 transform.Find("HyperCut").gameObject.SetActive(false);
-                _anim.Play("ZDash");
-                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
+                _anim.Play("ZDash2", -1, 0f);
+                transform.position = new Vector3(transform.position.x, GroundY + 0.3f, transform.position.z); 
 
 
-                yield return _anim.WaitToFrame(4);
-                
-                _anim.enabled = false;
-                
-                yield return new WaitForSeconds(DashDelay);
-                PlayAudioClip("ZAudHoriz");
-                
-                _anim.enabled = true;
-                
-                yield return _anim.WaitToFrame(5);
-                
-                
-                PlayAudioClip("AudDashIntro");
+                _anim.speed = 1.5f;
+
                 yield return _anim.WaitToFrame(6);
+                PlayAudioClip("ZemBladeShine");
+                yield return _anim.WaitToFrame(10);
+                PlayAudioClip("ZAudHoriz");
+                yield return _anim.WaitToFrame(11);
+                PlayAudioClip("AudDashIntro");
+                yield return _anim.WaitToFrame(12);
                 PlayAudioClip("AudDash");
-                _anim.speed = 2f;
                 _rb.velocity = new Vector2(-dir * DashXVel, 0f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                yield return _anim.WaitToFrame(13);
+                transform.position = new Vector3(transform.position.x, GroundY - 0.5f, transform.position.z);
                 _anim.speed = 1f;
                 _anim.enabled = false;
                 
@@ -1270,7 +1271,7 @@ namespace FiveKnights.Zemer
                 }
                 grass.Stop();
                 _anim.speed = 1f;
-                _anim.PlayAt("ZDash", 7);
+                _anim.PlayAt("ZDash", 14);
                 _anim.enabled = true;
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
@@ -1455,7 +1456,7 @@ namespace FiveKnights.Zemer
                     );
                     
                     _anim.speed = 1f;
-                    _anim.PlayAt("ZDash", 7);
+                    _anim.PlayAt("ZDash", 14);
                     _anim.enabled = true;
                     _rb.velocity = Vector2.zero;
                     yield return new WaitWhile(() => _anim.IsPlaying());
@@ -1474,7 +1475,7 @@ namespace FiveKnights.Zemer
                 float dir = FaceHero();
                 transform.Find("HyperCut").gameObject.SetActive(true);
                 _anim.enabled = true;
-                _anim.Play("ZDash", -1, 0f);
+                _anim.Play("ZDashOld", -1, 0f); 
                 transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
 
                 
@@ -1542,29 +1543,49 @@ namespace FiveKnights.Zemer
 
                 float dir = FaceHero();
                 transform.Find("HyperCut").gameObject.SetActive(false);
+                _anim.Play("ZDash", -1, 0f);
+                transform.position = new Vector3(transform.position.x, GroundY + 0.3f, transform.position.z);
 
-                _anim.Play("ZDash");
-                transform.position = new Vector3(transform.position.x, GroundY-0.3f, transform.position.z);
-                yield return _anim.WaitToFrame(4);
-                
-                _anim.enabled = false;
-                
-                yield return new WaitForSeconds(DashDelay);
-                PlayAudioClip("ZAudHoriz");
-                
-                _anim.enabled = true;
-                
-                yield return _anim.WaitToFrame(5);
-                
-                
+                int subOneFrameOnEdges = 0;
+                if (transform.position.x < LeftX + 5f || transform.position.x > RightX - 5f)
+                {
+                    // Dash from a crouch if too close to wall
+                    subOneFrameOnEdges = 1;
+                    _anim.speed = 1.1f;
+                    _anim.Play("ZDash2", -1, 0f);
+                    _anim.speed = 1f;
+                }
+                else
+                {
+                    // Backwards Antic
+                    yield return _anim.WaitToFrame(1);
+                    _anim.speed = 1.1f;
+                    yield return _anim.WaitToFrame(2);
+                    PlayAudioClip("Zem_Backdash");
+                    _rb.velocity = new Vector2(dir * 35, 0f);
+                    //yield return new WaitWhile(() => _anim.GetCurrentFrame() < 3);
+                    //_rb.velocity = new Vector2(dir * 35, -4f);
+                    yield return _anim.WaitToFrame(4);
+                    _anim.speed = 1;
+                    _rb.velocity = Vector2.zero;
+                }
+
+                yield return _anim.WaitToFrame(7 - subOneFrameOnEdges);
+                PlayAudioClip("ZemBladeShine");
+                yield return _anim.WaitToFrame(11 - subOneFrameOnEdges);
                 PlayAudioClip("AudDashIntro");
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 6);
+                yield return _anim.WaitToFrame(13 - subOneFrameOnEdges);
+                PlayAudioClip("ZAudHoriz");
                 PlayAudioClip("AudDash");
-                _anim.speed = 2f;
+                _anim.speed = 1.5f; //2f
                 _rb.velocity = new Vector2(-dir * DashXVel, 0f);
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 7);
+                yield return _anim.WaitToFrame(14 - subOneFrameOnEdges);
+                transform.position = new Vector3(transform.position.x, GroundY - 0.5f, transform.position.z);
+                _anim.enabled = false;
                 _anim.speed = 1f;
-                yield return new WaitWhile(() => _anim.GetCurrentFrame() < 9);
+                yield return new WaitForSeconds(0.15f);
+                _anim.enabled = true;
+                yield return _anim.WaitToFrame(16 - subOneFrameOnEdges);
                 _rb.velocity = Vector2.zero;
                 yield return new WaitWhile(() => _anim.IsPlaying());
                 _anim.Play("ZIdle");
@@ -1572,7 +1593,6 @@ namespace FiveKnights.Zemer
             }
 
             _lastAtt = this.Dash;
-            // TODO revert
             yield return FastApproximately(MIDDLE, transform.position.x, 8.5f) ? Dash() : RegularDash();
         }
 

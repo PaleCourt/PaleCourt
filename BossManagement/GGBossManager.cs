@@ -104,6 +104,7 @@ namespace FiveKnights.BossManagement
             {
                 dd = GameObject.Find("White Defender");
                 PlayerData.instance.SetBool(nameof(PlayerData.atBench), false);
+                if (CustomWP.boss is CustomWP.Boss.All) GameObject.Find("Battle Gate (1)").transform.SetPositionX(59.69f);
             }
             _hm = dd.GetComponent<HealthManager>();
             _fsm = dd.LocateMyFSM("Dung Defender");

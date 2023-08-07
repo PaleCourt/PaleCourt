@@ -380,7 +380,7 @@ namespace FiveKnights.BossManagement
                     CustomWP.boss = CustomWP.Boss.Ze;
                     PlayerData.instance.dreamReturnScene = PrevZemScene;
                     FixBlur();
-                    AddBattleGate(243.9f, 99999f, new Vector2(238.4f, 107f));
+                    AddBattleGate(243.9f, 99999f, new Vector2(238.835f, 107f));
                     AddSuperDashCancel();
                     FixPitDeath();
                     DreamEntry();
@@ -609,6 +609,11 @@ namespace FiveKnights.BossManagement
                 }
             }
             Log("Fixed renderer sorting orders");
+            foreach (var aud in FindObjectsOfType<AudioSource>())
+            {
+                if (aud.outputAudioMixerGroup != null) continue;
+                aud.outputAudioMixerGroup = HeroController.instance.GetComponent<AudioSource>().outputAudioMixerGroup;
+            }
         }
 
         private void AddBattleGate(float x, float y, Vector2 pos)

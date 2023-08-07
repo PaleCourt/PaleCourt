@@ -423,11 +423,11 @@ namespace FiveKnights
             charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
-            preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom");
+            preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom"); 
             #endregion
 
             Instance = this;
-            UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed"));
+            UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("Check if midwarp or completed")); 
             UObject.Destroy(preloadedGO["DPortal"].LocateMyFSM("FSM"));
             GameManager.instance.StartCoroutine(WaitForTitle());
             PlantChanger();
@@ -690,7 +690,7 @@ namespace FiveKnights
         }
 
         private object SetVariableHook(Type t, string key, object orig)
-        {
+        { 
             if (key == "statueStateIsma")
                 SaveSettings.CompletionIsma = (BossStatue.Completion)orig;
             else if (key == "statueStateDryya")
