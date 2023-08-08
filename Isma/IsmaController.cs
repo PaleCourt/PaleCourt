@@ -893,23 +893,24 @@ namespace FiveKnights.Isma
                 {
                     tmpRot = tmpRot + 180f;
                     tmpRot = tmpRot < 220f ? 220f : tmpRot;
-                    Log($"What is deg1? {tmpRot}");
                 }
                 else
                 {
                     tmpRot = tmpRot > -40f ? -40f : tmpRot;
-                    Log($"What is deg2? {tmpRot}");
                 }
                 return tmpRot * Mathf.Deg2Rad;
             }
             
-            yield return _anim.PlayToFrameAt("AcidSwipe", 0, 4);
-            _anim.enabled = false;
-            // Shortened delay if WD is present to avoid getting canceled by the next attack
-            yield return new WaitForSeconds(onlyIsma ? 0.3f : 0.1f);
-            _anim.enabled = true;
-            
-            yield return _anim.WaitToFrame(6);
+            // antic that switches from whip to acid throw
+            // if on left side, go right, else go left to make sure we dont hit wall
+            float dirToRun = transform.position.x < MiddleX ? 1 : -1;
+            _rb.velocity = new Vector2( dirToRun * 15f, 0f);
+            _anim.speed = 1.5f;
+            yield return _anim.PlayToFrameAt("AcidSwipe", 0, 5);
+            _anim.speed = 1f;
+            _rb.velocity = Vector2.zero;
+            // end of antic continue with regular acid swipe
+            yield return _anim.PlayToFrameAt("AcidSwipe", 5, 11);
             
             Vector2 tarPos = HeroController.instance.transform.position;
             Vector3 pos = transform.position - new Vector3(0f, 0.5f, 0f);
