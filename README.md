@@ -14,8 +14,8 @@
 
 **This mod requires the core mods: FrogCore, Vasi, SFCore**
 
-*The mod works great on both Linux and Windows!*
-For the Steam Deck, you may need to force disable Proton using [Steam-Play-None](https://github.com/Scrumplex/Steam-Play-None)
+*The mod runs on Linux, Mac, and Windows!*
+For the **Steam Deck**, you may need to force disable Proton using [Steam-Play-None](https://github.com/Scrumplex/Steam-Play-None).
 
 [The amazing people that made this mod possible.](https://docs.google.com/document/d/e/2PACX-1vS3wfVgRQJie-CmAERsXvK5qpVaPbYuYff0wl4ehI-VGDYrXZd00UhrV1aXuWikao8yXPrILmYS9FYX/pub)
 
