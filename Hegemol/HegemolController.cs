@@ -58,10 +58,12 @@ namespace FiveKnights.Hegemol
         private bool _attacking;
         private bool _usingGroundPunch = false;
         private bool _grounded;
+        private static LanguageCtrl _langCtrl;
 
         private void Awake()
         {
             Log("Hegemol Awake");
+            _langCtrl = new LanguageCtrl();
 
             gameObject.name = "Hegemol";
             gameObject.layer = (int)PhysLayers.CORPSE;
@@ -150,12 +152,23 @@ namespace FiveKnights.Hegemol
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
+            string superTitle = "Mighty";
+            string mainTitle = "Hegemol";
+            string subTitle = "";
+            
+            string sheet = "Reward Room";
+            if (_langCtrl.ContainsKey("RR_HEGEMOL_TITLE_SUPER", sheet))
+            {
+                superTitle = _langCtrl.Get("RR_HEGEMOL_TITLE_SUPER", sheet);
+                mainTitle = _langCtrl.Get("RR_HEGEMOL_TITLE_MAIN", sheet);
+                subTitle = _langCtrl.Get("RR_HEGEMOL_TITLE_SUB", sheet);
+            }
             area = Instantiate(area);
             area.SetActive(true);
             AreaTitleCtrl.ShowBossTitle(
-                this, area, 2f,
-                "", "", "",
-                "Hegemol", "Mighty");
+                this, area, 2f, 
+                "","","",
+                mainTitle,superTitle, subTitle);
 
             _attacking = true;
             yield return IntroAttack();

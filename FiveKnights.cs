@@ -25,7 +25,7 @@ namespace FiveKnights
 {
     // If you're digging through these files for secrets, do us
     // a favor and keep your discoveries to yourself for at least a
-    // day to let other people enjoy the mod. Thanks.
+    // day to let other people enjoy the mod. Thanks. 
 
     [UsedImplicitly]
     public class FiveKnights : FullSettingsMod<SaveModSettings, GlobalModSettings>
@@ -184,7 +184,7 @@ namespace FiveKnights
             {
                 string name = keyValuePair.Key;
                 string prefix = "ENTRY_" + (name.Length == 4 ? "ISMA" : name.Substring(0, 3).ToUpper());
-                JournalHelper journalHelper = keyValuePair.Value;
+                JournalHelper journalHelper = keyValuePair.Value; 
                 if (journalHelper.playerData.killsremaining != 0)
                     journalHelper.playerData.killsremaining = 1;
                 journalHelper.playerData.Hidden = true;
@@ -199,7 +199,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "1.0.1.1-2023-09-21";
+        public override string GetVersion() => "1.0.1.1-2023-10-29";
 
         public override List<(string, string)> GetPreloadNames()
         {

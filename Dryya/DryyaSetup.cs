@@ -57,9 +57,11 @@ namespace FiveKnights.Dryya
         private List<GameObject> _slashes;
         private GameObject _stabFlash;
         private List<ElegyBeam> _elegyBeams;
+        private static LanguageCtrl _langCtrl;
 
         private void Awake()
         {
+            _langCtrl = new LanguageCtrl();
             gameObject.SetActive(true);
             gameObject.layer = 11;
 
@@ -159,12 +161,23 @@ namespace FiveKnights.Dryya
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
+            string superTitle = "Fierce";
+            string mainTitle = "Dryya";
+            string subTitle = "";
+            
+            string sheet = "Reward Room";
+            if (_langCtrl.ContainsKey("RR_DRYYA_TITLE_SUPER", sheet))
+            {
+                superTitle = _langCtrl.Get("RR_DRYYA_TITLE_SUPER", sheet);
+                mainTitle = _langCtrl.Get("RR_DRYYA_TITLE_MAIN", sheet);
+                subTitle = _langCtrl.Get("RR_DRYYA_TITLE_SUB", sheet);
+            }
             area = Instantiate(area);
             area.SetActive(true);
             AreaTitleCtrl.ShowBossTitle(
-                this, area, 2f,
-                "", "", "",
-                "Dryya", "Fierce");
+                this, area, 2f, 
+                "","","",
+                mainTitle,superTitle, subTitle);
         }
 
         private void MusicControl()

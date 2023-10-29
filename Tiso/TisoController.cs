@@ -47,9 +47,11 @@ namespace FiveKnights.Tiso
 
         public Dictionary<Func<IEnumerator>, int> Rep;
         private Dictionary<Func<IEnumerator>, int> _max;
+        private static LanguageCtrl _langCtrl;
 
         private void Awake()
         {
+            _langCtrl = new LanguageCtrl();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
             On.SpellFluke.DoDamage += SpellFlukeOnDoDamage;
@@ -266,10 +268,17 @@ namespace FiveKnights.Tiso
             }
             area = Instantiate(area);
             area.SetActive(true);
+
+            string bossTitle = "Tiso";
+            if (_langCtrl.ContainsKey("TISO_NAME", "Speech"))
+            {
+                bossTitle = _langCtrl.Get("TISO_NAME", "Speech");
+            }
+            
             AreaTitleCtrl.ShowBossTitle(
                 this, area, 2f, 
                 "","","",
-                "Tiso","");
+                bossTitle,"");
         }
 
         private void HealthManager_TakeDamage(On.HealthManager.orig_TakeDamage orig, HealthManager self,

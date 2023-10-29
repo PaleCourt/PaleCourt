@@ -76,9 +76,11 @@ namespace FiveKnights.Isma
         public static bool killAllMinions;
         public static bool eliminateMinions;
         public bool introDone;
+        private static LanguageCtrl _langCtrl;
 
         private void Awake()
         {
+            _langCtrl = new LanguageCtrl();
             _hm = gameObject.AddComponent<HealthManager>();
             _sr = gameObject.GetComponent<SpriteRenderer>();
             _anim = gameObject.GetComponent<Animator>();
@@ -265,21 +267,46 @@ namespace FiveKnights.Isma
             {
                 area = i.transform.Find("Area Title").gameObject;
             }
+            
+            string superTitleIsma = "Kindly";
+            string mainTitleIsma = "Isma";
+            string subTitleIsma = "";
+            string superTitleOgrim = "Loyal";
+            string mainTitleOgrim = "Ogrim";
+            string subTitleOgrim = "";
+            
+            string sheet = "Reward Room";
+            if (_langCtrl.ContainsKey("RR_ISMA_TITLE_SUPER", sheet))
+            {
+                superTitleIsma = _langCtrl.Get("RR_ISMA_TITLE_SUPER", sheet);
+                mainTitleIsma = _langCtrl.Get("RR_ISMA_TITLE_MAIN", sheet);
+                subTitleIsma = _langCtrl.Get("RR_ISMA_TITLE_SUB", sheet);
+            }
+
+            if (_langCtrl.ContainsKey("RR_OGRIM_TITLE_SUPER", sheet))
+            {
+                superTitleOgrim = _langCtrl.Get("RR_OGRIM_TITLE_SUPER", sheet);
+                mainTitleOgrim = _langCtrl.Get("RR_OGRIM_TITLE_MAIN", sheet);
+                subTitleOgrim = _langCtrl.Get("RR_OGRIM_TITLE_SUB", sheet);
+            }
+            
             if(!onlyIsma)
             {
-                if(transform.position.x > dd.transform.position.x) StartCoroutine(ChangeIntroText(area, "Isma", "", "Kindly", true));
-                else StartCoroutine(ChangeIntroText(area, "Ogrim", "", "Loyal", true));
+                if(transform.position.x > dd.transform.position.x) StartCoroutine(ChangeIntroText(area, mainTitleIsma, subTitleIsma, superTitleIsma, true));
+                else StartCoroutine(ChangeIntroText(area, mainTitleOgrim, subTitleOgrim, superTitleOgrim, true));
             }
             
             GameObject area2 = Instantiate(area);
             area2.SetActive(true);
             if(!onlyIsma && transform.position.x > dd.transform.position.x)
             {
-                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", "Ogrim", "Loyal");
+                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", 
+                    mainTitleOgrim, superTitleOgrim, subTitleOgrim);
             }
             else
             {
-                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", "Isma", "Kindly");
+                AreaTitleCtrl.ShowBossTitle(this, area2, 2f, "", "", "", 
+                    mainTitleIsma, superTitleIsma, subTitleIsma);
             }
 
             if(onlyIsma) _bc.enabled = true;

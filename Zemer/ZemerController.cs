@@ -63,10 +63,12 @@ namespace FiveKnights.Zemer
         private readonly int DreamConvoAmount = 3;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ZEM_DREAM" :
             ((CustomWP.boss is CustomWP.Boss.Ze or CustomWP.Boss.Mystic) ? "ZEM_GG_DREAM" : "ZEM_GG_DREAM");
+        private static LanguageCtrl _langCtrl;
 
         private void Awake()
         {
             OnDestroy();
+            _langCtrl = new LanguageCtrl();
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
             On.HealthManager.Die += HealthManagerOnDie;
             On.EnemyDreamnailReaction.RecieveDreamImpact += OnReceiveDreamImpact;
@@ -143,7 +145,7 @@ namespace FiveKnights.Zemer
         }
 
         private bool _stopForcingHB;
-        
+
         private void DoTitle()
         {
             GameObject area = null;
@@ -152,13 +154,24 @@ namespace FiveKnights.Zemer
                 area = i.transform.Find("Area Title").gameObject;
             }
 
-            string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
+            // string title = CustomWP.boss == CustomWP.Boss.Ze ? "Mysterious" : "Mystic";
+            string superTitle = "Mysterious";
+            string mainTitle = "Ze'mer";
+            string subTitle = "";
+            
+            string sheet = "Reward Room";
+            if (_langCtrl.ContainsKey("RR_ZEMER_TITLE_SUPER", sheet))
+            {
+                superTitle = _langCtrl.Get("RR_ZEMER_TITLE_SUPER", sheet);
+                mainTitle = _langCtrl.Get("RR_ZEMER_TITLE_MAIN", sheet);
+                subTitle = _langCtrl.Get("RR_ZEMER_TITLE_SUB", sheet);
+            }
             area = Instantiate(area);
             area.SetActive(true);
             AreaTitleCtrl.ShowBossTitle(
                 this, area, 2f, 
                 "","","",
-                "Ze'mer",title);
+                mainTitle,superTitle, subTitle);
         }
 
         private IEnumerator Start()
