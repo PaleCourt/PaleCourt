@@ -199,7 +199,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "1.0.1.1-2023-10-29";
+        public override string GetVersion() => "2024-1-7";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -660,7 +660,7 @@ namespace FiveKnights
             ABManager.Load(ABManager.Bundle.OWArenaDep);
             ABManager.Load(ABManager.Bundle.WSArenaDep);
             ABManager.Load(ABManager.Bundle.WSArena);
-            ABManager.Load(ABManager.Bundle.Tk2dDep);
+            //ABManager.Load(ABManager.Bundle.Tk2dDep);
             ABManager.Load(ABManager.Bundle.GArenaHub);
             ABManager.Load(ABManager.Bundle.GArenaHub2);
             ABManager.Load(ABManager.Bundle.Misc);

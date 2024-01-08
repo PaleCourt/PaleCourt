@@ -61,13 +61,8 @@ namespace FiveKnights.BossManagement
         private void USceneManagerOnActiveSceneChanged(Scene fromScene, Scene toScene)
         {
             _prevScene = fromScene.name;
-            ChangeSceneForArenas(toScene);           
+            ChangeSceneForArenas(toScene);   
         }
-
-        //private void USceneManagerOnSceneLoaded(Scene scene, LoadSceneMode mode)
-        //{
-        // ChangeSceneForArenas(scene);
-        //}
 
         private string GameManagerOnGetCurrentMapZone(On.GameManager.orig_GetCurrentMapZone orig, GameManager self)
         {
@@ -177,7 +172,8 @@ namespace FiveKnights.BossManagement
                         }
                     }
                     else if (self.sceneName == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
-                            PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)))
+                            (PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)) || 
+                            PlayerData.instance.GetBool(nameof(PlayerData.hasCityKey))))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(114.1f, 12.4f), Vector2.zero, 
                             null, null, false, false, true, 
@@ -204,23 +200,12 @@ namespace FiveKnights.BossManagement
 
         private void ArenaBundleManage()
         {
-            Log("Arena bund");
+            Log("Arena bundle manage");
             if (_currScene == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
             {
                 if (_prevScene == DryyaScene)
                 {
-                    if (OWBossManager.Instance != null)
-                    {
-                        Log("Destroying OWBossManager");
-                        Destroy(OWBossManager.Instance);
-                    }
-                    var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
-                    fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
-                    HeroController.instance.RelinquishControl();
-                    HeroController.instance.MaxHealth();
-                    PlayerData.instance.UpdateBlueHealth();
-                    HeroController.instance.ClearMPSendEvents();
-                    PlayerData.instance.disablePause = true;
+                    BossReturn(false);
                 }
                 BossLoader.LoadDryyaBundle();
                 foreach (var i in FindObjectsOfType<GameObject>()
@@ -237,64 +222,31 @@ namespace FiveKnights.BossManagement
             {
                 if (_prevScene == ZemerScene)
                 {
-                    if (OWBossManager.Instance != null)
-                    {
-                        Log("Destroying OWBossManager");
-                        // Stop music first because the scene has no stop music trigger
-                        OWBossManager.PlayMusic(null);
-                        Destroy(OWBossManager.Instance);
-                    }
-                    var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
-                    fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
-                    HeroController.instance.RelinquishControl();
-                    HeroController.instance.MaxHealth();
-                    PlayerData.instance.UpdateBlueHealth();
-                    HeroController.instance.ClearMPSendEvents();
+                    BossReturn(true);
                 }
                 BossLoader.LoadZemerBundle();
                 CreateDreamGateway("Dream Enter", "door1", 
                     new Vector2(25.1f, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, ZemerScene, PrevZemScene);
             }
-            else if (_currScene == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) && 
-                PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)))
+            else if (_currScene == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+                (PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)) ||
+                PlayerData.instance.GetBool(nameof(PlayerData.hasCityKey))))
             {
                 if (_prevScene == HegemolScene)
                 {
-                    if (OWBossManager.Instance != null)
-                    {
-                        Log("Destroying OWBossManager");
-                        Destroy(OWBossManager.Instance);
-                    }
-                    var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
-                    fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
-                    HeroController.instance.RelinquishControl();
-                    HeroController.instance.MaxHealth();
-                    PlayerData.instance.UpdateBlueHealth();
-                    HeroController.instance.ClearMPSendEvents();
+                    BossReturn(false);
                 }
                 BossLoader.LoadHegemolBundle();
                 CreateDreamGateway("Dream Enter", "door1", 
                     new Vector2(118.1f, 13.5f), new Vector2(5f, 5f), new Vector2(3f, 3f),
                     Vector2.zero, HegemolScene, PrevHegScene);
-                Log("Done with hegemol idiocy");
             }
             else if (_currScene == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
             {
                 if (_prevScene == IsmaScene)
                 {
-                    if (OWBossManager.Instance != null)
-                    {
-                        Log("Destroying OWBossManager");
-                        Destroy(OWBossManager.Instance);
-                    }
-                    var fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
-                    fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
-                    HeroController.instance.RelinquishControl();
-                    HeroController.instance.MaxHealth();
-                    PlayerData.instance.UpdateBlueHealth();
-                    HeroController.instance.ClearMPSendEvents();
-                    PlayerData.instance.disablePause = true;
+                    BossReturn(false);
                 }
                 BossLoader.LoadIsmaBundle();
                 foreach (var i in FindObjectsOfType<GameObject>()
@@ -308,6 +260,24 @@ namespace FiveKnights.BossManagement
             }
         }
         
+        private void BossReturn(bool stopMusic)
+		{
+            if(OWBossManager.Instance != null)
+            {
+                // Used for Ze'mer because the house scene has no stop music trigger
+                if(stopMusic) OWBossManager.PlayMusic(null);
+                Log("Destroying OWBossManager");
+                Destroy(OWBossManager.Instance);
+            }
+            PlayMakerFSM fsm = HeroController.instance.gameObject.LocateMyFSM("Dream Return");
+            fsm.FsmVariables.FindFsmBool("Dream Returning").Value = true;
+            HeroController.instance.RelinquishControl();
+            HeroController.instance.MaxHealth();
+            PlayerData.instance.UpdateBlueHealth();
+            HeroController.instance.ClearMPSendEvents();
+            CustomWP.boss = CustomWP.Boss.None;
+        }
+
         IEnumerator ShaderFixer()
         {
             yield return new WaitForSeconds(0.5f);
