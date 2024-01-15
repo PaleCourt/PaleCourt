@@ -5,6 +5,7 @@ using Modding;
 using SFCore.Utils;
 using System.Collections;
 using System.Reflection;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Vasi;
@@ -226,6 +227,8 @@ namespace FiveKnights
             fsm.InsertAction("Init", new SetTextMeshProText() { textString = fsm.FindFsmStringVariable("Game Text"), gameObject = new FsmOwnerDefault { OwnerOption = OwnerDefaultOption.SpecifyGameObject, GameObject = fsm.gameObject.Find("Item Name") } }, 1);
             fsm.InsertAction("Init", new GetLanguageString() {sheetName = "Prompts",  convName = "CUSTOM_ITEM_INTROS", storeValue = fsm.FindFsmStringVariable("Game Text") }, 2);
             fsm.InsertAction("Init", new SetTextMeshProText() { textString = fsm.FindFsmStringVariable("Game Text"), gameObject = new FsmOwnerDefault { OwnerOption = OwnerDefaultOption.SpecifyGameObject, GameObject = fsm.gameObject.Find("Item Name Prefix") } }, 3);
+            TextContainer textContainer = _charmGet.Find("Item Name").GetComponent<TextContainer>();
+            textContainer.size = new Vector2(100f, textContainer.size.y); // Prevent line wrapping issues in other languages
             _charmGet.Find("Item Name").LocateMyFSM("color_fader").FindFsmFloatVariable("Up Delay").Value = upDelay;
             _charmGet.Find("Item Name Prefix").LocateMyFSM("color_fader").FindFsmFloatVariable("Up Delay").Value = upDelay;
         }

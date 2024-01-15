@@ -747,7 +747,7 @@ namespace FiveKnights.Isma
                             Vector2 path = targetPos - (Vector2)bomb.transform.position;
                             float rot = Mathf.Atan2(path.y, path.x);
 
-                            GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
+                            GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot * Mathf.Rad2Deg));
                             localSeed.name = "VineWallSeed";
                             localSeed.SetActive(true);
                             localSeed.GetComponent<Rigidbody2D>().velocity =
@@ -1837,9 +1837,11 @@ namespace FiveKnights.Isma
             }
 
             // Wait when he's down and make some changes
-            yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
+            yield return new WaitUntil(() => _ddFsm.ActiveStateName == "Stun Land");
             _ddFsm.enabled = false;
             burrow.enabled = false;
+            // Remove screenshake, WD gets reset to the Init state when the FSM is reenabled
+            _ddFsm.RemoveAction("Wake", 9);
             yield return new WaitForSeconds(1f);
             foreach(FsmTransition i in _ddFsm.GetState("Idle").Transitions)
             {
@@ -1853,7 +1855,7 @@ namespace FiveKnights.Isma
             // Reenable burrow effect and his fsm
             yield return new WaitForSeconds(0.5f);
             burrow.enabled = true;
-            yield return new WaitWhile(() => !_ddFsm.ActiveStateName.Contains("Tunneling"));
+            yield return new WaitUntil(() => _ddFsm.ActiveStateName.Contains("Tunneling"));
             _ddFsm.enabled = false;
 
             // Start Agony

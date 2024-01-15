@@ -61,6 +61,10 @@ namespace FiveKnights.BossManagement
         private void USceneManagerOnActiveSceneChanged(Scene fromScene, Scene toScene)
         {
             _prevScene = fromScene.name;
+            if(_prevScene == DryyaScene || _prevScene == ZemerScene || _prevScene == HegemolScene || _prevScene == IsmaScene)
+			{
+                CustomWP.boss = CustomWP.Boss.None;
+            }
             ChangeSceneForArenas(toScene);   
         }
 
@@ -275,7 +279,6 @@ namespace FiveKnights.BossManagement
             HeroController.instance.MaxHealth();
             PlayerData.instance.UpdateBlueHealth();
             HeroController.instance.ClearMPSendEvents();
-            CustomWP.boss = CustomWP.Boss.None;
         }
 
         IEnumerator ShaderFixer()
