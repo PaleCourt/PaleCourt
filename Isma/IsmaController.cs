@@ -12,7 +12,7 @@ using Modding;
 using SFCore.Utils;
 using TMPro;
 using UnityEngine;
-using Vasi; 
+using Vasi;
 using Logger = Modding.Logger;
 using Random = System.Random;
 
@@ -428,6 +428,16 @@ namespace FiveKnights.Isma
 
             // Increase delay after ground slam
             _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
+
+            // Slightly extend delay after ground slam if Isma uses the acid attack
+            _ddFsm.CopyFsmState("G Slam Recover", "G Slam Recover Acid");
+            _ddFsm.GetAction<Wait>("G Slam Recover Acid", 0).time = 0.5f;
+            _ddFsm.RemoveAction("G Slam Recover Acid", 1);
+            _ddFsm.InsertMethod("G Slam Recover Acid", () =>
+            {
+                Log("G Slam Recover Acid");
+                _ddFsm.ChangeFsmTransition("G Slam Recover", "WAIT", "Move Choice");
+            }, 0);
 
             // Decrease screenshake while WD is underground
             _ddFsm.GetAction<SetFsmBool>("Tunneling R", 0).variableName.Value = "RumblingSmall";
@@ -912,6 +922,12 @@ namespace FiveKnights.Isma
         
         private IEnumerator AcidThrow()
         {
+            // Extend the time Ogrim waits after the ground slam
+            if(!onlyIsma)
+			{
+                _ddFsm.ChangeFsmTransition("G Slam Recover", "WAIT", "G Slam Recover Acid");
+            }
+
             float GetRot(Vector3 origPos, Vector3 tarPos)
             {
                 Vector2 diff = origPos - tarPos;
