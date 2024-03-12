@@ -13,6 +13,11 @@ namespace FiveKnights
         private PlayMakerFSM _fsm;
         public bool upgraded;
 
+        private const int PlumeDamage = 7;
+        private const int PlumeDamageShaman = 11;
+        private const float PlumeTime = 0.4f;
+        private const float PlumeTimeUpgraded = 0.7f;
+
         private void Awake()
         {
             transform.localScale = new Vector3(0.75f, 0.75f, 0.75f);
@@ -33,14 +38,14 @@ namespace FiveKnights
             damageEnemies.ignoreInvuln = false;
             damageEnemies.attackType = AttackTypes.Spell;
             damageEnemies.direction = 2;
-            damageEnemies.damageDealt = PlayerData.instance.equippedCharm_19 ? 11 : 7;
+            damageEnemies.damageDealt = PlayerData.instance.equippedCharm_19 ? PlumeDamageShaman : PlumeDamage;
         }
 
         private IEnumerator AnimControl()
         {
             yield return new WaitForSeconds(0.1f);
             gameObject.GetComponent<tk2dSpriteAnimator>().enabled = false;
-            yield return new WaitForSeconds(upgraded ? 0.7f : 0.4f);
+            yield return new WaitForSeconds(upgraded ? PlumeTimeUpgraded : PlumeTime);
             gameObject.GetComponent<tk2dSpriteAnimator>().enabled = true;
         }
 

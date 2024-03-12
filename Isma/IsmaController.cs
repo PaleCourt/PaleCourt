@@ -12,7 +12,7 @@ using Modding;
 using SFCore.Utils;
 using TMPro;
 using UnityEngine;
-using Vasi; 
+using Vasi;
 using Logger = Modding.Logger;
 using Random = System.Random;
 
@@ -429,6 +429,16 @@ namespace FiveKnights.Isma
             // Increase delay after ground slam
             _ddFsm.GetAction<Wait>("G Slam Recover", 0).time = 1.2f;
 
+            // Slightly extend delay after ground slam if Isma uses the acid attack
+            _ddFsm.CopyFsmState("G Slam Recover", "G Slam Recover Acid");
+            _ddFsm.GetAction<Wait>("G Slam Recover Acid", 0).time = 0.5f;
+            _ddFsm.RemoveAction("G Slam Recover Acid", 1);
+            _ddFsm.InsertMethod("G Slam Recover Acid", () =>
+            {
+                Log("G Slam Recover Acid");
+                _ddFsm.ChangeFsmTransition("G Slam Recover", "WAIT", "Move Choice");
+            }, 0);
+
             // Decrease screenshake while WD is underground
             _ddFsm.GetAction<SetFsmBool>("Tunneling R", 0).variableName.Value = "RumblingSmall";
             _ddFsm.GetAction<SetFsmBool>("Erupt Antic", 3).variableName.Value = "RumblingSmall";
@@ -747,7 +757,7 @@ namespace FiveKnights.Isma
                             Vector2 path = targetPos - (Vector2)bomb.transform.position;
                             float rot = Mathf.Atan2(path.y, path.x);
 
-                            GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot));
+                            GameObject localSeed = Instantiate(seed, bomb.transform.position, Quaternion.Euler(0f, 0f, rot * Mathf.Rad2Deg));
                             localSeed.name = "VineWallSeed";
                             localSeed.SetActive(true);
                             localSeed.GetComponent<Rigidbody2D>().velocity =
@@ -912,6 +922,12 @@ namespace FiveKnights.Isma
         
         private IEnumerator AcidThrow()
         {
+            // Extend the time Ogrim waits after the ground slam
+            if(!onlyIsma)
+			{
+                _ddFsm.ChangeFsmTransition("G Slam Recover", "WAIT", "G Slam Recover Acid");
+            }
+
             float GetRot(Vector3 origPos, Vector3 tarPos)
             {
                 Vector2 diff = origPos - tarPos;
@@ -1837,9 +1853,11 @@ namespace FiveKnights.Isma
             }
 
             // Wait when he's down and make some changes
-            yield return new WaitWhile(() => _ddFsm.ActiveStateName != "Stun Land");
+            yield return new WaitUntil(() => _ddFsm.ActiveStateName == "Stun Land");
             _ddFsm.enabled = false;
             burrow.enabled = false;
+            // Remove screenshake, WD gets reset to the Init state when the FSM is reenabled
+            _ddFsm.RemoveAction("Wake", 9);
             yield return new WaitForSeconds(1f);
             foreach(FsmTransition i in _ddFsm.GetState("Idle").Transitions)
             {
@@ -1853,7 +1871,7 @@ namespace FiveKnights.Isma
             // Reenable burrow effect and his fsm
             yield return new WaitForSeconds(0.5f);
             burrow.enabled = true;
-            yield return new WaitWhile(() => !_ddFsm.ActiveStateName.Contains("Tunneling"));
+            yield return new WaitUntil(() => _ddFsm.ActiveStateName.Contains("Tunneling"));
             _ddFsm.enabled = false;
 
             // Start Agony
