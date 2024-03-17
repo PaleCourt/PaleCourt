@@ -6,7 +6,7 @@
 *Overcome your opponents with powerful new charms!*  
 *Discover new secrets and stories!*  
 *All with an incredible new soundtrack!*  
-**Now available on Scarab+ & Scarab!**
+**Now available on Lumafly & Scarab!**
 
 *Want to discuss the mod, report a bug, or get news on updates? Join our [Discord](https://discord.com/invite/n8wayV8RNV)!*  
 *Looking for help installing mods? Check out [Fireb0rn's video tutorial](https://www.youtube.com/watch?v=z35cFvU0McQ)!*  
