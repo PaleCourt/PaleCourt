@@ -2,7 +2,105 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Copy Base Assetbundles",
+            "label": "Copy Base Linux Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity/AssetBundles/StandaloneLinux"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy DryyaHeg Linux Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneLinux"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy Godhome Linux Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneLinux"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy All Linux Assetbundles",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Copy Godhome Linux Assetbundles",
+                "Copy DryyaHeg Linux Assetbundles",
+                "Copy Base Linux Assetbundles",
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Copy Base MacOS Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity/AssetBundles/StandaloneOSX"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy DryyaHeg MacOS Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneOSX"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy Godhome MacOS Assetbundles",
+            "type": "shell",
+            "options": {
+                "cwd": "${workspaceFolder}",
+                "env": {
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneOSX"
+                }
+            },
+            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
+            "problemMatcher": [],
+            "group": "build",
+        },
+        {
+            "label": "Copy All MacOS Assetbundles",
+            "dependsOrder": "sequence",
+            "dependsOn": [
+                "Copy Godhome MacOS Assetbundles",
+                "Copy DryyaHeg MacOS Assetbundles",
+                "Copy Base MacOS Assetbundles",
+            ],
+            "group": "build"
+        },
+        {
+            "label": "Copy Base Windows Assetbundles",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -15,7 +113,7 @@
             "group": "build",
         },
         {
-            "label": "Copy DryyaHeg Assetbundles",
+            "label": "Copy DryyaHeg Windows Assetbundles",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -28,7 +126,7 @@
             "group": "build",
         },
         {
-            "label": "Copy Godhome Assetbundles",
+            "label": "Copy Godhome Windows Assetbundles",
             "type": "shell",
             "options": {
                 "cwd": "${workspaceFolder}",
@@ -41,26 +139,12 @@
             "group": "build",
         },
         {
-            "label": "Copy Misc Assetbundles",
-            "type": "shell",
-            "options": {
-                "cwd": "${workspaceFolder}",
-                "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Misc/AssetBundles/StandaloneWindows"
-                }
-            },
-            "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
-            "problemMatcher": [],
-            "group": "build",
-        },
-        {
-            "label": "Copy All Assetbundles",
+            "label": "Copy All Windows Assetbundles",
             "dependsOrder": "sequence",
             "dependsOn": [
-                "Copy Misc Assetbundles",
-                "Copy Godhome Assetbundles",
-                "Copy DryyaHeg Assetbundles",
-                "Copy Base Assetbundles",
+                "Copy Godhome Windows Assetbundles",
+                "Copy DryyaHeg Windows Assetbundles",
+                "Copy Base Windows Assetbundles",
             ],
             "group": "build"
         },
