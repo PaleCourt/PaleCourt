@@ -51,7 +51,8 @@ namespace FiveKnights.Isma
         private readonly float GroundY = OWArenaFinder.IsInOverWorld ||
             CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 5.9f : 6.67f;
         private float MiddleX => (LeftX + RightX) / 2;
-        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : (CustomWP.boss == CustomWP.Boss.All ? 5 : 3);
+        private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 4 : 
+            (CustomWP.boss == CustomWP.Boss.All || CustomWP.boss == CustomWP.Boss.Ogrim ? 5 : 3);
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "ISMA_DREAM" : "ISMA_GG_DREAM";
 
         private readonly int MaxHP = CustomWP.lev > 0 ? 1650 : 1450;
