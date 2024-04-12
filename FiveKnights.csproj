@@ -9,8 +9,8 @@
     <Product>FiveKnights</Product>
     <Description></Description>
     <Copyright>Copyright © Hewlett-Packard 2020</Copyright>
-    <AssemblyVersion>1.0.1.1</AssemblyVersion>
-    <FileVersion>1.0.1.1</FileVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
     <HollowKnightRefs Condition="Exists('/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/')">/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/</HollowKnightRefs>
