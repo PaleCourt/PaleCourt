@@ -27,8 +27,11 @@ namespace FiveKnights.Dryya
         private readonly float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
         private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 4;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "DRYYA_DREAM" : "DRYYA_GG_DREAM";
+        private readonly int MaxStaggerHits = 10;
 
-        private PlayMakerFSM _mageLord;
+		private int _hitsTaken;
+
+		private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
 
         private EnemyDeathEffectsUninfected _deathEffects;
@@ -211,7 +214,37 @@ namespace FiveKnights.Dryya
             if(self.gameObject.name.Contains("Dryya"))
             {
                 _spriteFlash.flashFocusHeal();
-            }
+                if(!_control.ActiveStateName.Contains("Knockout"))
+                {
+                    _hitsTaken++;
+                }
+
+				if(_hm.hp <= Phase3HP || _hitsTaken >= MaxStaggerHits)
+				{
+                    if(_elegyBeams != null)
+                    {
+						Log("Destroying elegy beams");
+						foreach(ElegyBeam elegy in from x in _elegyBeams where x != null select x)
+						{
+							Destroy(elegy);
+						}
+					}
+					Log("Stagger");
+					_bc.isTrigger = false;
+					_control.SendEvent("STAGGER");
+					_hitsTaken = 0;
+					this.PlayAudio(FiveKnights.Clips["DryyaVoiceDeath"], 1f);
+
+					EnemyDeathEffectsUninfected _deathEff = FiveKnights.preloadedGO["WD"].GetComponent<EnemyDeathEffectsUninfected>();
+					GameObject eff = Instantiate(_deathEff.uninfectedDeathPt);
+					GameObject eff2 = Instantiate(_deathEff.whiteWave);
+					eff.SetActive(true);
+					eff2.SetActive(true);
+					eff.transform.position = eff2.transform.position = transform.position;
+					_deathEff.EmitSound();
+					GameCameras.instance.cameraShakeFSM.SendEvent("EnemyKillShake");
+				}
+			}
         }
 
         private void AddComponents()
@@ -337,7 +370,7 @@ namespace FiveKnights.Dryya
             
             IEnumerator DaggerThrow()
             {
-                _bc.isTrigger = true;
+				_bc.isTrigger = true;
                 var localScale = transform.localScale;
                 float signX = Mathf.Sign(localScale.x);
                 _rb.velocity = new Vector2(0f, 0f);
@@ -380,7 +413,8 @@ namespace FiveKnights.Dryya
                 _rb.velocity = new Vector2(0f, 0f);
                 _rb.gravityScale = 0f;
                 _control.SetState("Idle");
-            }
+
+			}
         }
 
         private IEnumerator SpawnDaggers()
@@ -451,15 +485,18 @@ namespace FiveKnights.Dryya
 
         private IEnumerator ActivateBeams()
         {
-            foreach(ElegyBeam elegy in _elegyBeams)
+            // Use while loop so that we can destroy any extra beams when staggered without the loop breaking
+            while(_elegyBeams.Count > 0)
             {
-                if(elegy != null)
-                {
-                    elegy.activate = true;
-                    PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
-                }
-                yield return new WaitForSeconds(0.05f);
-            }
+                ElegyBeam elegy = _elegyBeams[0];
+                _elegyBeams.Remove(elegy);
+				if(elegy != null)
+				{
+					elegy.activate = true;
+					PlayAudio("Beams Clip", 0.85f, 1.15f, 1f, 0.1f);
+				}
+				yield return new WaitForSeconds(0.05f);
+			}
         }
 
         private IEnumerator ActivateSingleBeam(ElegyBeam elegy)
