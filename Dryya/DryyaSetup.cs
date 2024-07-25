@@ -27,9 +27,10 @@ namespace FiveKnights.Dryya
         private readonly float SlamY = OWArenaFinder.IsInOverWorld ? 96.5f : (CustomWP.boss == CustomWP.Boss.All ? 5.7f : 5.9f);
         private readonly int DreamConvoAmount = OWArenaFinder.IsInOverWorld ? 3 : 4;
         private readonly string DreamConvoKey = OWArenaFinder.IsInOverWorld ? "DRYYA_DREAM" : "DRYYA_GG_DREAM";
-        private readonly int MaxStaggerHits = 10;
+        private readonly int MaxStaggerHits = 12;
 
 		private int _hitsTaken;
+        private bool _doneFrenzyKnockout;
 
 		private PlayMakerFSM _mageLord;
         private PlayMakerFSM _control;
@@ -61,6 +62,7 @@ namespace FiveKnights.Dryya
         private GameObject _stabFlash;
         private List<ElegyBeam> _elegyBeams;
         private static LanguageCtrl _langCtrl;
+        private Coroutine _daggersCoro;
 
         private void Awake()
         {
@@ -115,6 +117,7 @@ namespace FiveKnights.Dryya
             _control.InsertMethod("Activate", 0, () => _hm.enabled = true);
             
             _control.InsertMethod("Phase Check", 0, () => _control.Fsm.GetFsmInt("HP").Value = _hm.hp);
+            _control.InsertMethod("Knockout Transition", 0, () => _control.Fsm.GetFsmInt("HP").Value = _hm.hp);
 
             _control.InsertMethod("Counter Stance", 0, () =>
             {
@@ -214,26 +217,33 @@ namespace FiveKnights.Dryya
             if(self.gameObject.name.Contains("Dryya"))
             {
                 _spriteFlash.flashFocusHeal();
-                if(!_control.ActiveStateName.Contains("Knockout"))
+                _hitsTaken++;
+
+                if(_control.ActiveStateName == "Knockout Wait")
                 {
-                    _hitsTaken++;
+                    _control.SendEvent("END");
                 }
 
-				if(_hm.hp <= Phase3HP || _hitsTaken >= MaxStaggerHits)
+				if(!_doneFrenzyKnockout && (_hm.hp <= Phase3HP || _hitsTaken >= MaxStaggerHits))
 				{
-                    if(_elegyBeams != null)
+                    // Stop elegy and daggers
+					if(_elegyBeams != null)
                     {
-						Log("Destroying elegy beams");
 						foreach(ElegyBeam elegy in from x in _elegyBeams where x != null select x)
 						{
-							Destroy(elegy);
+							Destroy(elegy.gameObject);
 						}
 					}
+					if(_daggersCoro != null) StopCoroutine(_daggersCoro);
+
 					Log("Stagger");
+                    _hm.IsInvincible = false;
 					_bc.isTrigger = false;
+					_anim.Resume();
 					_control.SendEvent("STAGGER");
 					_hitsTaken = 0;
 					this.PlayAudio(FiveKnights.Clips["DryyaVoiceDeath"], 1f);
+					if(_hm.hp <= Phase3HP) _doneFrenzyKnockout = true;
 
 					EnemyDeathEffectsUninfected _deathEff = FiveKnights.preloadedGO["WD"].GetComponent<EnemyDeathEffectsUninfected>();
 					GameObject eff = Instantiate(_deathEff.uninfectedDeathPt);
@@ -366,58 +376,63 @@ namespace FiveKnights.Dryya
 
         private void ModifyDaggers()
         {
-            Vasi.FsmUtil.AddCoroutine(_control.GetState("Dagger Throw"), DaggerThrow);
-            
-            IEnumerator DaggerThrow()
+            Vasi.FsmUtil.AddMethod(_control.GetState("Dagger Throw"), () =>
             {
-				_bc.isTrigger = true;
-                var localScale = transform.localScale;
-                float signX = Mathf.Sign(localScale.x);
-                _rb.velocity = new Vector2(0f, 0f);
-                _rb.gravityScale = 0f;
-                _rb.isKinematic = true;
-                transform.position -= new Vector3(0f, 1.7f, 0f);
-                _anim.Play("Throw");
-
-                yield return new WaitWhile(() => _anim.CurrentFrame < 3);
-                _anim.Pause();
-
-                yield return new WaitForSeconds(0.2f);
-                _anim.Resume();
-
-                yield return new WaitWhile(() => _anim.CurrentFrame < 5);
-                _anim.ClipFps = 24;
-                PlayVoice("Alt");
-                signX = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
-                localScale = new Vector3(Mathf.Abs(localScale.x) * signX, localScale.y,
-                    localScale.z);
-                transform.localScale = localScale;
-                _rb.velocity = new Vector2(signX * 55f, 25f);
-
-                yield return new WaitWhile(() => _anim.CurrentFrame < 8);
-                PlayAudio("Jump");
-                _rb.velocity = new Vector2(signX * 30f, _rb.velocity.y);
-
-                yield return new WaitWhile(() => _anim.CurrentFrame < 9);
-                _rb.gravityScale = 3f;
-                _rb.isKinematic = false;
-
-                yield return new WaitWhile(() => _anim.CurrentFrame < 10);
-                _anim.ClipFps = 12;
-                StartCoroutine(SpawnDaggers());
-
-                yield return new WaitWhile(() => transform.position.y > GroundY - 1.7f);
-                PlayAudio("Land");
-                transform.position = new Vector3(transform.position.x, GroundY);
-                _bc.isTrigger = false;
-                _rb.velocity = new Vector2(0f, 0f);
-                _rb.gravityScale = 0f;
-                _control.SetState("Idle");
-
-			}
+                if(_daggersCoro != null) StopCoroutine(_daggersCoro);
+                _daggersCoro = StartCoroutine(DaggerThrow());
+            });
         }
 
-        private IEnumerator SpawnDaggers()
+		private IEnumerator DaggerThrow()
+		{
+			_bc.isTrigger = true;
+			var localScale = transform.localScale;
+			float signX = Mathf.Sign(localScale.x);
+			_rb.velocity = new Vector2(0f, 0f);
+			_rb.gravityScale = 0f;
+			_rb.isKinematic = true;
+			transform.position -= new Vector3(0f, 1.7f, 0f);
+			_anim.Play("Throw");
+
+			yield return new WaitWhile(() => _anim.CurrentFrame < 3);
+			_anim.Pause();
+
+			yield return new WaitForSeconds(0.2f);
+			_anim.Resume();
+
+			yield return new WaitWhile(() => _anim.CurrentFrame < 5);
+			_anim.ClipFps = 24;
+			PlayVoice("Alt");
+			signX = Mathf.Sign(transform.position.x - HeroController.instance.transform.position.x);
+			localScale = new Vector3(Mathf.Abs(localScale.x) * signX, localScale.y,
+				localScale.z);
+			transform.localScale = localScale;
+			_rb.velocity = new Vector2(signX * 55f, 25f);
+
+            Log("Daggers - Jump");
+			yield return new WaitWhile(() => _anim.CurrentFrame < 8);
+			PlayAudio("Jump");
+			_rb.velocity = new Vector2(signX * 30f, _rb.velocity.y);
+
+			yield return new WaitWhile(() => _anim.CurrentFrame < 9);
+			_rb.gravityScale = 3f;
+			_rb.isKinematic = false;
+
+			yield return new WaitWhile(() => _anim.CurrentFrame < 10);
+			_anim.ClipFps = 12;
+			StartCoroutine(SpawnDaggers());
+
+            Log("Daggers - Landed");
+			yield return new WaitWhile(() => transform.position.y > GroundY - 1.7f);
+			PlayAudio("Land");
+			transform.position = new Vector3(transform.position.x, GroundY);
+			_bc.isTrigger = false;
+			_rb.velocity = new Vector2(0f, 0f);
+			_rb.gravityScale = 1f;
+			_control.SetState("Idle");
+		}
+
+		private IEnumerator SpawnDaggers()
         {
             float yDist = transform.position.y - HeroController.instance.transform.position.y;
             float xDist = transform.position.x - HeroController.instance.transform.position.x;
