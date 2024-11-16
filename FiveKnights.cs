@@ -88,6 +88,7 @@ namespace FiveKnights
                     List<string> biggerList = new List<string>()
                     {
                         "DlcList",
+                        "PaleCourtDlcIcon",
                         "LogoBlack",
                         "journal_dryya",
                         "journal_icon_dryya",
@@ -100,7 +101,7 @@ namespace FiveKnights
                         "journal_tiso",
                         "journal_icon_tiso",
                     };
-                    if (biggerList.Contains(resName)) ppu = 200f / 3f;
+                    if (biggerList.Contains(resName)) ppu = 64;
                     // Create sprite from texture
                     SPRITES.Add(resName, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu));
                     Log("Created sprite from embedded image: " + resName + " at ind " + ++ind);
@@ -111,12 +112,12 @@ namespace FiveKnights
             #region Menu Customization
 
             LoadTitleScreen();
-            On.UIManager.Awake += ChangeDlcListSprite;
             On.SetVersionNumber.Start += ChangeVersionNumber;
             //SFCore.MenuStyleHelper.Initialize();
             SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
             //SFCore.TitleLogoHelper.Initialize();
             paleCourtLogoId = SFCore.TitleLogoHelper.AddLogo(SPRITES["LogoBlack"]);
+            SFCore.DlcIconHelper.AddDlcIcon(SPRITES["PaleCourtDlcIcon"]);
 
             #endregion
             #region Enviroment Effects
@@ -476,12 +477,6 @@ namespace FiveKnights
         {
             orig(self);
             self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
-        }
-
-        private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
-        {
-            orig(self);
-            self.gameObject.Find("Hidden_Dreams_Logo").GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
         }
 
         private void LoadPaleCourtMenuMusic(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
