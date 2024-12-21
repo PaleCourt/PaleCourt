@@ -828,15 +828,18 @@ namespace FiveKnights
 
         private string ModHooks_GetPlayerString(string target, string orig)
         {
-            if(target == nameof(PlayerData.respawnMarkerName) && orig == "RestBench (1)" && 
-                !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)")
+            if(PlayerData.instance.respawnMarkerName == "RestBench (1)" && PlayerData.instance.respawnScene == "GG_Workshop"
+                && !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)"
+                && !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
             {
-                return SaveSettings.respawnMarkerName;
-            }
-            if(target == nameof(PlayerData.respawnScene) && orig == "GG_Workshop" && 
-                !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
-            {
-                return SaveSettings.respawnScene;
+                if(target == nameof(PlayerData.respawnMarkerName))
+                {
+                    return "WhiteBench(Clone)(Clone)";
+                }
+                if(target == nameof(PlayerData.respawnScene))
+                {
+                    return "White_Palace_09";
+                }
             }
             return orig;
         }
