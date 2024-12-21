@@ -200,7 +200,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "2024.7.25-1";
+        public override string GetVersion() => "2024.12.21";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -250,6 +250,8 @@ namespace FiveKnights
                 ("Fungus3_13", "Thorn Collider"),
                 // For Isma's gulka shield effect
                 ("Abyss_05", "Dusk Knight/Shield"),
+                // For Heg's crystal barrels
+                ("Mines_31", "crystal_barrel_02/mines_cryst_barrel_short/Pt Crystal (1)"),
                 // For charm collect/upgrade cutscene
                 ("Room_Queen", "UI Msg Get WhiteCharm"),
                 ("Room_Queen", "Queen Item"),
@@ -328,6 +330,7 @@ namespace FiveKnights
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
 
             preloadedGO["Ceiling Dust"] = preloadedObjects["GG_Failed_Champion"]["Ceiling Dust"];
+            preloadedGO["Crystal Pt"] = preloadedObjects["Mines_31"]["crystal_barrel_02/mines_cryst_barrel_short/Pt Crystal (1)"];
             
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             

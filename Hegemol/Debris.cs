@@ -10,7 +10,8 @@ namespace FiveKnights.Hegemol
         {
             NORMAL,
             CC,
-            DUNG
+            DUNG,
+            CRYSTAL
         }
 
         private float rotSpeed;
@@ -48,7 +49,8 @@ namespace FiveKnights.Hegemol
             transform.rotation = Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
             rotSpeed = (Random.Range(0, 2) == 0 ? -1 : 1) * Random.Range(200f, 400f);
             rb.velocity = vel;
-            switch(type)
+            GameObject particles;
+			switch(type)
             {
                 case DebrisType.NORMAL:
                     transform.Find("Debris" + Random.Range(0, 3)).gameObject.SetActive(true);
@@ -63,8 +65,16 @@ namespace FiveKnights.Hegemol
                 case DebrisType.DUNG:
                     transform.Find("DebrisDung").gameObject.SetActive(true);
                     _ap.Clip = FiveKnights.Clips["HegDungDebris"];
-                    GameObject particles = Instantiate(FiveKnights.preloadedGO["DungBreakChunks"], transform);
+                    particles = Instantiate(FiveKnights.preloadedGO["DungBreakChunks"], transform);
                     _pt = particles.GetComponent<ParticleSystem>();
+                    break;
+                case DebrisType.CRYSTAL:
+                    transform.Find("Crystal" + Random.Range(0, 3)).gameObject.SetActive(true);
+                    _ap.Clip = FiveKnights.Clips["HegDebris"];
+                    particles = Instantiate(FiveKnights.preloadedGO["Crystal Pt"], transform);
+                    _pt = particles.GetComponent<ParticleSystem>();
+                    ParticleSystem.EmissionModule emission = _pt.emission;
+                    emission.rateOverTimeMultiplier = 100f;
                     break;
             }
         }
@@ -85,16 +95,23 @@ namespace FiveKnights.Hegemol
                 transform.rotation = Quaternion.Euler(0f, 0f, 0f);
                 Destroy(GetComponent<CircleCollider2D>());
                 _ap.DoPlayRandomClip();
-                _pt.Play();
+                if(type == DebrisType.CRYSTAL)
+                {
+                    _pt.gameObject.SetActive(true);
+                }
+                else
+                {
+					_pt.Play();
+				}
                 foreach(SpriteRenderer sr in GetComponentsInChildren<SpriteRenderer>())
                 {
                     sr.enabled = false;
                 }
-                if(type == DebrisType.DUNG)
+                if(type == DebrisType.DUNG || type == DebrisType.CRYSTAL)
                 {
-                    Destroy(_pt.gameObject, 3f);
+                    Destroy(_pt.gameObject, 4f);
                 }
-                Destroy(gameObject, 3f);
+                Destroy(gameObject, 4f);
             }
         }
     }
