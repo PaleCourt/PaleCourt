@@ -200,7 +200,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "2025.1.29";
+        public override string GetVersion() => "1.1.1.0";
 
         public override List<(string, string)> GetPreloadNames()
         {
