@@ -224,7 +224,7 @@ namespace FiveKnights.Dryya
                     _control.SendEvent("END");
                 }
 
-				if(!_doneFrenzyKnockout && (_hm.hp <= Phase3HP || _hitsTaken >= MaxStaggerHits))
+				if(!_doneFrenzyKnockout && (_hm.hp <= Phase3HP || (_hitsTaken >= MaxStaggerHits && _hm.hp >= 2 * Phase3HP)))
 				{
                     // Stop elegy and daggers
 					if(_elegyBeams != null)
