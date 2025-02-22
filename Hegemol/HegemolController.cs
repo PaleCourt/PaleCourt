@@ -880,7 +880,7 @@ namespace FiveKnights.Hegemol
                 deb.gravityScale = 0f;
                 deb.vel = 10f * Vector2.down;
                 deb.GroundY = GroundY;
-                deb.type = CustomWP.boss == CustomWP.Boss.All ? Debris.DebrisType.CC : Debris.DebrisType.NORMAL;
+                deb.type = CustomWP.boss == CustomWP.Boss.All ? Debris.DebrisType.CC : Debris.DebrisType.CRYSTAL;
 
                 debris.SetActive(true);
                 yield return new WaitForSeconds(0.5f);

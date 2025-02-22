@@ -20,7 +20,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneLinux"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneLinux"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
@@ -33,7 +33,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneLinux"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneLinux"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
@@ -69,7 +69,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneOSX"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneOSX"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
@@ -82,7 +82,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneOSX"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneOSX"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
@@ -118,7 +118,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneWindows"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneWindows"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",
@@ -131,7 +131,7 @@
             "options": {
                 "cwd": "${workspaceFolder}",
                 "env": {
-                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-DryyaHeg/AssetBundles/StandaloneWindows"
+                    "ASSETBUNDLE_DIR": "E:/Documents/Projects/Unity Projects/PaleCourt-Unity-Godhome/AssetBundles/StandaloneWindows"
                 }
             },
             "command": "copy -Path \"$Env:ASSETBUNDLE_DIR/*\" -Destination ./StreamingAssets/",

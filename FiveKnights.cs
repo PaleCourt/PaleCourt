@@ -88,6 +88,7 @@ namespace FiveKnights
                     List<string> biggerList = new List<string>()
                     {
                         "DlcList",
+                        "PaleCourtDlcIcon",
                         "LogoBlack",
                         "journal_dryya",
                         "journal_icon_dryya",
@@ -100,7 +101,7 @@ namespace FiveKnights
                         "journal_tiso",
                         "journal_icon_tiso",
                     };
-                    if (biggerList.Contains(resName)) ppu = 200f / 3f;
+                    if (biggerList.Contains(resName)) ppu = 64;
                     // Create sprite from texture
                     SPRITES.Add(resName, Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), ppu));
                     Log("Created sprite from embedded image: " + resName + " at ind " + ++ind);
@@ -111,12 +112,12 @@ namespace FiveKnights
             #region Menu Customization
 
             LoadTitleScreen();
-            On.UIManager.Awake += ChangeDlcListSprite;
             On.SetVersionNumber.Start += ChangeVersionNumber;
             //SFCore.MenuStyleHelper.Initialize();
             SFCore.MenuStyleHelper.AddMenuStyleHook += AddPCMenuStyle;
             //SFCore.TitleLogoHelper.Initialize();
             paleCourtLogoId = SFCore.TitleLogoHelper.AddLogo(SPRITES["LogoBlack"]);
+            SFCore.DlcIconHelper.AddDlcIcon(SPRITES["PaleCourtDlcIcon"]);
 
             #endregion
             #region Enviroment Effects
@@ -144,6 +145,12 @@ namespace FiveKnights
             
             SFCore.AchievementHelper.AddAchievement("PALE_COURT_PANTH_ACH", SPRITES["ach_panth"], 
                 "PANTH_ACH_TITLE", "PANTH_ACH_DESC", true);
+
+            #endregion
+
+            #region Charms
+
+            charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
 
             #endregion
 
@@ -199,7 +206,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "1.1.0.0";
+        public override string GetVersion() => "1.1.1.0";
 
         public override List<(string, string)> GetPreloadNames()
         {
@@ -249,6 +256,8 @@ namespace FiveKnights
                 ("Fungus3_13", "Thorn Collider"),
                 // For Isma's gulka shield effect
                 ("Abyss_05", "Dusk Knight/Shield"),
+                // For Heg's crystal barrels
+                ("Mines_31", "crystal_barrel_02/mines_cryst_barrel_short/Pt Crystal (1)"),
                 // For charm collect/upgrade cutscene
                 ("Room_Queen", "UI Msg Get WhiteCharm"),
                 ("Room_Queen", "Queen Item"),
@@ -327,6 +336,7 @@ namespace FiveKnights
             preloadedGO["fk"] = preloadedObjects["GG_Failed_Champion"]["False Knight Dream"];
 
             preloadedGO["Ceiling Dust"] = preloadedObjects["GG_Failed_Champion"]["Ceiling Dust"];
+            preloadedGO["Crystal Pt"] = preloadedObjects["Mines_31"]["crystal_barrel_02/mines_cryst_barrel_short/Pt Crystal (1)"];
             
             preloadedGO["throne"] = preloadedObjects["White_Palace_09"]["White King Corpse/Throne Sit"];
             
@@ -420,8 +430,6 @@ namespace FiveKnights
             }, "LobsterLancer", JournalHelper.EntryType.Normal, null, true, true));
             #endregion
             #region Charms
-            charmIDs = CharmHelper.AddSprites(SPRITES["Mark_of_Purity"], SPRITES["Vessels_Lament"], SPRITES["Boon_of_Hallownest"], SPRITES["Abyssal_Bloom"]);
-
             preloadedGO["Bloom Anim Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("BloomAnim");
             preloadedGO["Bloom Sprite Prefab"] = ABManager.AssetBundles[ABManager.Bundle.Charms].LoadAsset<GameObject>("AbyssalBloom"); 
             #endregion
@@ -476,12 +484,6 @@ namespace FiveKnights
         {
             orig(self);
             self.GetAttr<SetVersionNumber, UnityEngine.UI.Text>("textUi").text = "1.6.1.3";
-        }
-
-        private void ChangeDlcListSprite(On.UIManager.orig_Awake orig, UIManager self)
-        {
-            orig(self);
-            self.gameObject.Find("Hidden_Dreams_Logo").GetComponent<SpriteRenderer>().sprite = SPRITES["DlcList"];
         }
 
         private void LoadPaleCourtMenuMusic(On.AudioManager.orig_ApplyMusicCue orig, AudioManager self, MusicCue musicCue, float delayTime, float transitionTime, bool applySnapshot)
@@ -830,15 +832,18 @@ namespace FiveKnights
 
         private string ModHooks_GetPlayerString(string target, string orig)
         {
-            if(target == nameof(PlayerData.respawnMarkerName) && orig == "RestBench (1)" && 
-                !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)")
+            if(PlayerData.instance.respawnMarkerName == "RestBench (1)" && PlayerData.instance.respawnScene == "GG_Workshop"
+                && !string.IsNullOrEmpty(SaveSettings.respawnMarkerName) && SaveSettings.respawnMarkerName == "WhiteBench(Clone)(Clone)"
+                && !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
             {
-                return SaveSettings.respawnMarkerName;
-            }
-            if(target == nameof(PlayerData.respawnScene) && orig == "GG_Workshop" && 
-                !string.IsNullOrEmpty(SaveSettings.respawnScene) && SaveSettings.respawnScene == "White_Palace_09")
-            {
-                return SaveSettings.respawnScene;
+                if(target == nameof(PlayerData.respawnMarkerName))
+                {
+                    return "WhiteBench(Clone)(Clone)";
+                }
+                if(target == nameof(PlayerData.respawnScene))
+                {
+                    return "White_Palace_09";
+                }
             }
             return orig;
         }

@@ -9,8 +9,8 @@
     <Product>FiveKnights</Product>
     <Description></Description>
     <Copyright>Copyright © Hewlett-Packard 2020</Copyright>
-    <AssemblyVersion>1.1.0.0</AssemblyVersion>
-    <FileVersion>1.1.0.0</FileVersion>
+    <AssemblyVersion>1.1.1.0</AssemblyVersion>
+    <FileVersion>1.1.1.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
     <HollowKnightRefs Condition="Exists('/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/')">/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/</HollowKnightRefs>
@@ -19,7 +19,7 @@
     <HollowKnightRefs Condition="Exists('E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/')">E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
     <HollowKnightRefs Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs>
     <ExportDir Condition="Exists('/home/sfg/Documents/Projects/__Exports/')">/home/sfg/Documents/Projects/__Exports/</ExportDir>
-    <ExportDir Condition="Exists('E:\Documents\Projects\__Exports')">E:\Documents\Projects\__Exports</ExportDir>
+    <ExportDir Condition="Exists('E:/Documents/Hollow Knight Stuff\__Exports')">E:/Documents/Hollow Knight Stuff\__Exports</ExportDir>
     <ExportDir Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods</ExportDir>
   </PropertyGroup>
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
@@ -69,10 +69,10 @@
     <EmbeddedResource Include="assets\Dryya.png" />
     <EmbeddedResource Include="assets\Zemer.png" />
     <EmbeddedResource Include="assets\Hegemol.png" />
-	<EmbeddedResource Include="assets\Dryya_Silver.png" />
-	<EmbeddedResource Include="assets\Isma_Silver.png" />
+    <EmbeddedResource Include="assets\Dryya_Silver.png" />
+    <EmbeddedResource Include="assets\Isma_Silver.png" />
     <EmbeddedResource Include="assets\Zemer_Silver.png" />
-	<EmbeddedResource Include="assets\Hegemol_Silver.png" />
+    <EmbeddedResource Include="assets\Hegemol_Silver.png" />
     <EmbeddedResource Include="assets\mace.png" />
     <EmbeddedResource Include="assets\Language.json" />
     <EmbeddedResource Include="assets\ach_dryya.png" />
@@ -81,6 +81,7 @@
     <EmbeddedResource Include="assets\ach_zem.png" />
     <EmbeddedResource Include="assets\ach_panth.png" />
     <EmbeddedResource Include="assets\DlcList.png" />
+    <EmbeddedResource Include="assets\PaleCourtDlcIcon.png" />
     <EmbeddedResource Include="assets\LogoBlack.png" />
     <EmbeddedResource Include="assets\Petal.png" />
     <EmbeddedResource Include="assets\Abyssal_Bloom.png" />
@@ -101,7 +102,7 @@
     <EmbeddedResource Include="assets\Mark_of_Purity.png" />
     <EmbeddedResource Include="assets\Vessels_Lament.png" />
     <EmbeddedResource Include="assets\acid_a.png" />
-	<EmbeddedResource Include="assets\acid_b.png" />
+    <EmbeddedResource Include="assets\acid_b.png" />
     <EmbeddedResource Include="StreamingAssets\*" />
   </ItemGroup>
   <ItemGroup>
