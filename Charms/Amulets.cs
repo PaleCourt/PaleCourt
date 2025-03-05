@@ -422,17 +422,63 @@ namespace FiveKnights
             _hc.GetComponent<LamentControl>().enabled = FiveKnights.Instance.SaveSettings.equippedCharms[1];
             if (FiveKnights.Instance.SaveSettings.equippedCharms[1])
             {
-                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus Blast");
-                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal Blast");
-                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain Blast");
-                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2 Blast");
+                // change all transitions going to ["Focus", "Focus Heal", "Start MP Drain", "Focus Heal 2"] to # + " Blast"
+                foreach (FsmState state in _spellControl.FsmStates)
+                {
+                    foreach (FsmTransition transition in state.Transitions)
+                    {
+                        if (transition.ToState == "Focus")
+                        {
+                            // transition leads to Focus, redirect to Focus Blast
+                            state.ChangeTransition(transition.EventName, "Focus Blast");
+                        }
+                        else if (transition.ToState == "Focus Heal")
+                        {
+                            // transition leads to Focus Heal, redirect to Focus Heal Blast
+                            state.ChangeTransition(transition.EventName, "Focus Heal Blast");
+                        }
+                        else if (transition.ToState == "Start MP Drain")
+                        {
+                            // transition leads to Start MP Drain, redirect to Start MP Drain Blast
+                            state.ChangeTransition(transition.EventName, "Start MP Drain Blast");
+                        }
+                        else if (transition.ToState == "Focus Heal 2")
+                        {
+                            // transition leads to Focus Heal 2, redirect to Focus Heal 2 Blast
+                            state.ChangeTransition(transition.EventName, "Focus Heal 2 Blast");
+                        }
+                    }
+                }
             }
             else
             {
-                _spellControl.ChangeTransition("Slug?", "FINISHED", "Focus");
-                _spellControl.ChangeTransition("Set HP Amount", "FINISHED", "Focus Heal");
-                _spellControl.ChangeTransition("Speedup?", "FINISHED", "Start MP Drain");
-                _spellControl.ChangeTransition("Set HP Amount 2", "FINISHED", "Focus Heal 2");
+                // change all transitions going to ["Focus Blast", "Focus Heal Blast", "Start MP Drain Blast", "Focus Heal 2 Blast"] to # - " Blast"
+                foreach (FsmState state in _spellControl.FsmStates)
+                {
+                    foreach (FsmTransition transition in state.Transitions)
+                    {
+                        if (transition.ToState == "Focus Blast")
+                        {
+                            // transition leads to Focus Blast, redirect to Focus
+                            state.ChangeTransition(transition.EventName, "Focus");
+                        }
+                        else if (transition.ToState == "Focus Heal Blast")
+                        {
+                            // transition leads to Focus Heal Blast, redirect to Focus Heal
+                            state.ChangeTransition(transition.EventName, "Focus Heal");
+                        }
+                        else if (transition.ToState == "Start MP Drain Blast")
+                        {
+                            // transition leads to Start MP Drain Blast, redirect to Start MP Drain
+                            state.ChangeTransition(transition.EventName, "Start MP Drain");
+                        }
+                        else if (transition.ToState == "Focus Heal 2 Blast")
+                        {
+                            // transition leads to Focus Heal 2 Blast, redirect to Focus Heal 2
+                            state.ChangeTransition(transition.EventName, "Focus Heal 2");
+                        }
+                    }
+                }
             }
 
             // Set this to disabled first so it can check for flukenest to override daggers
