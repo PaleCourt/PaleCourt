@@ -22,13 +22,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Get tag number from tag string
-        id: tag_number
-        run: |
-          orig_tag="${{ github.ref_name }}"
-          echo "tag_number=${orig_tag/v/}" >> $GITHUB_OUTPUT
-        shell: bash
-
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
@@ -63,13 +56,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - name: Get tag number from tag string
-        id: tag_number
-        run: |
-          orig_tag="${{ github.ref_name }}"
-          echo "tag_number=${orig_tag/v/}" >> $GITHUB_OUTPUT
-        shell: bash
-
       - name: Checkout master
         uses: actions/checkout@v4
         with:
@@ -102,7 +88,7 @@ jobs:
         working-directory: master
 
       - name: Build master
-        run: dotnet build -c Release /p:AssemblyVersion=${{ steps.tag_number.outputs.tag_number }}
+        run: dotnet build -c Release /p:AssemblyVersion=${{ github.ref_name }}
         working-directory: master
 
       - name: Prepare master artifacts for release
@@ -135,8 +121,6 @@ jobs:
         # this assumes that an MSBuild task that writes the SHA256 of the zip file to SHA.txt, and the mod version (usually
         # the same as the assembly version) to version.txt. The contents of these files are read to step outputs for use in release
         run: |
-          $ver = "${{ github.ref_name }}"
-          echo "buildVersion=$ver" >> $env:GITHUB_OUTPUT
           $shaLin = (Get-Content artifacts/Publish-Master-Linux/PaleCourt/SHA.txt)[3]
           echo "archiveHashLin=$shaLin" >> $env:GITHUB_OUTPUT
           $shaMac = (Get-Content artifacts/Publish-Master-OSX/PaleCourt/SHA.txt)[3]
@@ -150,7 +134,7 @@ jobs:
           draft: false
           generate_release_notes: true
           fail_on_unmatched_files: true
-          tag_name: ${{ steps.details.outputs.buildVersion }}
+          tag_name: ${{ github.ref_name }}
           body: |
             | File                | SHA256                                                           |
             |---------------------|------------------------------------------------------------------|
