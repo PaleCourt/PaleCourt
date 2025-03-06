@@ -13,15 +13,11 @@
     <FileVersion>1.1.1.0</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
-    <HollowKnightRefs Condition="Exists('/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/')">/home/saleh/.steam/steam/steamapps/common/Hollow Knight/hollow_knight_Data/Managed/</HollowKnightRefs>
-    <ExportDir Condition="Exists('/home/saleh/Downloads/')">/home/saleh/Downloads/</ExportDir>
-    <HollowKnightRefs Condition="Exists('/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/')">/home/sfg/Games/gog/hollow-knight/game/Hollow Knight_Data/Managed/</HollowKnightRefs>
-    <HollowKnightRefs Condition="Exists('E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/')">E:/GOG/Hollow Knight 1.5 Modded/Hollow Knight_Data/Managed/</HollowKnightRefs>
-    <HollowKnightRefs Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed/</HollowKnightRefs>
-    <ExportDir Condition="Exists('/home/sfg/Documents/Projects/__Exports/')">/home/sfg/Documents/Projects/__Exports/</ExportDir>
-    <ExportDir Condition="Exists('E:/Documents/Hollow Knight Stuff\__Exports')">E:/Documents/Hollow Knight Stuff\__Exports</ExportDir>
-    <ExportDir Condition="Exists('C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods')">C:\Program Files (x86)\Steam\steamapps\common\Hollow Knight\hollow_knight_Data\Managed\Mods</ExportDir>
+    <!-- put copies of these in a LocalOverrides.targets -->
+    <HollowKnightRefs>../HkRefs</HollowKnightRefs>
+    <ExportDir>bin/Publish</ExportDir>
   </PropertyGroup>
+  <Import Project="LocalOverrides.targets" Condition="Exists('LocalOverrides.targets')" />
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
     <MakeDir Condition="!Exists('$(HollowKnightRefs)/Mods/$(TargetName)/')" Directories="$(HollowKnightRefs)/Mods/$(TargetName)/" />
     <Copy Condition="Exists('$(HollowKnightRefs)')" SourceFiles="$(TargetPath);$(TargetDir)/$(TargetName).pdb" DestinationFolder="$(HollowKnightRefs)/Mods/$(TargetName)/" />
@@ -58,128 +54,128 @@
     <WriteLinesToFile File="$(ExportDir)/$(TargetName)/SHA.txt" Lines="$(OutputFileString);@(FilesWithHashes->'%(FileHash)');$(OutputZipString);@(ZipFilesWithHashes->'%(FileHash)')" Overwrite="true" Encoding="UTF-8" />
   </Target>
   <ItemGroup>
-    <Compile Remove="StreamingAssets\**" />
-    <EmbeddedResource Remove="StreamingAssets\**" />
-    <None Remove="StreamingAssets\**" />
+    <Compile Remove="StreamingAssets/**" />
+    <EmbeddedResource Remove="StreamingAssets/**" />
+    <None Remove="StreamingAssets/**" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="assets\WHegemol_full_2.png" />
-    <EmbeddedResource Include="assets\black.png" />
-    <EmbeddedResource Include="assets\Isma.png" />
-    <EmbeddedResource Include="assets\Dryya.png" />
-    <EmbeddedResource Include="assets\Zemer.png" />
-    <EmbeddedResource Include="assets\Hegemol.png" />
-    <EmbeddedResource Include="assets\Dryya_Silver.png" />
-    <EmbeddedResource Include="assets\Isma_Silver.png" />
-    <EmbeddedResource Include="assets\Zemer_Silver.png" />
-    <EmbeddedResource Include="assets\Hegemol_Silver.png" />
-    <EmbeddedResource Include="assets\mace.png" />
-    <EmbeddedResource Include="assets\Language.json" />
-    <EmbeddedResource Include="assets\ach_dryya.png" />
-    <EmbeddedResource Include="assets\ach_heg.png" />
-    <EmbeddedResource Include="assets\ach_isma.png" />
-    <EmbeddedResource Include="assets\ach_zem.png" />
-    <EmbeddedResource Include="assets\ach_panth.png" />
-    <EmbeddedResource Include="assets\DlcList.png" />
-    <EmbeddedResource Include="assets\PaleCourtDlcIcon.png" />
-    <EmbeddedResource Include="assets\LogoBlack.png" />
-    <EmbeddedResource Include="assets\Petal.png" />
-    <EmbeddedResource Include="assets\Abyssal_Bloom.png" />
-    <EmbeddedResource Include="assets\Boon_of_Hallownest.png" />
-    <EmbeddedResource Include="assets\Dagger.png" />
-    <EmbeddedResource Include="assets\Defenders_Crest.png" />
-    <EmbeddedResource Include="assets\journal_icon_dryya.png" />
-    <EmbeddedResource Include="assets\journal_icon_hegemol.png" />
-    <EmbeddedResource Include="assets\journal_icon_isma.png" />
-    <EmbeddedResource Include="assets\journal_icon_zemer.png" />
-    <EmbeddedResource Include="assets\journal_icon_tiso.png" />
-    <EmbeddedResource Include="assets\journal_dryya.png" />
-    <EmbeddedResource Include="assets\journal_hegemol.png" />
-    <EmbeddedResource Include="assets\journal_isma.png" />
-    <EmbeddedResource Include="assets\journal_zemer.png" />
-    <EmbeddedResource Include="assets\journal_tiso.png" />
-    <EmbeddedResource Include="assets\Kings_Honour.png" />
-    <EmbeddedResource Include="assets\Mark_of_Purity.png" />
-    <EmbeddedResource Include="assets\Vessels_Lament.png" />
-    <EmbeddedResource Include="assets\acid_a.png" />
-    <EmbeddedResource Include="assets\acid_b.png" />
-    <EmbeddedResource Include="StreamingAssets\*" />
+    <EmbeddedResource Include="assets/WHegemol_full_2.png" />
+    <EmbeddedResource Include="assets/black.png" />
+    <EmbeddedResource Include="assets/Isma.png" />
+    <EmbeddedResource Include="assets/Dryya.png" />
+    <EmbeddedResource Include="assets/Zemer.png" />
+    <EmbeddedResource Include="assets/Hegemol.png" />
+    <EmbeddedResource Include="assets/Dryya_Silver.png" />
+    <EmbeddedResource Include="assets/Isma_Silver.png" />
+    <EmbeddedResource Include="assets/Zemer_Silver.png" />
+    <EmbeddedResource Include="assets/Hegemol_Silver.png" />
+    <EmbeddedResource Include="assets/mace.png" />
+    <EmbeddedResource Include="assets/Language.json" />
+    <EmbeddedResource Include="assets/ach_dryya.png" />
+    <EmbeddedResource Include="assets/ach_heg.png" />
+    <EmbeddedResource Include="assets/ach_isma.png" />
+    <EmbeddedResource Include="assets/ach_zem.png" />
+    <EmbeddedResource Include="assets/ach_panth.png" />
+    <EmbeddedResource Include="assets/DlcList.png" />
+    <EmbeddedResource Include="assets/PaleCourtDlcIcon.png" />
+    <EmbeddedResource Include="assets/LogoBlack.png" />
+    <EmbeddedResource Include="assets/Petal.png" />
+    <EmbeddedResource Include="assets/Abyssal_Bloom.png" />
+    <EmbeddedResource Include="assets/Boon_of_Hallownest.png" />
+    <EmbeddedResource Include="assets/Dagger.png" />
+    <EmbeddedResource Include="assets/Defenders_Crest.png" />
+    <EmbeddedResource Include="assets/journal_icon_dryya.png" />
+    <EmbeddedResource Include="assets/journal_icon_hegemol.png" />
+    <EmbeddedResource Include="assets/journal_icon_isma.png" />
+    <EmbeddedResource Include="assets/journal_icon_zemer.png" />
+    <EmbeddedResource Include="assets/journal_icon_tiso.png" />
+    <EmbeddedResource Include="assets/journal_dryya.png" />
+    <EmbeddedResource Include="assets/journal_hegemol.png" />
+    <EmbeddedResource Include="assets/journal_isma.png" />
+    <EmbeddedResource Include="assets/journal_zemer.png" />
+    <EmbeddedResource Include="assets/journal_tiso.png" />
+    <EmbeddedResource Include="assets/Kings_Honour.png" />
+    <EmbeddedResource Include="assets/Mark_of_Purity.png" />
+    <EmbeddedResource Include="assets/Vessels_Lament.png" />
+    <EmbeddedResource Include="assets/acid_a.png" />
+    <EmbeddedResource Include="assets/acid_b.png" />
+    <EmbeddedResource Include="StreamingAssets/*" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
-      <HintPath>$(HollowKnightRefs)\Assembly-CSharp.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="FrogCore">
-      <HintPath>$(HollowKnightRefs)\Mods\FrogCore\FrogCore.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
-      <HintPath>$(HollowKnightRefs)\MMHOOK_Assembly-CSharp.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/MMHOOK_Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_PlayMaker">
-      <HintPath>$(HollowKnightRefs)\MMHOOK_PlayMaker.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/MMHOOK_PlayMaker.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod.RuntimeDetour">
-      <HintPath>$(HollowKnightRefs)\MonoMod.RuntimeDetour.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/MonoMod.RuntimeDetour.dll</HintPath>
     </Reference>
     <Reference Include="MonoMod.Utils">
-      <HintPath>$(HollowKnightRefs)\MonoMod.Utils.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/MonoMod.Utils.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>$(HollowKnightRefs)\Newtonsoft.Json.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="PlayMaker">
-      <HintPath>$(HollowKnightRefs)\PlayMaker.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
     </Reference>
     <Reference Include="SFCore">
-      <HintPath>$(HollowKnightRefs)\Mods\SFCore\SFCore.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/SFCore/SFCore.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AnimationModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.AnimationModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.AnimationModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AssetBundleModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.AssetBundleModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.AssetBundleModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.AudioModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.CoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.ImageConversionModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.IMGUIModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.IMGUIModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.IMGUIModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.InputLegacyModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.InputLegacyModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.InputLegacyModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.JSONSerializeModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.JSONSerializeModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.ParticleSystemModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.ParticleSystemModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.ParticleSystemModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.Physics2DModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.Physics2DModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.Physics2DModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextCoreModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.TextCoreModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.TextCoreModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.TextRenderingModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.TextRenderingModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.TextRenderingModule.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.UI.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.UI.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine.UIModule">
-      <HintPath>$(HollowKnightRefs)\UnityEngine.UIModule.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/UnityEngine.UIModule.dll</HintPath>
     </Reference>
     <Reference Include="Vasi">
-      <HintPath>$(HollowKnightRefs)\Mods\Vasi\Vasi.dll</HintPath>
+      <HintPath>$(HollowKnightRefs)/Mods/Vasi/Vasi.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

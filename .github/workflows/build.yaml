@@ -1,0 +1,163 @@
+name: Full Build
+
+permissions:
+  contents: write
+
+# Trigger when pushing tags
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-unity:
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - { name: 'Base', repo: 'PaleCourt/PaleCourt-Unity', branch: 'master' }
+          - { name: 'DryyaHeg', repo: 'PaleCourt/PaleCourt-Unity', branch: 'DryyaHeg' }
+          - { name: 'Godhome', repo: 'PaleCourt/PaleCourt-Unity-Godhome', branch: 'master' }
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Get tag number from tag string
+        id: tag_number
+        run: |
+          orig_tag="${{ github.ref_name }}"
+          echo "tag_number=${orig_tag/v/}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          repository: '${{ matrix.repo.repo }}'
+          ref: '${{ matrix.repo.branch }}'
+          path: Unity
+
+      - name: Build Unity
+        uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          targetPlatform: StandaloneWindows64
+          projectPath: Unity
+          buildsPath: Unity/build
+          buildMethod: CreateAssetBundles.BuildAllAssetBundlesCompressed
+
+      - name: Prepare Unity artifacts for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: Publish-Unity-${{ matrix.repo.name }}
+          path: Unity/Assets/AssetBundles
+
+  build-mod:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [Windows, OSX, Linux]
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Get tag number from tag string
+        id: tag_number
+        run: |
+          orig_tag="${{ github.ref_name }}"
+          echo "tag_number=${orig_tag/v/}" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Checkout master
+        uses: actions/checkout@v4
+        with:
+          ref: master
+          path: master
+
+      - name: Setup MAPI
+        uses: BadMagic100/setup-hk@v2
+        with:
+          apiPath: HkRefs
+          dependencyFilePath: master/ModDependencies.txt
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Copy platform-specific AssetBundles into StreamingAssets folder
+        run: |
+          cp artifacts/Publish-Unity-Godhome/Standalone${{ matrix.platform }}/* master/StreamingAssets/
+          cp artifacts/Publish-Unity-DryyaHeg/Standalone${{ matrix.platform }}/* master/StreamingAssets/
+          cp artifacts/Publish-Unity-Base/Standalone${{ matrix.platform }}/* master/StreamingAssets/
+        shell: bash
+
+      - name: Install dependencies master
+        run: dotnet restore
+        working-directory: master
+
+      - name: Build master
+        run: dotnet build -c Release /p:AssemblyVersion=${{ steps.tag_number.outputs.tag_number }}
+        working-directory: master
+
+      - name: Prepare master artifacts for release
+        uses: actions/upload-artifact@v4
+        with:
+          name: Publish-Master-${{ matrix.platform }}
+          path: master/bin/Publish
+
+  release:
+    needs:
+      - build-mod
+
+    runs-on: windows-latest
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Rename zips
+        run: |
+          mv artifacts/Publish-Master-Linux/PaleCourt/PaleCourt.zip artifacts/Publish-Master-Linux/PaleCourt/PaleCourt-Lin.zip
+          mv artifacts/Publish-Master-OSX/PaleCourt/PaleCourt.zip artifacts/Publish-Master-OSX/PaleCourt/PaleCourt-Mac.zip
+          mv artifacts/Publish-Master-Windows/PaleCourt/PaleCourt.zip artifacts/Publish-Master-Windows/PaleCourt/PaleCourt-Win.zip
+        shell: bash
+
+      - name: Get build details
+        id: details
+        # this assumes that an MSBuild task that writes the SHA256 of the zip file to SHA.txt, and the mod version (usually
+        # the same as the assembly version) to version.txt. The contents of these files are read to step outputs for use in release
+        run: |
+          $ver = "${{ github.ref_name }}"
+          echo "buildVersion=$ver" >> $env:GITHUB_OUTPUT
+          $shaLin = (Get-Content artifacts/Publish-Master-Linux/PaleCourt/SHA.txt)[3]
+          echo "archiveHashLin=$shaLin" >> $env:GITHUB_OUTPUT
+          $shaMac = (Get-Content artifacts/Publish-Master-OSX/PaleCourt/SHA.txt)[3]
+          echo "archiveHashMac=$shaMac" >> $env:GITHUB_OUTPUT
+          $shaWin = (Get-Content artifacts/Publish-Master-Windows/PaleCourt/SHA.txt)[3]
+          echo "archiveHashWin=$shaWin" >> $env:GITHUB_OUTPUT
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          draft: false
+          generate_release_notes: true
+          fail_on_unmatched_files: true
+          tag_name: ${{ steps.details.outputs.buildVersion }}
+          body: |
+            | File                | SHA256                                                           |
+            |---------------------|------------------------------------------------------------------|
+            | PaleCourt-Lin.zip | ${{ steps.details.outputs.archiveHashLin }} |
+            | PaleCourt-Mac.zip | ${{ steps.details.outputs.archiveHashMac }} |
+            | PaleCourt-Win.zip | ${{ steps.details.outputs.archiveHashWin }} |
+          files: |
+            artifacts/Publish-Master-Linux/PaleCourt/PaleCourt-Lin.zip
+            artifacts/Publish-Master-OSX/PaleCourt/PaleCourt-Mac.zip
+            artifacts/Publish-Master-Windows/PaleCourt/PaleCourt-Win.zip
