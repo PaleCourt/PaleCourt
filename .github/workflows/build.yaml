@@ -48,6 +48,9 @@ jobs:
           path: Unity/Assets/AssetBundles
 
   build-mod:
+    needs:
+      - build-unity
+
     strategy:
       fail-fast: false
       matrix:
