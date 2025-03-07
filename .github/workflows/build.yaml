@@ -85,6 +85,7 @@ jobs:
 
       - name: Copy platform-specific AssetBundles into StreamingAssets folder
         run: |
+          mkdir -p master/StreamingAssets/
           cp artifacts/Publish-Unity-Godhome-Standalone${{ matrix.platform }}/* master/StreamingAssets/
           cp artifacts/Publish-Unity-DryyaHeg-Standalone${{ matrix.platform }}/* master/StreamingAssets/
           cp artifacts/Publish-Unity-Base-Standalone${{ matrix.platform }}/* master/StreamingAssets/
