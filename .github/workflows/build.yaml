@@ -19,7 +19,7 @@ jobs:
           - { name: 'DryyaHeg', repo: 'PaleCourt/PaleCourt-Unity', branch: 'DryyaHeg' }
           - { name: 'Godhome', repo: 'PaleCourt/PaleCourt-Unity-Godhome', branch: 'master' }
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repo
