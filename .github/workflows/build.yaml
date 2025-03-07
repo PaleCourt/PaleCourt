@@ -18,6 +18,10 @@ jobs:
           - { name: 'Base', repo: 'PaleCourt/PaleCourt-Unity', branch: 'master' }
           - { name: 'DryyaHeg', repo: 'PaleCourt/PaleCourt-Unity', branch: 'DryyaHeg' }
           - { name: 'Godhome', repo: 'PaleCourt/PaleCourt-Unity-Godhome', branch: 'master' }
+        platform:
+          - { name: 'StandaloneWindows', platform: 'StandaloneWindows64' }
+          - { name: 'StandaloneOSX', platform: 'StandaloneOSX' }
+          - { name: 'StandaloneLinux', platform: 'StandaloneLinux64' }
 
     runs-on: ubuntu-latest
 
@@ -36,7 +40,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          targetPlatform: StandaloneWindows64
+          targetPlatform: ${{ matrix.platform.platform }}
           projectPath: Unity
           buildsPath: Unity/build
           buildMethod: CreateAssetBundles.BuildAllAssetBundlesCompressed
@@ -44,8 +48,8 @@ jobs:
       - name: Prepare Unity artifacts for release
         uses: actions/upload-artifact@v4
         with:
-          name: Publish-Unity-${{ matrix.repo.name }}
-          path: Unity/Assets/AssetBundles
+          name: Publish-Unity-${{ matrix.repo.name }}-${{ matrix.platform.name }}
+          path: Unity/AssetBundles/${{ matrix.platform.name }}
 
   build-mod:
     needs:
@@ -81,9 +85,9 @@ jobs:
 
       - name: Copy platform-specific AssetBundles into StreamingAssets folder
         run: |
-          cp artifacts/Publish-Unity-Godhome/Standalone${{ matrix.platform }}/* master/StreamingAssets/
-          cp artifacts/Publish-Unity-DryyaHeg/Standalone${{ matrix.platform }}/* master/StreamingAssets/
-          cp artifacts/Publish-Unity-Base/Standalone${{ matrix.platform }}/* master/StreamingAssets/
+          cp artifacts/Publish-Unity-Godhome-Standalone${{ matrix.platform }}/* master/StreamingAssets/
+          cp artifacts/Publish-Unity-DryyaHeg-Standalone${{ matrix.platform }}/* master/StreamingAssets/
+          cp artifacts/Publish-Unity-Base-Standalone${{ matrix.platform }}/* master/StreamingAssets/
         shell: bash
 
       - name: Install dependencies master
@@ -139,8 +143,8 @@ jobs:
           fail_on_unmatched_files: true
           tag_name: ${{ github.ref_name }}
           body: |
-            | File                | SHA256                                                           |
-            |---------------------|------------------------------------------------------------------|
+            | File              | SHA256                                                           |
+            |-------------------|------------------------------------------------------------------|
             | PaleCourt-Lin.zip | ${{ steps.details.outputs.archiveHashLin }} |
             | PaleCourt-Mac.zip | ${{ steps.details.outputs.archiveHashMac }} |
             | PaleCourt-Win.zip | ${{ steps.details.outputs.archiveHashWin }} |
