@@ -43,7 +43,7 @@ jobs:
           targetPlatform: ${{ matrix.platform.platform }}
           projectPath: Unity
           buildsPath: Unity/build
-          buildMethod: CreateAssetBundles.BuildAllAssetBundlesCompressed
+          buildMethod: CreateAssetBundles.Build${{ matrix.platform.platform }}
 
       - name: Prepare Unity artifacts for release
         uses: actions/upload-artifact@v4
