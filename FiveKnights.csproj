@@ -100,6 +100,8 @@
     <EmbeddedResource Include="assets/acid_a.png" />
     <EmbeddedResource Include="assets/acid_b.png" />
     <EmbeddedResource Include="StreamingAssets/*" />
+    <EmbeddedResource Include="Rando/Resources/Data/*.json" />
+    <EmbeddedResource Include="Rando/Resources/Logic/*.json" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
@@ -107,6 +109,9 @@
     </Reference>
     <Reference Include="FrogCore">
       <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>
+    </Reference>
+    <Reference Include="ItemChanger">
+      <HintPath>$(HollowKnightRefs)/Mods/ItemChanger/ItemChanger.dll</HintPath>
     </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/MMHOOK_Assembly-CSharp.dll</HintPath>
@@ -125,6 +130,15 @@
     </Reference>
     <Reference Include="PlayMaker">
       <HintPath>$(HollowKnightRefs)/PlayMaker.dll</HintPath>
+    </Reference>
+    <Reference Include="RandomizerCore">
+      <HintPath>$(HollowKnightRefs)/Mods/RandomizerCore/RandomizerCore.dll</HintPath>
+    </Reference>
+    <Reference Include="RandomizerCore.Json">
+      <HintPath>$(HollowKnightRefs)/Mods/RandomizerCore.Json/RandomizerCore.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="RandomizerMod">
+      <HintPath>$(HollowKnightRefs)/Mods/Randomizer 4/RandomizerMod.dll</HintPath>
     </Reference>
     <Reference Include="SFCore">
       <HintPath>$(HollowKnightRefs)/Mods/SFCore/SFCore.dll</HintPath>

@@ -1,0 +1,18 @@
+[
+    {
+        "name": "Abyss_09[palecourt_top1]",
+        "logic": "(Abyss_09[palecourt_top1] | Abyss_09[right3]) + WINGS"
+    },
+    {
+        "name": "Abyss_10[palecourt_top2]",
+        "logic": "Abyss_10[palecourt_top2] | (Abyss_10[left1] | Abyss_10[left2] + RIGHTSHADOWDASH) + WINGS + Collapser-Abyssal_Temple?Completed_Abyssal_Temple"
+    },
+    {
+        "name": "Abyssal_Temple[entry_bot1]",
+        "logic": "Abyssal_Temple[entry_bot1]"
+    },
+    {
+        "name": "Abyssal_Temple[entry_bot2]",
+        "logic": "Abyssal_Temple[entry_bot2] | Abyssal_Temple[entry_bot1] + DASHMASTER + FULLSHADOWDASH + WINGS"
+    }
+]

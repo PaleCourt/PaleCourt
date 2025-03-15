@@ -69,6 +69,9 @@ namespace FiveKnights
 
         private static void SetupSoulTotems()
         {
+            if (RandoManager.Settings.Enabled && RandoManager.Settings.AbyssalTemple && FiveKnights.Instance.SaveSettings.RandoSave)
+                return;
+            
             Vector3[] worldPos =
             {
                 new(76.4f, 86.6f, .03f), new(198.4582f, 114.6f, .03f), new(227.6582f, 107.6f, .03f), new(106.6582f, 27.4f, 0.03f)

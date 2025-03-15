@@ -1,0 +1,46 @@
+[
+    {
+        "SceneName": "Abyss_09",
+        "DoorName": "palecourt_top1",
+        "MapArea": "Ancient Basin",
+        "TitledArea": "The Abyss",
+        "VanillaTarget": "Abyssal_Temple[entry_bot1]",
+        "Direction": "Top",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    },
+    {
+        "SceneName": "Abyss_10",
+        "DoorName": "palecourt_top2",
+        "MapArea": "Ancient Basin",
+        "TitledArea": "The Abyss",
+        "VanillaTarget": "Abyssal_Temple[entry_bot2]",
+        "Direction": "Top",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    },
+    {
+        "SceneName": "Abyssal_Temple",
+        "DoorName": "entry_bot1",
+        "MapArea": "Ancient Basin",
+        "TitledArea": "The Abyss",
+        "VanillaTarget": "Abyss_09[palecourt_top1]",
+        "Direction": "Bot",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    },
+    {
+        "SceneName": "Abyssal_Temple",
+        "DoorName": "entry_bot2",
+        "MapArea": "Ancient Basin",
+        "TitledArea": "The Abyss",
+        "VanillaTarget": "Abyss_10[palecourt_top2]",
+        "Direction": "Bot",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    }
+]

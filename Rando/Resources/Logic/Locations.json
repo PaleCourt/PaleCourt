@@ -1,0 +1,22 @@
+[
+    {
+        "name": "Soul_Totem-Abyssal_Temple_1",
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+    },
+    {
+        "name": "Soul_Totem-Abyssal_Temple_2",
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+    },
+    {
+        "name": "Soul_Totem-Abyssal_Temple_3",
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+    },
+    {
+        "name": "Soul_Totem-Abyssal_Temple_4",
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+    },
+    {
+        "name": "Abyssal_Bloom",
+        "logic": "Completed_Abyssal_Temple"
+    }
+]

@@ -33,7 +33,9 @@ namespace FiveKnights
 
         private void BloomPlacement(Scene From, Scene To)
         {
-
+            if (RandoManager.Settings.Enabled && RandoManager.Settings.AbyssalTemple && FiveKnights.Instance.SaveSettings.RandoSave)
+                return;
+            
             if (To.name == "Abyssal_Temple")
             {
                 if (!FiveKnights.Instance.SaveSettings.gotCharms[3])

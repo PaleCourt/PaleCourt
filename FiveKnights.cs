@@ -455,6 +455,11 @@ namespace FiveKnights
                 MenuStyles.Instance.SetStyle(MenuStyles.Instance.styles.ToList().IndexOf(tmpStyle), false);
             }
 
+            // Only initialize Rando Interop if Randomizer 4 is installed
+            if (ModHooks.GetMod("Randomizer 4") is Mod)
+            {
+                RandoManager.Hook();
+            }
             Log("Initializing");
         }
 
@@ -809,7 +814,14 @@ namespace FiveKnights
                 int charmNum = int.Parse(target.Split('_')[1]);
                 if (charmIDs.Contains(charmNum))
                 {
-                    return CharmCosts[charmIDs.IndexOf(charmNum)];
+                    if (SaveSettings.RandoSave && SaveSettings.notchCosts.Count() > 0)
+                    {
+                        return SaveSettings.notchCosts[charmIDs.IndexOf(charmNum)];
+                    }
+                    else
+                    {
+                        return CharmCosts[charmIDs.IndexOf(charmNum)];
+                    }
                 }
             }
             return orig;

@@ -1,0 +1,7 @@
+[
+    {
+        "name": "Completed_Abyssal_Temple",
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + FULLSHADOWDASH + WINGS | Abyssal_Temple[entry_bot2]",
+        "Stateless": true
+    }
+]

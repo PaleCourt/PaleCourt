@@ -1,4 +1,5 @@
-﻿using FrogCore;
+﻿using System.Collections.Generic;
+using FrogCore;
 
 namespace FiveKnights
 {
@@ -120,6 +121,8 @@ namespace FiveKnights
         public bool WLadyAllConvo2 = false;
 
         public bool GodseekerSave = false;
+        public bool RandoSave = false;
+        public List<int> notchCosts = [];
         public bool UnlockedChampionsCall => GodseekerSave ? ((CompletionIsma.completedTier1 || CompletionIsma.completedTier2) && 
                                              (CompletionDryya.completedTier1 || CompletionDryya.completedTier2) &&
                                              (CompletionHegemol.completedTier1 || CompletionHegemol.completedTier2) &&
