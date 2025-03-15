@@ -206,7 +206,7 @@ namespace FiveKnights
             }
         }
 
-        public override string GetVersion() => "1.1.1.0";
+        public override string GetVersion() => "1.1.1.7";
 
         public override List<(string, string)> GetPreloadNames()
         {

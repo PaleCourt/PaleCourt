@@ -9,8 +9,8 @@
     <Product>FiveKnights</Product>
     <Description></Description>
     <Copyright>Copyright © Hewlett-Packard 2020</Copyright>
-    <AssemblyVersion>1.1.1.0</AssemblyVersion>
-    <FileVersion>1.1.1.0</FileVersion>
+    <AssemblyVersion>1.1.1.7</AssemblyVersion>
+    <FileVersion>1.1.1.7</FileVersion>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <LangVersion>latest</LangVersion>
     <!-- put copies of these in a LocalOverrides.targets -->
