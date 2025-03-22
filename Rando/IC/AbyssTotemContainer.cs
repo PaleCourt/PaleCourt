@@ -3,7 +3,7 @@ using ItemChanger.Containers;
 using UnityEngine;
 using SFCore.Utils;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 public class AbyssTotemContainer : SoulTotemContainer
 {
     public const string ClassName = "AbyssTotem";

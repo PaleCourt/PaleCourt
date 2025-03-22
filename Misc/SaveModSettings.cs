@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using FiveKnights.Rando;
 using FrogCore;
 
 namespace FiveKnights
@@ -122,7 +124,9 @@ namespace FiveKnights
 
         public bool GodseekerSave = false;
         public bool RandoSave = false;
+        public RandoSettings RandoSaveSettings = new();
         public List<int> notchCosts = [];
+        public bool UnlockedBosses = false;
         public bool UnlockedChampionsCall => GodseekerSave ? ((CompletionIsma.completedTier1 || CompletionIsma.completedTier2) && 
                                              (CompletionDryya.completedTier1 || CompletionDryya.completedTier2) &&
                                              (CompletionHegemol.completedTier1 || CompletionHegemol.completedTier2) &&
@@ -137,5 +141,21 @@ namespace FiveKnights
         public bool IndicatorActivated = false;
         public UnityEngine.Vector3 IndicatorPosition1;
         public UnityEngine.Vector3 IndicatorPosition2;
+
+        public T GetVariable<T>(string fieldName) {
+            var field = typeof(SaveModSettings).GetField(fieldName);
+            if (field == null) {
+                throw new ArgumentException($"Field '{fieldName}' not found in SaveModSettings class.");
+            }
+            return (T)field.GetValue(this);
+        }
+
+        public void SetVariable<T>(string fieldName, T value) {
+            var field = typeof(SaveModSettings).GetField(fieldName);
+            if (field == null) {
+                throw new ArgumentException($"Field '{fieldName}' not found in SaveModSettings class.");
+            }
+            field.SetValue(this, value);
+        }
     }
 }

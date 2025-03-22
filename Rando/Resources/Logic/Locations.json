@@ -1,22 +1,38 @@
 [
     {
+        "name": "Abyssal_Bloom",
+        "logic": "Completed_Abyssal_Temple"
+    },
+    {
+        "name": "Boon_of_Hallownest",
+        "logic": "(Fungus2_21[left1] + (RIGHTCLAW + (RIGHTDASH | WINGS + SPELLAIRSTALL + $CASTSPELL[3,before:AREASOUL,after:ITEMSOUL]) | RIGHTSUPERDASH | ACID | Lever-Pilgrim's_Way_Left?FALSE + Lever-Pilgrim's_Way_Right?FALSE | RIGHTDASH + WINGS + Lever-Pilgrim's_Way_Right?FALSE) | Fungus2_21[right1] + ((FULLCLAW + (LEFTDASH | LEFTSUPERDASH)) | (ANYCLAW + WINGS)) + Broke_Pilgrim's_Way_Quake_Floor) + DREAMNAIL + CREST + Defeated_White_Defender + BOSS"
+    },
+    {
+        "name": "Kings_Honour",
+        "logic": "(Waterways_13[left1] + (LEFTCLAW + RIGHTCLAW | (LEFTCLAW | RIGHTCLAW) + (WINGS | ENEMYPOGOS) | LEFTCLAW + (RIGHTDASH | RIGHTSUPERDASH)) | Waterways_13[left2] + (ACID + (RIGHTCLAW | WINGS | ENEMYPOGOS) | ACIDSKIPS + LEFTCLAW + RIGHTSUPERDASH + (WINGS | RIGHTCLAW))) + DREAMNAIL + Defeated_White_Defender + BOSS"
+    },
+    {
+        "name": "Mark_of_Purity",
+        "logic": "(Fungus3_48[right1] | Fungus3_48[door1]) + DREAMNAIL + Defeated_White_Defender + BOSS"
+    },
+    {
         "name": "Soul_Totem-Abyssal_Temple_1",
-        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + ANYSHADOWDASH"
     },
     {
         "name": "Soul_Totem-Abyssal_Temple_2",
-        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + WINGS"
     },
     {
         "name": "Soul_Totem-Abyssal_Temple_3",
-        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + FULLSHADOWDASH + WINGS"
     },
     {
         "name": "Soul_Totem-Abyssal_Temple_4",
-        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + RIGHTSHADOWDASH"
+        "logic": "Abyssal_Temple[entry_bot1] + DASHMASTER + FULLSHADOWDASH + WINGS"
     },
     {
-        "name": "Abyssal_Bloom",
-        "logic": "Completed_Abyssal_Temple"
+        "name": "Vessels_Lament",
+        "logic": "Room_Mansion[left1] + DREAMNAIL + Can_Deliver_Flower + Defeated_White_Defender + BOSS"
     }
 ]

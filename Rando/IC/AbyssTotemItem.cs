@@ -2,7 +2,7 @@ using ItemChanger;
 using ItemChanger.Items;
 using ItemChanger.UIDefs;
 
-namespace FiveKnights.Rando.IC;
+namespace FiveKnights.Rando;
 
 public class AbyssTotemItem : SoulTotemItem
 {

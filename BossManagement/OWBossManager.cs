@@ -29,7 +29,8 @@ namespace FiveKnights
         public MusicPlayer _ap;
         public MusicPlayer _ap2;
         public static OWBossManager Instance;
-        
+        public delegate bool GodhomeUnlock(string boss);
+        public static event GodhomeUnlock UnlockGodhome;
         private IEnumerator Start()
         {
             Instance = this;
@@ -161,31 +162,48 @@ namespace FiveKnights
             if(GameManager.instance.GetComponent<AwardCharms>()) GameManager.instance.GetComponent<AwardCharms>().bossWin[index] = true;
             string msgKey = "placeholder key aaaaaaaa";
             int wins;
+            bool godhome = false;
             switch(index)
             {
                 case 0:
-                    FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                    godhome = UnlockGodhome?.Invoke("Dryya") ?? false;
+                    if (!godhome)
+                    {
+                        FiveKnights.Instance.SaveSettings.CompletionDryya.isUnlocked = true;
+                    }
                     FiveKnights.Instance.SaveSettings.DryyaOWWinCount++;
                     wins = FiveKnights.Instance.SaveSettings.DryyaOWWinCount;
                     if(wins < 5) msgKey = "DRYYA_OUTRO_" + wins;
                     else msgKey = "DRYYA_OUTRO_5";
                     break;
                 case 1:
-                    FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                    godhome = UnlockGodhome?.Invoke("Zemer") ?? false;
+                    if (!godhome)
+                    {
+                        FiveKnights.Instance.SaveSettings.CompletionZemer.isUnlocked = true;
+                    }
                     FiveKnights.Instance.SaveSettings.ZemerOWWinCount++;
                     wins = FiveKnights.Instance.SaveSettings.ZemerOWWinCount;
                     if(wins < 5) msgKey = "ZEM_OUTRO_" + wins;
                     else msgKey = "ZEM_OUTRO_5";
                     break;
                 case 2:
-                    FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
+                    godhome = UnlockGodhome?.Invoke("Hegemol") ?? false;
+                    if (!godhome)
+                    {
+                        FiveKnights.Instance.SaveSettings.CompletionHegemol.isUnlocked = true;
+                    }
                     FiveKnights.Instance.SaveSettings.HegOWWinCount++;
                     wins = FiveKnights.Instance.SaveSettings.HegOWWinCount;
                     if(wins < 5) msgKey = "HEG_OUTRO_" + wins;
                     else msgKey = "HEG_OUTRO_5";
                     break;
                 case 3:
-                    FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
+                    godhome = UnlockGodhome?.Invoke("Isma") ?? false;
+                    if (!godhome)
+                    {
+                        FiveKnights.Instance.SaveSettings.CompletionIsma.isUnlocked = true;
+                    }
                     FiveKnights.Instance.SaveSettings.IsmaOWWinCount++;
                     wins = FiveKnights.Instance.SaveSettings.IsmaOWWinCount;
                     if(wins < 5) msgKey = "ISMA_OUTRO_" + wins;

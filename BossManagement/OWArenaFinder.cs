@@ -87,6 +87,7 @@ namespace FiveKnights.BossManagement
 
         private void GameManagerOnEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additivegatesearch)
         {
+            bool wdCheck = FiveKnights.Instance.SaveSettings.RandoSave ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
             switch (self.sceneName)
             {
                 case SheoScene:
@@ -144,7 +145,7 @@ namespace FiveKnights.BossManagement
                     }
                     break;
                 default:
-                    if (self.sceneName == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
+                    if (self.sceneName == PrevDryScene && wdCheck)
                     {
                         CreateGateway("door_dreamReturn", new Vector2(40.5f, 94.4f), Vector2.zero, // 39.2f, 94.4f
                             null, null, false, false, true,
@@ -154,7 +155,7 @@ namespace FiveKnights.BossManagement
                             ClearWhiteScreen();
                         }
                     }
-                    else if (self.sceneName == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
+                    else if (self.sceneName == PrevIsmScene && wdCheck)
                     {
                         CreateGateway("door_dreamReturn", new Vector2(95.7f, 18.4f), Vector2.zero, 
                             null, null, false, false, true, 
@@ -164,7 +165,7 @@ namespace FiveKnights.BossManagement
                             ClearWhiteScreen();
                         }
                     }
-                    else if (self.sceneName == PrevZemScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+                    else if (self.sceneName == PrevZemScene && wdCheck &&
                             PlayerData.instance.GetBool(nameof(PlayerData.xunRewardGiven)))
                     {
                         CreateGateway("door_dreamReturn", new Vector2(22.1f, 6.4f), Vector2.zero, 
@@ -175,7 +176,7 @@ namespace FiveKnights.BossManagement
                             ClearWhiteScreen();
                         }
                     }
-                    else if (self.sceneName == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+                    else if (self.sceneName == PrevHegScene && wdCheck &&
                             (PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)) || 
                             PlayerData.instance.GetBool(nameof(PlayerData.hasCityKey))))
                     {
@@ -205,7 +206,8 @@ namespace FiveKnights.BossManagement
         private void ArenaBundleManage()
         {
             Log("Arena bundle manage");
-            if (_currScene == PrevDryScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
+            bool wdCheck = FiveKnights.Instance.SaveSettings.RandoSave ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
+            if (_currScene == PrevDryScene && wdCheck)
             {
                 if (_prevScene == DryyaScene)
                 {
@@ -221,7 +223,7 @@ namespace FiveKnights.BossManagement
                     new Vector2(40.9f, 94.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, DryyaScene, PrevDryScene);
             }
-            else if (_currScene == PrevZemScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) && 
+            else if (_currScene == PrevZemScene && wdCheck && 
                 PlayerData.instance.GetBool(nameof(PlayerData.xunRewardGiven)))
             {
                 if (_prevScene == ZemerScene)
@@ -233,7 +235,7 @@ namespace FiveKnights.BossManagement
                     new Vector2(25.1f, 6.4f), new Vector2(3f, 3f), new Vector2(3f, 3f),
                     Vector2.zero, ZemerScene, PrevZemScene);
             }
-            else if (_currScene == PrevHegScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)) &&
+            else if (_currScene == PrevHegScene && wdCheck &&
                 (PlayerData.instance.GetBool(nameof(PlayerData.openedCityGate)) ||
                 PlayerData.instance.GetBool(nameof(PlayerData.hasCityKey))))
             {
@@ -246,7 +248,7 @@ namespace FiveKnights.BossManagement
                     new Vector2(118.1f, 13.5f), new Vector2(5f, 5f), new Vector2(3f, 3f),
                     Vector2.zero, HegemolScene, PrevHegScene);
             }
-            else if (_currScene == PrevIsmScene && PlayerData.instance.GetBool(nameof(PlayerData.whiteDefenderDefeated)))
+            else if (_currScene == PrevIsmScene && wdCheck)
             {
                 if (_prevScene == IsmaScene)
                 {

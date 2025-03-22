@@ -1,15 +1,14 @@
-﻿using GlobalEnums;
+﻿using FiveKnights.Rando;
+using GlobalEnums;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using Modding;
 using SFCore.Utils;
 using System.Collections;
-using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Vasi;
-using Random = UnityEngine.Random;
 
 namespace FiveKnights
 {
@@ -19,6 +18,10 @@ namespace FiveKnights
         private GameObject _charmGet;
         private AssetBundle _charmUnlock;
         private SaveModSettings _settings = FiveKnights.Instance.SaveSettings;
+        public delegate void CharmReward(string boss);
+        public static event CharmReward OnCharmReward;
+        public delegate bool CharmsRando();
+        public static event CharmsRando AreCharmsRando;
         private bool pauseShroom = false;
         public bool[] bossWin = new bool[4];
 
@@ -33,7 +36,7 @@ namespace FiveKnights
 
         private void BloomPlacement(Scene From, Scene To)
         {
-            if (RandoManager.Settings.Enabled && RandoManager.Settings.AbyssalTemple && FiveKnights.Instance.SaveSettings.RandoSave)
+            if (RandoManager.SaveSettings.Enabled && RandoManager.SaveSettings.AbyssalTemple && (AreCharmsRando?.Invoke() ?? false))
                 return;
             
             if (To.name == "Abyssal_Temple")
@@ -80,10 +83,11 @@ namespace FiveKnights
         {
             var settings = FiveKnights.Instance.SaveSettings;
             var scene = GameManager.instance.sceneName;
-            if((scene == "dryya overworld" && !settings.gotCharms[0] && bossWin[0]) ||
-                (scene == "zemer overworld arena" && !settings.gotCharms[1] && bossWin[1]) ||
-                (scene == "hegemol overworld arena" && !settings.gotCharms[2] && bossWin[2]) || 
-                (scene == "isma overworld" && !settings.upgradedCharm_10 && bossWin[3]))
+            // Instead of checking for charm status, check that it's the first win against each boss to make Rando compatible.
+            if((scene == "dryya overworld" && settings.DryyaOWWinCount == 1 && bossWin[0]) ||
+                (scene == "zemer overworld arena" && settings.ZemerOWWinCount == 1 && bossWin[1]) ||
+                (scene == "hegemol overworld arena" && settings.HegOWWinCount == 1 && bossWin[2]) || 
+                (scene == "isma overworld" && settings.IsmaOWWinCount == 1 && bossWin[3]))
 
             {
                 bossWin[0] = false;
@@ -101,38 +105,49 @@ namespace FiveKnights
         {
             yield return new WaitUntil(() => HeroController.instance != null);
 
-            // Award charms now so people can skip the cutscenes if they really want
             var settings = FiveKnights.Instance.SaveSettings;
-            if(boss == "isma")
+            if (RandoManager.SaveSettings.Enabled && RandoManager.SaveSettings.BossRewards && (AreCharmsRando?.Invoke() ?? false))
             {
-                PlayerData.instance.gotCharm_10 = true;
-                settings.upgradedCharm_10 = true;
-                PlayerData.instance.newCharm_10 = true;
+                Log($"Invoking {boss} reward.");
+                OnCharmReward.Invoke(boss);
             }
-            else if(boss == "dryya")
-            {
-                settings.gotCharms[0] = true;
-                settings.newCharms[0] = true;
-            }
-            else if(boss == "zemer")
-            {
-                settings.gotCharms[1] = true;
-                settings.newCharms[1] = true;
-            }
-            else if(boss == "hegemol")
-            {
-                settings.gotCharms[2] = true;
-                settings.newCharms[2] = true;
-            }
+            else
+            {  
+                Log($"Failed to invoke {boss} randomized reward.");
+                Log(RandoManager.SaveSettings.Enabled);
+                Log(RandoManager.SaveSettings.BossRewards);
+                Log(AreCharmsRando?.Invoke() ?? false);
+                if(boss == "isma")
+                {
+                    PlayerData.instance.gotCharm_10 = true;
+                    settings.upgradedCharm_10 = true;
+                    PlayerData.instance.newCharm_10 = true;
+                }
+                else if(boss == "dryya")
+                {
+                    settings.gotCharms[0] = true;
+                    settings.newCharms[0] = true;
+                }
+                else if(boss == "zemer")
+                {
+                    settings.gotCharms[1] = true;
+                    settings.newCharms[1] = true;
+                }
+                else if(boss == "hegemol")
+                {
+                    settings.gotCharms[2] = true;
+                    settings.newCharms[2] = true;
+                }
 
-            yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Prostrate Rise");
-            yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
-            if (!pauseShroom)
-            {
-                HeroController.instance.IgnoreInput();
-                CharmCutscene(boss);
+                // Award charms now so people can skip the cutscenes if they really want
+                yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name == "Prostrate Rise");
+                yield return new WaitUntil(() => HeroController.instance.GetComponent<tk2dSpriteAnimator>().CurrentClip.name != "Prostrate Rise");
+                if (!pauseShroom)
+                {
+                    HeroController.instance.IgnoreInput();
+                    CharmCutscene(boss);
+                }
             }
-            
         }
 
         private void CharmCutscene(string boss)

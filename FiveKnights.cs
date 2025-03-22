@@ -20,6 +20,7 @@ using FrogCore;
 using SFCore.Generics;
 using System.Collections;
 using FiveKnights.Misc;
+using FiveKnights.Rando;
 
 namespace FiveKnights
 {
@@ -811,16 +812,37 @@ namespace FiveKnights
         {
             if (target.StartsWith("charmCost_"))
             {
-                int charmNum = int.Parse(target.Split('_')[1]);
-                if (charmIDs.Contains(charmNum))
+                Log(target);
+                try
                 {
-                    if (SaveSettings.RandoSave && SaveSettings.notchCosts.Count() > 0)
+                    int charmNum = int.Parse(target.Split('_')[1]);
+                    if (charmIDs.Contains(charmNum))
                     {
-                        return SaveSettings.notchCosts[charmIDs.IndexOf(charmNum)];
+                        if (SaveSettings.RandoSave && SaveSettings.notchCosts.Count() > 0)
+                        {
+                            return SaveSettings.notchCosts[Array.IndexOf(CharmKeys, charmNum)];
+                        }
+                        else
+                        {
+                            return CharmCosts[charmIDs.IndexOf(charmNum)];
+                        }
                     }
-                    else
+                }
+                // When picking up the charm with IC, sometimes the passed parameter is the key instead of the ID.
+                // We want the cost to be properly displayed for that scenario as well.
+                catch (FormatException)
+                {
+                    string charmKey = target.Split('_')[1];
+                    if (CharmKeys.Contains(charmKey))
                     {
-                        return CharmCosts[charmIDs.IndexOf(charmNum)];
+                        if (SaveSettings.RandoSave && SaveSettings.notchCosts.Count() > 0)
+                        {
+                            return SaveSettings.notchCosts[Array.IndexOf(CharmKeys, charmKey)];
+                        }
+                        else
+                        {
+                            return CharmCosts[Array.IndexOf(CharmKeys, charmKey)];
+                        }
                     }
                 }
             }
@@ -897,7 +919,7 @@ namespace FiveKnights
             StartGame();
         }
 
-        private void StartGame()
+        internal void StartGame()
         {
             if(PlayerData.instance.bossRushMode && !SaveSettings.HasSeenWorkshopRaised)
             {

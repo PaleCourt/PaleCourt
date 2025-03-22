@@ -16,6 +16,7 @@ using Logger = Modding.Logger;
 using FrogCore.Fsm;
 using UnityEngine.SceneManagement;
 using Object = UnityEngine.Object;
+using FiveKnights.Rando;
 
 
 namespace FiveKnights
@@ -23,7 +24,8 @@ namespace FiveKnights
     public static class AbyssalTemple
     {
         private static string _currScene;
-        
+        public delegate bool TotemsRando();
+        public static event TotemsRando AreTotemsRando;        
         public static void Hook()
         {
             //On.GameManager.GetCurrentMapZone += GameManagerGetCurrentMapZone;
@@ -69,7 +71,7 @@ namespace FiveKnights
 
         private static void SetupSoulTotems()
         {
-            if (RandoManager.Settings.Enabled && RandoManager.Settings.AbyssalTemple && FiveKnights.Instance.SaveSettings.RandoSave)
+            if (RandoManager.SaveSettings.Enabled && RandoManager.SaveSettings.AbyssalTemple && (AreTotemsRando?.Invoke() ?? false))
                 return;
             
             Vector3[] worldPos =

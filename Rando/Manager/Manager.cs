@@ -1,23 +1,43 @@
+using ItemChanger;
+using Modding;
 using Newtonsoft.Json;
 using RandomizerMod.Logging;
 using RandomizerMod.RC;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 
 internal static class RandoManager
 {
     public static RandoSettings Settings => FiveKnights.GlobalSettings.RandoSettings;
+    public static RandoSettings SaveSettings => FiveKnights.Instance.SaveSettings.RandoSaveSettings;
     public static void Hook()
     {
+        Events.AfterStartNewGame += StartHook;
         LogicHandler.Hook();
         ItemHandler.Hook();
+        if (ModHooks.GetMod("GodhomeRandomizer") is Mod)
+        {
+            GodhomeInterop.Hook();
+        }
         SettingsLog.AfterLogSettings += AddFileSettings;
         RandoController.OnExportCompleted += StoreSave;
+    }
+
+    private static void StartHook()
+    {
+        // If ItemChanger is on, the standard "StartGame" function doesn't run properly, so we hook it into IC's event.
+        FiveKnights.Instance.StartGame();
     }
 
     private static void StoreSave(RandoController controller)
     {
         FiveKnights.Instance.SaveSettings.RandoSave = RandomizerMod.RandomizerMod.IsRandoSave;
+        FiveKnights.Instance.SaveSettings.RandoSaveSettings = Settings.Clone();
+
+        if (RandomizerMod.RandomizerMod.IsRandoSave && Settings.WhiteDefenderRequirement == WhiteDefenderRequirement.NotRequired)
+        {
+            FiveKnights.Instance.SaveSettings.UnlockedBosses = true;
+        }
     }
 
     private static void AddFileSettings(LogArguments args, System.IO.TextWriter tw)

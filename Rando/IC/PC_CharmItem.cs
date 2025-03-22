@@ -1,8 +1,7 @@
 using ItemChanger;
-using ItemChanger.Internal;
 using ItemChanger.UIDefs;
 
-namespace FiveKnights.Rando.IC;
+namespace FiveKnights.Rando;
 
 public class PC_CharmItem : AbstractItem
 {
@@ -11,6 +10,15 @@ public class PC_CharmItem : AbstractItem
     {
         FiveKnights.Instance.SaveSettings.gotCharms[charmIndex] = true;
     }
+    protected override void OnLoad()
+    {
+        Events.OnStringGet += AddNotchCostToCharmName;
+    }
+
+    protected override void OnUnload()
+    {
+        Events.OnStringGet -= AddNotchCostToCharmName;
+    }
     public PC_CharmItem(string charmName, int charmID)
     {
         name = charmName;
@@ -18,9 +26,17 @@ public class PC_CharmItem : AbstractItem
         UIDef = new MsgUIDef()
         {
             name = new LanguageString("Prompts", $"CHARM_NAME_{FiveKnights.CharmKeys[charmIndex]}"),
-            shopDesc = new BoxedString("New charm baby, hope it comes at a low cost."),
+            shopDesc = new LanguageString("Prompts", $"CHARM_DESC_{FiveKnights.CharmKeys[charmIndex]}"),
             sprite = new PC_Sprite(name)
         };
+    }
+
+    private void AddNotchCostToCharmName(StringGetArgs args)
+    {
+        if (args.Source is LanguageString ls && ls.key.StartsWith("CHARM_NAME_") && ls.key.EndsWith(FiveKnights.CharmKeys[charmIndex]))
+        {
+            args.Current.Replace("-9999", $"{FiveKnights.Instance.SaveSettings.notchCosts[charmIndex]}");
+        }
     }
 
     public override bool Redundant() => FiveKnights.Instance.SaveSettings.gotCharms[charmIndex];

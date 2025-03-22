@@ -3,7 +3,7 @@ using ItemChanger.Locations;
 using ItemChanger.Tags;
 using RandomizerMod.RandomizerData;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 
 public class AbyssTotemLocation : CoordinateLocation
 {
@@ -29,5 +29,21 @@ public class AbyssTotemLocation : CoordinateLocation
         tag.Properties["MapLocation"] = new (string, float, float)[] {(SceneNames.Abyss_09, pinX, pinY)};
         tag.Message = "RandoSupplementalMetadata";
         return tag;
+    }
+    protected override void OnLoad()
+    {
+        base.OnLoad();
+        AbyssalTemple.AreTotemsRando += SetAsTrue;
+    }
+
+    protected override void OnUnload()
+    {
+        base.OnUnload();
+        AbyssalTemple.AreTotemsRando -= SetAsTrue;
+    }
+
+    private bool SetAsTrue()
+    {
+        return true;
     }
 }

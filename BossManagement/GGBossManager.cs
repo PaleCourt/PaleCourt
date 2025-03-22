@@ -31,7 +31,12 @@ namespace FiveKnights.BossManagement
 
         public List<Animator> flowersAnim;
         public List<Animator> flowersGlow;
-
+        public delegate void GodhomeReward(string boss, int level);
+        public static event GodhomeReward RewardGodhome;
+        public delegate bool TierRando(int level);
+        public static event TierRando IsTierRando;
+        public delegate bool GodhomeUnlock(string boss);
+        public static event GodhomeUnlock UnlockGodhome;
         private void StartFlowers()
         {
             GameObject flowers = Instantiate(FiveKnights.preloadedGO["AllFlowers"]);
@@ -132,11 +137,16 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => ic != null);
                 if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.SaveSettings.CompletionIsma;
-                    var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                    fi.SetValue(box, true);
-                    FiveKnights.Instance.SaveSettings.CompletionIsma = (BossStatue.Completion) box;
+                    RewardGodhome?.Invoke("Isma", CustomWP.lev);
+                    bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                    if (!isRando)
+                    {
+                        int lev = CustomWP.lev + 1;
+                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionIsma;
+                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                        fi.SetValue(box, true);
+                        FiveKnights.Instance.SaveSettings.CompletionIsma = (BossStatue.Completion) box;
+                    }
 
                     var bsc = BossSceneController.Instance;
                     GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -157,11 +167,16 @@ namespace FiveKnights.BossManagement
                 
                 if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.SaveSettings.CompletionIsma2;
-                    var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                    fi.SetValue(box, true);
-                    FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
+                    RewardGodhome?.Invoke("Isma2", CustomWP.lev);
+                    bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                    if (!isRando)
+                    {
+                        int lev = CustomWP.lev + 1;
+                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionIsma2;
+                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                        fi.SetValue(box, true);
+                        FiveKnights.Instance.SaveSettings.CompletionIsma2 = (BossStatue.Completion) box;
+                    }
 
                     var bsc = BossSceneController.Instance;
                     GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -181,11 +196,16 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => dc != null);
                 if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.SaveSettings.CompletionDryya;
-                    var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                    fi.SetValue(box, true);
-                    FiveKnights.Instance.SaveSettings.CompletionDryya = (BossStatue.Completion) box;
+                    RewardGodhome?.Invoke("Dryya", CustomWP.lev);
+                    bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                    if (!isRando)
+                    {
+                        int lev = CustomWP.lev + 1;
+                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionDryya;
+                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                        fi.SetValue(box, true);
+                        FiveKnights.Instance.SaveSettings.CompletionDryya = (BossStatue.Completion) box;
+                    }
 
                     yield return new WaitForSeconds(5.0f);
 
@@ -210,11 +230,16 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => hegemolCtrl != null);
                 if (CustomWP.wonLastFight)
                 {
-                    int lev = CustomWP.lev + 1;
-                    var box = (object) FiveKnights.Instance.SaveSettings.CompletionHegemol;
-                    var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                    fi.SetValue(box, true);
-                    FiveKnights.Instance.SaveSettings.CompletionHegemol = (BossStatue.Completion) box;
+                    RewardGodhome?.Invoke("Hegemol", CustomWP.lev);
+                    bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                    if (!isRando)
+                    {
+                        int lev = CustomWP.lev + 1;
+                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionHegemol;
+                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                        fi.SetValue(box, true);
+                        FiveKnights.Instance.SaveSettings.CompletionHegemol = (BossStatue.Completion) box;
+                    }
 
                     var bsc = BossSceneController.Instance;
                     GameObject transition = Instantiate(bsc.transitionPrefab);
@@ -246,20 +271,31 @@ namespace FiveKnights.BossManagement
                 yield return new WaitWhile(() => zc2 != null);
                 if (CustomWP.wonLastFight)
                 {
+                    
                     int lev = CustomWP.lev + 1;
                     if (CustomWP.boss == CustomWP.Boss.Ze)
                     {
-                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionZemer;
-                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                        fi.SetValue(box, true);
-                        FiveKnights.Instance.SaveSettings.CompletionZemer = (BossStatue.Completion) box;
+                        RewardGodhome?.Invoke("Zemer", CustomWP.lev);
+                        bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                        if (!isRando)
+                        {
+                            var box = (object) FiveKnights.Instance.SaveSettings.CompletionZemer;
+                            var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                            fi.SetValue(box, true);
+                            FiveKnights.Instance.SaveSettings.CompletionZemer = (BossStatue.Completion) box;
+                        }
                     }
                     else
                     {
-                        var box = (object) FiveKnights.Instance.SaveSettings.CompletionZemer2;
-                        var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
-                        fi.SetValue(box, true);
-                        FiveKnights.Instance.SaveSettings.CompletionZemer2 = (BossStatue.Completion) box;
+                        RewardGodhome?.Invoke("Zemer2", CustomWP.lev);
+                        bool isRando = IsTierRando?.Invoke(CustomWP.lev) ?? false;
+                        if (!isRando)
+                        {
+                            var box = (object) FiveKnights.Instance.SaveSettings.CompletionZemer2;
+                            var fi = ReflectionHelper.GetFieldInfo(typeof(BossStatue.Completion), $"completedTier{lev}");
+                            fi.SetValue(box, true);
+                            FiveKnights.Instance.SaveSettings.CompletionZemer2 = (BossStatue.Completion) box;
+                        }
                     }
 
                     var bsc = BossSceneController.Instance;
@@ -346,7 +382,10 @@ namespace FiveKnights.BossManagement
 
                 yield return new WaitWhile(() => zc != null);
                 ZemerControllerP2 zc2 = zem.GetComponent<ZemerControllerP2>();
-                FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
+                if (UnlockGodhome?.Invoke("Zemer2") ?? false)
+                {
+                    FiveKnights.Instance.SaveSettings.CompletionZemer2.isUnlocked = true;
+                }
                 
                 yield return new WaitWhile(() => zc2 != null);
                 
@@ -399,7 +438,10 @@ namespace FiveKnights.BossManagement
             // Transition to phase 2
             yield return new WaitWhile(() => !HIT_FLAG);
             
-            FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
+            if (UnlockGodhome?.Invoke("Isma2") ?? false)
+            {
+                FiveKnights.Instance.SaveSettings.CompletionIsma2.isUnlocked = true;
+            }
             PlayMusic(null, 1f);
             if(dd.transform.position.y < 9f) dd.transform.position = new Vector3(dd.transform.position.x, 9f, dd.transform.position.z);
             PlayerData.instance.isInvincible = true;

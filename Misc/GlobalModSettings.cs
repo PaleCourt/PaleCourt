@@ -1,4 +1,4 @@
-﻿using FrogCore;
+﻿using FiveKnights.Rando;
 
 namespace FiveKnights
 {

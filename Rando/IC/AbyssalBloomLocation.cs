@@ -1,9 +1,8 @@
-using ItemChanger;
 using ItemChanger.Locations;
 using ItemChanger.Tags;
 using RandomizerMod.RandomizerData;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 
 public class AbyssalBloomLocation : CoordinateLocation
 {
@@ -24,5 +23,22 @@ public class AbyssalBloomLocation : CoordinateLocation
         tag.Properties["VanillaItem"] = "Abyssal_Bloom";
         tag.Message = "RandoSupplementalMetadata";
         return tag;
+    }
+
+    protected override void OnLoad()
+    {
+        base.OnLoad();
+        AwardCharms.AreCharmsRando += SetAsTrue;
+    }
+
+    protected override void OnUnload()
+    {
+        base.OnUnload();
+        AwardCharms.AreCharmsRando -= SetAsTrue;
+    }
+
+    private bool SetAsTrue()
+    {
+        return true;
     }
 }

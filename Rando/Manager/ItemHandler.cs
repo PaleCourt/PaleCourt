@@ -4,15 +4,18 @@ using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
-using FiveKnights.Rando.IC;
+using FiveKnights.BossManagement;
 using ItemChanger;
 using ItemChanger.Extensions;
+using ItemChanger.Tags;
+using Modding;
 using Newtonsoft.Json;
+using RandomizerCore.Logic;
 using RandomizerMod.RandomizerData;
 using RandomizerMod.RC;
 using RandomizerMod.Settings;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 internal static class ItemHandler
 {
     internal static void Hook()
@@ -21,7 +24,66 @@ internal static class ItemHandler
         RequestBuilder.OnUpdate.Subscribe(0f, AddObjects);
         RequestBuilder.OnUpdate.Subscribe(1f, IncreaseNotchCost);
         RequestBuilder.OnUpdate.Subscribe(2f, RandomizeNotchCosts);
+        RequestBuilder.OnUpdate.Subscribe(50f, RemoveLore);
         RequestBuilder.OnUpdate.Subscribe(1090f, DefineTransitions);
+        ProgressionInitializer.OnCreateProgressionInitializer += SetOgrimCall;
+    }
+
+    private static void SetOgrimCall(LogicManager lm, GenerationSettings gs, ProgressionInitializer pi)
+    {
+        if (!RandoManager.Settings.Enabled)
+            return;
+
+        if (RandoManager.Settings.WhiteDefenderRequirement == WhiteDefenderRequirement.NotRequired)
+        {
+            pi.Setters.Add(new(lm.GetTermStrict("Ogrim's_Call"), 1));
+        }
+    }
+
+    private static void DefineObjects()
+    {
+        // Define charms
+        Finder.DefineCustomItem(new PC_CharmItem("Mark_of_Purity", 0));
+        Finder.DefineCustomItem(new PC_CharmItem("Vessels_Lament", 1));
+        Finder.DefineCustomItem(new PC_CharmItem("Boon_of_Hallownest", 2));
+        Finder.DefineCustomItem(new PC_CharmItem("Abyssal_Bloom", 3));
+        Finder.DefineCustomItem(new KingsHonourItem());
+        Finder.DefineCustomLocation(new BossCharmLocation("Boon_of_Hallownest", OWArenaFinder.PrevHegScene, "hegemol"));
+        Finder.DefineCustomLocation(new BossCharmLocation("Kings_Honour", OWArenaFinder.PrevIsmScene, "isma"));
+        Finder.DefineCustomLocation(new BossCharmLocation("Mark_of_Purity", OWArenaFinder.PrevDryScene, "dryya"));
+        Finder.DefineCustomLocation(new BossCharmLocation("Vessels_Lament", OWArenaFinder.PrevZemScene, "zemer"));
+        Finder.DefineCustomLocation(new AbyssalBloomLocation());
+
+        // Define Abyss totems
+        Container.DefineContainer<AbyssTotemContainer>();
+        Finder.DefineCustomItem(new AbyssTotemItem());
+        Vector2[] worldPos = [new(106.6582f, 27.4f), new(76.4f, 86.6f), new(198.4582f, 114.6f), new(227.6582f, 107.6f)];
+        foreach (var pos in worldPos)
+        {
+            Finder.DefineCustomLocation(new AbyssTotemLocation(worldPos.IndexOf(pos) + 1, pos.X, pos.Y, 0.0f, 0.0f));
+        }
+
+        // Define Ogrim's Call (used to unlock bosses)
+        Finder.DefineCustomItem(new OgrimCallItem());
+
+        if (ModHooks.GetMod("GodhomeRandomizer") is Mod)
+        {
+            Finder.DefineCustomItem(new GodhomeItem("Isma", false));
+            Finder.DefineCustomItem(new GodhomeItem("Isma", true));
+            Finder.DefineCustomItem(new GodhomeItem("Zemer", false));
+            Finder.DefineCustomItem(new GodhomeItem("Zemer", true));
+            Finder.DefineCustomItem(new GodhomeItem("Dryya", false));
+            Finder.DefineCustomItem(new GodhomeItem("Hegemol", false));
+
+            string[] bosses = ["Isma", "Isma2", "Dryya", "Hegemol", "Zemer", "Zemer2"];
+            foreach (string boss in bosses)
+            {
+                Finder.DefineCustomLocation(new GodhomeLocation($"Empty_Mark-{boss.Replace("2", "_Rematch")}", boss, -1));
+                Finder.DefineCustomLocation(new GodhomeLocation($"Bronze_Mark-{boss.Replace("2", "_Rematch")}", boss, 0));
+                Finder.DefineCustomLocation(new GodhomeLocation($"Silver_Mark-{boss.Replace("2", "_Rematch")}", boss, 1));
+                Finder.DefineCustomLocation(new GodhomeLocation($"Gold_Mark-{boss.Replace("2", "_Rematch")}", boss, 2));
+            }
+        }
     }
 
     private static void RandomizeNotchCosts(RequestBuilder rb)
@@ -31,6 +93,7 @@ internal static class ItemHandler
         
         // The idea is that the notch costs for PC charms should be somewhere close to standard charms when rando'd.
         // High or low mostly depends on defined settings.
+        FiveKnights.Instance.SaveSettings.notchCosts.Clear();
         int total = rb.ctx.notchCosts.Sum();
         int minTotal = rb.gs.MiscSettings.MinRandomNotchTotal;
         int maxTotal = rb.gs.MiscSettings.MaxRandomNotchTotal;
@@ -120,6 +183,10 @@ internal static class ItemHandler
         if (!RandoManager.Settings.Enabled)
             return;
         
+        if (RandoManager.Settings.WhiteDefenderRequirement == WhiteDefenderRequirement.Randomized)
+        {
+            rb.AddItemByName("Ogrim's_Call");
+        }
         if (RandoManager.Settings.BossRewards)
         {
             if (rb.gs.PoolSettings.Charms)
@@ -127,6 +194,34 @@ internal static class ItemHandler
                 rb.AddItemByName("Mark_of_Purity");
                 rb.AddItemByName("Vessels_Lament");
                 rb.AddItemByName("Boon_of_Hallownest");
+                rb.AddItemByName("Kings_Honour");
+                rb.AddLocationByName("Mark_of_Purity");
+                rb.AddLocationByName("Vessels_Lament");
+                rb.AddLocationByName("Boon_of_Hallownest");
+                rb.AddLocationByName("Kings_Honour");
+
+                // Add progression between Defender's Crest & King's Honour
+                AbstractItem currentDef = Finder.GetItemInternal(ItemNames.Defenders_Crest);
+                Finder.GetItemOverride += args =>
+                {
+                    if (args.ItemName == ItemNames.Defenders_Crest)
+                    {
+                        args.Current = currentDef;
+                        ItemChainTag tag = new()
+                        {
+                            predecessor = null,
+                            successor = "Kings_Honour"
+                        };
+                        if (args.Current.tags == null)
+                        {
+                            args.Current.tags = [tag];
+                        }
+                        else
+                        {
+                            args.Current.tags.Add(tag);
+                        }
+                    }
+                };
             }
         }
         if (RandoManager.Settings.AbyssalTemple)
@@ -165,22 +260,14 @@ internal static class ItemHandler
         }
     }
 
-    private static void DefineObjects()
+    private static void RemoveLore(RequestBuilder rb)
     {
-        // Define charms
-        Finder.DefineCustomItem(new PC_CharmItem("Mark_of_Purity", 0));
-        Finder.DefineCustomItem(new PC_CharmItem("Vessels_Lament", 1));
-        Finder.DefineCustomItem(new PC_CharmItem("Boon_of_Hallownest", 2));
-        Finder.DefineCustomItem(new PC_CharmItem("Abyssal_Bloom", 3));
-        Finder.DefineCustomLocation(new AbyssalBloomLocation());
+        // By default this won't remove those checks - but having LoreRandomizer on with vanilla Pale Court will likely
+        // prevent a user from doing standard Pale Court content.
+        if (!RandoManager.Settings.Enabled)
+            return;
 
-        // Define Abyss totems
-        Container.DefineContainer<AbyssTotemContainer>();
-        Finder.DefineCustomItem(new AbyssTotemItem());
-        Vector2[] worldPos = [new(106.6582f, 27.4f), new(76.4f, 86.6f), new(198.4582f, 114.6f), new(227.6582f, 107.6f)];
-        foreach (var pos in worldPos)
-        {
-            Finder.DefineCustomLocation(new AbyssTotemLocation(worldPos.IndexOf(pos) + 1, pos.X, pos.Y, 0.0f, 0.0f));
-        }
+        rb.RemoveLocationByName("Isma_Dream");
+        rb.RemoveLocationByName("Dryya_Dream");
     }
 }

@@ -4,7 +4,7 @@ using Newtonsoft.Json;
 using System;
 using UnityEngine;
 
-namespace FiveKnights;
+namespace FiveKnights.Rando;
 [Serializable]
 public class PC_Sprite : ISprite
 {

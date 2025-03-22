@@ -110,6 +110,9 @@
     <Reference Include="FrogCore">
       <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>
     </Reference>
+    <Reference Include="GodhomeRandomizer">
+      <HintPath>$(HollowKnightRefs)/Mods/GodhomeRandomizer/GodhomeRandomizer.dll</HintPath>
+    </Reference>
     <Reference Include="ItemChanger">
       <HintPath>$(HollowKnightRefs)/Mods/ItemChanger/ItemChanger.dll</HintPath>
     </Reference>

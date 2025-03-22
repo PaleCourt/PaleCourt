@@ -6,5 +6,25 @@
     {
         "Name": "Abyssal_Bloom",
         "Effect": "`Abyssal_Bloom<1` => CHARMS++ >> Abyssal_Bloom++"
+    },
+    {
+        "Name": "Boon_of_Hallownest",
+        "Effect": "`Boon_of_Hallownest<1` => CHARMS++ >> Boon_of_Hallownest++"
+    },
+    {
+        "Name": "Kings_Honour",
+        "Effect": "`Defender's_Crest<1` => CHARMS++ >> Defender's_Crest++"
+    },
+    {
+        "Name": "Mark_of_Purity",
+        "Effect": "`Mark_of_Purity<1` => CHARMS++ >> Mark_of_Purity++"
+    },
+    {
+        "Name": "Ogrim's_Call",
+        "Effect": "Ogrim's_Call++"
+    },
+    {
+        "Name": "Vessels_Lament",
+        "Effect": "`Vessels_Lament<1` => CHARMS++ >> Vessels_Lament++"
     }
 ]
