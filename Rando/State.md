@@ -1,27 +1,33 @@
 ## Done
 
-- Item and location defs for all five charms and temple totems.
-- Boss access options
+- Abyssal temple, including item, location, logic and pins.
+- Boss charm items, locations and logic.
+- Boss access options.
+- Add settings menu and RandoSettingsManager interop.
+
+Godhome Rando interop:
+- Statue items and locations. Partial logic.
+- Handle boss access based on GodhomeRando statue access settings.
+
+Lore Rando interop:
 - Ensure the Dryya and Isma dream dialogue locations don't interfere with Pale Court.
 
 ## To do
 
-- Add pins.
-- Add Champion's Call as a check.
-- Add settings menu.
-- Logic definitions.
+- Charm map pins.
+- Add Champion's Call.
 
-## Interop
-
-BWR Rando:
-- Add Wall and Collapser for Abyssal Temple entrance and exit (will build on BWR).
+Godhome Rando interop:
+- Proper Godhome Rando logic definitions.
+- Tiso statue.
 
 Lore Rando:
 - Add some of the custom dialogues to the dialogue pool, if enabled.
 
-Godhome Rando:
-- Include the Pale Court statue bosses into the pool.
-- Handle boss access based on GodhomeRando statue access settings.
-
 TRJR Rando:
-- Add boss journal entries.
+- Add boss journal entries to the pool.
+
+## Current issues
+
+- Dryya the Picky.
+- Every now and then, boss locations are granting their vanilla placement.

@@ -116,6 +116,9 @@
     <Reference Include="ItemChanger">
       <HintPath>$(HollowKnightRefs)/Mods/ItemChanger/ItemChanger.dll</HintPath>
     </Reference>
+    <Reference Include="MenuChanger">
+      <HintPath>$(HollowKnightRefs)/Mods/MenuChanger/MenuChanger.dll</HintPath>
+    </Reference>
     <Reference Include="MMHOOK_Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/MMHOOK_Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -143,8 +146,14 @@
     <Reference Include="RandomizerMod">
       <HintPath>$(HollowKnightRefs)/Mods/Randomizer 4/RandomizerMod.dll</HintPath>
     </Reference>
+    <Reference Include="RandoSettingsManager">
+      <HintPath>$(HollowKnightRefs)/Mods/RandoSettingsManager/RandoSettingsManager.dll</HintPath>
+    </Reference>
     <Reference Include="SFCore">
       <HintPath>$(HollowKnightRefs)/Mods/SFCore/SFCore.dll</HintPath>
+    </Reference>
+    <Reference Include="TheRealJournalRando">
+      <HintPath>$(HollowKnightRefs)/Mods/TheRealJournalRando/TheRealJournalRando.dll</HintPath>
     </Reference>
     <Reference Include="UnityEngine">
       <HintPath>$(HollowKnightRefs)/UnityEngine.dll</HintPath>

@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using ItemChanger;
 using ItemChanger.Locations;
 using ItemChanger.Tags;
@@ -17,7 +19,15 @@ public class AbyssTotemLocation : CoordinateLocation
         y = _y;
         pinX = _pinX;
         pinY = _pinY;
-        tags = [LocationTag()];
+        tags = [LocationTag(), RecentItemsTag()];
+    }
+
+    private InteropTag RecentItemsTag()
+    {
+        InteropTag tag = new();
+        tag.Properties["DisplaySource"] = "The Abyss";
+        tag.Message = "RecentItems";
+        return tag;
     }
 
     private InteropTag LocationTag()
@@ -26,7 +36,8 @@ public class AbyssTotemLocation : CoordinateLocation
         tag.Properties["ModSource"] = FiveKnights.Instance.GetName();
         tag.Properties["PoolGroup"] = PoolNames.Soul;
         tag.Properties["VanillaItem"] = "Abyss_Totem";
-        tag.Properties["MapLocation"] = new (string, float, float)[] {(SceneNames.Abyss_09, pinX, pinY)};
+        tag.Properties["MapLocations"] = new (string, float, float)[] {(SceneNames.Abyss_10, pinX, pinY)};
+        tag.Properties["PinSpriteKey"] = "Soul Totems";
         tag.Message = "RandoSupplementalMetadata";
         return tag;
     }

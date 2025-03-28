@@ -812,7 +812,6 @@ namespace FiveKnights
         {
             if (target.StartsWith("charmCost_"))
             {
-                Log(target);
                 try
                 {
                     int charmNum = int.Parse(target.Split('_')[1]);
@@ -820,7 +819,7 @@ namespace FiveKnights
                     {
                         if (SaveSettings.RandoSave && SaveSettings.notchCosts.Count() > 0)
                         {
-                            return SaveSettings.notchCosts[Array.IndexOf(CharmKeys, charmNum)];
+                            return SaveSettings.notchCosts[charmIDs.IndexOf(charmNum)];
                         }
                         else
                         {

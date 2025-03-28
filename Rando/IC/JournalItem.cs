@@ -1,20 +1,19 @@
 using ItemChanger;
 using ItemChanger.Tags;
 using ItemChanger.UIDefs;
+using TheRealJournalRando.IC;
 
 namespace FiveKnights.Rando;
 
-public class KingsHonourItem : AbstractItem
+public class JournalItem : AbstractItem
 {
-    public KingsHonourItem()
+    public string enemyName { get; set; }
+    public EnemyJournalLocationType itemType { get; set; }
+    public JournalItem(string enemy, EnemyJournalLocationType type)
     {
-        name = "Kings_Honour";
-        UIDef = new MsgUIDef()
-        {
-            name = new LanguageString("Prompts", "CHARM_NAME_HONOUR"),
-            shopDesc = new LanguageString("Prompts", "CHARM_DESC_HONOUR"),
-            sprite = new PC_Sprite(name)
-        };
+        name = type == EnemyJournalLocationType.Notes ? $"Hunter's_Notes-{enemy}" : $"Journal_Entry-{enemy}";
+        itemType = type;
+        enemyName = enemy;
         tags = [ItemTag()];
     }
 
@@ -32,8 +31,8 @@ public class KingsHonourItem : AbstractItem
     {
         ItemChainTag tag = new ()
         {
-            predecessor = "Defender's_Crest",
-            successor = null
+            predecessor = itemType == EnemyJournalLocationType.Notes ? $"Journal_Entry-{enemyName}" : null,
+            successor = itemType == EnemyJournalLocationType.Notes ? null : $"Hunter's_Notes-{enemyName}"
         };
         return tag;
     }
@@ -51,5 +50,5 @@ public class KingsHonourItem : AbstractItem
         }
     }
 
-    public override bool Redundant() => FiveKnights.Instance.SaveSettings.upgradedCharm_10;
+    public override bool Redundant() => FiveKnights.Instance.SaveSettings.IsmaEntryData.killsremaining == 0;
 }

@@ -13,11 +13,16 @@ internal static class RandoManager
     public static void Hook()
     {
         Events.AfterStartNewGame += StartHook;
+        ConnectionMenu.Hook();
         LogicHandler.Hook();
         ItemHandler.Hook();
         if (ModHooks.GetMod("GodhomeRandomizer") is Mod)
         {
             GodhomeInterop.Hook();
+        }
+        if (ModHooks.GetMod("TheRealJournalRando") is Mod)
+        {
+            JournalInterop.Hook();
         }
         SettingsLog.AfterLogSettings += AddFileSettings;
         RandoController.OnExportCompleted += StoreSave;

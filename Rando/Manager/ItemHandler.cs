@@ -8,7 +8,6 @@ using FiveKnights.BossManagement;
 using ItemChanger;
 using ItemChanger.Extensions;
 using ItemChanger.Tags;
-using Modding;
 using Newtonsoft.Json;
 using RandomizerCore.Logic;
 using RandomizerMod.RandomizerData;
@@ -49,8 +48,8 @@ internal static class ItemHandler
         Finder.DefineCustomItem(new PC_CharmItem("Abyssal_Bloom", 3));
         Finder.DefineCustomItem(new KingsHonourItem());
         Finder.DefineCustomLocation(new BossCharmLocation("Boon_of_Hallownest", OWArenaFinder.PrevHegScene, "hegemol"));
-        Finder.DefineCustomLocation(new BossCharmLocation("Kings_Honour", OWArenaFinder.PrevIsmScene, "isma"));
-        Finder.DefineCustomLocation(new BossCharmLocation("Mark_of_Purity", OWArenaFinder.PrevDryScene, "dryya"));
+        Finder.DefineCustomLocation(new BossCharmLocation("Kings_Honour", OWArenaFinder.PrevIsmScene, "isma", 0.7f, -0.5f));
+        Finder.DefineCustomLocation(new BossCharmLocation("Mark_of_Purity", OWArenaFinder.PrevDryScene, "dryya", 0.1f, 0.7f));
         Finder.DefineCustomLocation(new BossCharmLocation("Vessels_Lament", OWArenaFinder.PrevZemScene, "zemer"));
         Finder.DefineCustomLocation(new AbyssalBloomLocation());
 
@@ -60,30 +59,11 @@ internal static class ItemHandler
         Vector2[] worldPos = [new(106.6582f, 27.4f), new(76.4f, 86.6f), new(198.4582f, 114.6f), new(227.6582f, 107.6f)];
         foreach (var pos in worldPos)
         {
-            Finder.DefineCustomLocation(new AbyssTotemLocation(worldPos.IndexOf(pos) + 1, pos.X, pos.Y, 0.0f, 0.0f));
+            Finder.DefineCustomLocation(new AbyssTotemLocation(worldPos.IndexOf(pos) + 1, pos.X, pos.Y, -1.0f + 0.4f * worldPos.IndexOf(pos), 1.0f));
         }
 
         // Define Ogrim's Call (used to unlock bosses)
         Finder.DefineCustomItem(new OgrimCallItem());
-
-        if (ModHooks.GetMod("GodhomeRandomizer") is Mod)
-        {
-            Finder.DefineCustomItem(new GodhomeItem("Isma", false));
-            Finder.DefineCustomItem(new GodhomeItem("Isma", true));
-            Finder.DefineCustomItem(new GodhomeItem("Zemer", false));
-            Finder.DefineCustomItem(new GodhomeItem("Zemer", true));
-            Finder.DefineCustomItem(new GodhomeItem("Dryya", false));
-            Finder.DefineCustomItem(new GodhomeItem("Hegemol", false));
-
-            string[] bosses = ["Isma", "Isma2", "Dryya", "Hegemol", "Zemer", "Zemer2"];
-            foreach (string boss in bosses)
-            {
-                Finder.DefineCustomLocation(new GodhomeLocation($"Empty_Mark-{boss.Replace("2", "_Rematch")}", boss, -1));
-                Finder.DefineCustomLocation(new GodhomeLocation($"Bronze_Mark-{boss.Replace("2", "_Rematch")}", boss, 0));
-                Finder.DefineCustomLocation(new GodhomeLocation($"Silver_Mark-{boss.Replace("2", "_Rematch")}", boss, 1));
-                Finder.DefineCustomLocation(new GodhomeLocation($"Gold_Mark-{boss.Replace("2", "_Rematch")}", boss, 2));
-            }
-        }
     }
 
     private static void RandomizeNotchCosts(RequestBuilder rb)
@@ -252,10 +232,18 @@ internal static class ItemHandler
                         PriceCap = 1
                     };             
                 });
-                rb.AddLocationByName("Soul_Totem-Abyssal_Temple_1");
-                rb.AddLocationByName("Soul_Totem-Abyssal_Temple_2");
-                rb.AddLocationByName("Soul_Totem-Abyssal_Temple_3");
-                rb.AddLocationByName("Soul_Totem-Abyssal_Temple_4");
+                foreach (int x in new int[] {1, 2, 3, 4})
+                {
+                    rb.AddLocationByName($"Soul_Totem-Abyssal_Temple_{x}");
+                    rb.EditLocationRequest($"Soul_Totem-Abyssal_Temple_{x}", info =>
+                    info.getLocationDef = () => new()
+                    {
+                        Name = $"Soul_Totem-Abyssal_Temple_{x}",
+                        SceneName = SceneNames.Abyss_10,
+                        FlexibleCount = false,
+                        AdditionalProgressionPenalty = false
+                    });
+                }
             }
         }
     }

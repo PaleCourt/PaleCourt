@@ -89,6 +89,6 @@ public class GodhomeLocation : AutoLocation
     
     private bool SetAsTrue(int level)
     {
-        return level >= (int)statueTier;
+        return level <= (int)statueTier;
     }
 }

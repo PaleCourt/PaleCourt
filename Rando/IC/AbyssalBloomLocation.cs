@@ -1,3 +1,4 @@
+using ItemChanger;
 using ItemChanger.Locations;
 using ItemChanger.Tags;
 using RandomizerMod.RandomizerData;
@@ -12,7 +13,7 @@ public class AbyssalBloomLocation : CoordinateLocation
         sceneName = "Abyssal_Temple";
         x = 241.3f;
         y = 34.12f;
-        tags = [LocationTag()];
+        tags = [LocationTag(), RecentItemsTag()];
     }
 
     private InteropTag LocationTag()
@@ -20,8 +21,17 @@ public class AbyssalBloomLocation : CoordinateLocation
         InteropTag tag = new();
         tag.Properties["ModSource"] = FiveKnights.Instance.GetName();
         tag.Properties["PoolGroup"] = PoolNames.Charm;
+        tag.Properties["MapLocations"] = new (string, float, float)[] {(SceneNames.Abyss_10, 0.6f, 1.0f)};
         tag.Properties["VanillaItem"] = "Abyssal_Bloom";
         tag.Message = "RandoSupplementalMetadata";
+        return tag;
+    }
+
+    private InteropTag RecentItemsTag()
+    {
+        InteropTag tag = new();
+        tag.Properties["DisplaySource"] = "The Abyss";
+        tag.Message = "RecentItems";
         return tag;
     }
 
