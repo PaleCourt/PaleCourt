@@ -25,7 +25,10 @@ namespace FiveKnights.Tiso
         private const float BombHeight = 19f;
         private const float SpikeVel = 60f;
         private const int NumShots = 8;
-        
+        public delegate bool JournalRando();
+        public static event JournalRando IsJournalRando;
+        public delegate void RandoReward(string boss);
+        public static event RandoReward GrantReward;
         public TisoAttacks(Transform transform, Rigidbody2D rb, BoxCollider2D bc, Animator anim, EnemyDeathEffectsUninfected deathEff)
         {
             this.transform = transform;
@@ -62,7 +65,7 @@ namespace FiveKnights.Tiso
                             : HeroController.instance.transform.position.x > transform.position.x;
                     };
                 }
-                runParry.layer = (int) PhysLayers.ENEMIES;
+                runParry.layer = (int)PhysLayers.ENEMIES;
                 runParry.AddComponent<DamageHero>();
             }
 
@@ -438,7 +441,14 @@ namespace FiveKnights.Tiso
             _rb.gravityScale = 1.5f;
             _rb.velocity = new Vector2(knockDir * 10f, 30f);
             PlayDeathFor(transform.gameObject);
-            FiveKnights.journalEntries["Tiso"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Tiso"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Tiso");
+            }
             _anim.enabled = true;
             //StartCoroutine(PlayDeathSound());
             _anim.speed = 1f;

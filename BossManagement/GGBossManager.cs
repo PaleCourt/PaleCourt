@@ -26,6 +26,8 @@ namespace FiveKnights.BossManagement
         public static bool alone;
         private bool HIT_FLAG;
         private bool doneCCHitless;
+        public delegate void RandoReward(bool radiant);
+        public static event RandoReward GrantReward;
         public static GGBossManager Instance;
         public Dictionary<string, AnimationClip> clips;
 
@@ -514,6 +516,7 @@ namespace FiveKnights.BossManagement
             {
                 hcFSM.SendEvent("FSM CANCEL");
             }
+            GrantReward.Invoke(doneCCHitless);
             HeroController.instance.AffectedByGravity(true);
             HeroController.instance.StartAnimationControl();
             HeroController.instance.RelinquishControl();

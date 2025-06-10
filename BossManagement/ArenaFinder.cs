@@ -162,7 +162,7 @@ namespace FiveKnights
                 info.EntryGateName = "door_dreamReturnGGTestingIt";
             }
             ModHooks.GetPlayerBoolHook -= GetPlayerBoolHook;
-            if(info.SceneName == "White_Palace_09" && prevScene != "White_Palace_13") ModHooks.GetPlayerBoolHook += GetPlayerBoolHook;
+            if(info.SceneName == "White_Palace_09" && info.EntryGateName != "right1") ModHooks.GetPlayerBoolHook += GetPlayerBoolHook;
             Log($"After: Going to {info.SceneName} from {prevScene} using gate {info.EntryGateName}");
             prevScene = info.SceneName;
             currScene = info.SceneName;

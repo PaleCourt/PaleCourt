@@ -1,7 +1,8 @@
 using ItemChanger;
 using ItemChanger.Tags;
-using ItemChanger.UIDefs;
+using TheRealJournalRando.Data;
 using TheRealJournalRando.IC;
+using static FrogCore.JournalHelper;
 
 namespace FiveKnights.Rando;
 
@@ -19,17 +20,15 @@ public class JournalItem : AbstractItem
 
     protected override void OnLoad()
     {
-        Events.OnStringGet += AddNotchCostToCharmName;
-    }
-
-    protected override void OnUnload()
-    {
-        Events.OnStringGet -= AddNotchCostToCharmName;
+        if (itemType == EnemyJournalLocationType.Entry)
+            ItemChangerMod.Modules.GetOrAdd<JournalControlModule>().RegisterEnemyEntry(enemyName);
+        if (itemType == EnemyJournalLocationType.Notes)
+            ItemChangerMod.Modules.GetOrAdd<JournalControlModule>().RegisterEnemyNotes(enemyName);
     }
 
     private ItemChainTag ItemTag()
     {
-        ItemChainTag tag = new ()
+        ItemChainTag tag = new()
         {
             predecessor = itemType == EnemyJournalLocationType.Notes ? $"Journal_Entry-{enemyName}" : null,
             successor = itemType == EnemyJournalLocationType.Notes ? null : $"Hunter's_Notes-{enemyName}"
@@ -39,16 +38,24 @@ public class JournalItem : AbstractItem
 
     public override void GiveImmediate(GiveInfo info)
     {
-        FiveKnights.Instance.SaveSettings.upgradedCharm_10 = true;
-    }
-
-    private void AddNotchCostToCharmName(StringGetArgs args)
-    {
-        if (args.Source is LanguageString ls && ls.key == "CHARM_NAME_HONOUR")
+        JournalPlayerData enemy = FiveKnights.Instance.SaveSettings.GetVariable<JournalPlayerData>($"{enemyName}EntryData");
+        JournalControlModule module = ItemChangerMod.Modules.GetOrAdd<JournalControlModule>();
+        if (itemType == EnemyJournalLocationType.Entry)
         {
-            args.Current = args.Current.Replace("-9999", $"{PlayerData.instance.charmCost_10}");
+            enemy.haskilled = true;
+            if (module.EnemyEntryIsRegistered(enemyName))
+                module.hasEntry[enemyName] = true;
+            else
+                module.hasEntry.Add(enemyName, true);
         }
+        if (itemType == EnemyJournalLocationType.Notes)
+        {
+            enemy.killsremaining = 0;
+            if (module.EnemyNotesIsRegistered(enemyName))
+                module.hasNotes[enemyName] = true;
+            else
+                module.hasNotes.Add(enemyName, true);
+        }
+        FiveKnights.Instance.SaveSettings.SetVariable($"{enemyName}EntryData", enemy);        
     }
-
-    public override bool Redundant() => FiveKnights.Instance.SaveSettings.IsmaEntryData.killsremaining == 0;
 }

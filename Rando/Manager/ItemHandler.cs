@@ -24,7 +24,7 @@ internal static class ItemHandler
         RequestBuilder.OnUpdate.Subscribe(1f, IncreaseNotchCost);
         RequestBuilder.OnUpdate.Subscribe(2f, RandomizeNotchCosts);
         RequestBuilder.OnUpdate.Subscribe(50f, RemoveLore);
-        RequestBuilder.OnUpdate.Subscribe(1090f, DefineTransitions);
+        RequestBuilder.OnUpdate.Subscribe(-180f, DefineTransitions);
         ProgressionInitializer.OnCreateProgressionInitializer += SetOgrimCall;
     }
 
@@ -52,6 +52,8 @@ internal static class ItemHandler
         Finder.DefineCustomLocation(new BossCharmLocation("Mark_of_Purity", OWArenaFinder.PrevDryScene, "dryya", 0.1f, 0.7f));
         Finder.DefineCustomLocation(new BossCharmLocation("Vessels_Lament", OWArenaFinder.PrevZemScene, "zemer"));
         Finder.DefineCustomLocation(new AbyssalBloomLocation());
+        Finder.DefineCustomLocation(new ChampionsCallLocation(false));
+        Finder.DefineCustomLocation(new ChampionsCallLocation(true));
 
         // Define Abyss totems
         Container.DefineContainer<AbyssTotemContainer>();
@@ -79,7 +81,6 @@ internal static class ItemHandler
         int maxTotal = rb.gs.MiscSettings.MaxRandomNotchTotal;
         int variance = maxTotal - minTotal;
         FiveKnights.Instance.SaveSettings.notchCosts.AddRange(RandomizeCharmCost(rb.rng, total, variance));
-
     }
 
     public static int[] RandomizeCharmCost(Random rng, int total, int variance)
@@ -142,7 +143,7 @@ internal static class ItemHandler
                 }
                 else
                 {
-                    SymmetricTransitionGroupBuilder stgb = rb.EnumerateTransitionGroups().First(x => x.label == RBConsts.InLeftOutRightGroup) as SymmetricTransitionGroupBuilder;
+                    SymmetricTransitionGroupBuilder stgb = rb.EnumerateTransitionGroups().First(x => x.label == RBConsts.InTopOutBotGroup) as SymmetricTransitionGroupBuilder;
                     if (group == 1)
                         stgb.Group1.Add($"{def.SceneName}[{def.DoorName}]");
                     else
@@ -162,7 +163,7 @@ internal static class ItemHandler
     {
         if (!RandoManager.Settings.Enabled)
             return;
-        
+
         if (RandoManager.Settings.WhiteDefenderRequirement == WhiteDefenderRequirement.Randomized)
         {
             rb.AddItemByName("Ogrim's_Call");
@@ -172,9 +173,49 @@ internal static class ItemHandler
             if (rb.gs.PoolSettings.Charms)
             {
                 rb.AddItemByName("Mark_of_Purity");
+                rb.EditItemRequest("Mark_of_Purity", info =>
+                {
+                    info.getItemDef = () => new()
+                    {
+                        Name = "Mark_of_Purity",
+                        Pool = PoolNames.Charm,
+                        MajorItem = false,
+                        PriceCap = 2000
+                    };
+                });
                 rb.AddItemByName("Vessels_Lament");
+                rb.EditItemRequest("Vessels_Lament", info =>
+                {
+                    info.getItemDef = () => new()
+                    {
+                        Name = "Vessels_Lament",
+                        Pool = PoolNames.Charm,
+                        MajorItem = false,
+                        PriceCap = 2000
+                    };
+                });
                 rb.AddItemByName("Boon_of_Hallownest");
+                rb.EditItemRequest("Boon_of_Hallownest", info =>
+                {
+                    info.getItemDef = () => new()
+                    {
+                        Name = "Boon_of_Hallownest",
+                        Pool = PoolNames.Charm,
+                        MajorItem = false,
+                        PriceCap = 2000
+                    };
+                });
                 rb.AddItemByName("Kings_Honour");
+                rb.EditItemRequest("Kings_Honour", info =>
+                {
+                    info.getItemDef = () => new()
+                    {
+                        Name = "Kings_Honour",
+                        Pool = PoolNames.Charm,
+                        MajorItem = false,
+                        PriceCap = 500
+                    };
+                });
                 rb.AddLocationByName("Mark_of_Purity");
                 rb.AddLocationByName("Vessels_Lament");
                 rb.AddLocationByName("Boon_of_Hallownest");
@@ -210,13 +251,14 @@ internal static class ItemHandler
             {
                 rb.AddItemByName("Abyssal_Bloom");
                 rb.EditItemRequest("Abyssal_Bloom", info =>
-                {    info.getItemDef = () => new()
+                {
+                    info.getItemDef = () => new()
                     {
                         Name = "Abyssal_Bloom",
                         Pool = PoolNames.Charm,
                         MajorItem = false,
                         PriceCap = 2000
-                    };             
+                    };
                 });
                 rb.AddLocationByName("Abyssal_Bloom");
             }
@@ -224,15 +266,16 @@ internal static class ItemHandler
             {
                 rb.AddItemByName("Abyss_Totem", 4);
                 rb.EditItemRequest("Abyss_Totem", info =>
-                {    info.getItemDef = () => new()
+                {
+                    info.getItemDef = () => new()
                     {
                         Name = "Abyss_Totem",
                         Pool = PoolNames.Soul,
                         MajorItem = false,
                         PriceCap = 1
-                    };             
+                    };
                 });
-                foreach (int x in new int[] {1, 2, 3, 4})
+                foreach (int x in new int[] { 1, 2, 3, 4 })
                 {
                     rb.AddLocationByName($"Soul_Totem-Abyssal_Temple_{x}");
                     rb.EditLocationRequest($"Soul_Totem-Abyssal_Temple_{x}", info =>
@@ -245,6 +288,14 @@ internal static class ItemHandler
                     });
                 }
             }
+        }
+        if (RandoManager.Settings.ChampionCallCompletion >= ChampionsCall.Enabled)
+        {
+            rb.AddLocationByName("Champion's_Call");
+        }
+        if (RandoManager.Settings.ChampionCallCompletion == ChampionsCall.Radiant)
+        {
+            rb.AddLocationByName("Radiant_Champion's_Call");
         }
     }
 

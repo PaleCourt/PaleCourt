@@ -29,5 +29,6 @@ TRJR Rando:
 
 ## Current issues
 
-- Dryya the Picky.
+- Dryya the Picky if AccessRando is on.
 - Every now and then, boss locations are granting their vanilla placement.
+- The boss placements are given too early, therefore you don't see what you get.

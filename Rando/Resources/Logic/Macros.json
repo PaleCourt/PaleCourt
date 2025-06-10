@@ -1,0 +1,9 @@
+{
+    "COMBAT[Dryya]": "BOSS + FULLDASH",
+    "COMBAT[Hegemol]": "BOSS + FULLDASH",
+    "COMBAT[Isma]": "BOSS + FULLDASH + UPSLASH",
+    "COMBAT[Isma2]": "BOSS + UPSLASH",
+    "COMBAT[Tiso]": "BOSS",
+    "COMBAT[Zemer]": "BOSS + FULLDASH",
+    "COMBAT[Zemer2]": "BOSS + FULLSHADOWDASH + QUAKE + SPELLS>2"
+}

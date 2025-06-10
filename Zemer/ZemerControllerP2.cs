@@ -94,11 +94,15 @@ namespace FiveKnights.Zemer
 
         public bool DoPhase;
 
+        public delegate bool JournalRando();
+        public static event JournalRando IsJournalRando;
+        public delegate void RandoReward(string boss);
+        public static event RandoReward GrantReward;
         private void Awake()
         {
             DoneFrenzyAtt = 0;
             MIDDLE = (RightX + LeftX) / 2f;
-            
+
             OnDestroy();
 
             On.HealthManager.TakeDamage += HealthManager_TakeDamage;
@@ -132,7 +136,7 @@ namespace FiveKnights.Zemer
             _hitEffects.enabled = true;
 
             _pvFsm = FiveKnights.preloadedGO["PV"].LocateMyFSM("Control");
-            
+
             GameObject grassGO = Instantiate(FiveKnights.preloadedGO["TraitorSlam"].transform.Find("Grass").gameObject, transform, true);
             grass = grassGO.GetComponent<ParticleSystem>();
             grass.gameObject.SetActive(true);
@@ -1805,7 +1809,14 @@ namespace FiveKnights.Zemer
                 {
                     _anim.enabled = false;
                     // TODO This is breaking stuff, idk yall figure it out smh
-                    FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+                    if (!IsJournalRando?.Invoke() ?? false)
+                    {
+                        FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+                    }
+                    else
+                    {
+                        GrantReward.Invoke("Zemer");
+                    }
                     yield return new WaitForSeconds(1.75f);
                     CustomWP.wonLastFight = true;
                     // Stop music here.
@@ -2914,7 +2925,14 @@ namespace FiveKnights.Zemer
 
             if (OWArenaFinder.IsInOverWorld ) OWBossManager.PlayMusic(null);
             else GGBossManager.Instance.PlayMusic(null, 1f);
-            FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Zemer"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Zemer");
+            }
 
             _isKnockingOut = true;
             float knockDir = Math.Sign(transform.position.x - HeroController.instance.transform.position.x);

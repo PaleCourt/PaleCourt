@@ -78,7 +78,10 @@ namespace FiveKnights.Isma
         public static bool eliminateMinions;
         public bool introDone;
         private static LanguageCtrl _langCtrl;
-
+        public delegate bool JournalRando();
+        public static event JournalRando IsJournalRando;
+        public delegate void RandoReward(string boss);
+        public static event RandoReward GrantReward;
         private void Awake()
         {
             _langCtrl = new LanguageCtrl();
@@ -97,9 +100,9 @@ namespace FiveKnights.Isma
             EnemyHPBarImport.DisableHPBar(dd);
 
             _extraDamageable = gameObject.AddComponent<ExtraDamageable>();
-            Mirror.SetField(_extraDamageable, "impactClipTable", 
+            Mirror.SetField(_extraDamageable, "impactClipTable",
                 Mirror.GetField<ExtraDamageable, RandomAudioClipTable>(dd.GetComponent<ExtraDamageable>(), "impactClipTable"));
-            Mirror.SetField(_extraDamageable, "audioPlayerPrefab", 
+            Mirror.SetField(_extraDamageable, "audioPlayerPrefab",
                 Mirror.GetField<ExtraDamageable, AudioSource>(dd.GetComponent<ExtraDamageable>(), "audioPlayerPrefab"));
 
             // Ogrim's dream nail dialogue is set in GGBossManager
@@ -1785,7 +1788,14 @@ namespace FiveKnights.Isma
             }
             Coroutine c = StartCoroutine(OgrimCatchPos());
             Log("After start coroutine");
-            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Isma");
+            }
             yield return new WaitWhile(() => !FastApproximately(transform.GetPositionY(), dd.transform.GetPositionY(), 1.6f) && dd.transform.GetPositionY() > 13f);
             Log("After wait while");
             if(c != null) StopCoroutine(c);
@@ -1914,7 +1924,14 @@ namespace FiveKnights.Isma
             Destroy(_ddFsm.GetAction<FadeAudio>("Stun Recover", 2).gameObject.GameObject.Value);
             if(_musicCoro != null) GameManager.instance.StopCoroutine(_musicCoro);
             GGBossManager.Instance.PlayMusic(null, 1f);
-            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Isma");
+            }
             On.HutongGames.PlayMaker.Actions.TransitionToAudioSnapshot.OnEnter -= TransitionToAudioSnapshotOnEnter;
             PlayDeathFor(gameObject);
             _anim.Play("Falling");
@@ -1992,7 +2009,14 @@ namespace FiveKnights.Isma
 
             // Destroy objects and award achivement
             if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_ISMA_ACH");
-            FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Isma"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Isma");
+            }
 
             eliminateMinions = true;
             killAllMinions = true;

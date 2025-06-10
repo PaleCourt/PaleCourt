@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using FiveKnights.Rando;
 using ItemChanger;
 using ItemChanger.UIDefs;
 using Newtonsoft.Json;
@@ -21,7 +20,7 @@ internal static class JournalInterop
     internal static void Hook()
     {
         DefineObjects();
-        RCData.RuntimeLogicOverride.Subscribe(5f, AddLogic);
+        RCData.RuntimeLogicOverride.Subscribe(11f, AddLogic);
         RequestBuilder.OnUpdate.Subscribe(11f, AddObjects);
     }
 
@@ -38,25 +37,25 @@ internal static class JournalInterop
         foreach (EnemyDef enemy in data)
         {
             FiveKnights.Instance.Log(enemy.pdName);
-            Finder.DefineCustomItem(new EnemyJournalEntryOnlyItem(enemy.pdName)
+            Finder.DefineCustomItem(new JournalItem(enemy.pdName, EnemyJournalLocationType.Entry)
             {
                 name = enemy.icName.AsEntryName(),
                 UIDef = new MsgUIDef
                 {
-                    name = new FormatString(new LanguageString("Fmt", "ENTRY_ITEM_NAME"), $"JOURNAL_{enemy.convoName}".Clone()),
-                    shopDesc = new FormatString(new LanguageString("Fmt", "ENTRY_ITEM_DESC"), $"JOURNAL_{enemy.convoName}".Clone()),
-                    sprite = new PC_Sprite(enemy.icName)
+                    name = new FormatString(new LanguageString("Fmt", "ENTRY_ITEM_NAME"), new LanguageString("Journal", $"ENTRY_{enemy.convoName}_LONGNAME")),
+                    shopDesc = new FormatString(new LanguageString("Fmt", "ENTRY_ITEM_DESC"), new LanguageString("Journal", $"ENTRY_{enemy.convoName}_DESC")),
+                    sprite = new PC_Sprite($"journal_icon_{enemy.icName.ToLower()}")
                 },
                 tags = [InteropTagFactory.CmiSharedTag(poolGroup: "Journal Entries")]
             });
-            Finder.DefineCustomItem(new EnemyJournalNotesOnlyItem(enemy.pdName)
+            Finder.DefineCustomItem(new JournalItem(enemy.pdName, EnemyJournalLocationType.Notes)
             {
                 name = enemy.icName.AsNotesName(),
                 UIDef = new MsgUIDef
                 {
-                    name = new FormatString(new LanguageString("Fmt", "NOTES_ITEM_NAME"), $"JOURNAL_{enemy.convoName}".Clone()),
-                    shopDesc = new FormatString(new LanguageString("Fmt", "NOTES_ITEM_DESC"), $"JOURNAL_{enemy.convoName}".Clone()),
-                    sprite = new PC_Sprite(enemy.icName)
+                    name = new FormatString(new LanguageString("Fmt", "NOTES_ITEM_NAME"), new LanguageString("Journal", $"ENTRY_{enemy.convoName}_LONGNAME")),
+                    shopDesc = new FormatString(new LanguageString("Fmt", "NOTES_ITEM_DESC"), new LanguageString("Journal", $"ENTRY_{enemy.convoName}_DESC")),
+                    sprite = new PC_Sprite($"journal_icon_{enemy.icName.ToLower()}")
                 },
                 tags = [InteropTagFactory.CmiSharedTag(poolGroup: "Journal Entries")]
             });
@@ -69,7 +68,7 @@ internal static class JournalInterop
                 [
                     InteropTagFactory.CmiLocationTag(
                         poolGroup: "Journal Entries",
-                        pinSprite: new PC_Sprite(enemy.icName),
+                        pinSprite: new PC_Sprite($"journal_icon_{enemy.icName.ToLower()}"),
                         sceneNames: enemy.allScenes,
                         titledAreas: enemy.allTitledAreas,
                         mapAreas: enemy.allMapAreas,
@@ -89,7 +88,7 @@ internal static class JournalInterop
                 [
                     InteropTagFactory.CmiLocationTag(
                         poolGroup: "Journal Entries",
-                        pinSprite: new PC_Sprite(enemy.icName),
+                        pinSprite: new PC_Sprite($"journal_icon_{enemy.icName.ToLower()}"),
                         sceneNames: enemy.allScenes,
                         titledAreas: enemy.allTitledAreas,
                         mapAreas: enemy.allMapAreas,
@@ -107,11 +106,24 @@ internal static class JournalInterop
     {
         if (!RandoManager.Settings.Enabled)
             return;
-        
-        lmb.AddItem(new StringItemTemplate("Journal_Entry-Isma", "_"));
-        lmb.AddItem(new StringItemTemplate("Hunter's_Notes-Isma", "_"));
-        lmb.AddLogicDef(new ("Journal_Entry-Isma", "ANY"));
-        lmb.AddLogicDef(new ("Hunter's_Notes-Isma", "ANY"));
+
+        try
+        {
+            lmb.GetTerm("Defeated_Any_Dung_Defender");
+        }
+        catch (KeyNotFoundException)
+        {
+            return;
+        }
+
+        string[] bosses = ["Isma", "Dryya", "Hegemol", "Zemer"];
+        foreach (string boss in bosses)
+        {
+            lmb.AddItem(new StringItemTemplate($"Journal_Entry-{boss}", "_"));
+            lmb.AddItem(new StringItemTemplate($"Hunter's_Notes-{boss}", "_"));
+            lmb.AddLogicDef(new($"Journal_Entry-{boss}", "ANY"));
+            lmb.AddLogicDef(new($"Hunter's_Notes-{boss}", "ANY"));
+        }
     }
 
     private static void AddObjects(RequestBuilder rb)
@@ -119,9 +131,25 @@ internal static class JournalInterop
         if (!RandoManager.Settings.Enabled)
             return;
 
-        rb.AddItemByName("Journal_Entry-Isma");
-        rb.AddItemByName("Hunter's_Notes-Isma");
-        rb.AddLocationByName("Journal_Entry-Isma");
-        rb.AddLocationByName("Hunter's_Notes-Isma");
+        int entries = rb.GetItemGroupFor("Journal_Entry-Dung_Defender").Items.GetCount("Journal_Entry-Dung_Defender");
+        if (entries > 0)
+        {
+            string[] bosses = ["Isma", "Dryya", "Hegemol", "Zemer"];
+            foreach (string boss in bosses)
+            {
+                rb.AddItemByName($"Journal_Entry-{boss}");
+                rb.AddLocationByName($"Journal_Entry-{boss}");
+            }
+        };
+        int notes = rb.GetItemGroupFor("Journal_Entry-Dung_Defender").Items.GetCount("Hunter's_Notes-Dung_Defender");
+        if (notes > 0)
+        {
+            string[] bosses = ["Isma", "Dryya", "Hegemol", "Zemer"];
+            foreach (string boss in bosses)
+            {
+                rb.AddItemByName($"Hunter's_Notes-{boss}");
+                rb.AddLocationByName($"Hunter's_Notes-{boss}");
+            }
+        };
     }
 }

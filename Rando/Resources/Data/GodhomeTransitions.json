@@ -1,0 +1,24 @@
+[
+    {
+        "SceneName": "GG_Workshop",
+        "DoorName": "door_Land_of_Storms_return",
+        "MapArea": "Godhome",
+        "TitledArea": "Hall of Gods",
+        "VanillaTarget": "White_Palace_09[door_Land_of_Storms_return]",
+        "Direction": "Door",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    },
+    {
+        "SceneName": "White_Palace_09",
+        "DoorName": "door_Land_of_Storms_return",
+        "MapArea": "Godhome",
+        "TitledArea": "Hall of Gods",
+        "VanillaTarget": "GG_Workshop[door_Land_of_Storms_return]",
+        "Direction": "Door",
+        "IsTitledAreaTransition": false,
+        "IsMapAreaTransition": false,
+        "Sides": "Both"
+    }
+]

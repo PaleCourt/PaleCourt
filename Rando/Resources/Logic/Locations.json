@@ -5,15 +5,23 @@
     },
     {
         "name": "Boon_of_Hallownest",
-        "logic": "(Fungus2_21[left1] + (RIGHTCLAW + (RIGHTDASH | WINGS + SPELLAIRSTALL + $CASTSPELL[3,before:AREASOUL,after:ITEMSOUL]) | RIGHTSUPERDASH | ACID | Lever-Pilgrim's_Way_Left?FALSE + Lever-Pilgrim's_Way_Right?FALSE | RIGHTDASH + WINGS + Lever-Pilgrim's_Way_Right?FALSE) | Fungus2_21[right1] + ((FULLCLAW + (LEFTDASH | LEFTSUPERDASH)) | (ANYCLAW + WINGS)) + Broke_Pilgrim's_Way_Quake_Floor) + DREAMNAIL + CREST + Defeated_White_Defender + BOSS"
+        "logic": "Fungus2_21 + DREAMNAIL + CREST + Defeated_White_Defender + Defeated_Hegemol"
+    },
+    {
+        "name": "Champion's_Call",
+        "logic": "GG_Workshop + Defeated_White_Defender + Defeated_Champion's_Call"
     },
     {
         "name": "Kings_Honour",
-        "logic": "(Waterways_13[left1] + (LEFTCLAW + RIGHTCLAW | (LEFTCLAW | RIGHTCLAW) + (WINGS | ENEMYPOGOS) | LEFTCLAW + (RIGHTDASH | RIGHTSUPERDASH)) | Waterways_13[left2] + (ACID + (RIGHTCLAW | WINGS | ENEMYPOGOS) | ACIDSKIPS + LEFTCLAW + RIGHTSUPERDASH + (WINGS | RIGHTCLAW))) + DREAMNAIL + Defeated_White_Defender + BOSS"
+        "logic": "(Waterways_13[left1] + (LEFTCLAW + RIGHTCLAW | (LEFTCLAW | RIGHTCLAW) + (WINGS | ENEMYPOGOS) | LEFTCLAW + (RIGHTDASH | RIGHTSUPERDASH)) | Waterways_13[left2] + (ACID + (RIGHTCLAW | WINGS | ENEMYPOGOS) | ACIDSKIPS + LEFTCLAW + RIGHTSUPERDASH + (WINGS | RIGHTCLAW))) + DREAMNAIL + Defeated_White_Defender + Defeated_Isma"
     },
     {
         "name": "Mark_of_Purity",
-        "logic": "(Fungus3_48[right1] | Fungus3_48[door1]) + DREAMNAIL + Defeated_White_Defender + BOSS"
+        "logic": "(Fungus3_48[right1] | Fungus3_48[door1]) + DREAMNAIL + Defeated_White_Defender + Defeated_Dryya"
+    },
+    {
+        "name": "Radiant_Champion's_Call",
+        "logic": "GG_Workshop + Defeated_White_Defender + Defeated_Champion's_Call"
     },
     {
         "name": "Soul_Totem-Abyssal_Temple_1",
@@ -33,6 +41,6 @@
     },
     {
         "name": "Vessels_Lament",
-        "logic": "Room_Mansion[left1] + DREAMNAIL + Can_Deliver_Flower + Defeated_White_Defender + BOSS"
+        "logic": "Room_Mansion[left1] + DREAMNAIL + Can_Deliver_Flower + Defeated_White_Defender + Defeated_Zemer"
     }
 ]

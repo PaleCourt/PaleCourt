@@ -63,7 +63,10 @@ namespace FiveKnights.Dryya
         private List<ElegyBeam> _elegyBeams;
         private static LanguageCtrl _langCtrl;
         private Coroutine _daggersCoro;
-
+        public delegate bool JournalRando();
+        public static event JournalRando IsJournalRando;
+        public delegate void RandoReward(string boss);
+        public static event RandoReward GrantReward;
         private void Awake()
         {
             _langCtrl = new LanguageCtrl();
@@ -196,8 +199,15 @@ namespace FiveKnights.Dryya
         {
             if(!OWArenaFinder.IsInOverWorld) GGBossManager.Instance.PlayMusic(null, 1f);
             CustomWP.wonLastFight = true;
-
-            if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_DRYYA_ACH");
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Dryya"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Dryya");
+            }
+            if (OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_DRYYA_ACH");
         }
 
         private GameObject _dreamImpactPrefab;
@@ -260,7 +270,6 @@ namespace FiveKnights.Dryya
         private void AddComponents()
         {
             _deathEffects = gameObject.AddComponent<EnemyDeathEffectsUninfected>();
-            _deathEffects.SetJournalEntry(FiveKnights.journalEntries["Dryya"]);
 
             _dreamNailReaction = gameObject.AddComponent<EnemyDreamnailReaction>();
             _dreamNailReaction.enabled = true;

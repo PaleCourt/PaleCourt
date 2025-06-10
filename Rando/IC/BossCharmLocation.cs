@@ -28,7 +28,7 @@ public class BossCharmLocation : AutoLocation
         tag.Properties["ModSource"] = FiveKnights.Instance.GetName();
         tag.Properties["PoolGroup"] = PoolNames.Charm;
         tag.Properties["VanillaItem"] = name;
-        tag.Properties["MapLocations"] = new (string, float, float)[] {(sceneName, x, y)};
+        tag.Properties["MapLocation"] = new (string, float, float)[] {(sceneName, x, y)};
         tag.Message = "RandoSupplementalMetadata";
         return tag;
     }

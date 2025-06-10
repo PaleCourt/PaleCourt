@@ -59,7 +59,10 @@ namespace FiveKnights.Hegemol
         private bool _usingGroundPunch = false;
         private bool _grounded;
         private static LanguageCtrl _langCtrl;
-
+        public delegate bool JournalRando();
+        public static event JournalRando IsJournalRando;
+        public delegate void RandoReward(string boss);
+        public static event RandoReward GrantReward;
         private void Awake()
         {
             Log("Hegemol Awake");
@@ -1038,7 +1041,14 @@ namespace FiveKnights.Hegemol
             CustomWP.wonLastFight = true;
 
             if(OWArenaFinder.IsInOverWorld) GameManager.instance.AwardAchievement("PALE_COURT_HEG_ACH");
-            FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
+            if (!IsJournalRando?.Invoke() ?? false)
+            {
+                FiveKnights.journalEntries["Hegemol"].RecordJournalEntry();
+            }
+            else
+            {
+                GrantReward.Invoke("Hegemol");
+            }
 
             _anim.enabled = true;
             _anim.speed = 1f;

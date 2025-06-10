@@ -1,10 +1,42 @@
 [
     {
+        "icName": "Dryya",
+        "pdName": "Dryya",
+        "convoName": "DRYYA",
+        "isBoss": true,
+        "singleSceneName": "Fungus3_48",
+        "notesCost": 1
+    },
+    {
+        "icName": "Hegemol",
+        "pdName": "Hegemol",
+        "convoName": "HEG",
+        "isBoss": true,
+        "singleSceneName": "Fungus2_21",
+        "notesCost": 1
+    },
+    {
         "icName": "Isma",
         "pdName": "Isma",
         "convoName": "ISMA",
         "isBoss": true,
         "singleSceneName": "Waterways_13",
+        "notesCost": 1
+    },
+    {
+        "icName": "Tiso",
+        "pdName": "Tiso",
+        "convoName": "TISO",
+        "isBoss": true,
+        "singleSceneName": "GG_Workshop",
+        "notesCost": 1
+    },
+    {
+        "icName": "Zemer",
+        "pdName": "Zemer",
+        "convoName": "ZEM",
+        "isBoss": true,
+        "singleSceneName": "Room_Mansion",
         "notesCost": 1
     }
 ]

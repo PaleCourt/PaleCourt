@@ -87,7 +87,7 @@ namespace FiveKnights.BossManagement
 
         private void GameManagerOnEnterHero(On.GameManager.orig_EnterHero orig, GameManager self, bool additivegatesearch)
         {
-            bool wdCheck = FiveKnights.Instance.SaveSettings.RandoSave ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
+            bool wdCheck = (FiveKnights.Instance.SaveSettings.RandoSave && FiveKnights.Instance.SaveSettings.RandoSaveSettings.WhiteDefenderRequirement > Rando.WhiteDefenderRequirement.Vanilla) ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
             switch (self.sceneName)
             {
                 case SheoScene:
@@ -206,7 +206,7 @@ namespace FiveKnights.BossManagement
         private void ArenaBundleManage()
         {
             Log("Arena bundle manage");
-            bool wdCheck = FiveKnights.Instance.SaveSettings.RandoSave ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
+            bool wdCheck = (FiveKnights.Instance.SaveSettings.RandoSave && FiveKnights.Instance.SaveSettings.RandoSaveSettings.WhiteDefenderRequirement > Rando.WhiteDefenderRequirement.Vanilla) ? FiveKnights.Instance.SaveSettings.UnlockedBosses : PlayerData.instance.whiteDefenderDefeated;
             if (_currScene == PrevDryScene && wdCheck)
             {
                 if (_prevScene == DryyaScene)

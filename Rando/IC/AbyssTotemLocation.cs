@@ -36,7 +36,7 @@ public class AbyssTotemLocation : CoordinateLocation
         tag.Properties["ModSource"] = FiveKnights.Instance.GetName();
         tag.Properties["PoolGroup"] = PoolNames.Soul;
         tag.Properties["VanillaItem"] = "Abyss_Totem";
-        tag.Properties["MapLocations"] = new (string, float, float)[] {(SceneNames.Abyss_10, pinX, pinY)};
+        tag.Properties["MapLocation"] = new (string, float, float)[] {(SceneNames.Abyss_10, pinX, pinY)};
         tag.Properties["PinSpriteKey"] = "Soul Totems";
         tag.Message = "RandoSupplementalMetadata";
         return tag;
