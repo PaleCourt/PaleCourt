@@ -1,0 +1,38 @@
+[
+    {
+        "name": "Collapser-Abyssal_Temple",
+        "gameObject": "/Collapser Small(Clone)(Clone)",
+        "fsmType": "collapse small",
+        "sceneName": "Abyss_10",
+        "x": 99.58,
+        "y": 28.5,
+        "persistentBool": "",
+        "sprite": "collapser_short_0deg",
+        "alsoDestroy": [],
+        "extra": false,
+        "groupWalls": [],
+        "group": "",
+        "pinType": "World",
+        "logic": "Abyss_10[palecourt_top2] | (Abyss_10[left1] | Abyss_10[left2] + RIGHTSHADOWDASH) + WINGS + Collapser-Abyssal_Temple",
+        "logicOverrides": {},
+        "logicSubstitutions": {}
+    },
+    {
+        "name": "Wall-Abyssal_Temple",
+        "gameObject": "/Breakable Wall top(Clone)(Clone)",
+        "fsmType": "breakable_wall_v2",
+        "sceneName": "Abyss_09",
+        "x": 209.5,
+        "y": 58.5,
+        "persistentBool": "",
+        "sprite": "cr21_break_wall_0deg",
+        "alsoDestroy": [],
+        "extra": false,
+        "groupWalls": [],
+        "group": "",
+        "pinType": "World",
+        "logic": "Abyss_09[right3] + UPWALLBREAK | Abyss_09[palecourt_top1]",
+        "logicOverrides": {},
+        "logicSubstitutions": {}
+    }
+]

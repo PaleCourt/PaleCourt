@@ -106,6 +106,9 @@
   <ItemGroup>
     <Reference Include="Assembly-CSharp">
       <HintPath>$(HollowKnightRefs)/Assembly-CSharp.dll</HintPath>
+    </Reference>    
+    <Reference Include="BreakableWallRandomizer">
+      <HintPath>$(HollowKnightRefs)/Mods/Breakable Wall Randomizer/BreakableWallRandomizer.dll</HintPath>
     </Reference>
     <Reference Include="FrogCore">
       <HintPath>$(HollowKnightRefs)/Mods/FrogCore/FrogCore.dll</HintPath>

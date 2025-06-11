@@ -16,6 +16,10 @@ internal static class RandoManager
         ConnectionMenu.Hook();
         LogicHandler.Hook();
         ItemHandler.Hook();
+        if (ModHooks.GetMod("BreakableWallRandomizer") is Mod)
+        {
+            WallInterop.Hook();
+        }
         if (ModHooks.GetMod("GodhomeRandomizer") is Mod)
         {
             GodhomeInterop.Hook();

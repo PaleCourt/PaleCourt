@@ -9,6 +9,7 @@ using ItemChanger;
 using ItemChanger.Extensions;
 using ItemChanger.Tags;
 using Newtonsoft.Json;
+using RandomizerCore.Extensions;
 using RandomizerCore.Logic;
 using RandomizerMod.RandomizerData;
 using RandomizerMod.RC;
@@ -121,40 +122,77 @@ internal static class ItemHandler
             return;
 
         Assembly assembly = Assembly.GetExecutingAssembly();
-        JsonSerializer jsonSerializer = new() {TypeNameHandling = TypeNameHandling.Auto};
+        JsonSerializer jsonSerializer = new() { TypeNameHandling = TypeNameHandling.Auto };
         using Stream stream = assembly.GetManifestResourceStream("FiveKnights.Rando.Resources.Data.Transitions.json");
         StreamReader reader = new(stream);
         List<TransitionDef> list = jsonSerializer.Deserialize<List<TransitionDef>>(new JsonTextReader(reader));
 
-        int group = 1;
+        SelfDualTransitionGroupBuilder dualBuilder = rb.EnumerateTransitionGroups().FirstOrDefault(x => x.label == RBConsts.TwoWayGroup) as SelfDualTransitionGroupBuilder;
+        SymmetricTransitionGroupBuilder horizontalBuilder = rb.EnumerateTransitionGroups().FirstOrDefault(x => x.label == RBConsts.InLeftOutRightGroup) as SymmetricTransitionGroupBuilder;
+        SymmetricTransitionGroupBuilder verticalBuilder = rb.EnumerateTransitionGroups().FirstOrDefault(x => x.label == RBConsts.InTopOutBotGroup) as SymmetricTransitionGroupBuilder;
+        List<string> doors = [];
         foreach (TransitionDef def in list)
         {
             bool shouldBeIncluded = def.IsMapAreaTransition && (rb.gs.TransitionSettings.Mode >= TransitionSettings.TransitionMode.MapAreaRandomizer);
             shouldBeIncluded |= def.IsTitledAreaTransition && (rb.gs.TransitionSettings.Mode >= TransitionSettings.TransitionMode.FullAreaRandomizer);
             shouldBeIncluded |= rb.gs.TransitionSettings.Mode >= TransitionSettings.TransitionMode.RoomRandomizer;
+
             if (shouldBeIncluded)
             {
                 rb.EditTransitionRequest($"{def.SceneName}[{def.DoorName}]", info => info.getTransitionDef = () => def);
                 bool uncoupled = rb.gs.TransitionSettings.TransitionMatching == TransitionSettings.TransitionMatchingSetting.NonmatchingDirections;
+                string transitionName = $"{def.SceneName}[{def.DoorName}]";
                 if (uncoupled)
-                {
-                    SelfDualTransitionGroupBuilder tgb = rb.EnumerateTransitionGroups().First(x => x.label == RBConsts.TwoWayGroup) as SelfDualTransitionGroupBuilder;
-                    tgb.Transitions.Add($"{def.SceneName}[{def.DoorName}]");
-                }
+                    dualBuilder.Transitions.Add(transitionName);
+                else if (def.Direction == TransitionDirection.Door)
+                    doors.Add(transitionName);
+                else if (def.Direction == TransitionDirection.Right)
+                    horizontalBuilder.Group1.Add(transitionName);
+                else if (def.Direction == TransitionDirection.Left)
+                    horizontalBuilder.Group2.Add(transitionName);
+                else if (def.Direction == TransitionDirection.Bot)
+                    verticalBuilder.Group1.Add(transitionName);
+                else if (def.Direction == TransitionDirection.Top)
+                    verticalBuilder.Group2.Add(transitionName);
                 else
-                {
-                    SymmetricTransitionGroupBuilder stgb = rb.EnumerateTransitionGroups().First(x => x.label == RBConsts.InTopOutBotGroup) as SymmetricTransitionGroupBuilder;
-                    if (group == 1)
-                        stgb.Group1.Add($"{def.SceneName}[{def.DoorName}]");
-                    else
-                        stgb.Group2.Add($"{def.SceneName}[{def.DoorName}]");
-                }
-                group = group == 1 ? 2 : 1;
+                    throw new ArgumentException("Unknown transition type");
             }
             else
             {
                 rb.EditTransitionRequest($"{def.SceneName}[{def.DoorName}]", info => info.getTransitionDef = () => def);
                 rb.EnsureVanillaSourceTransition($"{def.SceneName}[{def.DoorName}]");
+            }
+        }
+
+        if (doors.Count > 0)
+        {
+            rb.rng.PermuteInPlace(doors);
+            foreach (var door in doors)
+            {
+                switch (horizontalBuilder!.Group2.GetTotal() - horizontalBuilder.Group1.GetTotal())
+                {
+                    case > 0:
+                        horizontalBuilder.Group1.Add(door);
+                        break;
+                    case < 0:
+                        horizontalBuilder.Group2.Add(door);
+                        break;
+                    case 0:
+                        switch (verticalBuilder!.Group2.GetTotal() - verticalBuilder.Group1.GetTotal())
+                        {
+                            case > 0:
+                                verticalBuilder.Group1.Add(door);
+                                break;
+                            case < 0:
+                                verticalBuilder.Group2.Add(door);
+                                break;
+                            case 0:
+                                if (rb.rng.NextBool()) horizontalBuilder.Group1.Add(door);
+                                else horizontalBuilder.Group2.Add(door);
+                                break;
+                        }
+                        break;
+                }
             }
         }
     }
