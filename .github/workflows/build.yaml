@@ -70,7 +70,7 @@ jobs:
           path: master
 
       - name: Setup MAPI
-        uses: BadMagic100/setup-hk@v2
+        uses: BadMagic100/setup-hk@v3
         with:
           apiPath: HkRefs
           dependencyFilePath: master/ModDependencies.txt
