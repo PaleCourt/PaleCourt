@@ -27,7 +27,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: '${{ matrix.repo.repo }}'
           ref: '${{ matrix.repo.branch }}'
@@ -46,7 +46,7 @@ jobs:
           buildMethod: CreateAssetBundles.Build${{ matrix.platform.platform }}
 
       - name: Prepare Unity artifacts for release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Publish-Unity-${{ matrix.repo.name }}-${{ matrix.platform.name }}
           path: Unity/AssetBundles/${{ matrix.platform.name }}
@@ -64,7 +64,7 @@ jobs:
 
     steps:
       - name: Checkout master
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: master
           path: master
@@ -76,10 +76,10 @@ jobs:
           dependencyFilePath: master/ModDependencies.txt
 
       - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+        uses: actions/setup-dotnet@v6
 
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -100,7 +100,7 @@ jobs:
         working-directory: master
 
       - name: Prepare master artifacts for release
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Publish-Master-${{ matrix.platform }}
           path: master/bin/Publish
@@ -113,7 +113,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
@@ -137,7 +137,7 @@ jobs:
           echo "archiveHashWin=$shaWin" >> $env:GITHUB_OUTPUT
 
       - name: Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           draft: false
           generate_release_notes: true
